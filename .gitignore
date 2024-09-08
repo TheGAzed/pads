@@ -1,8 +1,9 @@
 *
 
-!./external/*
-!./structures/*
-!./test/*
+!external/*
+!structures/*
+!test/*
+!.github/*
 
 !.gitignore
 !.gitmodule
