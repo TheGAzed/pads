@@ -11,7 +11,10 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -pg")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 add_subdirectory(external)
-add_subdirectory(structures)
+
+add_library(project_headers INTERFACE)
+target_include_directories(project_headers INTERFACE structures)
+set_target_properties(project_headers PROPERTIES LINKER_LANGUAGE C)
 
 include(CTest)
 enable_testing()
