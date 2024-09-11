@@ -12,7 +12,7 @@
 
 #include "stack.h"
 
-#if   STACK_MODE == INFINITE_STACK
+#if   STACK_MODE == INFINITE_LIST_STACK
 
 /// @brief Tests if size of stack is zero when creating it.
 TEST test_01_01(void) {
@@ -37,7 +37,7 @@ SUITE (create_stack_test) {
     RUN_TEST(test_01_02);
 }
 
-#elif STACK_MODE == FINITE_STACK
+#elif STACK_MODE == FINITE_ALLOCATED_STACK
 
 /// @brief Tests if size of stack is zero when creating it.
 TEST test_02_01(void) {
@@ -72,7 +72,7 @@ SUITE (create_stack_test) {
     RUN_TEST(test_02_03);
 }
 
-#elif STACK_MODE == PREDEFINED_STACK
+#elif STACK_MODE == INFINITE_REALLOC_STACK
 
 /// @brief Tests if size of stack is zero when creating it.
 TEST test_03_01(void) {
@@ -83,10 +83,10 @@ TEST test_03_01(void) {
     PASS();
 }
 
-/// @brief Tests if elements array ha correct size when creating it.
+/// @brief Tests if head of stack is NULL when creating it.
 TEST test_03_02(void) {
     stack_s test = create_stack();
-    ASSERTm("[ERROR] Stack array size is invalid", (sizeof(test.elements) / sizeof(STACK_DATA_TYPE)) == PREDEFINED_STACK_SIZE);
+    ASSERTm("[ERROR] Stack head must be NULL/have no allocated memory", test.elements == NULL);
     destroy_stack(&test, NULL);
 
     PASS();
@@ -95,6 +95,31 @@ TEST test_03_02(void) {
 SUITE (create_stack_test) {
     RUN_TEST(test_03_01);
     RUN_TEST(test_03_02);
+}
+
+#elif STACK_MODE == FINITE_PRERPOCESSOR_STACK
+
+/// @brief Tests if size of stack is zero when creating it.
+TEST test_04_01(void) {
+    stack_s test = create_stack();
+    ASSERTm("[ERROR] Stack size must be zero", test.size == 0);
+    destroy_stack(&test, NULL);
+
+    PASS();
+}
+
+/// @brief Tests if elements array ha correct size when creating it.
+TEST test_04_02(void) {
+    stack_s test = create_stack();
+    ASSERTm("[ERROR] Stack array size is invalid", (sizeof(test.elements) / sizeof(STACK_DATA_TYPE)) == PREPROCESSOR_STACK_SIZE);
+    destroy_stack(&test, NULL);
+
+    PASS();
+}
+
+SUITE (create_stack_test) {
+    RUN_TEST(test_04_01);
+    RUN_TEST(test_04_02);
 }
 
 #endif

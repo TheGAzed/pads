@@ -11,20 +11,20 @@
 #endif
 
 #define STACK_DATA_TYPE int
-#define PREDEFINED_STACK_SIZE 10
+#define PREPROCESSOR_STACK_SIZE 10
 #include "stack.h"
 
-#if   STACK_MODE == INFINITE_STACK
+#if   STACK_MODE == INFINITE_LIST_STACK
 
 SUITE (is_full_stack_test) {
 }
 
-#elif STACK_MODE == FINITE_STACK
+#elif STACK_MODE == FINITE_ALLOCATED_STACK
 
 /// @brief Tests if stack of size 10 is full without pushing anything.
 TEST test_02_01(void) {
     stack_s test = create_stack(10);
-    ASSERTm("[ERROR] Stack cannot be full", !is_full_stack(test));
+    ASSERT_FALSEm("[ERROR] Stack cannot be full", is_full_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -34,7 +34,7 @@ TEST test_02_01(void) {
 TEST test_02_02(void) {
     stack_s test = create_stack(10);
     push_stack(&test, 10);
-    ASSERTm("[ERROR] Stack cannot be full", !is_full_stack(test));
+    ASSERT_FALSEm("[ERROR] Stack cannot be full", is_full_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -58,7 +58,7 @@ TEST test_02_04(void) {
     for(size_t i = 0; i < (10 - 1); i++) {
         push_stack(&test, 10);
     }
-    ASSERTm("[ERROR] Stack cannot be full", !is_full_stack(test));
+    ASSERT_FALSEm("[ERROR] Stack cannot be full", is_full_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -71,29 +71,34 @@ SUITE (is_full_stack_test) {
     RUN_TEST(test_02_04);
 }
 
-#elif STACK_MODE == PREDEFINED_STACK
+#elif STACK_MODE == INFINITE_REALLOC_STACK
+
+SUITE (is_full_stack_test) {
+}
+
+#elif STACK_MODE == FINITE_PRERPOCESSOR_STACK
 
 /// @brief Tests if stack of size 'PREDEFINED_STACK_SIZE' is full without pushing anything.
-TEST test_03_01(void) {
+TEST test_04_01(void) {
     stack_s test = create_stack();
-    ASSERTm("[ERROR] Stack cannot be full", !is_full_stack(test));
+    ASSERT_FALSEm("[ERROR] Stack cannot be full", is_full_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
 }
 
 /// @brief Tests if stack of size 'PREDEFINED_STACK_SIZE' is full if 1 element is pushed.
-TEST test_03_02(void) {
+TEST test_04_02(void) {
     stack_s test = create_stack();
     push_stack(&test, 10);
-    ASSERTm("[ERROR] Stack cannot be full", !is_full_stack(test));
+    ASSERT_FALSEm("[ERROR] Stack cannot be full", is_full_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
 }
 
 /// @brief Tests if stack of size 'PREDEFINED_STACK_SIZE' is full if 'PREDEFINED_STACK_SIZE' elements are pushed.
-TEST test_03_03(void) {
+TEST test_04_03(void) {
     stack_s test = create_stack();
     for(size_t i = 0; i < 10; i++) {
         push_stack(&test, 10);
@@ -105,22 +110,22 @@ TEST test_03_03(void) {
 }
 
 /// @brief Tests if stack of size 'PREDEFINED_STACK_SIZE' is full if ('PREDEFINED_STACK_SIZE' - 1) elements are pushed.
-TEST test_03_04(void) {
+TEST test_04_04(void) {
     stack_s test = create_stack();
     for(size_t i = 0; i < (10 - 1); i++) {
         push_stack(&test, 10);
     }
-    ASSERTm("[ERROR] Stack cannot be full", !is_full_stack(test));
+    ASSERT_FALSEm("[ERROR] Stack cannot be full", is_full_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
 }
 
 SUITE (is_full_stack_test) {
-    RUN_TEST(test_03_01);
-    RUN_TEST(test_03_02);
-    RUN_TEST(test_03_03);
-    RUN_TEST(test_03_04);
+    RUN_TEST(test_04_01);
+    RUN_TEST(test_04_02);
+    RUN_TEST(test_04_03);
+    RUN_TEST(test_04_04);
 }
 
 #endif

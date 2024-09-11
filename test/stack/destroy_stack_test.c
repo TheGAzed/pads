@@ -11,15 +11,16 @@
 
 #endif
 
-#define STACK_DATA_TYPE char*
-#define STACK_LIST_ARRAY_SIZE 10
+#define STACK_DATA_TYPE        char*
+#define LIST_ARRAY_STACK_CHUNK 10
+#define REALLOC_STACK_CHUNK    10
 #include "stack.h"
 
 void destroy_string(char ** string) {
     free(*string);
 }
 
-#if   STACK_MODE == INFINITE_STACK
+#if   STACK_MODE == INFINITE_LIST_STACK
 
 /// @brief Tests if size of stack is zeroed when pushing and destroying it.
 TEST test_01_01(void) {
@@ -41,10 +42,10 @@ TEST test_01_02(void) {
     PASS();
 }
 
-/// @brief Tests if head of stack is NULLed when pushing 'STACK_LIST_ARRAY_SIZE' elements and destroying it.
+/// @brief Tests if head of stack is NULLed when pushing 'LIST_ARRAY_STACK_CHUNK' elements and destroying it.
 TEST test_01_03(void) {
     stack_s test = create_stack();
-    for (size_t i = 0; i < STACK_LIST_ARRAY_SIZE; ++i) {
+    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
         push_stack(&test, strdup("thegazed"));
     }
     destroy_stack(&test, destroy_string);
@@ -53,10 +54,10 @@ TEST test_01_03(void) {
     PASS();
 }
 
-/// @brief Tests if head of stack is NULLed when pushing 'STACK_LIST_ARRAY_SIZE + 1' elements and destroying it.
+/// @brief Tests if head of stack is NULLed when pushing 'LIST_ARRAY_STACK_CHUNK + 1' elements and destroying it.
 TEST test_01_04(void) {
     stack_s test = create_stack();
-    for (size_t i = 0; i < STACK_LIST_ARRAY_SIZE + 1; ++i) {
+    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
         push_stack(&test, strdup("thegazed"));
     }
     destroy_stack(&test, destroy_string);
@@ -72,7 +73,7 @@ SUITE (destroy_stack_test) {
     RUN_TEST(test_01_04);
 }
 
-#elif STACK_MODE == FINITE_STACK
+#elif STACK_MODE == FINITE_ALLOCATED_STACK
 
 /// @brief Tests if size of stack is zeroed when pushing and destroying it.
 TEST test_02_01(void) {
@@ -110,9 +111,9 @@ SUITE (destroy_stack_test) {
     RUN_TEST(test_02_03);
 }
 
-#elif STACK_MODE == PREDEFINED_STACK
+#elif STACK_MODE == INFINITE_REALLOC_STACK
 
-/// @brief Tests if size of stack is zero when creating it.
+/// @brief Tests if size of stack is zeroed when pushing and destroying it.
 TEST test_03_01(void) {
     stack_s test = create_stack();
     push_stack(&test, strdup("thegazed"));
@@ -122,8 +123,61 @@ TEST test_03_01(void) {
     PASS();
 }
 
+/// @brief Tests if head of stack is NULLed when pushing and destroying it.
+TEST test_03_02(void) {
+    stack_s test = create_stack();
+    push_stack(&test, strdup("thegazed"));
+    destroy_stack(&test, destroy_string);
+    ASSERTm("[ERROR] Stack head must be NULL/have no allocated memory", test.elements == NULL);
+
+    PASS();
+}
+
+/// @brief Tests if head of stack is NULLed when pushing 'REALLOC_STACK_CHUNK' elements and destroying it.
+TEST test_03_03(void) {
+    stack_s test = create_stack();
+    for (size_t i = 0; i < REALLOC_STACK_CHUNK; ++i) {
+        push_stack(&test, strdup("thegazed"));
+    }
+    destroy_stack(&test, destroy_string);
+    ASSERTm("[ERROR] Stack head must be NULL/have no allocated memory", test.elements == NULL);
+
+    PASS();
+}
+
+/// @brief Tests if head of stack is NULLed when pushing 'REALLOC_STACK_CHUNK + 1' elements and destroying it.
+TEST test_03_04(void) {
+    stack_s test = create_stack();
+    for (size_t i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
+        push_stack(&test, strdup("thegazed"));
+    }
+    destroy_stack(&test, destroy_string);
+    ASSERTm("[ERROR] Stack head must be NULL/have no allocated memory", test.elements == NULL);
+
+    PASS();
+}
+
 SUITE (destroy_stack_test) {
     RUN_TEST(test_03_01);
+    RUN_TEST(test_03_02);
+    RUN_TEST(test_03_03);
+    RUN_TEST(test_03_04);
+}
+
+#elif STACK_MODE == FINITE_PRERPOCESSOR_STACK
+
+/// @brief Tests if size of stack is zero when creating it.
+TEST test_04_01(void) {
+    stack_s test = create_stack();
+    push_stack(&test, strdup("thegazed"));
+    destroy_stack(&test, destroy_string);
+    ASSERTm("[ERROR] Stack size must be zero", test.size == 0);
+
+    PASS();
+}
+
+SUITE (destroy_stack_test) {
+    RUN_TEST(test_04_01);
 }
 
 #endif
