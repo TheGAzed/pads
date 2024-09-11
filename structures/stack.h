@@ -127,7 +127,7 @@ static inline bool is_full_stack(const stack_s stack) {
 /// @brief Gets element at the top of the stack without decrementing size (peek the top of the stack).
 /// @param stack Stack structure.
 /// @return The top element of the stack as defined by 'STACK_DATA_TYPE' macro.
-static inline STACK_DATA_TYPE peek_stack(const stack_s stack) {
+static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
     assert(stack.size && "[ERROR] Can't peek empty stack");
 
     return stack.head->elements[(stack.size - 1) % LIST_ARRAY_STACK_CHUNK];
@@ -289,7 +289,7 @@ static inline bool is_full_stack(stack_s stack) {
 /// @brief Gets element at the top of the stack without decrementing size (peeks the top of the stack).
 /// @param stack Stack structure.
 /// @return The top element of the stack as defined by 'STACK_DATA_TYPE' macro.
-static inline STACK_DATA_TYPE peek_stack(stack_s stack) {
+static inline STACK_DATA_TYPE peep_stack(stack_s stack) {
     assert(stack.size && "[ERROR] Can't peek empty stack");
 
     return stack.elements[stack.size - 1];
@@ -390,7 +390,7 @@ static inline bool is_full_stack(stack_s stack) {
 /// @brief Gets element at the top of the stack without decrementing size (peeks the top of the stack).
 /// @param stack Stack structure.
 /// @return The top element of the stack as defined by 'STACK_DATA_TYPE' macro.
-static inline STACK_DATA_TYPE peek_stack(stack_s stack) {
+static inline STACK_DATA_TYPE peep_stack(stack_s stack) {
     assert(stack.size && "[ERROR] Can't peek empty stack");
 
     return stack.elements[stack.size - 1];
@@ -503,7 +503,7 @@ static inline bool is_full_stack(stack_s stack) {
 /// @brief Gets element at the top of the stack without decrementing size (peeks the top of the stack).
 /// @param stack Stack structure.
 /// @return The top element of the stack as defined by 'STACK_DATA_TYPE' macro.
-static inline STACK_DATA_TYPE peek_stack(stack_s stack) {
+static inline STACK_DATA_TYPE peep_stack(stack_s stack) {
     assert(stack.size && "[ERROR] Can't peek empty stack");
 
     return stack.elements[(stack.size - 1) % PREPROCESSOR_STACK_SIZE];

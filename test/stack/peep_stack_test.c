@@ -22,7 +22,7 @@
 TEST test_01_01(void) {
     stack_s test = create_stack();
     push_stack(&test, 42);
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -33,7 +33,7 @@ TEST test_01_02(void) {
     stack_s test = create_stack();
     push_stack(&test, -1);
     push_stack(&test, 42);
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -45,7 +45,7 @@ TEST test_01_03(void) {
     push_stack(&test, 42);
     push_stack(&test, -1);
     pop_stack(&test);
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -58,7 +58,7 @@ TEST test_01_04(void) {
         push_stack(&test, -1);
     }
     push_stack(&test, 42); // adding last element to 'LIST_ARRAY_STACK_CHUNK' array
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -71,7 +71,7 @@ TEST test_01_05(void) {
         push_stack(&test, -1);
     }
     push_stack(&test, 42); // exceeding 'LIST_ARRAY_STACK_CHUNK' size
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -87,7 +87,7 @@ TEST test_01_06(void) {
     push_stack(&test, 42); // adding last element to 'LIST_ARRAY_STACK_CHUNK' array
     push_stack(&test, -1); // exceeding 'LIST_ARRAY_STACK_CHUNK' size
     pop_stack(&test);
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -104,13 +104,13 @@ TEST test_01_07(void) {
     for(size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; i++) {
         pop_stack(&test);
     }
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
 }
 
-SUITE (peek_stack_test) {
+SUITE (peep_stack_test) {
     RUN_TEST(test_01_01);
     RUN_TEST(test_01_02);
     RUN_TEST(test_01_03);
@@ -126,7 +126,7 @@ SUITE (peek_stack_test) {
 TEST test_02_01(void) {
     stack_s test = create_stack(10);
     push_stack(&test, 42);
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -137,7 +137,7 @@ TEST test_02_02(void) {
     stack_s test = create_stack(10);
     push_stack(&test, -1);
     push_stack(&test, 42);
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -149,13 +149,13 @@ TEST test_02_03(void) {
     push_stack(&test, 42);
     push_stack(&test, -1);
     pop_stack(&test);
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
 }
 
-SUITE (peek_stack_test) {
+SUITE (peep_stack_test) {
     RUN_TEST(test_02_01);
     RUN_TEST(test_02_02);
     RUN_TEST(test_02_03);
@@ -167,7 +167,7 @@ SUITE (peek_stack_test) {
 TEST test_03_01(void) {
     stack_s test = create_stack();
     push_stack(&test, 42);
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -178,7 +178,7 @@ TEST test_03_02(void) {
     stack_s test = create_stack();
     push_stack(&test, -1);
     push_stack(&test, 42);
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -190,7 +190,7 @@ TEST test_03_03(void) {
     push_stack(&test, 42);
     push_stack(&test, -1);
     pop_stack(&test);
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -203,7 +203,7 @@ TEST test_03_04(void) {
         push_stack(&test, -1);
     }
     push_stack(&test, 42); // adding last element to 'LIST_ARRAY_STACK_CHUNK' array
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -216,7 +216,7 @@ TEST test_03_05(void) {
         push_stack(&test, -1);
     }
     push_stack(&test, 42); // exceeding 'LIST_ARRAY_STACK_CHUNK' size
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -232,7 +232,7 @@ TEST test_03_06(void) {
     push_stack(&test, 42); // adding last element to 'LIST_ARRAY_STACK_CHUNK' array
     push_stack(&test, -1); // exceeding 'LIST_ARRAY_STACK_CHUNK' size
     pop_stack(&test);
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -249,13 +249,13 @@ TEST test_03_07(void) {
     for(size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; i++) {
         pop_stack(&test);
     }
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
 }
 
-SUITE (peek_stack_test) {
+SUITE (peep_stack_test) {
     RUN_TEST(test_03_01);
     RUN_TEST(test_03_02);
     RUN_TEST(test_03_03);
@@ -271,7 +271,7 @@ SUITE (peek_stack_test) {
 TEST test_04_01(void) {
     stack_s test = create_stack();
     push_stack(&test, 42);
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -282,7 +282,7 @@ TEST test_04_02(void) {
     stack_s test = create_stack();
     push_stack(&test, -1);
     push_stack(&test, 42);
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -294,7 +294,7 @@ TEST test_04_03(void) {
     push_stack(&test, 42);
     push_stack(&test, -1);
     pop_stack(&test);
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -307,7 +307,7 @@ TEST test_04_04(void) {
         push_stack(&test, -1);
     }
     push_stack(&test, 42);
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -325,13 +325,13 @@ TEST test_04_05(void) {
     for(size_t i = 0; i < PREPROCESSOR_STACK_SIZE - 1; i++) {
         pop_stack(&test);
     }
-    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peek_stack(test));
+    ASSERTm("[ERROR] Peeked stack element must equal 42", 42 == peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
 }
 
-SUITE (peek_stack_test) {
+SUITE (peep_stack_test) {
     RUN_TEST(test_04_01);
     RUN_TEST(test_04_02);
     RUN_TEST(test_04_03);
