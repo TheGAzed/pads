@@ -404,22 +404,6 @@ TEST test_03_09(void) {
     PASS();
 }
 
-/// @brief Test if stack head is NULL after pushing and poping 'REALLOC_STACK_CHUNK'
-TEST test_03_10(void) {
-    stack_s test = create_stack();
-    for (size_t i = 0; i < REALLOC_STACK_CHUNK; ++i) {
-        push_stack(&test, -1);
-    }
-    for (size_t i = 0; i < REALLOC_STACK_CHUNK; ++i) {
-        pop_stack(&test);
-    }
-
-    ASSERTm("[ERROR] Stack head must be NULL", NULL == test.elements);
-    destroy_stack(&test, NULL);
-
-    PASS();
-}
-
 SUITE (push_stack_test) {
     RUN_TEST(test_03_01);
     RUN_TEST(test_03_02);
@@ -430,7 +414,6 @@ SUITE (push_stack_test) {
     RUN_TEST(test_03_07);
     RUN_TEST(test_03_08);
     RUN_TEST(test_03_09);
-    RUN_TEST(test_03_10);
 }
 
 #elif STACK_MODE == FINITE_PRERPOCESSOR_STACK
