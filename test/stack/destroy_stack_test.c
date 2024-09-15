@@ -16,7 +16,15 @@
 #define REALLOC_STACK_CHUNK    10
 #include "stack.h"
 
-void destroy_string(char ** string) {
+#define STRING_VALUE "thegazed"
+STACK_DATA_TYPE create_string_destroy(void) {
+    STACK_DATA_TYPE string = malloc((sizeof(STRING_VALUE) * sizeof(char)));
+    assert(string && "[ERROR] Memory allocation failed.");
+    strncpy(string, STRING_VALUE, sizeof(STRING_VALUE) - 1);
+    return string;
+}
+
+void destroy_string_destroy(STACK_DATA_TYPE * string) {
     free(*string);
 }
 
@@ -25,8 +33,9 @@ void destroy_string(char ** string) {
 /// @brief Tests if size of stack is zeroed when pushing and destroying it.
 TEST test_01_01(void) {
     stack_s test = create_stack();
-    push_stack(&test, strdup("thegazed"));
-    destroy_stack(&test, destroy_string);
+    push_stack(&test, create_string_destroy());
+    destroy_stack(&test, destroy_string_destroy);
+
     ASSERTm("[ERROR] Stack size must be zero", test.size == 0);
 
     PASS();
@@ -35,9 +44,10 @@ TEST test_01_01(void) {
 /// @brief Tests if head of stack is NULLed when pushing and destroying it.
 TEST test_01_02(void) {
     stack_s test = create_stack();
-    push_stack(&test, strdup("thegazed"));
-    destroy_stack(&test, destroy_string);
-    ASSERTm("[ERROR] Stack head must be NULL/have no allocated memory", test.head == NULL);
+    push_stack(&test, create_string_destroy());
+    destroy_stack(&test, destroy_string_destroy);
+
+    ASSERT_EQm("[ERROR] Stack head must be NULL/have no allocated memory", test.head, NULL);
 
     PASS();
 }
@@ -46,10 +56,11 @@ TEST test_01_02(void) {
 TEST test_01_03(void) {
     stack_s test = create_stack();
     for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
-        push_stack(&test, strdup("thegazed"));
+        push_stack(&test, create_string_destroy());
     }
-    destroy_stack(&test, destroy_string);
-    ASSERTm("[ERROR] Stack head must be NULL/have no allocated memory", test.head == NULL);
+    destroy_stack(&test, destroy_string_destroy);
+
+    ASSERT_EQm("[ERROR] Stack head must be NULL/have no allocated memory", test.head, NULL);
 
     PASS();
 }
@@ -58,10 +69,11 @@ TEST test_01_03(void) {
 TEST test_01_04(void) {
     stack_s test = create_stack();
     for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
-        push_stack(&test, strdup("thegazed"));
+        push_stack(&test, create_string_destroy());
     }
-    destroy_stack(&test, destroy_string);
-    ASSERTm("[ERROR] Stack head must be NULL/have no allocated memory", test.head == NULL);
+    destroy_stack(&test, destroy_string_destroy);
+
+    ASSERT_EQm("[ERROR] Stack head must be NULL/have no allocated memory", test.head, NULL);
 
     PASS();
 }
@@ -78,9 +90,10 @@ SUITE (destroy_stack_test) {
 /// @brief Tests if size of stack is zeroed when pushing and destroying it.
 TEST test_02_01(void) {
     stack_s test = create_stack(10);
-    push_stack(&test, strdup("thegazed"));
-    destroy_stack(&test, destroy_string);
-    ASSERTm("[ERROR] Stack size must be zero", test.size == 0);
+    push_stack(&test, create_string_destroy());
+    destroy_stack(&test, destroy_string_destroy);
+
+    ASSERT_EQm("[ERROR] Stack size must be zero", 0, test.size);
 
     PASS();
 }
@@ -88,9 +101,10 @@ TEST test_02_01(void) {
 /// @brief Tests if maximum size is zeroed when pushing and destroying it.
 TEST test_02_02(void) {
     stack_s test = create_stack(10);
-    push_stack(&test, strdup("thegazed"));
-    destroy_stack(&test, destroy_string);
-    ASSERTm("[ERROR] Stack maximum size must be zero", test.max == 0);
+    push_stack(&test, create_string_destroy());
+    destroy_stack(&test, destroy_string_destroy);
+
+    ASSERT_EQm("[ERROR] Stack size must be zero", 0, test.max);
 
     PASS();
 }
@@ -98,9 +112,10 @@ TEST test_02_02(void) {
 /// @brief Tests if elements pointer of stack is NULL when pushing and destroying it, has no allocated memory.
 TEST test_02_03(void) {
     stack_s test = create_stack(10);
-    push_stack(&test, strdup("thegazed"));
-    destroy_stack(&test, destroy_string);
-    ASSERTm("[ERROR] Stack elements pointer is not NULL", !test.elements);
+    push_stack(&test, create_string_destroy());
+    destroy_stack(&test, destroy_string_destroy);
+
+    ASSERT_EQm("[ERROR] Stack elements pointer is not NULL", NULL, test.elements);
 
     PASS();
 }
@@ -116,9 +131,11 @@ SUITE (destroy_stack_test) {
 /// @brief Tests if size of stack is zeroed when pushing and destroying it.
 TEST test_03_01(void) {
     stack_s test = create_stack();
-    push_stack(&test, strdup("thegazed"));
-    destroy_stack(&test, destroy_string);
+    push_stack(&test, create_string_destroy());
+    destroy_stack(&test, destroy_string_destroy);
     ASSERTm("[ERROR] Stack size must be zero", test.size == 0);
+
+    ASSERT_EQm("[ERROR] Stack size must be zero", 0, test.size);
 
     PASS();
 }
@@ -126,9 +143,10 @@ TEST test_03_01(void) {
 /// @brief Tests if head of stack is NULLed when pushing and destroying it.
 TEST test_03_02(void) {
     stack_s test = create_stack();
-    push_stack(&test, strdup("thegazed"));
-    destroy_stack(&test, destroy_string);
-    ASSERTm("[ERROR] Stack head must be NULL/have no allocated memory", test.elements == NULL);
+    push_stack(&test, create_string_destroy());
+    destroy_stack(&test, destroy_string_destroy);
+
+    ASSERT_EQm("[ERROR] Stack head must be NULL/have no allocated memory", NULL, test.elements);
 
     PASS();
 }
@@ -137,10 +155,11 @@ TEST test_03_02(void) {
 TEST test_03_03(void) {
     stack_s test = create_stack();
     for (size_t i = 0; i < REALLOC_STACK_CHUNK; ++i) {
-        push_stack(&test, strdup("thegazed"));
+        push_stack(&test, create_string_destroy());
     }
-    destroy_stack(&test, destroy_string);
-    ASSERTm("[ERROR] Stack head must be NULL/have no allocated memory", test.elements == NULL);
+    destroy_stack(&test, destroy_string_destroy);
+
+    ASSERT_EQm("[ERROR] Stack head must be NULL/have no allocated memory", NULL, test.elements);
 
     PASS();
 }
@@ -149,10 +168,11 @@ TEST test_03_03(void) {
 TEST test_03_04(void) {
     stack_s test = create_stack();
     for (size_t i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
-        push_stack(&test, strdup("thegazed"));
+        push_stack(&test, create_string_destroy());
     }
-    destroy_stack(&test, destroy_string);
-    ASSERTm("[ERROR] Stack head must be NULL/have no allocated memory", test.elements == NULL);
+    destroy_stack(&test, destroy_string_destroy);
+
+    ASSERT_EQm("[ERROR] Stack head must be NULL/have no allocated memory", NULL, test.elements);
 
     PASS();
 }
@@ -169,9 +189,10 @@ SUITE (destroy_stack_test) {
 /// @brief Tests if size of stack is zero when creating it.
 TEST test_04_01(void) {
     stack_s test = create_stack();
-    push_stack(&test, strdup("thegazed"));
-    destroy_stack(&test, destroy_string);
-    ASSERTm("[ERROR] Stack size must be zero", test.size == 0);
+    push_stack(&test, create_string_destroy());
+    destroy_stack(&test, destroy_string_destroy);
+
+    ASSERT_EQm("[ERROR] Stack size must be zero", 0, test.size);
 
     PASS();
 }

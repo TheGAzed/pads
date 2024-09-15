@@ -23,7 +23,7 @@ TEST test_01_01(void) {
     stack_s test = create_stack();
     push_stack(&test, 42);
 
-    ASSERTm("[ERROR] Peeped stack element must equal 42", 42 == peep_stack(test));
+    ASSERT_EQm("[ERROR] Peeped stack element must equal 42.", 42, peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -34,7 +34,7 @@ TEST test_01_02(void) {
     stack_s test = create_stack();
     push_stack(&test, 42);
 
-    ASSERTm("[ERROR] Stack size must be one (1).", 1 == test.size);
+    ASSERT_EQm("[ERROR] Stack size must be one (1).", 1, test.size);
     destroy_stack(&test, NULL);
 
     PASS();
@@ -48,7 +48,7 @@ TEST test_01_03(void) {
     }
     push_stack(&test, 42);
 
-    ASSERTm("[ERROR] Peeped stack element must equal 42", 42 == peep_stack(test));
+    ASSERT_EQm("[ERROR] Peeped stack element must equal 42.", 42, peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -62,7 +62,7 @@ TEST test_01_04(void) {
     }
     push_stack(&test, 42);
 
-    ASSERTm("[ERROR] Peeped stack element must equal 42", 42 == peep_stack(test));
+    ASSERT_EQm("[ERROR] Peeped stack element must equal 42.", 42, peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -76,7 +76,7 @@ TEST test_01_05(void) {
     }
     push_stack(&test, 42);
 
-    ASSERTm("[ERROR] Stack size must be 'LIST_ARRAY_STACK_CHUNK'.", LIST_ARRAY_STACK_CHUNK == test.size);
+    ASSERT_EQm("[ERROR] Stack size must be 'LIST_ARRAY_STACK_CHUNK'.", LIST_ARRAY_STACK_CHUNK, test.size);
     destroy_stack(&test, NULL);
 
     PASS();
@@ -90,7 +90,7 @@ TEST test_01_06(void) {
     }
     push_stack(&test, 42);
 
-    ASSERTm("[ERROR] Stack size must be 'LIST_ARRAY_STACK_CHUNK' + 1.", (LIST_ARRAY_STACK_CHUNK + 1) == test.size);
+    ASSERT_EQm("[ERROR] Stack size must be 'LIST_ARRAY_STACK_CHUNK' + 1.", (LIST_ARRAY_STACK_CHUNK + 1), test.size);
     destroy_stack(&test, NULL);
 
     PASS();
@@ -106,7 +106,7 @@ TEST test_01_07(void) {
     push_stack(&test, -1);
     pop_stack(&test);
 
-    ASSERTm("[ERROR] Peeped stack element must equal 42", 42 == peep_stack(test));
+    ASSERT_EQm("[ERROR] Peeped stack element must equal 42.", 42, peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -123,7 +123,7 @@ TEST test_01_08(void) {
         pop_stack(&test);
     }
 
-    ASSERTm("[ERROR] Peeped stack element must equal 42", 42 == peep_stack(test));
+    ASSERT_EQm("[ERROR] Peeped stack element must equal 42.", 42, peep_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
@@ -139,7 +139,7 @@ TEST test_01_09(void) {
         pop_stack(&test);
     }
 
-    ASSERTm("[ERROR] Stack size must be zero (0)", 0 == test.size);
+    ASSERT_FALSEm("[ERROR] Stack size must be zero (0).", test.size);
     destroy_stack(&test, NULL);
 
     PASS();
@@ -155,9 +155,24 @@ TEST test_01_10(void) {
         pop_stack(&test);
     }
 
-    ASSERTm("[ERROR] Stack head must be NULL", NULL == test.head);
+    ASSERT_FALSEm("[ERROR] Stack head must be NULL.", test.head);
     destroy_stack(&test, NULL);
 
+    PASS();
+}
+
+/// @brief Test if head pointer has changed after pushing 'LIST_ARRAY_STACK_CHUNK' + 1 values (filling list array
+/// and pushing one more).
+TEST test_01_11(void) {
+    stack_s test = create_stack();
+    push_stack(&test, 42);
+    const struct stack_list_array * temp = test.head;
+    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
+        push_stack(&test, 42);
+    }
+
+    ASSERT_NEQm("[ERROR] Expected pointers to not be equal.", temp, test.head);
+    destroy_stack(&test, NULL);
     PASS();
 }
 
@@ -172,6 +187,7 @@ SUITE (push_stack_test) {
     RUN_TEST(test_01_08);
     RUN_TEST(test_01_09);
     RUN_TEST(test_01_10);
+    RUN_TEST(test_01_11);
 }
 
 #elif STACK_MODE == FINITE_ALLOCATED_STACK
@@ -404,6 +420,21 @@ TEST test_03_09(void) {
     PASS();
 }
 
+/// @brief Test if peeped value is correct after pushing 'REALLOC_STACK_CHUNK' + 1 - 1 and pushing correct
+TEST test_03_10(void) {
+    stack_s test = create_stack();
+    for (size_t i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
+        push_stack(&test, -1);
+    }
+    pop_stack(&test);
+    push_stack(&test, 42);
+
+    ASSERTm("[ERROR] Peeped stack element must equal 42", 42 == peep_stack(test));
+    destroy_stack(&test, NULL);
+
+    PASS();
+}
+
 SUITE (push_stack_test) {
     RUN_TEST(test_03_01);
     RUN_TEST(test_03_02);
@@ -414,6 +445,7 @@ SUITE (push_stack_test) {
     RUN_TEST(test_03_07);
     RUN_TEST(test_03_08);
     RUN_TEST(test_03_09);
+    RUN_TEST(test_03_10);
 }
 
 #elif STACK_MODE == FINITE_PRERPOCESSOR_STACK

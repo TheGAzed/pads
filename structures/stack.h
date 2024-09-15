@@ -187,7 +187,7 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
 /// @param copy_element Function pointer to create a copy of an element or NULL if 'STACK_DATA_TYPE' is a basic type.
 /// @return A copy of the specified 'stack' parameter.
 static inline stack_s copy_stack(const stack_s stack, STACK_DATA_TYPE (*copy_element)(STACK_DATA_TYPE)) {
-    stack_s copy = { 0 };
+    stack_s copy = { .size = stack.size, .head = NULL };
 
     struct stack_list_array const * current_stack = stack.head;
     struct stack_list_array ** current_copy = &(copy.head); // Torvald's double pointer list to remove special .head case
@@ -196,6 +196,7 @@ static inline stack_s copy_stack(const stack_s stack, STACK_DATA_TYPE (*copy_ele
         if (current_index && current_stack) { // case when current index array in head is not full
             *current_copy = malloc(sizeof(struct stack_list_array));
             assert(*current_copy && "[ERROR] Memory allocation failed");
+            (*current_copy)->next = NULL;
 
             for (size_t i = 0; i < current_index; i++) {
                 (*current_copy)->elements[i] = copy_element(current_stack->elements[i]);
@@ -208,6 +209,7 @@ static inline stack_s copy_stack(const stack_s stack, STACK_DATA_TYPE (*copy_ele
         while (current_stack) { // the other elements must have full arrays
             *current_copy = malloc(sizeof(struct stack_list_array));
             assert(*current_copy && "[ERROR] Memory allocation failed");
+            (*current_copy)->next = NULL;
 
             for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; i++) {
                 (*current_copy)->elements[i] = copy_element(current_stack->elements[i]);
@@ -220,8 +222,9 @@ static inline stack_s copy_stack(const stack_s stack, STACK_DATA_TYPE (*copy_ele
         if (current_index && current_stack) { // case when current index array in head is not full
             *current_copy = malloc(sizeof(struct stack_list_array));
             assert(*current_copy && "[ERROR] Memory allocation failed");
+            (*current_copy)->next = NULL;
 
-            memcpy((*current_copy)->elements, current_stack->elements, current_index);
+            memcpy((*current_copy)->elements, current_stack->elements, current_index * sizeof(STACK_DATA_TYPE));
 
             current_stack = current_stack->next;
             current_copy = &((*current_copy)->next);
@@ -230,8 +233,9 @@ static inline stack_s copy_stack(const stack_s stack, STACK_DATA_TYPE (*copy_ele
         while (current_stack) { // the other elements must have full arrays
             *current_copy = malloc(sizeof(struct stack_list_array));
             assert(*current_copy && "[ERROR] Memory allocation failed");
+            (*current_copy)->next = NULL;
 
-            memcpy((*current_copy)->elements, current_stack->elements, LIST_ARRAY_STACK_CHUNK);
+            memcpy((*current_copy)->elements, current_stack->elements, LIST_ARRAY_STACK_CHUNK * sizeof(STACK_DATA_TYPE));
 
             current_stack = current_stack->next;
             current_copy = &((*current_copy)->next);
@@ -280,7 +284,7 @@ static inline void destroy_stack(stack_s * stack, void (*destroy_element)(STACK_
         }
     }
 
-    if (stack->max) free(stack->elements);
+    free(stack->elements);
     *stack = (stack_s) { 0 };
 }
 
@@ -560,7 +564,7 @@ static inline stack_s copy_stack(const stack_s stack, STACK_DATA_TYPE (*copy_ele
             copy.elements[s] = copy_element(stack.elements[s]);
         }
     } else {
-        memcpy(copy.elements, stack.elements, stack.size);
+        memcpy(copy.elements, stack.elements, stack.size * sizeof(STACK_DATA_TYPE));
     }
 
     return copy;

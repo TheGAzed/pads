@@ -83,10 +83,10 @@ TEST test_03_01(void) {
     PASS();
 }
 
-/// @brief Tests if head of stack is NULL when creating it.
+/// @brief Tests if elements array of stack is NULL when creating it.
 TEST test_03_02(void) {
     stack_s test = create_stack();
-    ASSERTm("[ERROR] Stack head must be NULL/have no allocated memory", test.elements == NULL);
+    ASSERT_FALSEm("[ERROR] Stack elements must be NULL", test.elements);
     destroy_stack(&test, NULL);
 
     PASS();
@@ -108,10 +108,12 @@ TEST test_04_01(void) {
     PASS();
 }
 
-/// @brief Tests if elements array ha correct size when creating it.
+/// @brief Tests if elements array has correct size when creating it.
 TEST test_04_02(void) {
     stack_s test = create_stack();
-    ASSERTm("[ERROR] Stack array size is invalid", (sizeof(test.elements) / sizeof(STACK_DATA_TYPE)) == PREPROCESSOR_STACK_SIZE);
+    ASSERTm(
+        "[ERROR] Stack array size is invalid",
+        (sizeof(test.elements) / sizeof(STACK_DATA_TYPE)) == PREPROCESSOR_STACK_SIZE);
     destroy_stack(&test, NULL);
 
     PASS();
