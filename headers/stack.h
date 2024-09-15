@@ -86,24 +86,14 @@ static inline stack_s create_stack(void) {
 static inline void destroy_stack(stack_s * stack, void (*destroy_element)(STACK_DATA_TYPE *)) {
     assert(stack && "[ERROR] Stack pointer is NULL");
 
-    auto void loop_destroy(struct stack_list_array * list, size_t size);
-    auto void empty_destroy(struct stack_list_array * list, size_t size);
-
-    void (*destroy_list)(struct stack_list_array *, size_t) = destroy_element ? loop_destroy : empty_destroy;
-
-    void loop_destroy(struct stack_list_array * list, size_t size) {
-        for (size_t s = 0; s < size; s++) {
-            destroy_element(&(list->elements[s]));
-        }
-    }
-
-    void empty_destroy(struct stack_list_array * list, size_t size) {
-    }
-
     struct stack_list_array * list = stack->head;
     const size_t mod_size = stack->size % LIST_ARRAY_STACK_CHUNK;
     if (list && mod_size) {
-        destroy_list(list, mod_size);
+        if (destroy_element) {
+            for (size_t s = 0; s < mod_size; s++) {
+                destroy_element(&(list->elements[s]));
+            }
+        }
 
         struct stack_list_array * temp = list;
         list = list->next;
@@ -111,7 +101,11 @@ static inline void destroy_stack(stack_s * stack, void (*destroy_element)(STACK_
     }
 
     while (list) {
-        destroy_list(list, LIST_ARRAY_STACK_CHUNK);
+        if (destroy_element) {
+            for (size_t s = 0; s < LIST_ARRAY_STACK_CHUNK; s++) {
+                destroy_element(&(list->elements[s]));
+            }
+        }
 
         struct stack_list_array * temp = list;
         list = list->next;
@@ -189,21 +183,6 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
 static inline stack_s copy_stack(const stack_s stack, STACK_DATA_TYPE (*copy_element)(STACK_DATA_TYPE)) {
     stack_s copy = { .size = stack.size, .head = NULL };
 
-    auto void loop_copy(struct stack_list_array * dest, struct stack_list_array * src, size_t size);
-    auto void memory_copy(struct stack_list_array * dest, struct stack_list_array * src, size_t size);
-
-    void (*copy_list)(struct stack_list_array *, struct stack_list_array *, size_t) = copy_element ? loop_copy : memory_copy;
-
-    void loop_copy(struct stack_list_array * dest, struct stack_list_array * src, size_t size) {
-        for (size_t s = 0; s < size; s++) {
-            dest->elements[s] = copy_element(src->elements[s]);
-        }
-    }
-
-    void memory_copy(struct stack_list_array * dest, struct stack_list_array * src, size_t size) {
-        memcpy(dest->elements, src->elements, size * sizeof(STACK_DATA_TYPE));
-    }
-
     struct stack_list_array * current_stack = stack.head;
     struct stack_list_array ** current_copy = &(copy.head); // two pointer list to remove special .head case
 
@@ -213,7 +192,13 @@ static inline stack_s copy_stack(const stack_s stack, STACK_DATA_TYPE (*copy_ele
         assert(*current_copy && "[ERROR] Memory allocation failed");
         (*current_copy)->next = NULL;
 
-        copy_list(*current_copy, current_stack, copy_size); // index plus 1 gets size
+        if (copy_element) {
+            for (size_t s = 0; s < copy_size; s++) {
+                (*current_copy)->elements[s] = copy_element(current_stack->elements[s]);
+            }
+        } else {
+            memcpy((*current_copy)->elements, current_stack->elements, copy_size * sizeof(STACK_DATA_TYPE));
+        }
 
         current_stack = current_stack->next;
         current_copy = &((*current_copy)->next);
@@ -224,7 +209,13 @@ static inline stack_s copy_stack(const stack_s stack, STACK_DATA_TYPE (*copy_ele
         assert(*current_copy && "[ERROR] Memory allocation failed");
         (*current_copy)->next = NULL;
 
-        copy_list(*current_copy, current_stack, LIST_ARRAY_STACK_CHUNK);
+        if (copy_element) {
+            for (size_t s = 0; s < LIST_ARRAY_STACK_CHUNK; s++) {
+                (*current_copy)->elements[s] = copy_element(current_stack->elements[s]);
+            }
+        } else {
+            memcpy((*current_copy)->elements, current_stack->elements, LIST_ARRAY_STACK_CHUNK * sizeof(STACK_DATA_TYPE));
+        }
 
         current_stack = current_stack->next;
         current_copy = &((*current_copy)->next);
