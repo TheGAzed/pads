@@ -4,8 +4,7 @@
 
 #ifdef STACK_HELP
 
-#error The stack.h file is a single header preprocesor abstracted implementation of the 'stack' data structure. The header has 4 implementations of a stack structure which can be divided into 2 categories: finite and infinite stacks (defined as macro's 'FINITE_STACK' and 'INFINITE_STACK'). The category 'INFINITE_STACK' uses the 'INFINITE_LIST_STACK' implementation as default. 'FINITE_STACK' uses 'FINITE_ALLOCATED_STACK' as default. The other two modes are 'INFINITE_REALLOC_STACK' and 'FINITE_PRERPOCESSOR_STACK'. In order to determine which category is selected the macro 'IS_INFINITE_STACK' can be used. The default stack mode is 'INFINITE_STACK' (or 'INFINITE_LIST_STACK' to be precise) as defined by 'STACK_MODE'. To use another of the available modes use '#define STACK_MODE [category or mode macro]' before including the header. To specify the data type to be stacked use '#define STACK_DATA_TYPE [data type]' before including the header (default is 'void*' or 'void pointer'). The 'INFINITE_LIST_STACK' mode uses a linked list implementation to create an infinite sized stacks. Since this mode's element is an array of 'STACK_DATA_TYPE' variables, the size of the allocated list element's array can be changed using 'LIST_ARRAY_STACK_CHUNK' macro like '#define LIST_ARRAY_STACK_CHUNK [size]' (default size is (1 << 10) or 1024). The 'FINITE_ALLOCATED_STACK' mode uses an allocated array, the user can specify the maximum size of the stack when calling 'create_stack([maximum size])' function, it is not necessary to define the stack's size using a macro (the user can create multiple stacks of variable length). The 'INFINITE_REALLOC_STACK' mode relies on the 'realloc()' function to guarantee infinite size, after the allocated array reaches its maximum length it is expanded (not doubled) by
-'REALLOC_STACK_CHUNK', when the size shrinks to the point that a 'REALLOC_STACK_CHUNK' chunk is 'empty' the array also shrinks by 'REALLOC_STACK_CHUNK'. The user can use '#define REALLOC_STACK_CHUNK [size]' to define the chunk size. The 'FINITE_PRERPOCESSOR_STACK' mode uses the 'PREPROCESSOR_STACK_SIZE' macro to define the stack size. This mode does not use any memory allocation as the user can specify the size using '#define PREPROCESSOR_STACK_SIZE [size]'.
+#error The stack.h file is a single header preprocesor abstracted implementation of the 'stack' data structure. The header has 4 implementations of a stack structure which can be divided into 2 categories: finite and infinite stacks (defined as macro's 'FINITE_STACK' and 'INFINITE_STACK'). The category 'INFINITE_STACK' uses the 'INFINITE_LIST_STACK' implementation as default. 'FINITE_STACK' uses 'FINITE_ALLOCATED_STACK' as default. The other two modes are 'INFINITE_REALLOC_STACK' and 'FINITE_PRERPOCESSOR_STACK'. In order to determine which category is selected the macro 'IS_INFINITE_STACK' can be used. The default stack mode is 'INFINITE_STACK' (or 'INFINITE_LIST_STACK' to be precise) as defined by 'STACK_MODE'. To use another of the available modes use '#define STACK_MODE [category or mode macro]' before including the header. To specify the data type to be stacked use '#define STACK_DATA_TYPE [data type]' before including the header (default is 'void*' or 'void pointer'). The 'INFINITE_LIST_STACK' mode uses a linked list implementation to create an infinite sized stacks. Since this mode's element is an array of 'STACK_DATA_TYPE' variables, the size of the allocated list element's array can be changed using 'LIST_ARRAY_STACK_CHUNK' macro like '#define LIST_ARRAY_STACK_CHUNK [size]' (default size is (1 << 10) or 1024). The 'FINITE_ALLOCATED_STACK' mode uses an allocated array, the user can specify the maximum size of the stack when calling 'create_stack([maximum size])' function, it is not necessary to define the stack's size using a macro (the user can create multiple stacks of variable length). The 'INFINITE_REALLOC_STACK' mode relies on the 'realloc()' function to guarantee infinite size, after the allocated array reaches its maximum length it is expanded (not doubled) by 'REALLOC_STACK_CHUNK', when the size shrinks to the point that a 'REALLOC_STACK_CHUNK' chunk is 'empty' the array also shrinks by 'REALLOC_STACK_CHUNK'. The user can use '#define REALLOC_STACK_CHUNK [size]' to define the chunk size. The 'FINITE_PRERPOCESSOR_STACK' mode uses the 'PREPROCESSOR_STACK_SIZE' macro to define the stack size. This mode does not use any memory allocation as the user can specify the size using '#define PREPROCESSOR_STACK_SIZE [size]'.
 
 #endif
 
@@ -18,8 +17,9 @@
 #define INFINITE_STACK INFINITE_LIST_STACK
 #define FINITE_STACK   FINITE_ALLOCATED_STACK
 
-// Stack mode that can be set to INFINITE_LIST_STACK, FINITE_ALLOCATED_STACK, INFINITE_REALLOC_STACK or FINITE_PRERPOCESSOR_STACK.
-// Default: INFINITE_LIST_STACK
+// Stack mode that can be set to 'INFINITE_LIST_STACK', 'FINITE_ALLOCATED_STACK', 'INFINITE_REALLOC_STACK' or
+// 'FINITE_PRERPOCESSOR_STACK'.
+// Default: 'INFINITE_LIST_STACK'
 #ifndef STACK_MODE
 
 #define STACK_MODE INFINITE_STACK
@@ -47,6 +47,7 @@
 #include <stdlib.h>  // imports size_t and malloc
 #include <assert.h>  // imports assert for debugging
 #include <stdbool.h> // imports bool for conditional stack functions (is_[state]_stack())
+#include <string.h>  // imports memcpy
 
 #if   STACK_MODE == INFINITE_LIST_STACK
 
@@ -71,7 +72,7 @@ struct stack_list_array {
 /// @brief Stack implementation that uses appended lists of arrays and pushes elements based on the size.
 typedef struct stack {
     struct stack_list_array * head; // head list element with the top of the stack
-    size_t size; // size of stack
+    size_t size;                    // size of stack
 } stack_s;
 
 /// @brief Creates empty stack with everything (.size, .head) set to zero/NULL.
@@ -82,17 +83,16 @@ static inline stack_s create_stack(void) {
 
 /// @brief Destroys stack and all elements in it.
 /// @param stack Stack structure pointer.
-/// @param destroy_element function pointer to destroy (or free) elements in stack or NULL if stack element has no allocated memory.
+/// @param destroy_element function pointer to destroy (or free) elements in stack or NULL if stack element has
+/// no allocated memory.
 static inline void destroy_stack(stack_s * stack, void (*destroy_element)(STACK_DATA_TYPE *)) {
     assert(stack && "[ERROR] Stack pointer is NULL");
 
     struct stack_list_array * list = stack->head;
     const size_t mod_size = stack->size % LIST_ARRAY_STACK_CHUNK;
     if (list && mod_size) {
-        if (destroy_element) {
-            for (size_t s = 0; s < mod_size; s++) {
-                destroy_element(&(list->elements[s]));
-            }
+        for (size_t s = 0; destroy_element && (s < mod_size); s++) {
+            destroy_element(&(list->elements[s]));
         }
 
         struct stack_list_array * temp = list;
@@ -101,10 +101,8 @@ static inline void destroy_stack(stack_s * stack, void (*destroy_element)(STACK_
     }
 
     while (list) {
-        if (destroy_element) {
-            for (size_t s = 0; s < LIST_ARRAY_STACK_CHUNK; s++) {
-                destroy_element(&(list->elements[s]));
-            }
+        for (size_t s = 0; destroy_element && (s < LIST_ARRAY_STACK_CHUNK); s++) {
+            destroy_element(&(list->elements[s]));
         }
 
         struct stack_list_array * temp = list;
@@ -175,19 +173,23 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
     return element;
 }
 
-/// @brief Copies the stack and all its elements into a new stack structure. If copy_element is null a shallow copy will be created 
+/// @brief Copies the stack and all its elements into a new stack structure. If copy_element is null a shallow copy
+/// will be created
 /// otherwise copy_element is called.
 /// @param stack Stack structure.
 /// @param copy_element Function pointer to create a copy of an element or NULL if 'STACK_DATA_TYPE' is a basic type.
 /// @return A copy of the specified 'stack' parameter.
 static inline stack_s copy_stack(const stack_s stack, STACK_DATA_TYPE (*copy_element)(STACK_DATA_TYPE)) {
-    stack_s copy = { .size = stack.size, .head = NULL };
+    stack_s copy = stack;
 
     struct stack_list_array * current_stack = stack.head;
     struct stack_list_array ** current_copy = &(copy.head); // two pointer list to remove special .head case
 
-    const size_t copy_size = stack.size % LIST_ARRAY_STACK_CHUNK; // index of last element in head
-    if (current_stack && copy_size) {
+    while (current_stack) { // the other elements must have full arrays
+        size_t copy_size = 0;
+        if (!(current_stack == stack.head && stack.size % LIST_ARRAY_STACK_CHUNK)) copy_size = LIST_ARRAY_STACK_CHUNK;
+        else copy_size = stack.size % LIST_ARRAY_STACK_CHUNK;
+
         *current_copy = malloc(sizeof(struct stack_list_array));
         assert(*current_copy && "[ERROR] Memory allocation failed");
         (*current_copy)->next = NULL;
@@ -198,23 +200,6 @@ static inline stack_s copy_stack(const stack_s stack, STACK_DATA_TYPE (*copy_ele
             }
         } else {
             memcpy((*current_copy)->elements, current_stack->elements, copy_size * sizeof(STACK_DATA_TYPE));
-        }
-
-        current_stack = current_stack->next;
-        current_copy = &((*current_copy)->next);
-    }
-
-    while (current_stack) { // the other elements must have full arrays
-        *current_copy = malloc(sizeof(struct stack_list_array));
-        assert(*current_copy && "[ERROR] Memory allocation failed");
-        (*current_copy)->next = NULL;
-
-        if (copy_element) {
-            for (size_t s = 0; s < LIST_ARRAY_STACK_CHUNK; s++) {
-                (*current_copy)->elements[s] = copy_element(current_stack->elements[s]);
-            }
-        } else {
-            memcpy((*current_copy)->elements, current_stack->elements, LIST_ARRAY_STACK_CHUNK * sizeof(STACK_DATA_TYPE));
         }
 
         current_stack = current_stack->next;
@@ -233,34 +218,35 @@ static inline bool is_empty_stack(const stack_s stack) {
 
 #elif STACK_MODE == FINITE_ALLOCATED_STACK
 
-/// @brief Stack implementation that uses allocated memory array and pushes elements based on the current and maximum size.
+/// @brief Stack implementation that uses allocated memory array and pushes elements based on the current
+/// and maximum size.
 typedef struct stack {
     STACK_DATA_TYPE * elements; // pointer to allocated memory
-    size_t max;                 // maximum stack size
-    size_t size;                // current stack size
+    size_t max, size;           // current stack size and maximum size
 } stack_s;
 
-/// @brief Creates empty stack with '.size' set to zero, elements with 'max' allocated memory and '.max' to parameter 'max'.
+/// @brief Creates empty stack with '.size' set to zero, elements with 'max' allocated memory and '.max'
+/// to parameter 'max'.
 /// @param max Specifies maximum allocated size of stack structure.
 /// @return Stack structure.
 static inline stack_s create_stack(const size_t max) {
     assert(max && "[ERROR] Maximum size can't be zero");
-    const stack_s create = {
-        .max = max, .elements = malloc(sizeof(STACK_DATA_TYPE) * max), .size = 0,
-    };
+
+    const stack_s create = { .max = max, .elements = malloc(sizeof(STACK_DATA_TYPE) * max), .size = 0, };
     assert(create.elements && "[ERROR] Memory allocation failed");
+
     return create;
 }
 
 /// @brief Destroys stack and all elements in it.
 /// @param stack Stack structure pointer.
-/// @param destroy_element function pointer to destroy (or free) elements in stack or NULL if stack element has no allocated memory.
+/// @param destroy_element function pointer to destroy (or free) elements in stack or NULL if stack element has
+/// no allocated memory.
 static inline void destroy_stack(stack_s * stack, void (*destroy_element)(STACK_DATA_TYPE *)) {
     assert(stack && "[ERROR] Stack pointer is NULL");
-    if (destroy_element) {
-        for(size_t s = 0; s < stack->size; s++) {
-            destroy_element(&(stack->elements[s]));
-        }
+
+    for(size_t s = 0; destroy_element && (s < stack->size); s++) {
+        destroy_element(&(stack->elements[s]));
     }
 
     free(stack->elements);
@@ -278,7 +264,7 @@ static inline bool is_full_stack(const stack_s stack) {
 /// @param stack Stack structure.
 /// @return The top element of the stack as defined by 'STACK_DATA_TYPE' macro.
 static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
-    assert(stack.size && "[ERROR] Can't peek empty stack");
+    assert(stack.size && "[ERROR] Can't peep empty stack");
     assert(stack.elements && "[ERROR] '.elements' is NULL");
 
     return stack.elements[stack.size - 1];
@@ -293,8 +279,7 @@ static inline void push_stack(stack_s * stack, STACK_DATA_TYPE element) {
     assert((stack->size + 1) && "[ERROR] Stack's '.size' will overflow");
     assert(stack->elements && "[ERROR] '.elements' is NULL");
 
-    stack->elements[stack->size] = element;
-    stack->size++;
+    stack->elements[stack->size++] = element;
 }
 
 /// @brief Gets the top element in stack and decrements stack size (pops top element).
@@ -308,7 +293,8 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
     return stack->elements[((stack->size)--) - 1];
 }
 
-/// @brief Copies the stack and all its elements into a new stack structure. If copy_element is null a shallow copy will be created 
+/// @brief Copies the stack and all its elements into a new stack structure. If copy_element is null a shallow copy
+/// will be created
 /// otherwise copy_element is called.
 /// @param stack Stack structure.
 /// @param copy_element Function pointer to create a copy of an element or NULL if 'STACK_DATA_TYPE' is a basic type.
@@ -362,10 +348,8 @@ static inline stack_s create_stack(void) {
 static inline void destroy_stack(stack_s * stack, void (*destroy_element)(STACK_DATA_TYPE *)) {
     assert(stack && "[ERROR] Stack pointer is NULL");
 
-    if (destroy_element) {
-        for(size_t s = 0; s < stack->size; s++) {
-            destroy_element(&(stack->elements[s]));
-        }
+    for(size_t s = 0; destroy_element && (s < stack->size); s++) {
+        destroy_element(&(stack->elements[s]));
     }
 
     free(stack->elements);
@@ -413,7 +397,7 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
     assert(stack->size && "[ERROR] Can't pop empty stack");
 
     // first remove element and then shrink memory if necessary
-    STACK_DATA_TYPE element = stack->elements[((stack->size)--) - 1];
+    STACK_DATA_TYPE element = stack->elements[--(stack->size)];
     if ((stack->size % REALLOC_STACK_CHUNK) == 0) {
         stack->elements = realloc(stack->elements, (stack->size) * sizeof(STACK_DATA_TYPE));
     }
@@ -428,14 +412,14 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
 /// @param copy_element Function pointer to create a copy of an element or NULL if 'STACK_DATA_TYPE' is a basic type.
 /// @return A copy of the specified 'stack' parameter.
 static inline stack_s copy_stack(const stack_s stack, STACK_DATA_TYPE (*copy_element)(STACK_DATA_TYPE)) {
-    if (!stack.size) return (stack_s) { 0 };
-    assert(stack.elements && "[ERROR] Stack's '.elements' is NULL");
-
+    size_t copy_size = stack.size ? stack.size - (stack.size % REALLOC_STACK_CHUNK) + REALLOC_STACK_CHUNK : 0;
     const stack_s copy = {
         .size = stack.size,
-        .elements = malloc(sizeof(STACK_DATA_TYPE) * (stack.size - (stack.size % REALLOC_STACK_CHUNK) + REALLOC_STACK_CHUNK)),
+        .elements = copy_size ? malloc(sizeof(STACK_DATA_TYPE) * copy_size) : NULL,
     };
-    assert(copy.elements && "[ERROR] Memory allocation failed");
+
+    // assertion fails if malloc returns NULL on non-zero copy size
+    assert((!copy_size || copy.elements) && "[ERROR] Memory allocation failed.");
 
     if (copy_element) {
         for (size_t s = 0; s < stack.size; s++) {
@@ -480,17 +464,16 @@ static inline stack_s create_stack(void) {
 
 /// @brief Destroys stack and all elements in it.
 /// @param stack Stack structure pointer.
-/// @param destroy_element function pointer to destroy (or free) elements in stack or NULL if stack element has no allocated memory.
+/// @param destroy_element function pointer to destroy (or free) elements in stack or NULL if stack element has
+/// no allocated memory.
 static inline void destroy_stack(stack_s * stack, void (*destroy_element)(STACK_DATA_TYPE *)) {
     assert(stack && "[ERROR] Stack pointer is NULL");
 
-    if (destroy_element) {
-        for(size_t s = 0; s < stack->size; s++) {
-            destroy_element(&(stack->elements[s]));
-        }
+    for(size_t s = 0; destroy_element && (s < stack->size); s++) {
+        destroy_element(&(stack->elements[s]));
     }
 
-    *stack = (stack_s) { .size = 0 };
+    stack->size = 0;
 }
 
 /// @brief Checks if stack is full or if stack's '.size' will overflow.
@@ -530,7 +513,8 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
     return stack->elements[(((stack->size)--) - 1)];
 }
 
-/// @brief Copies the stack and all its elements into a new stack structure. If copy_element is null a shallow copy will be created 
+/// @brief Copies the stack and all its elements into a new stack structure. If copy_element is null a shallow copy
+/// will be created
 /// otherwise copy_element is called.
 /// @param stack Stack structure.
 /// @param copy_element Function pointer to create a copy of an element or NULL if 'STACK_DATA_TYPE' is a basic type.

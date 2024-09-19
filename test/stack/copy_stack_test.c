@@ -25,9 +25,9 @@ typedef union test_type {
 
 STACK_DATA_TYPE create_string_copy(void) {
     STACK_DATA_TYPE string = { 0 };
-    string.character_ptr = malloc((sizeof(STRING_VALUE) * sizeof(char)));
+    string.character_ptr = malloc((sizeof(STRING_VALUE)));
     assert(string.character_ptr && "[ERROR] Memory allocation failed.");
-    strncpy(string.character_ptr, STRING_VALUE, sizeof(STRING_VALUE) - 1);
+    strncpy(string.character_ptr, STRING_VALUE, sizeof(STRING_VALUE) - sizeof(STRING_VALUE[0]));
     return string;
 }
 

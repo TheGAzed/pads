@@ -17,14 +17,14 @@
 #include "stack.h"
 
 #define STRING_VALUE "thegazed"
-STACK_DATA_TYPE create_string_destroy(void) {
-    STACK_DATA_TYPE string = malloc((sizeof(STRING_VALUE) * sizeof(char)));
+STACK_DATA_TYPE create_string_d(void) {
+    STACK_DATA_TYPE string = calloc((sizeof(STRING_VALUE)), sizeof(char));
     assert(string && "[ERROR] Memory allocation failed.");
     strncpy(string, STRING_VALUE, sizeof(STRING_VALUE) - 1);
     return string;
 }
 
-void destroy_string_destroy(STACK_DATA_TYPE * string) {
+void destroy_string_d(STACK_DATA_TYPE * string) {
     free(*string);
 }
 
@@ -33,8 +33,8 @@ void destroy_string_destroy(STACK_DATA_TYPE * string) {
 /// @brief Tests if size of stack is zeroed when pushing and destroying it.
 TEST test_01_01(void) {
     stack_s test = create_stack();
-    push_stack(&test, create_string_destroy());
-    destroy_stack(&test, destroy_string_destroy);
+    push_stack(&test, create_string_d());
+    destroy_stack(&test, destroy_string_d);
 
     ASSERTm("[ERROR] Stack size must be zero", test.size == 0);
 
@@ -44,8 +44,8 @@ TEST test_01_01(void) {
 /// @brief Tests if head of stack is NULLed when pushing and destroying it.
 TEST test_01_02(void) {
     stack_s test = create_stack();
-    push_stack(&test, create_string_destroy());
-    destroy_stack(&test, destroy_string_destroy);
+    push_stack(&test, create_string_d());
+    destroy_stack(&test, destroy_string_d);
 
     ASSERT_EQm("[ERROR] Stack head must be NULL/have no allocated memory", test.head, NULL);
 
@@ -56,9 +56,9 @@ TEST test_01_02(void) {
 TEST test_01_03(void) {
     stack_s test = create_stack();
     for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
-        push_stack(&test, create_string_destroy());
+        push_stack(&test, create_string_d());
     }
-    destroy_stack(&test, destroy_string_destroy);
+    destroy_stack(&test, destroy_string_d);
 
     ASSERT_EQm("[ERROR] Stack head must be NULL/have no allocated memory", test.head, NULL);
 
@@ -69,9 +69,9 @@ TEST test_01_03(void) {
 TEST test_01_04(void) {
     stack_s test = create_stack();
     for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
-        push_stack(&test, create_string_destroy());
+        push_stack(&test, create_string_d());
     }
-    destroy_stack(&test, destroy_string_destroy);
+    destroy_stack(&test, destroy_string_d);
 
     ASSERT_EQm("[ERROR] Stack head must be NULL/have no allocated memory", test.head, NULL);
 
@@ -90,8 +90,8 @@ SUITE (destroy_stack_test) {
 /// @brief Tests if size of stack is zeroed when pushing and destroying it.
 TEST test_02_01(void) {
     stack_s test = create_stack(10);
-    push_stack(&test, create_string_destroy());
-    destroy_stack(&test, destroy_string_destroy);
+    push_stack(&test, create_string_d());
+    destroy_stack(&test, destroy_string_d);
 
     ASSERT_EQm("[ERROR] Stack size must be zero", 0, test.size);
 
@@ -101,8 +101,8 @@ TEST test_02_01(void) {
 /// @brief Tests if maximum size is zeroed when pushing and destroying it.
 TEST test_02_02(void) {
     stack_s test = create_stack(10);
-    push_stack(&test, create_string_destroy());
-    destroy_stack(&test, destroy_string_destroy);
+    push_stack(&test, create_string_d());
+    destroy_stack(&test, destroy_string_d);
 
     ASSERT_EQm("[ERROR] Stack size must be zero", 0, test.max);
 
@@ -112,8 +112,8 @@ TEST test_02_02(void) {
 /// @brief Tests if elements pointer of stack is NULL when pushing and destroying it, has no allocated memory.
 TEST test_02_03(void) {
     stack_s test = create_stack(10);
-    push_stack(&test, create_string_destroy());
-    destroy_stack(&test, destroy_string_destroy);
+    push_stack(&test, create_string_d());
+    destroy_stack(&test, destroy_string_d);
 
     ASSERT_EQm("[ERROR] Stack elements pointer is not NULL", NULL, test.elements);
 
@@ -131,8 +131,8 @@ SUITE (destroy_stack_test) {
 /// @brief Tests if size of stack is zeroed when pushing and destroying it.
 TEST test_03_01(void) {
     stack_s test = create_stack();
-    push_stack(&test, create_string_destroy());
-    destroy_stack(&test, destroy_string_destroy);
+    push_stack(&test, create_string_d());
+    destroy_stack(&test, destroy_string_d);
     ASSERTm("[ERROR] Stack size must be zero", test.size == 0);
 
     ASSERT_EQm("[ERROR] Stack size must be zero", 0, test.size);
@@ -143,8 +143,8 @@ TEST test_03_01(void) {
 /// @brief Tests if head of stack is NULLed when pushing and destroying it.
 TEST test_03_02(void) {
     stack_s test = create_stack();
-    push_stack(&test, create_string_destroy());
-    destroy_stack(&test, destroy_string_destroy);
+    push_stack(&test, create_string_d());
+    destroy_stack(&test, destroy_string_d);
 
     ASSERT_EQm("[ERROR] Stack head must be NULL/have no allocated memory", NULL, test.elements);
 
@@ -155,9 +155,9 @@ TEST test_03_02(void) {
 TEST test_03_03(void) {
     stack_s test = create_stack();
     for (size_t i = 0; i < REALLOC_STACK_CHUNK; ++i) {
-        push_stack(&test, create_string_destroy());
+        push_stack(&test, create_string_d());
     }
-    destroy_stack(&test, destroy_string_destroy);
+    destroy_stack(&test, destroy_string_d);
 
     ASSERT_EQm("[ERROR] Stack head must be NULL/have no allocated memory", NULL, test.elements);
 
@@ -168,9 +168,9 @@ TEST test_03_03(void) {
 TEST test_03_04(void) {
     stack_s test = create_stack();
     for (size_t i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
-        push_stack(&test, create_string_destroy());
+        push_stack(&test, create_string_d());
     }
-    destroy_stack(&test, destroy_string_destroy);
+    destroy_stack(&test, destroy_string_d);
 
     ASSERT_EQm("[ERROR] Stack head must be NULL/have no allocated memory", NULL, test.elements);
 
@@ -189,8 +189,8 @@ SUITE (destroy_stack_test) {
 /// @brief Tests if size of stack is zero when creating it.
 TEST test_04_01(void) {
     stack_s test = create_stack();
-    push_stack(&test, create_string_destroy());
-    destroy_stack(&test, destroy_string_destroy);
+    push_stack(&test, create_string_d());
+    destroy_stack(&test, destroy_string_d);
 
     ASSERT_EQm("[ERROR] Stack size must be zero", 0, test.size);
 
