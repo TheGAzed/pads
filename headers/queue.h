@@ -150,7 +150,8 @@ static inline void enqueue(queue_s * queue, QUEUE_DATA_TYPE element) {
     assert(queue && "[ERROR] Queue pointer is NULL");
     assert(~(queue->size) && "[ERROR] Queue's '.size' will overflow");
 
-    const size_t next_index = queue->size % LIST_ARRAY_QUEUE_CHUNK; // index where the next element will be enqueued
+    // index where the next element will be enqueued
+    const size_t next_index = (queue->current + queue->size) % LIST_ARRAY_QUEUE_CHUNK;
     if (0 == next_index) { // if head list array is full (is divisible) adds new list element to head
         struct queue_list_array * temp = malloc(sizeof(struct queue_list_array));
 
@@ -177,14 +178,15 @@ static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
     queue->size--;
     queue->current = (queue->current + 1) % LIST_ARRAY_QUEUE_CHUNK;
 
-    // if head has zero elements in array or index (index at 0) dequeue will make it empty and head can be freed
-    if (!queue->size || queue->current == 0) {
+    if (!queue->size) { // queue is empty free memory and reset everything to zero
+        free(queue->head);
+        queue->current = 0;
+        queue->head = queue->tail = NULL;
+    } else if (queue->current == 0) { // current index circles back, free start list element and shift to next
         struct queue_list_array * temp = queue->head->next;
         free(queue->head);
         queue->head = temp;
     }
-
-    if (!queue->size) queue->tail = NULL;
 
     return element;
 }
@@ -317,8 +319,10 @@ static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
     assert(queue->size && "[ERROR] Can't pop empty queue");
     assert(queue->elements && "[ERROR] '.elements' is NULL");
 
+    QUEUE_DATA_TYPE element = queue->elements[queue->current];
     queue->size--;
-    return queue->elements[((queue->current)++) % queue->max];
+    queue->current = (queue->current + 1) % queue->max;
+    return element;
 }
 
 /// @brief Copies the queue and all its elements into a new queue structure. If copy_element is null a shallow copy
@@ -329,9 +333,11 @@ static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
 /// @return A copy of the specified 'queue' parameter.
 static inline queue_s copy_queue(const queue_s queue, QUEUE_DATA_TYPE (*copy_element)(QUEUE_DATA_TYPE)) {
     assert(queue.elements && "[ERROR] 'queue' has uninitialized memory.");
-    assert(queue.size && "[ERROR] 'queue' cannot have size 0.");
 
-    queue_s copy = { .size = queue.size, .current = queue.current, .elements = malloc(sizeof(QUEUE_DATA_TYPE) * queue.max), };
+    queue_s copy = {
+        .size = queue.size, .current = queue.current, .max = queue.max,
+        .elements = malloc(sizeof(QUEUE_DATA_TYPE) * queue.max),
+    };
     assert(copy.elements && "[ERROR] Memory allocation failed");
 
     if (queue.current + queue.size > queue.max) { // queue circles to beginning of elements array
@@ -576,8 +582,10 @@ static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
     assert(queue->size && "[ERROR] Can't pop empty queue");
     assert(queue->elements && "[ERROR] '.elements' is NULL");
 
+    QUEUE_DATA_TYPE element = queue->elements[queue->current];
     queue->size--;
-    return queue->elements[((queue->current)++) % PREPROCESSOR_QUEUE_SIZE];
+    queue->current = (queue->current + 1) % PREPROCESSOR_QUEUE_SIZE;
+    return element;
 }
 
 /// @brief Copies the queue and all its elements into a new queue structure. If copy_element is null a shallow copy
