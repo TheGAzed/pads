@@ -1,4 +1,4 @@
-add_executable(stack_test_01 main.c
+add_executable(stack_test_0x1 main.c
         create_stack_test.c
         destroy_stack_test.c
         is_full_stack_test.c
@@ -8,12 +8,12 @@ add_executable(stack_test_01 main.c
         copy_stack_test.c
         sort_stack_test.c
 )
-target_compile_definitions(stack_test_01 PRIVATE TEST_STACK_MODE=01)
-target_link_libraries(stack_test_01 PRIVATE greatest project_headers)
-add_test(NAME STACK_TEST_01 COMMAND stack_test_01)
-set_tests_properties(STACK_TEST_01 PROPERTIES LABELS "STACK_TEST")
+target_compile_definitions(stack_test_0x1 PRIVATE TEST_STACK_MODE=0x1)
+target_link_libraries(stack_test_0x1 PRIVATE greatest project_headers)
+add_test(NAME STACK_TEST_0x1 COMMAND stack_test_0x1)
+set_tests_properties(STACK_TEST_0x1 PROPERTIES LABELS "STACK_TEST")
 
-add_executable(stack_test_02 main.c
+add_executable(stack_test_0x2 main.c
         create_stack_test.c
         destroy_stack_test.c
         is_full_stack_test.c
@@ -23,12 +23,12 @@ add_executable(stack_test_02 main.c
         copy_stack_test.c
         sort_stack_test.c
 )
-target_compile_definitions(stack_test_02 PRIVATE TEST_STACK_MODE=02)
-target_link_libraries(stack_test_02 PRIVATE greatest project_headers)
-add_test(NAME STACK_TEST_02 COMMAND stack_test_02)
-set_tests_properties(STACK_TEST_02 PROPERTIES LABELS "STACK_TEST")
+target_compile_definitions(stack_test_0x2 PRIVATE TEST_STACK_MODE=0x2)
+target_link_libraries(stack_test_0x2 PRIVATE greatest project_headers)
+add_test(NAME STACK_TEST_0x2 COMMAND stack_test_0x2)
+set_tests_properties(STACK_TEST_0x2 PROPERTIES LABELS "STACK_TEST")
 
-add_executable(stack_test_03 main.c
+add_executable(stack_test_0x3 main.c
         create_stack_test.c
         destroy_stack_test.c
         is_full_stack_test.c
@@ -38,12 +38,12 @@ add_executable(stack_test_03 main.c
         copy_stack_test.c
         sort_stack_test.c
 )
-target_compile_definitions(stack_test_03 PRIVATE TEST_STACK_MODE=03)
-target_link_libraries(stack_test_03 PRIVATE greatest project_headers)
-add_test(NAME STACK_TEST_03 COMMAND stack_test_03)
-set_tests_properties(STACK_TEST_03 PROPERTIES LABELS "STACK_TEST")
+target_compile_definitions(stack_test_0x3 PRIVATE TEST_STACK_MODE=0x3)
+target_link_libraries(stack_test_0x3 PRIVATE greatest project_headers)
+add_test(NAME STACK_TEST_0x3 COMMAND stack_test_0x3)
+set_tests_properties(STACK_TEST_0x3 PROPERTIES LABELS "STACK_TEST")
 
-add_executable(stack_test_04 main.c
+add_executable(stack_test_0x4 main.c
         create_stack_test.c
         destroy_stack_test.c
         is_full_stack_test.c
@@ -53,7 +53,7 @@ add_executable(stack_test_04 main.c
         copy_stack_test.c
         sort_stack_test.c
 )
-target_compile_definitions(stack_test_04 PRIVATE TEST_STACK_MODE=04)
-target_link_libraries(stack_test_04 PRIVATE greatest project_headers)
-add_test(NAME STACK_TEST_04 COMMAND stack_test_04)
-set_tests_properties(STACK_TEST_04 PROPERTIES LABELS "STACK_TEST")
+target_compile_definitions(stack_test_0x4 PRIVATE TEST_STACK_MODE=0x4)
+target_link_libraries(stack_test_0x4 PRIVATE greatest project_headers)
+add_test(NAME STACK_TEST_0x4 COMMAND stack_test_0x4)
+set_tests_properties(STACK_TEST_0x4 PROPERTIES LABELS "STACK_TEST")
