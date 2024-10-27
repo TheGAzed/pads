@@ -49,7 +49,6 @@
 #include <assert.h>  // imports assert for debugging
 #include <stdbool.h> // imports bool for conditional stack functions (is_[state]_stack())
 #include <string.h>  // imports memcpy
-#include <stdint.h>  // import size_t maximum size
 
 #if   STACK_MODE == INFINITE_LIST_STACK
 
@@ -88,7 +87,7 @@ static inline stack_s create_stack(void) {
 /// @param destroy_element function pointer to destroy (or free) elements in stack or NULL if stack element has
 /// no allocated memory.
 static inline void destroy_stack(stack_s * stack, void (*destroy_element)(STACK_DATA_TYPE *)) {
-    assert((stack->size < (SIZE_MAX / sizeof(STACK_DATA_TYPE))) && "[ERROR] Stack's size is invalid.");
+    assert((stack->size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE))) && "[ERROR] Impossible stack size.");
     assert((!(stack->head || stack->size) || (stack->head && stack->size)) && "[ERROR] Impossible stack state.");
 
     assert(stack && "[WARNING] Stack pointer is NULL");
@@ -129,7 +128,7 @@ static inline void destroy_stack(stack_s * stack, void (*destroy_element)(STACK_
 /// @param stack Stack structure.
 /// @return true if stack size overflows after incrementing it, false otherwise.
 static inline bool is_full_stack(const stack_s stack) {
-    assert((stack.size < (SIZE_MAX / sizeof(STACK_DATA_TYPE))) && "[ERROR] Stack's size is invalid.");
+    assert((stack.size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE))) && "[ERROR] Impossible stack size.");
     assert((!(stack.head || stack.size) || (stack.head && stack.size)) && "[ERROR] Impossible stack state.");
 
     return !(~stack.size); // checks if '.size' of type size_t won't overflown after pushing another element
@@ -139,7 +138,7 @@ static inline bool is_full_stack(const stack_s stack) {
 /// @param stack Stack structure.
 /// @return The top element of the stack as defined by 'STACK_DATA_TYPE' macro.
 static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
-    assert((stack.size < (SIZE_MAX / sizeof(STACK_DATA_TYPE))) && "[ERROR] Stack's size is invalid.");
+    assert((stack.size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE))) && "[ERROR] Impossible stack size.");
     assert((!(stack.head || stack.size) || (stack.head && stack.size)) && "[ERROR] Impossible stack state.");
 
     assert(stack.size && "[WARNING] Can't peek empty stack");
@@ -152,7 +151,7 @@ static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
 /// @param stack Stack structure pointer.
 /// @param element Element to push to top of stack array.
 static inline void push_stack(stack_s * stack, STACK_DATA_TYPE element) {
-    assert((stack->size < (SIZE_MAX / sizeof(STACK_DATA_TYPE))) && "[ERROR] Stack's size is invalid.");
+    assert((stack->size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE))) && "[ERROR] Impossible stack size.");
     assert((!(stack->head || stack->size) || (stack->head && stack->size)) && "[ERROR] Impossible stack state.");
 
     assert(stack && "[WARNING] Stack pointer is NULL");
@@ -177,7 +176,7 @@ static inline void push_stack(stack_s * stack, STACK_DATA_TYPE element) {
 /// @param stack Stack structure pointer.
 /// @return The top element of the stack as defined by 'STACK_DATA_TYPE' macro. 
 static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
-    assert((stack->size < (SIZE_MAX / sizeof(STACK_DATA_TYPE))) && "[ERROR] Stack's size is invalid.");
+    assert((stack->size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE))) && "[ERROR] Impossible stack size.");
     assert((!(stack->head || stack->size) || (stack->head && stack->size)) && "[ERROR] Impossible stack state.");
 
     assert(stack && "[WARNING] 'stack' pointer parameter is NULL");
@@ -204,7 +203,7 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
 /// @param copy_element Function pointer to create a copy of an element or NULL if 'STACK_DATA_TYPE' is a basic type.
 /// @return A copy of the specified 'stack' structure parameter.
 static inline stack_s copy_stack(const stack_s stack, STACK_DATA_TYPE (*copy_element)(STACK_DATA_TYPE)) {
-    assert((stack.size < (SIZE_MAX / sizeof(STACK_DATA_TYPE))) && "[ERROR] Stack's size is invalid.");
+    assert((stack.size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE))) && "[ERROR] Impossible stack size.");
     assert((!(stack.head || stack.size) || (stack.head && stack.size)) && "[ERROR] Impossible stack state.");
 
     stack_s copy = stack;
@@ -250,7 +249,7 @@ static inline stack_s copy_stack(const stack_s stack, STACK_DATA_TYPE (*copy_ele
 /// @param stack Stack structure.
 /// @return true if stack size is zero, false otherwise
 static inline bool is_empty_stack(const stack_s stack) {
-    assert((stack.size < (SIZE_MAX / sizeof(STACK_DATA_TYPE))) && "[ERROR] Stack's size is invalid.");
+    assert((stack.size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE))) && "[ERROR] Impossible stack size.");
     assert((!(stack.head || stack.size) || (stack.head && stack.size)) && "[ERROR] Impossible stack state.");
 
     return !(stack.size);
@@ -261,7 +260,7 @@ static inline bool is_empty_stack(const stack_s stack) {
 /// @param stack Stack structure pointer.
 /// @param sort_elements Sorting function pointer or NULL, when bubble sort with memcmp should be used.
 static inline void sort_stack(stack_s const * stack, void (*sort_elements)(STACK_DATA_TYPE *, size_t)) {
-    assert((stack->size < (SIZE_MAX / sizeof(STACK_DATA_TYPE))) && "[ERROR] Stack's size is invalid.");
+    assert((stack->size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE))) && "[ERROR] Impossible stack size.");
     assert((!(stack->head || stack->size) || (stack->head && stack->size)) && "[ERROR] Impossible stack state.");
 
     assert(stack && "[WARNING] 'stack' parameter is NULL");
@@ -284,7 +283,7 @@ static inline void sort_stack(stack_s const * stack, void (*sort_elements)(STACK
     if (sort_elements) {
         sort_elements(elements_array, stack->size);
     } else {
-        for (size_t s = 0; s < stack->size - 1; ++s) {
+        for (size_t s = 0; stack->size && s < stack->size - 1; ++s) {
             for (size_t i = 0; i < stack->size - s - 1; ++i) {
                 if (memcmp(elements_array + i, elements_array + (i + 1), sizeof(STACK_DATA_TYPE)) > 0) {
                     STACK_DATA_TYPE temp = elements_array[i];
@@ -298,12 +297,12 @@ static inline void sort_stack(stack_s const * stack, void (*sort_elements)(STACK
     list = stack->head;
     copied_size = stack->size % LIST_ARRAY_STACK_CHUNK;
     if (copied_size && list) {
-        memcpy(list->elements, elements_array, sizeof(STACK_DATA_TYPE) * copied_size);
+        memcpy(list->elements, elements_array + (stack->size - copied_size), sizeof(STACK_DATA_TYPE) * copied_size);
         list = list->next;
     }
     while (list) {
-        memcpy(list->elements, elements_array + copied_size, sizeof(STACK_DATA_TYPE) * LIST_ARRAY_STACK_CHUNK);
         copied_size += LIST_ARRAY_STACK_CHUNK;
+        memcpy(list->elements, elements_array + (stack->size - copied_size), sizeof(STACK_DATA_TYPE) * LIST_ARRAY_STACK_CHUNK);
         list = list->next;
     }
 
@@ -324,7 +323,7 @@ typedef struct stack {
 /// @param max Specifies maximum allocated size of stack structure.
 /// @return Stack structure.
 static inline stack_s create_stack(const size_t max) {
-    assert(max < (SIZE_MAX / sizeof(STACK_DATA_TYPE)) && "[ERROR] Stack's max is invalid.");
+    assert(max < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack max size.");
     assert(max && "[WARNING] Maximum size can't be zero");
 
     const stack_s create = { .max = max, .elements = malloc(sizeof(STACK_DATA_TYPE) * max), .size = 0, };
@@ -338,8 +337,8 @@ static inline stack_s create_stack(const size_t max) {
 /// @param destroy_element function pointer to destroy (or free) elements in stack or NULL if stack element has
 /// no allocated memory.
 static inline void destroy_stack(stack_s * stack, void (*destroy_element)(STACK_DATA_TYPE *)) {
-    assert(stack->max < (SIZE_MAX / sizeof(STACK_DATA_TYPE)) && "[ERROR] Stack's max is invalid.");
-    assert(stack->size < (SIZE_MAX / sizeof(STACK_DATA_TYPE)) && "[ERROR] Stack's size is invalid.");
+    assert(stack->max < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack max size.");
+    assert(stack->size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack size.");
     assert(stack->elements && "[ERROR] Stack's element array can't be NULL.");
     assert(stack->max && "[ERROR] Stack's max can't be zero.");
 
@@ -357,8 +356,8 @@ static inline void destroy_stack(stack_s * stack, void (*destroy_element)(STACK_
 /// @param stack Stack structure.
 /// @return true if stack size reached maximum or overflows after incrementing it, false otherwise
 static inline bool is_full_stack(const stack_s stack) {
-    assert(stack.max < (SIZE_MAX / sizeof(STACK_DATA_TYPE)) && "[ERROR] Stack's max is invalid.");
-    assert(stack.size < (SIZE_MAX / sizeof(STACK_DATA_TYPE)) && "[ERROR] Stack's size is invalid.");
+    assert(stack.max < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack max size.");
+    assert(stack.size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack size.");
     assert(stack.elements && "[ERROR] Stack's element array can't be NULL.");
     assert(stack.max && "[ERROR] Stack's max can't be zero.");
 
@@ -369,8 +368,8 @@ static inline bool is_full_stack(const stack_s stack) {
 /// @param stack Stack structure.
 /// @return The top element of the stack as defined by 'STACK_DATA_TYPE' macro.
 static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
-    assert(stack.max < (SIZE_MAX / sizeof(STACK_DATA_TYPE)) && "[ERROR] Stack's max is invalid.");
-    assert(stack.size < (SIZE_MAX / sizeof(STACK_DATA_TYPE)) && "[ERROR] Stack's size is invalid.");
+    assert(stack.max < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack max size.");
+    assert(stack.size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack size.");
     assert(stack.elements && "[ERROR] Stack's element array can't be NULL.");
     assert(stack.max && "[ERROR] Stack's max can't be zero.");
 
@@ -383,8 +382,8 @@ static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
 /// @param stack Stack structure pointer.
 /// @param element Element to push to top of stack array.
 static inline void push_stack(stack_s * stack, STACK_DATA_TYPE element) {
-    assert(stack->max < (SIZE_MAX / sizeof(STACK_DATA_TYPE)) && "[ERROR] Stack's max is invalid.");
-    assert(stack->size < (SIZE_MAX / sizeof(STACK_DATA_TYPE)) && "[ERROR] Stack's size is invalid.");
+    assert(stack->max < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack max size.");
+    assert(stack->size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack size.");
     assert(stack->elements && "[ERROR] Stack's element array can't be NULL.");
     assert(stack->max && "[ERROR] Stack's max can't be zero.");
 
@@ -399,8 +398,8 @@ static inline void push_stack(stack_s * stack, STACK_DATA_TYPE element) {
 /// @param stack Stack structure pointer.
 /// @return The top element of the stack as defined by 'STACK_DATA_TYPE' macro. 
 static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
-    assert(stack->max < (SIZE_MAX / sizeof(STACK_DATA_TYPE)) && "[ERROR] Stack's max is invalid.");
-    assert(stack->size < (SIZE_MAX / sizeof(STACK_DATA_TYPE)) && "[ERROR] Stack's size is invalid.");
+    assert(stack->max < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack max size.");
+    assert(stack->size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack size.");
     assert(stack->elements && "[ERROR] Stack's element array can't be NULL.");
     assert(stack->max && "[ERROR] Stack's max can't be zero.");
 
@@ -417,8 +416,8 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
 /// @param copy_element Function pointer to create a copy of an element or NULL if 'STACK_DATA_TYPE' is a basic type.
 /// @return A copy of the specified 'stack' parameter.
 static inline stack_s copy_stack(const stack_s stack, STACK_DATA_TYPE (*copy_element)(STACK_DATA_TYPE)) {
-    assert(stack.max < (SIZE_MAX / sizeof(STACK_DATA_TYPE)) && "[ERROR] Stack's max is invalid.");
-    assert(stack.size < (SIZE_MAX / sizeof(STACK_DATA_TYPE)) && "[ERROR] Stack's size is invalid.");
+    assert(stack.max < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack max size.");
+    assert(stack.size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack size.");
     assert(stack.elements && "[ERROR] Stack's element array can't be NULL.");
     assert(stack.max && "[ERROR] Stack's max can't be zero.");
 
@@ -441,8 +440,8 @@ static inline stack_s copy_stack(const stack_s stack, STACK_DATA_TYPE (*copy_ele
 /// @param stack Stack structure.
 /// @return true if stack size is zero, false otherwise
 static inline bool is_empty_stack(const stack_s stack) {
-    assert(stack.max < (SIZE_MAX / sizeof(STACK_DATA_TYPE)) && "[ERROR] Stack's max is invalid.");
-    assert(stack.size < (SIZE_MAX / sizeof(STACK_DATA_TYPE)) && "[ERROR] Stack's size is invalid.");
+    assert(stack.max < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack max size.");
+    assert(stack.size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack size.");
     assert(stack.elements && "[ERROR] Stack's element array can't be NULL.");
     assert(stack.max && "[ERROR] Stack's max can't be zero.");
 
@@ -450,8 +449,8 @@ static inline bool is_empty_stack(const stack_s stack) {
 }
 
 static inline void sort_stack(stack_s const * stack, void (*sort_elements)(STACK_DATA_TYPE *, size_t)) {
-    assert(stack->max < (SIZE_MAX / sizeof(STACK_DATA_TYPE)) && "[ERROR] Stack's max is invalid.");
-    assert(stack->size < (SIZE_MAX / sizeof(STACK_DATA_TYPE)) && "[ERROR] Stack's size is invalid.");
+    assert(stack->max < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack max size.");
+    assert(stack->size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack size.");
     assert(stack->elements && "[ERROR] Stack's element array can't be NULL.");
     assert(stack->max && "[ERROR] Stack's max can't be zero.");
 
@@ -460,7 +459,7 @@ static inline void sort_stack(stack_s const * stack, void (*sort_elements)(STACK
     if (sort_elements) {
         sort_elements(stack->elements, stack->size);
     } else {
-        for (size_t s = 0; s < stack->size - 1; ++s) {
+        for (size_t s = 0; stack->size && s < stack->size - 1; ++s) {
             for (size_t i = 0; i < stack->size - s - 1; ++i) {
                 if (memcmp(stack->elements + i, stack->elements + (i + 1), sizeof(STACK_DATA_TYPE)) > 0) {
                     STACK_DATA_TYPE temp = stack->elements[i];
@@ -602,7 +601,7 @@ static inline void sort_stack(stack_s const * stack, void (*sort_elements)(STACK
     if (sort_elements) { // function pointer is provided/isn't NULL
         sort_elements(stack->elements, stack->size);
     } else { // use bubble sort with memcmp
-        for (size_t s = 0; s < stack->size - 1; ++s) {
+        for (size_t s = 0; stack->size && s < stack->size - 1; ++s) {
             for (size_t i = 0; i < stack->size - s - 1; ++i) {
                 if (memcmp(stack->elements + i, stack->elements + (i + 1), sizeof(STACK_DATA_TYPE)) > 0) {
                     STACK_DATA_TYPE temp = stack->elements[i];
@@ -725,7 +724,7 @@ static inline void sort_stack(stack_s * stack, void (*sort_elements)(STACK_DATA_
     if (sort_elements) { // function pointer is provided/isn't NULL
         sort_elements(stack->elements, stack->size);
     } else { // use bubble sort with memcmp
-        for (size_t s = 0; s < stack->size - 1; ++s) {
+        for (size_t s = 0; stack->size && s < stack->size - 1; ++s) {
             for (size_t i = 0; i < stack->size - s - 1; ++i) {
                 if (memcmp(stack->elements + i, stack->elements + (i + 1), sizeof(STACK_DATA_TYPE)) > 0) {
                     STACK_DATA_TYPE temp = stack->elements[i]; // swap
