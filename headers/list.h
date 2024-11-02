@@ -19,7 +19,7 @@
 #define INFINITE_LIST INFINITE_ALLOCATED_DOUBLE_LIST
 #define FINITE_LIST   FINITE_ALLOCATED_DOUBLE_LIST
 
-//#define LIST_MODE INFINITE_ALLOCATED_SINGLE_LIST
+#define LIST_MODE INFINITE_ALLOCATED_SINGLE_LIST
 // List mode that can be set to INFINITE_ALLOCATED_DOUBLE_LIST, FINITE_ALLOCATED_DOUBLE_LIST, INFINITE_REALLOC_DOUBLE_LIST or
 // FINITE_PRERPOCESSOR_DOUBLE_LIST, or INFINITE_ALLOCATED_DOUBLE_LIST or FINITE_ALLOCATED_DOUBLE_LIST
 // Default: INFINITE_ALLOCATED_DOUBLE_LIST
@@ -225,6 +225,7 @@ static inline void shift_prev_list(list_s * list, const size_t shift) {
 static inline list_s concatenate_list(list_s * restrict list_one, list_s * restrict list_two) {
     assert(list_one && "[ERROR] 'list_one' parameter pointer is NULL.");
     assert(list_two && "[ERROR] 'list_two' parameter pointer is NULL.");
+    assert(list_one != list_two && "[ERROR] Lists can't be the same.");
 
     const list_s list = {
         .size = list_one->size + list_two->size,
@@ -422,6 +423,27 @@ static inline void sort_list(list_s const * list, void (*sort_elements)(LIST_DAT
         current = current->next;
     }
     free(elements_array);
+}
+
+static inline size_t count_list(const list_s list, LIST_DATA_TYPE element, int (*compare_elements)(LIST_DATA_TYPE, LIST_DATA_TYPE)) {
+    size_t count = 0;
+    struct list_node const * current = list.head;
+    if (compare_elements) {
+        for (size_t i = 0; i < list.size; ++i) {
+            if (compare_elements(current->element, element) == 0) {
+                count++;
+            }
+            current = current->next;
+        }
+    } else {
+        for (size_t i = 0; i < list.size; ++i) {
+            if (memcmp(current->element, element, sizeof(LIST_DATA_TYPE)) == 0) {
+                count++;
+            }
+            current = current->next;
+        }
+    }
+    return count;
 }
 
 #elif LIST_MODE == FINITE_ALLOCATED_DOUBLE_LIST
@@ -795,6 +817,27 @@ static inline void sort_list(list_s * list, void (*sort_elements)(LIST_DATA_TYPE
     }
 }
 
+static inline size_t count_list(const list_s list, LIST_DATA_TYPE element, int (*compare_elements)(LIST_DATA_TYPE, LIST_DATA_TYPE)) {
+    size_t count = 0;
+    size_t current = list.head;
+    if (compare_elements) {
+        for (size_t i = 0; i < list.size; ++i) {
+            if (compare_elements(list.elements[current], element) == 0) {
+                count++;
+            }
+            current = list.node[NEXT_IDX][current];
+        }
+    } else {
+        for (size_t i = 0; i < list.size; ++i) {
+            if (memcmp(list.elements[current], element, sizeof(LIST_DATA_TYPE)) == 0) {
+                count++;
+            }
+            current = list.node[NEXT_IDX][current];
+        }
+    }
+    return count;
+}
+
 #undef NEXT_IDX
 #undef PREV_IDX
 #undef NODE_COUNT
@@ -880,7 +923,7 @@ static inline LIST_DATA_TYPE remove_list(list_s * list, LIST_DATA_TYPE element, 
     size_t current = list->head;
     for (size_t s = 0; s < list->size; ++s) {
         if (compare_element) {
-            if (compare_element(&(list->elements[current]), &element) != 0) {
+            if (compare_element(list->elements + current, &element) != 0) {
                 current = list->node[NEXT_IDX][current];
                 continue;
             }
@@ -1190,6 +1233,27 @@ static inline void sort_list(list_s * list, void (*sort_elements)(LIST_DATA_TYPE
         list->node[NEXT_IDX][list->size - 1] = 0;
         list->node[PREV_IDX][0] = list->size - 1;
     }
+}
+
+static inline size_t count_list(const list_s list, LIST_DATA_TYPE element, int (*compare_elements)(LIST_DATA_TYPE, LIST_DATA_TYPE)) {
+    size_t count = 0;
+    size_t current = list.head;
+    if (compare_elements) {
+        for (size_t i = 0; i < list.size; ++i) {
+            if (compare_elements(list.elements[current], element) == 0) {
+                count++;
+            }
+            current = list.node[NEXT_IDX][current];
+        }
+    } else {
+        for (size_t i = 0; i < list.size; ++i) {
+            if (memcmp(list.elements[current], element, sizeof(LIST_DATA_TYPE)) == 0) {
+                count++;
+            }
+            current = list.node[NEXT_IDX][current];
+        }
+    }
+    return count;
 }
 
 #undef NEXT_IDX
@@ -1543,6 +1607,31 @@ static inline void sort_list(list_s * list, void (*sort_elements)(LIST_DATA_TYPE
     }
 }
 
+static inline size_t count_list(const list_s list, LIST_DATA_TYPE element, int (*compare_elements)(LIST_DATA_TYPE, LIST_DATA_TYPE)) {
+    size_t count = 0;
+    size_t current = list.head;
+    if (compare_elements) {
+        for (size_t i = 0; i < list.size; ++i) {
+            if (compare_elements(list.elements[current], element) == 0) {
+                count++;
+            }
+            current = list.node[NEXT_IDX][current];
+        }
+    } else {
+        for (size_t i = 0; i < list.size; ++i) {
+            if (memcmp(list.elements[current], element, sizeof(LIST_DATA_TYPE)) == 0) {
+                count++;
+            }
+            current = list.node[NEXT_IDX][current];
+        }
+    }
+    return count;
+}
+
+#undef NEXT_IDX
+#undef PREV_IDX
+#undef NODE_COUNT
+
 #elif LIST_MODE == INFINITE_ALLOCATED_SINGLE_LIST
 
 struct list_node {
@@ -1678,6 +1767,73 @@ static inline void reverse_list(list_s * list) {
         current_next_next = current_next_next->next;
     }
     list->head = list->head->next;
+}
+
+static inline void shift_next_list(list_s * list, const size_t shift) {
+    assert(list && "[ERROR] 'list' parameter is NULL.");
+
+    for (size_t s = 0; list->size && (s < shift); ++s) {
+        list->head = list->head->next;
+    }
+}
+
+static inline void shift_prev_list(list_s * list, const size_t shift) {
+    assert(list && "[ERROR] 'list' parameter is NULL.");
+
+    const size_t next_shifts =list->size - (shift % list->size);
+    for (size_t s = 0; s < next_shifts; ++s) {
+        list->head = list->head->next;
+    }
+}
+
+static inline list_s concatenate_list(list_s * restrict list_one, list_s * restrict list_two) {
+    assert(list_one && "[ERROR] 'list_one' parameter pointer is NULL.");
+    assert(list_two && "[ERROR] 'list_two' parameter pointer is NULL.");
+    assert(list_one != list_two && "[ERROR] Lists can't be the same.");
+
+    const list_s list = {
+        .size = list_one->size + list_two->size,
+        .head = list_one->head ? list_one->head : list_two->head,
+    };
+
+    if (list_one->head && list_two->head) {
+        struct list_node ** current = &(list_one->head->next);
+        for (size_t i = 0; i < list_one->size - 1; ++i) {
+            current = &((*current)->next);
+        }
+        *current = list_two->head;
+        current = &(list_one->head->next);
+        for (size_t i = 0; i < list_one->size - 1; ++i) {
+            current = &((*current)->next);
+        }
+        *current = list_one->head;
+    }
+    *list_one = *list_two = (list_s) { 0 };
+
+    return list;
+}
+
+static inline bool contains_list(const list_s list, LIST_DATA_TYPE element, int (*compare_element)(const void *, const void *)) {
+    struct list_node const * current = list.head;
+    if (compare_element) {
+        for (size_t i = 0; i < list.size; ++i) {
+            if (compare_element(&(current->element), &element) == 0) {
+                return true;
+            }
+
+            current = current->next;
+        }
+    } else {
+        for (size_t i = 0; i < list.size; ++i) {
+            if (memcmp(&(current->element), &element, sizeof(LIST_DATA_TYPE)) == 0) {
+                return true;
+            }
+
+            current = current->next;
+        }
+    }
+
+    return false;
 }
 
 #endif

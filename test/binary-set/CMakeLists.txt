@@ -1,0 +1,17 @@
+add_executable(binary_set_test_0x040 main.c)
+target_compile_definitions(binary_set_test_0x040 PRIVATE TEST_LIST_MODE=0x040)
+target_link_libraries(binary_set_test_0x040 PRIVATE greatest project_headers)
+add_test(NAME LIST_TEST_0x040 COMMAND binary_set_test_0x040)
+set_tests_properties(LIST_TEST_0x040 PROPERTIES LABELS "LIST_TEST")
+
+add_executable(binary_set_test_0x080 main.c)
+target_compile_definitions(binary_set_test_0x080 PRIVATE TEST_LIST_MODE=0x080)
+target_link_libraries(binary_set_test_0x080 PRIVATE greatest project_headers)
+add_test(NAME LIST_TEST_0x080 COMMAND binary_set_test_0x080)
+set_tests_properties(LIST_TEST_0x080 PROPERTIES LABELS "LIST_TEST")
+
+add_executable(binary_set_test_0x0C0 main.c)
+target_compile_definitions(binary_set_test_0x0C0 PRIVATE TEST_LIST_MODE=0x0C0)
+target_link_libraries(binary_set_test_0x0C0 PRIVATE greatest project_headers)
+add_test(NAME LIST_TEST_0x0C0 COMMAND binary_set_test_0x0C0)
+set_tests_properties(LIST_TEST_0x0C0 PROPERTIES LABELS "LIST_TEST")
