@@ -17,7 +17,7 @@
 #define INFINITE_STACK INFINITE_LIST_STACK
 #define FINITE_STACK   FINITE_ALLOCATED_STACK
 
-//#define STACK_MODE FINITE_ALLOCATED_STACK
+//#define STACK_MODE FINITE_PRERPOCESSOR_STACK
 // Stack mode that can be set to 'INFINITE_LIST_STACK', 'FINITE_ALLOCATED_STACK', 'INFINITE_REALLOC_STACK' or
 // 'FINITE_PRERPOCESSOR_STACK'.
 // Default: 'INFINITE_LIST_STACK'
@@ -150,7 +150,7 @@ static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
 /// @brief Sets the next top empty element in stack array to 'element' parameter (pushes element on top).
 /// @param stack Stack structure pointer.
 /// @param element Element to push to top of stack array.
-static inline void push_stack(stack_s * stack, STACK_DATA_TYPE element) {
+static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
     assert((stack->size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE))) && "[ERROR] Impossible stack size.");
     assert((!(stack->head || stack->size) || (stack->head && stack->size)) && "[ERROR] Impossible stack state.");
 
@@ -168,7 +168,7 @@ static inline void push_stack(stack_s * stack, STACK_DATA_TYPE element) {
         stack->head = temp;
     }
 
-    stack->head->elements[next_index] = element;
+    memcpy(stack->head->elements + next_index, &element, sizeof(STACK_DATA_TYPE));
     stack->size++;
 }
 
@@ -381,7 +381,7 @@ static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
 /// @brief Sets the next top empty element in stack array to 'element' parameter (pushes element on top).
 /// @param stack Stack structure pointer.
 /// @param element Element to push to top of stack array.
-static inline void push_stack(stack_s * stack, STACK_DATA_TYPE element) {
+static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
     assert(stack->max < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack max size.");
     assert(stack->size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack size.");
     assert(stack->elements && "[ERROR] Stack's element array can't be NULL.");
@@ -391,7 +391,7 @@ static inline void push_stack(stack_s * stack, STACK_DATA_TYPE element) {
     assert((stack->size < stack->max) && "[WARNING] Stack reached maximum size");
     assert((stack->size + 1) && "[WARNING] Stack's '.size' will overflow");
 
-    stack->elements[stack->size++] = element;
+    memcpy(stack->elements + stack->size++, &element, sizeof(STACK_DATA_TYPE));
 }
 
 /// @brief Gets the top element in stack and decrements stack size (pops top element).
@@ -526,7 +526,7 @@ static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
 /// @brief Sets the next top empty element in stack array to 'element' parameter (pushes element on top).
 /// @param stack Stack structure pointer.
 /// @param element Element to push to top of stack array.
-static inline void push_stack(stack_s * stack, STACK_DATA_TYPE element) {
+static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
     assert(stack && "[ERROR] Stack pointer is NULL");
     assert((stack->size + 1) && "[ERROR] Stack's '.size' will overflow");
 
@@ -535,7 +535,7 @@ static inline void push_stack(stack_s * stack, STACK_DATA_TYPE element) {
         stack->elements = realloc(stack->elements, (stack->size + REALLOC_STACK_CHUNK) * sizeof(STACK_DATA_TYPE));
         assert(stack->elements && "[ERROR] Memory allocation failed");
     }
-    stack->elements[stack->size++] = element;
+    memcpy(stack->elements + stack->size++, &element, sizeof(STACK_DATA_TYPE));
 }
 
 /// @brief Gets the top element in stack and decrements stack size (pops top element).
@@ -669,12 +669,12 @@ static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
 /// @brief Sets the next top empty element in stack array to 'element' parameter (pushes element on top).
 /// @param stack Stack structure pointer.
 /// @param element Element to push to top of stack array.
-static inline void push_stack(stack_s * stack, STACK_DATA_TYPE element) {
+static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
     assert(stack && "[ERROR] Stack pointer is NULL");
     assert((stack->size < PREPROCESSOR_STACK_SIZE) && "[ERROR] Stack reached maximum size");
     assert((stack->size + 1) && "[ERROR] Stack's '.size' will overflow");
-
-    stack->elements[(stack->size)++] = element; // treat size as next index, add element and increment size
+    // treat size as next index, add element and increment size
+    memcpy(stack->elements + stack->size++, &element, sizeof(STACK_DATA_TYPE));
 }
 
 /// @brief Gets the top element in stack and decrements stack size (pops top element).
