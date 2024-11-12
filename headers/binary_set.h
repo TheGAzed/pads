@@ -152,7 +152,7 @@ static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const B
     exit(EXIT_FAILURE);
 }
 
-static inline binary_set_s union_binary_set(const binary_set_s * set_one, const binary_set_s * set_two, BINARY_SET_DATA_TYPE * (*copy_element)(BINARY_SET_DATA_TYPE *, BINARY_SET_DATA_TYPE *)) {
+static inline binary_set_s union_binary_set(const binary_set_s * set_one, const binary_set_s * set_two, BINARY_SET_DATA_TYPE * (*copy_element)(BINARY_SET_DATA_TYPE *, const BINARY_SET_DATA_TYPE *)) {
     assert(set_one && "[ERROR] 'set_one' pointer parameter is NULL");
     assert(set_two && "[ERROR] 'set_two' pointer parameter is NULL");
     assert(set_one->compare_elements == set_two->compare_elements && "[ERROR] Can't union sets with different comapre funcitons.");
@@ -194,15 +194,16 @@ static inline binary_set_s union_binary_set(const binary_set_s * set_one, const 
     }
 
     for (size_t i = 0; copy_element && i < set.size; ++i) {
-        BINARY_SET_DATA_TYPE temp = { 0 };
-        copy_element(&temp, set.elements + i);
-        set.elements[i] = temp;
+        BINARY_SET_DATA_TYPE copy = { 0 };
+        const BINARY_SET_DATA_TYPE temp = set.elements[i];
+        copy_element(&copy, &temp);
+        set.elements[i] = copy;
     }
 
     return set;
 }
 
-static inline binary_set_s intersect_binary_set(const binary_set_s * set_one, const binary_set_s * set_two, BINARY_SET_DATA_TYPE * (*copy_element)(BINARY_SET_DATA_TYPE *, BINARY_SET_DATA_TYPE *)) {
+static inline binary_set_s intersect_binary_set(const binary_set_s * set_one, const binary_set_s * set_two, BINARY_SET_DATA_TYPE * (*copy_element)(BINARY_SET_DATA_TYPE *, const BINARY_SET_DATA_TYPE *)) {
     assert(set_one && "[ERROR] 'set_one' pointer parameter is NULL");
     assert(set_two && "[ERROR] 'set_two' pointer parameter is NULL");
     assert(set_one->compare_elements == set_two->compare_elements && "[ERROR] Can't union sets with different comapre funcitons.");
@@ -232,15 +233,16 @@ static inline binary_set_s intersect_binary_set(const binary_set_s * set_one, co
     }
 
     for (size_t i = 0; copy_element && i < set.size; ++i) {
-        BINARY_SET_DATA_TYPE temp = { 0 };
-        copy_element(&temp, set.elements + i);
-        set.elements[i] = temp;
+        BINARY_SET_DATA_TYPE copy = { 0 };
+        const BINARY_SET_DATA_TYPE temp = set.elements[i];
+        copy_element(&copy, &temp);
+        set.elements[i] = copy;
     }
 
     return set;
 }
 
-static inline binary_set_s difference_binary_set(const binary_set_s * set_one, const binary_set_s * set_two, BINARY_SET_DATA_TYPE * (*copy_element)(BINARY_SET_DATA_TYPE *, BINARY_SET_DATA_TYPE *)) {
+static inline binary_set_s difference_binary_set(const binary_set_s * set_one, const binary_set_s * set_two, BINARY_SET_DATA_TYPE * (*copy_element)(BINARY_SET_DATA_TYPE *, const BINARY_SET_DATA_TYPE *)) {
     assert(set_one && "[ERROR] 'set_one' pointer parameter is NULL");
     assert(set_two && "[ERROR] 'set_two' pointer parameter is NULL");
     assert(set_one->compare_elements == set_two->compare_elements && "[ERROR] Can't union sets with different comapre funcitons.");
@@ -276,15 +278,16 @@ static inline binary_set_s difference_binary_set(const binary_set_s * set_one, c
     }
 
     for (size_t i = 0; copy_element && i < set.size; ++i) {
-        BINARY_SET_DATA_TYPE temp = { 0 };
-        copy_element(&temp, set.elements + i);
-        set.elements[i] = temp;
+        BINARY_SET_DATA_TYPE copy = { 0 };
+        const BINARY_SET_DATA_TYPE temp = set.elements[i];
+        copy_element(&copy, &temp);
+        set.elements[i] = copy;
     }
 
     return set;
 }
 
-static inline binary_set_s exclusive_union_binary_set(const binary_set_s * set_one, const binary_set_s * set_two, BINARY_SET_DATA_TYPE * (*copy_element)(BINARY_SET_DATA_TYPE *, BINARY_SET_DATA_TYPE *)) {
+static inline binary_set_s exclusive_union_binary_set(const binary_set_s * set_one, const binary_set_s * set_two, BINARY_SET_DATA_TYPE * (*copy_element)(BINARY_SET_DATA_TYPE *, const BINARY_SET_DATA_TYPE *)) {
     assert(set_one && "[ERROR] 'set_one' pointer parameter is NULL");
     assert(set_two && "[ERROR] 'set_two' pointer parameter is NULL");
     assert(set_one->compare_elements == set_two->compare_elements && "[ERROR] Can't union sets with different comapre funcitons.");
@@ -334,9 +337,10 @@ static inline binary_set_s exclusive_union_binary_set(const binary_set_s * set_o
     }
 
     for (size_t i = 0; copy_element && i < set.size; ++i) {
-        BINARY_SET_DATA_TYPE temp = { 0 };
-        copy_element(&temp, set.elements + i);
-        set.elements[i] = temp;
+        BINARY_SET_DATA_TYPE copy = { 0 };
+        const BINARY_SET_DATA_TYPE temp = set.elements[i];
+        copy_element(&copy, &temp);
+        set.elements[i] = copy;
     }
 
     return set;

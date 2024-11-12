@@ -1,9 +1,6 @@
-#include <greatest.h>
-#include <string.h>
-
 #ifndef TEST_STACK_MODE
 
-#error No stack mode was defined before testing ('TEST_STACK_MODE' is not defined).
+#error 'TEST_STACK_MODE' not defined.
 
 #else
 
@@ -11,194 +8,257 @@
 
 #endif
 
-#define STACK_DATA_TYPE        char*
-#define LIST_ARRAY_STACK_CHUNK 10
-#define REALLOC_STACK_CHUNK    10
+typedef union type_dst {
+    int    sub_one;
+    char * sub_two;
+} type_dst_u;
+
+#include <greatest.h>
+
+#define STACK_MODE INFINITE_LIST_STACK
+#define STACK_DATA_TYPE type_dst_u
+#define REALLOC_STACK_CHUNK     (1 << 3)
+#define LIST_ARRAY_STACK_CHUNK  (1 << 3)
+#define PREPROCESSOR_STACK_SIZE (1 << 3)
 #include "stack.h"
 
-#define STRING_VALUE "thegazed"
-STACK_DATA_TYPE create_string_d(void) {
-    STACK_DATA_TYPE string = calloc((sizeof(STRING_VALUE)), sizeof(char));
-    assert(string && "[ERROR] Memory allocation failed.");
-    strncpy(string, STRING_VALUE, sizeof(STRING_VALUE) - 1);
-    return string;
-}
-
-void destroy_string_d(STACK_DATA_TYPE * string) {
-    free(*string);
+void destroy_element_cst(STACK_DATA_TYPE * element) {
+    free(element->sub_two);
+    *element = (STACK_DATA_TYPE) { 0 };
 }
 
 #if   STACK_MODE == INFINITE_LIST_STACK
 
-/// @brief Tests if size of stack is zeroed when pushing and destroying it.
-TEST test_01_01(void) {
-    stack_s test = create_stack();
-    push_stack(&test, create_string_d());
-    destroy_stack(&test, destroy_string_d);
-
-    ASSERTm("[ERROR] Stack size must be zero", test.size == 0);
+/// Tests if stack's head parameter is NULL.
+TEST ILS_01(void) {
+    stack_s test_stack = create_stack(NULL, NULL);
+    destroy_stack(&test_stack);
+    ASSERT_EQm("[ILS-TEST] Stack's head parameter is not NULL.", NULL, test_stack.head);
 
     PASS();
 }
 
-/// @brief Tests if head of stack is NULLed when pushing and destroying it.
-TEST test_01_02(void) {
-    stack_s test = create_stack();
-    push_stack(&test, create_string_d());
-    destroy_stack(&test, destroy_string_d);
-
-    ASSERT_EQm("[ERROR] Stack head must be NULL/have no allocated memory", test.head, NULL);
+/// Tests if stack's head parameter is NULL.
+TEST ILS_02(void) {
+    stack_s test_stack = create_stack(NULL, NULL);
+    destroy_stack(&test_stack);
+    ASSERT_EQm("[ILS-TEST] Stack's head parameter is not NULL.", NULL, test_stack.head);
 
     PASS();
 }
 
-/// @brief Tests if head of stack is NULLed when pushing 'LIST_ARRAY_STACK_CHUNK' elements and destroying it.
-TEST test_01_03(void) {
-    stack_s test = create_stack();
-    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
-        push_stack(&test, create_string_d());
-    }
-    destroy_stack(&test, destroy_string_d);
-
-    ASSERT_EQm("[ERROR] Stack head must be NULL/have no allocated memory", test.head, NULL);
+/// Tests if stack's head parameter is NULL.
+TEST ILS_03(void) {
+    stack_s test_stack = create_stack(NULL, NULL);
+    destroy_stack(&test_stack);
+    ASSERT_EQm("[ILS-TEST] Stack's head parameter is not NULL.", NULL, test_stack.head);
 
     PASS();
 }
 
-/// @brief Tests if head of stack is NULLed when pushing 'LIST_ARRAY_STACK_CHUNK + 1' elements and destroying it.
-TEST test_01_04(void) {
-    stack_s test = create_stack();
-    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
-        push_stack(&test, create_string_d());
-    }
-    destroy_stack(&test, destroy_string_d);
-
-    ASSERT_EQm("[ERROR] Stack head must be NULL/have no allocated memory", test.head, NULL);
+/// Tests if stack's head parameter is NULL.
+TEST ILS_04(void) {
+    stack_s test_stack = create_stack(NULL, NULL);
+    destroy_stack(&test_stack);
+    ASSERT_EQm("[ILS-TEST] Stack's head parameter is not NULL.", NULL, test_stack.head);
 
     PASS();
 }
 
-SUITE (destroy_stack_test) {
-    RUN_TEST(test_01_01);
-    RUN_TEST(test_01_02);
-    RUN_TEST(test_01_03);
-    RUN_TEST(test_01_04);
+SUITE (create_stack_test) {
+    RUN_TEST(ILS_01);
+    RUN_TEST(ILS_02);
+    RUN_TEST(ILS_03);
+    RUN_TEST(ILS_04);
 }
 
 #elif STACK_MODE == FINITE_ALLOCATED_STACK
 
-/// @brief Tests if size of stack is zeroed when pushing and destroying it.
-TEST test_02_01(void) {
-    stack_s test = create_stack(10);
-    push_stack(&test, create_string_d());
-    destroy_stack(&test, destroy_string_d);
+#define FINITE_STACK_SIZE 10
 
-    ASSERT_EQm("[ERROR] Stack size must be zero", 0, test.size);
-
-    PASS();
-}
-
-/// @brief Tests if maximum size is zeroed when pushing and destroying it.
-TEST test_02_02(void) {
-    stack_s test = create_stack(10);
-    push_stack(&test, create_string_d());
-    destroy_stack(&test, destroy_string_d);
-
-    ASSERT_EQm("[ERROR] Stack size must be zero", 0, test.max);
+/// Tests if stack's elements parameter is NULL.
+TEST FAS_01(void) {
+    stack_s test_stack = create_stack(FINITE_STACK_SIZE, NULL, NULL);
+    ASSERT_NEQm("[FAS-TEST] Stack's element parameter is NULL.", NULL, test_stack.elements);
+    destroy_stack(&test_stack);
 
     PASS();
 }
 
-/// @brief Tests if elements pointer of stack is NULL when pushing and destroying it, has no allocated memory.
-TEST test_02_03(void) {
-    stack_s test = create_stack(10);
-    push_stack(&test, create_string_d());
-    destroy_stack(&test, destroy_string_d);
-
-    ASSERT_EQm("[ERROR] Stack elements pointer is not NULL", NULL, test.elements);
+/// Tests if stack's size parameter is zero.
+TEST FAS_02(void) {
+    stack_s test_stack = create_stack(FINITE_STACK_SIZE, NULL, NULL);
+    ASSERT_EQm("[FAS-TEST] Stack's size parameter is not zero.", 0, test_stack.size);
+    destroy_stack(&test_stack);
 
     PASS();
 }
 
-SUITE (destroy_stack_test) {
-    RUN_TEST(test_02_01);
-    RUN_TEST(test_02_02);
-    RUN_TEST(test_02_03);
+/// Tests if stack's max parameter is not 'FINITE_STACK_SIZE'.
+TEST FAS_03(void) {
+    stack_s test_stack = create_stack(FINITE_STACK_SIZE, NULL, NULL);
+    ASSERT_EQm("[FAS-TEST] Stack's copy_element parameter is not 'FINITE_STACK_SIZE'.", FINITE_STACK_SIZE, test_stack.max);
+    destroy_stack(&test_stack);
+
+    PASS();
+}
+
+/// Tests if stack's copy_element parameter is NULL.
+TEST FAS_04(void) {
+    stack_s test_stack = create_stack(FINITE_STACK_SIZE, NULL, NULL);
+    ASSERT_EQm("[FAS-TEST] Stack's copy_element parameter is not NULL.", NULL, test_stack.copy_element);
+    destroy_stack(&test_stack);
+
+    PASS();
+}
+
+/// Tests if stack's destroy_element parameter is NULL.
+TEST FAS_05(void) {
+    stack_s test_stack = create_stack(FINITE_STACK_SIZE, NULL, NULL);
+    ASSERT_EQm("[FAS-TEST] Stack's destroy_element parameter is not NULL.", NULL, test_stack.destroy_element);
+    destroy_stack(&test_stack);
+
+    PASS();
+}
+
+/// Tests if stack's copy_element parameter is 'copy_element_cst'.
+TEST FAS_06(void) {
+    stack_s test_stack = create_stack(FINITE_STACK_SIZE, copy_element_cst, destroy_element_cst);
+    ASSERT_EQm("[FAS-TEST] Stack's copy_element parameter is not NULL.", copy_element_cst, test_stack.copy_element);
+    destroy_stack(&test_stack);
+
+    PASS();
+}
+
+/// Tests if stack's destroy_element parameter is 'destroy_element_cst'.
+TEST FAS_07(void) {
+    stack_s test_stack = create_stack(FINITE_STACK_SIZE, copy_element_cst, destroy_element_cst);
+    ASSERT_EQm("[FAS-TEST] Stack's destroy_element parameter is not NULL.", destroy_element_cst, test_stack.destroy_element);
+    destroy_stack(&test_stack);
+
+    PASS();
+}
+
+SUITE (create_stack_test) {
+    RUN_TEST(FAS_01); RUN_TEST(FAS_02);
+    RUN_TEST(FAS_03); RUN_TEST(FAS_04);
+    RUN_TEST(FAS_05); RUN_TEST(FAS_06);
+    RUN_TEST(FAS_07);
 }
 
 #elif STACK_MODE == INFINITE_REALLOC_STACK
 
-/// @brief Tests if size of stack is zeroed when pushing and destroying it.
-TEST test_03_01(void) {
-    stack_s test = create_stack();
-    push_stack(&test, create_string_d());
-    destroy_stack(&test, destroy_string_d);
-    ASSERTm("[ERROR] Stack size must be zero", test.size == 0);
-
-    ASSERT_EQm("[ERROR] Stack size must be zero", 0, test.size);
+/// Tests if stack's elements parameter is NULL.
+TEST IRS_01(void) {
+    stack_s test_stack = create_stack(NULL, NULL);
+    ASSERT_EQm("[IRS-TEST] Stack's element parameter is not NULL.", NULL, test_stack.elements);
+    destroy_stack(&test_stack);
 
     PASS();
 }
 
-/// @brief Tests if head of stack is NULLed when pushing and destroying it.
-TEST test_03_02(void) {
-    stack_s test = create_stack();
-    push_stack(&test, create_string_d());
-    destroy_stack(&test, destroy_string_d);
-
-    ASSERT_EQm("[ERROR] Stack head must be NULL/have no allocated memory", NULL, test.elements);
+/// Tests if stack's size parameter is zero.
+TEST IRS_02(void) {
+    stack_s test_stack = create_stack(NULL, NULL);
+    ASSERT_EQm("[IRS-TEST] Stack's size parameter is not zero.", 0, test_stack.size);
+    destroy_stack(&test_stack);
 
     PASS();
 }
 
-/// @brief Tests if head of stack is NULLed when pushing 'REALLOC_STACK_CHUNK' elements and destroying it.
-TEST test_03_03(void) {
-    stack_s test = create_stack();
-    for (size_t i = 0; i < REALLOC_STACK_CHUNK; ++i) {
-        push_stack(&test, create_string_d());
-    }
-    destroy_stack(&test, destroy_string_d);
-
-    ASSERT_EQm("[ERROR] Stack head must be NULL/have no allocated memory", NULL, test.elements);
+/// Tests if stack's copy_element parameter is NULL.
+TEST IRS_03(void) {
+    stack_s test_stack = create_stack(NULL, NULL);
+    ASSERT_EQm("[IRS-TEST] Stack's copy_element parameter is not NULL.", NULL, test_stack.copy_element);
+    destroy_stack(&test_stack);
 
     PASS();
 }
 
-/// @brief Tests if head of stack is NULLed when pushing 'REALLOC_STACK_CHUNK + 1' elements and destroying it.
-TEST test_03_04(void) {
-    stack_s test = create_stack();
-    for (size_t i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
-        push_stack(&test, create_string_d());
-    }
-    destroy_stack(&test, destroy_string_d);
-
-    ASSERT_EQm("[ERROR] Stack head must be NULL/have no allocated memory", NULL, test.elements);
+/// Tests if stack's destroy_element parameter is NULL.
+TEST IRS_04(void) {
+    stack_s test_stack = create_stack(NULL, NULL);
+    ASSERT_EQm("[IRS-TEST] Stack's destroy_element parameter is not NULL.", NULL, test_stack.destroy_element);
+    destroy_stack(&test_stack);
 
     PASS();
 }
 
-SUITE (destroy_stack_test) {
-    RUN_TEST(test_03_01);
-    RUN_TEST(test_03_02);
-    RUN_TEST(test_03_03);
-    RUN_TEST(test_03_04);
+/// Tests if stack's copy_element parameter is 'copy_element_cst'.
+TEST IRS_05(void) {
+    stack_s test_stack = create_stack(copy_element_cst, destroy_element_cst);
+    ASSERT_EQm("[IRS-TEST] Stack's copy_element parameter is not NULL.", copy_element_cst, test_stack.copy_element);
+    destroy_stack(&test_stack);
+
+    PASS();
+}
+
+/// Tests if stack's destroy_element parameter is 'destroy_element_cst'.
+TEST IRS_06(void) {
+    stack_s test_stack = create_stack(copy_element_cst, destroy_element_cst);
+    ASSERT_EQm("[IRS-TEST] Stack's destroy_element parameter is not NULL.", destroy_element_cst, test_stack.destroy_element);
+    destroy_stack(&test_stack);
+
+    PASS();
+}
+
+SUITE (create_stack_test) {
+    RUN_TEST(IRS_01); RUN_TEST(IRS_02);
+    RUN_TEST(IRS_03); RUN_TEST(IRS_04);
+    RUN_TEST(IRS_05); RUN_TEST(IRS_06);
 }
 
 #elif STACK_MODE == FINITE_PRERPOCESSOR_STACK
 
-/// @brief Tests if size of stack is zero when creating it.
-TEST test_04_01(void) {
-    stack_s test = create_stack();
-    push_stack(&test, create_string_d());
-    destroy_stack(&test, destroy_string_d);
-
-    ASSERT_EQm("[ERROR] Stack size must be zero", 0, test.size);
+/// Tests if stack's size parameter is zero.
+TEST FPS_01(void) {
+    stack_s test_stack = create_stack(NULL, NULL);
+    ASSERT_EQm("[FPS-TEST] Stack's size parameter is not zero.", 0, test_stack.size);
+    destroy_stack(&test_stack);
 
     PASS();
 }
 
-SUITE (destroy_stack_test) {
-    RUN_TEST(test_04_01);
+/// Tests if stack's copy_element parameter is NULL.
+TEST FPS_02(void) {
+    stack_s test_stack = create_stack(NULL, NULL);
+    ASSERT_EQm("[FPS-TEST] Stack's copy_element parameter is not NULL.", NULL, test_stack.copy_element);
+    destroy_stack(&test_stack);
+
+    PASS();
+}
+
+/// Tests if stack's destroy_element parameter is NULL.
+TEST FPS_03(void) {
+    stack_s test_stack = create_stack(NULL, NULL);
+    ASSERT_EQm("[FPS-TEST] Stack's destroy_element parameter is not NULL.", NULL, test_stack.destroy_element);
+    destroy_stack(&test_stack);
+
+    PASS();
+}
+
+/// Tests if stack's copy_element parameter is 'copy_element_cst'.
+TEST FPS_04(void) {
+    stack_s test_stack = create_stack(copy_element_cst, destroy_element_cst);
+    ASSERT_EQm("[FPS-TEST] Stack's copy_element parameter is not NULL.", copy_element_cst, test_stack.copy_element);
+    destroy_stack(&test_stack);
+
+    PASS();
+}
+
+/// Tests if stack's destroy_element parameter is 'destroy_element_cst'.
+TEST FPS_05(void) {
+    stack_s test_stack = create_stack(copy_element_cst, destroy_element_cst);
+    ASSERT_EQm("[FPS-TEST] Stack's destroy_element parameter is not NULL.", destroy_element_cst, test_stack.destroy_element);
+    destroy_stack(&test_stack);
+
+    PASS();
+}
+
+SUITE (create_stack_test) {
+    RUN_TEST(FPS_01); RUN_TEST(FPS_02);
+    RUN_TEST(FPS_03); RUN_TEST(FPS_04);
+    RUN_TEST(FPS_05);
 }
 
 #endif
