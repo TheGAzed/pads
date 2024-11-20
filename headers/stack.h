@@ -17,7 +17,7 @@
 #define INFINITE_STACK INFINITE_LIST_STACK
 #define FINITE_STACK   FINITE_ALLOCATED_STACK
 
-#define STACK_MODE FINITE_PRERPOCESSOR_STACK
+//#define STACK_MODE FINITE_PRERPOCESSOR_STACK
 // Stack mode that can be set to 'INFINITE_LIST_STACK', 'FINITE_ALLOCATED_STACK', 'INFINITE_REALLOC_STACK' or
 // 'FINITE_PRERPOCESSOR_STACK'.
 // Default: 'INFINITE_LIST_STACK'
@@ -46,12 +46,32 @@
 #endif
 
 #include <stdlib.h>  // imports size_t and malloc
-#include <assert.h>  // imports assert for debugging
 #include <stdbool.h> // imports bool for conditional stack functions (is_[state]_stack())
 #include <string.h>  // imports memcpy
 
-typedef STACK_DATA_TYPE (*copy_stack_fn)(const STACK_DATA_TYPE);
-typedef void (*destroy_stack_fn)(STACK_DATA_TYPE *);
+#ifndef STACK_ASSERT
+
+#include <assert.h>  // imports assert for debugging
+#define STACK_ASSERT(cond) assert(cond)
+
+#endif
+
+#ifndef STACK_ALLOC
+
+#define STACK_ALLOC(size) malloc((size_t)(size))
+
+#endif
+
+/// Function pointer that creates a deep element copy.
+typedef STACK_DATA_TYPE (*copy_stack_fn)    (const STACK_DATA_TYPE);
+/// Function pointer that destroys a deep element.
+typedef void            (*destroy_stack_fn) (STACK_DATA_TYPE *);
+/// Function pointer that compares two elements, used in sorting function.
+typedef int             (*compare_stack_fn) (const void *, const void *);
+/// Function pointer that sorts an array of elements, uses 'qsort()' function parameter template.
+typedef void            (*sort_elements_fn) (void * array, size_t number, size_t size, compare_stack_fn);
+/// Function pointer that changes an element pointer using void pointer arguments if needed.
+typedef void            (*operation_fn)     (STACK_DATA_TYPE *, void *);
 
 #if   STACK_MODE == INFINITE_LIST_STACK
 
@@ -77,32 +97,27 @@ struct stack_list_array {
 typedef struct stack {
     struct stack_list_array * head; // head list element with the top of the stack
     size_t size;                    // size of stack
-    copy_stack_fn    copy_element;
-    destroy_stack_fn destroy_element;
 } stack_s;
 
 /// @brief Creates empty stack.
-/// @param copy_element Readonly pointer to function that creates a copy of an element OR NULL pointer if
-/// memcpy should be used.
-/// @param destroy_element Readonly pointer to function that destroys an element (frees memory or sets to NULL/zero)
-/// OR NULL pointer if nothing should be done.
 /// @return Empty stack structure.
-static inline stack_s create_stack(const copy_stack_fn copy_element, const destroy_stack_fn destroy_element) {
+static inline stack_s create_stack(void) {
     return (stack_s) {
-        .copy_element = copy_element, .destroy_element = destroy_element, .head = NULL, .size = 0,
-    }; //
+        .head = NULL, .size = 0,
+    };
 }
 
 /// @brief Destroys a stack.
 /// @param stack Pointer to stack structure.
-static inline void destroy_stack(stack_s * stack) {
+/// @param destroy
+static inline void destroy_stack(stack_s * stack, const destroy_stack_fn destroy) {
     assert(stack && "[ERROR] Stack pointer is NULL");
 
     struct stack_list_array * list = stack->head; // list pointer to head elements array
     const size_t mod_size = stack->size % LIST_ARRAY_STACK_CHUNK; // check if first elements array is full or partially filled
     if (mod_size && list) { // special case when list elements array is not full
-        for (size_t s = 0; stack->destroy_element && s < mod_size; s++) { // destroys stack elements
-            stack->destroy_element(&(list->elements[s])); // calls destroy element function if not NULL
+        for (size_t s = 0; destroy && s < mod_size; s++) { // destroys stack elements
+            destroy(&(list->elements[s])); // calls destroy element function if not NULL
         }
 
         struct stack_list_array * temp = list; // temporary pointer to not lose reference
@@ -110,8 +125,8 @@ static inline void destroy_stack(stack_s * stack) {
         free(temp); // free temporary
     }
     while (list) { // if first list elements array is full then starts here else it first destroys partially filled elements
-        for (size_t s = 0; stack->destroy_element && s < LIST_ARRAY_STACK_CHUNK; s++) { // destroys stack elements
-            stack->destroy_element(&(list->elements[s])); // calls destroy element function if not NULL
+        for (size_t s = 0; destroy && s < LIST_ARRAY_STACK_CHUNK; s++) { // destroys stack elements
+            destroy(&(list->elements[s])); // calls destroy element function if not NULL
         }
 
         struct stack_list_array * temp = list; // temporary pointer to not lose reference
@@ -184,21 +199,22 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
 
 /// @bried Creates and returns a copy of a stack using copy element function.
 /// @param stack Constant stack structure to copy.
+/// @param copy
 /// @return New stack copy with copied elements.
-static inline stack_s copy_stack(const stack_s stack) {
-    stack_s copy = stack; // copy everything to new stack copy
+static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) {
+    stack_s stack_copy = stack; // copy everything to new stack copy
 
     struct stack_list_array const * current_stack = stack.head;
-    struct stack_list_array ** current_copy = &(copy.head); // two pointer list to remove special head case
+    struct stack_list_array ** current_copy = &(stack_copy.head); // two pointer list to remove special head case
     const size_t copy_size = stack.size % LIST_ARRAY_STACK_CHUNK;
     if (current_stack && copy_size != 0) { // special case when head stack
         *current_copy = malloc(sizeof(struct stack_list_array));
         assert(*current_copy && "[ERROR] Memory allocation failed");
         (*current_copy)->next = NULL;
 
-        if (stack.copy_element) {
+        if (copy) {
             for (size_t s = 0; s < copy_size; s++) {
-                (*current_copy)->elements[s] = stack.copy_element(current_stack->elements[s]);
+                (*current_copy)->elements[s] = copy(current_stack->elements[s]);
             }
         } else memcpy((*current_copy)->elements, current_stack->elements, copy_size * sizeof(STACK_DATA_TYPE));
 
@@ -210,9 +226,9 @@ static inline stack_s copy_stack(const stack_s stack) {
         assert(*current_copy && "[ERROR] Memory allocation failed");
         (*current_copy)->next = NULL;
 
-        if (stack.copy_element) {
+        if (copy) {
             for (size_t s = 0; s < LIST_ARRAY_STACK_CHUNK; s++) {
-                (*current_copy)->elements[s] = stack.copy_element(current_stack->elements[s]);
+                (*current_copy)->elements[s] = copy(current_stack->elements[s]);
             }
         } else memcpy((*current_copy)->elements, current_stack->elements, LIST_ARRAY_STACK_CHUNK * sizeof(STACK_DATA_TYPE));
 
@@ -220,7 +236,7 @@ static inline stack_s copy_stack(const stack_s stack) {
         current_copy = &((*current_copy)->next);
     }
 
-    return copy;
+    return stack_copy;
 }
 
 /// @brief Checks if stack is empty.
@@ -236,9 +252,12 @@ static inline bool is_empty_stack(const stack_s stack) {
 /// @brief Sorts elements in stack based on provided function pointer sorter or bubble sort with memcmp if
 /// parameter is NULL.
 /// @param stack Stack structure pointer.
-/// @param sort_elements Sorting function pointer or NULL, when bubble sort with memcmp should be used.
-static inline void sort_stack(stack_s * stack, void (*sort_elements)(STACK_DATA_TYPE *, size_t)) {
+/// @param sort Sorting function pointer or NULL, to use bubble sort with 'compare'/'memcmp'.
+/// @param compare non NULL function pointer that compares two STACK_DATA_TYPE elements as void pointers. Used as
+/// parameter for sort function.
+static inline void sort_stack(stack_s * stack, const sort_elements_fn sort, const compare_stack_fn compare) {
     assert(stack && "[ERROR] 'stack' parameter is NULL");
+    assert(compare && "[ERROR] 'compare' parameter can't be NULL when 'sort_elements' parameter is given.");
 
     STACK_DATA_TYPE * elements_array = malloc(stack->size * sizeof(STACK_DATA_TYPE));
     assert((!(stack->size) || elements_array) && "[ERROR] Memory allocation failed.");
@@ -255,12 +274,12 @@ static inline void sort_stack(stack_s * stack, void (*sort_elements)(STACK_DATA_
         list = list->next;
     }
 
-    if (sort_elements) {
-        sort_elements(elements_array, stack->size);
+    if (sort) {
+        sort(elements_array, stack->size, sizeof(STACK_DATA_TYPE), compare);
     } else {
         for (size_t s = 0; stack->size && s < stack->size - 1; ++s) {
             for (size_t i = 0; i < stack->size - s - 1; ++i) {
-                if (memcmp(elements_array + i, elements_array + (i + 1), sizeof(STACK_DATA_TYPE)) > 0) {
+                if (compare(elements_array + i, elements_array + (i + 1)) > 0) {
                     STACK_DATA_TYPE temp = elements_array[i];
                     elements_array[i] = elements_array[i + 1];
                     elements_array[i + 1] = temp;
@@ -286,22 +305,23 @@ static inline void sort_stack(stack_s * stack, void (*sort_elements)(STACK_DATA_
 
 /// @brief For each function that does an operation on element reference specified by args.
 /// @param stack Stack structure pointer.
-/// @param operation Function pointer that takes an element pointer and 'args' as parameters
+/// @param operate Function pointer that takes an element pointer and 'args' as parameters
 /// @param args Arguments for operation function pointer.
-static inline void foreach_stack(stack_s * stack, void (*operation)(STACK_DATA_TYPE *, void *), void * args) {
+static inline void foreach_stack(stack_s * stack, const operation_fn operate, void * args) {
     assert(stack && "[ERROR] 'stack' parameter is NULL");
+    assert(operate && "[ERROR] 'operate' parameter is NULL");
 
     struct stack_list_array * current = stack->head;
     const size_t chunk_size = stack->size % LIST_ARRAY_STACK_CHUNK;
     if (chunk_size) {
         for (size_t i = 0; i < chunk_size; ++i) {
-            operation(current->elements + i, args);
+            operate(current->elements + i, args);
         }
         current = current->next;
     }
     while (current) {
         for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
-            operation(current->elements + i, args);
+            operate(current->elements + i, args);
         }
         current = current->next;
     }
@@ -314,21 +334,17 @@ static inline void foreach_stack(stack_s * stack, void (*operation)(STACK_DATA_T
 typedef struct stack {
     STACK_DATA_TYPE * elements; // pointer to allocated memory
     size_t max, size;           // current stack size and maximum size
-    copy_stack_fn  copy_element;
-    destroy_stack_fn destroy_element;
 } stack_s;
 
 /// @brief Creates empty stack with '.size' set to zero, elements with 'max' allocated memory and '.max'
 /// to parameter 'max'.
 /// @param max Specifies maximum allocated size of stack structure.
 /// @return Stack structure.
-static inline stack_s create_stack(const size_t max, const copy_stack_fn copy_element, const destroy_stack_fn destroy_element) {
-    assert(max < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack max size.");
+static inline stack_s create_stack(const size_t max) {
     assert(max && "[ERROR] Maximum size can't be zero");
 
     const stack_s create = {
         .max = max, .elements = malloc(sizeof(STACK_DATA_TYPE) * max), .size = 0,
-        .copy_element = copy_element, .destroy_element = destroy_element,
     };
     assert(create.elements && "[ERROR] Memory allocation failed");
 
@@ -337,17 +353,15 @@ static inline stack_s create_stack(const size_t max, const copy_stack_fn copy_el
 
 /// @brief Destroys stack and all elements in it.
 /// @param stack Stack structure pointer.
-/// no allocated memory.
-static inline void destroy_stack(stack_s * stack) {
-    assert(stack->max < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack max size.");
-    assert(stack->size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack size.");
+/// @param destroy
+static inline void destroy_stack(stack_s * stack, const destroy_stack_fn destroy) {
     assert(stack->elements && "[ERROR] Stack's element array can't be NULL.");
     assert(stack->max && "[ERROR] Stack's max can't be zero.");
 
     assert(stack && "[ERROR] Stack pointer is NULL");
 
-    for(size_t s = 0; stack->destroy_element && (s < stack->size); s++) {
-        stack->destroy_element(&(stack->elements[s]));
+    for(size_t s = 0; destroy && (s < stack->size); s++) {
+        destroy(&(stack->elements[s]));
     }
 
     free(stack->elements);
@@ -358,8 +372,6 @@ static inline void destroy_stack(stack_s * stack) {
 /// @param stack Stack structure.
 /// @return true if stack size reached maximum or overflows after incrementing it, false otherwise
 static inline bool is_full_stack(const stack_s stack) {
-    assert(stack.max < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack max size.");
-    assert(stack.size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack size.");
     assert(stack.elements && "[ERROR] Stack's element array can't be NULL.");
     assert(stack.max && "[ERROR] Stack's max can't be zero.");
 
@@ -370,11 +382,8 @@ static inline bool is_full_stack(const stack_s stack) {
 /// @param stack Stack structure.
 /// @return The top element of the stack as defined by 'STACK_DATA_TYPE' macro.
 static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
-    assert(stack.max < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack max size.");
-    assert(stack.size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack size.");
     assert(stack.elements && "[ERROR] Stack's element array can't be NULL.");
     assert(stack.max && "[ERROR] Stack's max can't be zero.");
-
     assert(stack.size && "[ERROR] Can't peep empty stack");
 
     return stack.elements[stack.size - 1];
@@ -384,11 +393,8 @@ static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
 /// @param stack Stack structure pointer.
 /// @param element Element to push to top of stack array.
 static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
-    assert(stack->max < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack max size.");
-    assert(stack->size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack size.");
     assert(stack->elements && "[ERROR] Stack's element array can't be NULL.");
     assert(stack->max && "[ERROR] Stack's max can't be zero.");
-
     assert(stack && "[ERROR] Stack pointer is NULL");
     assert((stack->size < stack->max) && "[ERROR] Stack reached maximum size");
     assert((stack->size + 1) && "[ERROR] Stack's '.size' will overflow");
@@ -400,11 +406,8 @@ static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
 /// @param stack Stack structure pointer.
 /// @return The top element of the stack as defined by 'STACK_DATA_TYPE' macro. 
 static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
-    assert(stack->max < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack max size.");
-    assert(stack->size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack size.");
     assert(stack->elements && "[ERROR] Stack's element array can't be NULL.");
     assert(stack->max && "[ERROR] Stack's max can't be zero.");
-
     assert(stack && "[ERROR] 'stack' pointer is empty");
     assert(stack->size && "[ERROR] Can't pop empty stack");
 
@@ -415,55 +418,52 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
 /// will be created
 /// otherwise copy_element is called.
 /// @param stack Stack structure.
-/// @param copy_element Function pointer to create a copy of an element or NULL if 'STACK_DATA_TYPE' is a basic type.
+/// @param copy Function pointer to create a copy of an element or NULL if 'STACK_DATA_TYPE' is a basic type.
 /// @return A copy of the specified 'stack' parameter.
-static inline stack_s copy_stack(const stack_s stack) {
-    assert(stack.max < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack max size.");
-    assert(stack.size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack size.");
+static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) {
     assert(stack.elements && "[ERROR] Stack's element array can't be NULL.");
     assert(stack.max && "[ERROR] Stack's max can't be zero.");
 
-    stack_s copy = stack;
-    copy.elements = malloc(sizeof(STACK_DATA_TYPE) * stack.max);
-    assert(copy.elements && "[ERROR] Memory allocation failed");
+    stack_s stack_copy = stack;
+    stack_copy.elements = malloc(sizeof(STACK_DATA_TYPE) * stack.max);
+    assert(stack_copy.elements && "[ERROR] Memory allocation failed");
 
-    if (stack.copy_element) {
+    if (copy) {
         for (size_t s = 0; s < stack.size; s++) {
-            copy.elements[s] = stack.copy_element(stack.elements[s]);
+            stack_copy.elements[s] = copy(stack.elements[s]);
         }
     } else { // memcpy can be used
-        memcpy(copy.elements, stack.elements, sizeof(STACK_DATA_TYPE) * stack.size);
+        memcpy(stack_copy.elements, stack.elements, sizeof(STACK_DATA_TYPE) * stack.size);
     }
 
-    return copy;
+    return stack_copy;
 }
 
 /// @brief Checks if stack is empty.
 /// @param stack Stack structure.
 /// @return true if stack size is zero, false otherwise
 static inline bool is_empty_stack(const stack_s stack) {
-    assert(stack.max < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack max size.");
-    assert(stack.size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack size.");
     assert(stack.elements && "[ERROR] Stack's element array can't be NULL.");
     assert(stack.max && "[ERROR] Stack's max can't be zero.");
 
     return (stack.size == 0);
 }
 
-static inline void sort_stack(stack_s * stack, void (*sort_elements)(STACK_DATA_TYPE *, size_t)) {
-    assert(stack->max < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack max size.");
-    assert(stack->size < (~((size_t)(0)) / sizeof(STACK_DATA_TYPE)) && "[ERROR] Impossible stack size.");
+/// @param stack
+/// @param sort
+/// @param compare
+static inline void sort_stack(stack_s * stack, const sort_elements_fn sort, const compare_stack_fn compare) {
     assert(stack->elements && "[ERROR] Stack's element array can't be NULL.");
     assert(stack->max && "[ERROR] Stack's max can't be zero.");
-
     assert(stack && "[ERROR] 'stack' parameter is NULL");
+    assert(compare && "[ERROR] 'compare' parameter can't be NULL when 'sort_elements' is not NULL");
 
-    if (sort_elements) {
-        sort_elements(stack->elements, stack->size);
+    if (sort) {
+        sort(stack->elements, stack->size, sizeof(STACK_DATA_TYPE), compare);
     } else {
         for (size_t s = 0; stack->size && s < stack->size - 1; ++s) {
             for (size_t i = 0; i < stack->size - s - 1; ++i) {
-                if (memcmp(stack->elements + i, stack->elements + (i + 1), sizeof(STACK_DATA_TYPE)) > 0) {
+                if (compare(stack->elements + i, stack->elements + (i + 1)) > 0) {
                     STACK_DATA_TYPE temp = stack->elements[i];
                     stack->elements[i] = stack->elements[i + 1];
                     stack->elements[i + 1] = temp;
@@ -475,13 +475,14 @@ static inline void sort_stack(stack_s * stack, void (*sort_elements)(STACK_DATA_
 
 /// @brief For each function that does an operation on element reference specified by args.
 /// @param stack Stack structure pointer.
-/// @param operation Function pointer that takes an element pointer and 'args' as parameters
+/// @param operate Non NULL function pointer that takes an element pointer and 'args' as parameters.
 /// @param args Arguments for operation function pointer.
-static inline void foreach_stack(stack_s * stack, void (*operation)(STACK_DATA_TYPE *, void *), void * args) {
+static inline void foreach_stack(stack_s * stack, const operation_fn operate, void * args) {
     assert(stack && "[ERROR] 'stack' parameter is NULL");
+    assert(operate && "[ERROR] 'operate' parameter is NULL");
 
     for (size_t i = 0; i < stack->size; ++i) {
-        operation(stack->elements + i, args);
+        operate(stack->elements + i, args);
     }
 }
 
@@ -496,26 +497,24 @@ static inline void foreach_stack(stack_s * stack, void (*operation)(STACK_DATA_T
 typedef struct stack {
     size_t size;
     STACK_DATA_TYPE * elements;
-    copy_stack_fn  copy_element;
-    destroy_stack_fn destroy_element;
 } stack_s;
 
 /// @brief Creates empty stack with '.size' set to zero and '.elements' set to NULL.
 /// @return Stack structure.
-static inline stack_s create_stack(const copy_stack_fn copy_element, const destroy_stack_fn destroy_element) {
+static inline stack_s create_stack(void) {
     return (stack_s) {
-        .size = 0, .elements = NULL, .copy_element = copy_element, .destroy_element = destroy_element,
+        .size = 0, .elements = NULL,
     };
 }
 
 /// @brief Destroys stack and all elements in it.
 /// @param stack Stack structure pointer.
-/// has no allocated memory.
-static inline void destroy_stack(stack_s * stack) {
+/// @param destroy
+static inline void destroy_stack(stack_s * stack, const destroy_stack_fn destroy) {
     assert(stack && "[ERROR] Stack pointer is NULL");
 
-    for(size_t s = 0; stack->destroy_element && (s < stack->size); s++) {
-        stack->destroy_element(&(stack->elements[s]));
+    for(size_t s = 0; destroy && (s < stack->size); s++) {
+        destroy(&(stack->elements[s]));
     }
 
     free(stack->elements);
@@ -576,25 +575,26 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
 /// will be created
 /// otherwise copy_element is called.
 /// @param stack Stack structure.
+/// @param copy
 /// @return A copy of the specified 'stack' parameter.
-static inline stack_s copy_stack(const stack_s stack) {
+static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) {
     if (!stack.size) return (stack_s) { 0 };
 
     const size_t copy_size = stack.size - (stack.size % REALLOC_STACK_CHUNK) + REALLOC_STACK_CHUNK;
-    const stack_s copy = { .size = stack.size, .elements = malloc(sizeof(STACK_DATA_TYPE) * copy_size), };
+    const stack_s stack_copy = { .size = stack.size, .elements = malloc(sizeof(STACK_DATA_TYPE) * copy_size), };
 
     // assertion fails if malloc returns NULL on non-zero copy size
-    assert((copy.elements) && "[ERROR] Memory allocation failed.");
+    assert((stack_copy.elements) && "[ERROR] Memory allocation failed.");
 
-    if (stack.copy_element) {
+    if (copy) {
         for (size_t s = 0; s < stack.size; s++) {
-            copy.elements[s] = stack.copy_element(stack.elements[s]);
+            stack_copy.elements[s] = copy(stack.elements[s]);
         }
     } else {
-        memcpy(copy.elements, stack.elements, sizeof(STACK_DATA_TYPE) * stack.size);
+        memcpy(stack_copy.elements, stack.elements, sizeof(STACK_DATA_TYPE) * stack.size);
     }
 
-    return copy;
+    return stack_copy;
 }
 
 /// @brief Checks if stack is empty.
@@ -607,16 +607,18 @@ static inline bool is_empty_stack(const stack_s stack) {
 /// @brief Sorts elements in stack based on provided function pointer sorter or bubble sort with memcmp if
 /// parameter is NULL.
 /// @param stack Stack structure pointer.
-/// @param sort_elements Sorting function pointer or NULL, when bubble sort with memcmp should be used.
-static inline void sort_stack(stack_s * stack, void (*sort_elements)(STACK_DATA_TYPE *, size_t)) {
+/// @param sort Sorting function pointer or NULL, when bubble sort with memcmp should be used.
+/// @param compare
+static inline void sort_stack(stack_s * stack, const sort_elements_fn sort, const compare_stack_fn compare) {
     assert(stack && "[ERROR] 'stack' parameter is NULL");
+    assert(compare && "[ERROR] 'compare' parameter can't be NULL when 'sort_elements' is not NULL");
 
-    if (sort_elements) { // function pointer is provided/isn't NULL
-        sort_elements(stack->elements, stack->size);
+    if (sort) { // function pointer is provided/isn't NULL
+        sort(stack->elements, stack->size, sizeof(STACK_DATA_TYPE), compare);
     } else { // use bubble sort with memcmp
         for (size_t s = 0; stack->size && s < stack->size - 1; ++s) {
             for (size_t i = 0; i < stack->size - s - 1; ++i) {
-                if (memcmp(stack->elements + i, stack->elements + (i + 1), sizeof(STACK_DATA_TYPE)) > 0) {
+                if (compare(stack->elements + i, stack->elements + (i + 1)) > 0) {
                     STACK_DATA_TYPE temp = stack->elements[i];
                     stack->elements[i] = stack->elements[i + 1];
                     stack->elements[i + 1] = temp;
@@ -628,13 +630,14 @@ static inline void sort_stack(stack_s * stack, void (*sort_elements)(STACK_DATA_
 
 /// @brief For each function that does an operation on element reference specified by args.
 /// @param stack Stack structure pointer.
-/// @param operation Function pointer that takes an element pointer and 'args' as parameters
+/// @param operate Function pointer that takes an element pointer and 'args' as parameters
 /// @param args Arguments for operation function pointer.
-static inline void foreach_stack(stack_s * stack, void (*operation)(STACK_DATA_TYPE *, void *), void * args) {
+static inline void foreach_stack(stack_s * stack, const operation_fn operate, void * args) {
     assert(stack && "[ERROR] 'stack' parameter is NULL");
+    assert(operate && "[ERROR] 'operate' parameter is NULL");
 
     for (size_t i = 0; i < stack->size; ++i) {
-        operation(stack->elements + i, args);
+        operate(stack->elements + i, args);
     }
 }
 
@@ -653,24 +656,22 @@ static inline void foreach_stack(stack_s * stack, void (*operation)(STACK_DATA_T
 typedef struct stack {
     STACK_DATA_TYPE elements[PREPROCESSOR_STACK_SIZE]; // elements array
     size_t size;                                       // size of stack
-    copy_stack_fn  copy_element;
-    destroy_stack_fn destroy_element;
 } stack_s;
 
 /// @brief Creates empty stack with '.size' set to zero.
 /// @return Stack structure.
-static inline stack_s create_stack(const copy_stack_fn copy_element, const destroy_stack_fn destroy_element) {
-    return (stack_s) { .size = 0, .copy_element = copy_element, .destroy_element = destroy_element, }; // only needs to initialize size == 0
+static inline stack_s create_stack(void) {
+    return (stack_s) { .size = 0, }; // only needs to initialize size == 0
 }
 
 /// @brief Destroys stack and all elements in it.
 /// @param stack Stack structure pointer.
-/// no allocated memory.
-static inline void destroy_stack(stack_s * stack) {
+/// @param destroy
+static inline void destroy_stack(stack_s * stack, const destroy_stack_fn destroy) {
     assert(stack && "[ERROR] Stack pointer is NULL");
 
-    for(size_t s = 0; stack->destroy_element && (s < stack->size); s++) {
-        stack->destroy_element(&(stack->elements[s]));
+    for(size_t s = 0; destroy && (s < stack->size); s++) {
+        destroy(&(stack->elements[s]));
     }
 
     stack->size = 0;
@@ -717,19 +718,20 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
 /// will be created
 /// otherwise copy_element is called.
 /// @param stack Stack structure.
+/// @param copy
 /// @return A copy of the specified 'stack' parameter.
-static inline stack_s copy_stack(const stack_s stack) {
-    stack_s copy = { .size = stack.size, };
+static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) {
+    stack_s stack_copy = { .size = stack.size, };
 
-    if (stack.copy_element) {
+    if (copy) {
         for (size_t s = 0; s < stack.size; s++) {
-            copy.elements[s] = stack.copy_element(stack.elements[s]);
+            stack_copy.elements[s] = copy(stack.elements[s]);
         }
     } else {
-        memcpy(copy.elements, stack.elements, stack.size * sizeof(STACK_DATA_TYPE));
+        memcpy(stack_copy.elements, stack.elements, stack.size * sizeof(STACK_DATA_TYPE));
     }
 
-    return copy;
+    return stack_copy;
 }
 
 /// @brief Checks if stack is empty.
@@ -742,16 +744,18 @@ static inline bool is_empty_stack(const stack_s stack) {
 /// @brief Sorts elements in stack based on provided function pointer sorter or bubble sort with memcmp if
 /// parameter is NULL.
 /// @param stack Stack structure pointer.
-/// @param sort_elements Sorting function pointer or NULL, when bubble sort with memcmp should be used.
-static inline void sort_stack(stack_s * stack, void (*sort_elements)(STACK_DATA_TYPE *, size_t)) {
+/// @param sort Sorting function pointer or NULL, when bubble sort with memcmp should be used.
+/// @param compare
+static inline void sort_stack(stack_s * stack, const sort_elements_fn sort, const compare_stack_fn compare) {
     assert(stack && "[ERROR] 'stack' parameter is NULL");
+    assert(compare && "[ERROR] 'compare' parameter can't be NULL when 'sort_elements' is not NULL");
 
-    if (sort_elements) { // function pointer is provided/isn't NULL
-        sort_elements(stack->elements, stack->size);
+    if (sort) { // function pointer is provided/isn't NULL
+        sort(stack->elements, stack->size, sizeof(STACK_DATA_TYPE), compare);
     } else { // use bubble sort with memcmp
         for (size_t s = 0; stack->size && s < stack->size - 1; ++s) {
             for (size_t i = 0; i < stack->size - s - 1; ++i) {
-                if (memcmp(stack->elements + i, stack->elements + (i + 1), sizeof(STACK_DATA_TYPE)) > 0) {
+                if (compare(stack->elements + i, stack->elements + (i + 1)) > 0) {
                     STACK_DATA_TYPE temp = stack->elements[i]; // swap
                     stack->elements[i] = stack->elements[i + 1];
                     stack->elements[i + 1] = temp;
@@ -763,28 +767,17 @@ static inline void sort_stack(stack_s * stack, void (*sort_elements)(STACK_DATA_
 
 /// @brief For each function that does an operation on element reference specified by args.
 /// @param stack Stack structure pointer.
-/// @param operation Function pointer that takes an element pointer and 'args' as parameters
+/// @param operate Function pointer that takes an element pointer and 'args' as parameters
 /// @param args Arguments for operation function pointer.
-static inline void foreach_stack(stack_s * stack, void (*operation)(STACK_DATA_TYPE *, void *), void * args) {
+static inline void foreach_stack(stack_s * stack, const operation_fn operate, void * args) {
     assert(stack && "[ERROR] 'stack' parameter is NULL");
+    assert(operate && "[ERROR] 'operate' parameter is NULL");
 
     for (size_t i = 0; i < stack->size; ++i) {
-        operation(stack->elements + i, args);
+        operate(stack->elements + i, args);
     }
 }
 
 #endif
 
 #endif // STACK_H
-
-#ifdef SPECIAL_STACK
-
-#undef SPECIAL_STACK
-
-#undef STACK_MACRO_BUILD
-#undef STACK_MACRO
-
-#undef STACK_NAME_BUILD
-#undef STACK_NAME
-
-#endif
