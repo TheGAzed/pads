@@ -1,13 +1,6 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
-#ifdef QUEUE_HELP
-
-#error The queue.h file is a single header preprocesor abstracted implementation of the 'queue' data structure. The header has 4 implementations of a queue structure which can be divided into 2 categories: finite and infinite queues (defined as macro's 'FINITE_QUEUE' and 'INFINITE_QUEUE'). The category 'INFINITE_QUEUE' uses the 'INFINITE_LIST_QUEUE' implementation as default. 'FINITE_QUEUE' uses 'FINITE_ALLOCATED_QUEUE' as default. The other two modes are 'INFINITE_REALLOC_QUEUE' and 'FINITE_PRERPOCESSOR_QUEUE'. In order to determine which category is selected the macro 'IS_INFINITE_QUEUE' can be used. The default queue mode is 'INFINITE_QUEUE' (or 'INFINITE_LIST_QUEUE' to be precise) as defined by 'QUEUE_MODE'. To use another of the available modes use '#define QUEUE_MODE [category or mode macro]' before including the header. To specify the data type to be queued use '#define QUEUE_DATA_TYPE [data type]' before including the header (default is 'void*' or 'void pointer'). The 'INFINITE_LIST_QUEUE' mode uses a linked list implementation to create an infinite sized queues. Since this mode's element is an array of 'QUEUE_DATA_TYPE' variables, the size of the allocated list element's array can be changed using 'LIST_ARRAY_QUEUE_CHUNK' macro like '#define LIST_ARRAY_QUEUE_CHUNK [size]' (default size is (1 << 10) or 1024). The 'FINITE_ALLOCATED_QUEUE' mode uses an allocated array, the user can specify the maximum size of the queue as a parameter when calling 'create_queue([maximum size])' function, it is not necessary to define the queue's size using a macro (the user can create multiple queues of variable length). The 'INFINITE_REALLOC_QUEUE' mode relies on the 'realloc()' function to guarantee infinite size, after the allocated array reaches its maximum length it is expanded (not doubled) by
-'REALLOC_QUEUE_CHUNK', when the size shrinks to the point that a 'REALLOC_QUEUE_CHUNK' chunk is 'empty' the array also shrinks by 'REALLOC_QUEUE_CHUNK'. The user can use '#define REALLOC_QUEUE_CHUNK [size]' to define the chunk size. The 'FINITE_PRERPOCESSOR_QUEUE' mode uses the 'PREPROCESSOR_QUEUE_SIZE' macro to define the queue size. This mode does not use any memory allocation as the user can specify the size using '#define PREPROCESSOR_QUEUE_SIZE [size]'.
-
-#endif
-
 // queue mode macros in octal to prevent future overlap with other data structure modes
 #define INFINITE_LIST_QUEUE       0x08
 #define FINITE_ALLOCATED_QUEUE    0x0A
