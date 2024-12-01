@@ -39,9 +39,27 @@
 #endif
 
 #include <stdlib.h>  // imports size_t and malloc
-#include <assert.h>  // imports assert for debugging
 #include <stdbool.h> // imports bool for conditional queue functions (is_[state]_queue())
 #include <string.h>  // imports memcpy
+
+#ifndef QUEUE_ASSERT
+
+#include <assert.h>  // imports assert for debugging
+#define QUEUE_ASSERT assert
+
+#endif
+
+#ifndef QUEUE_ALLOC
+
+#define QUEUE_ALLOC malloc
+
+#endif
+
+#ifndef QUEUE_FREE
+
+#define QUEUE_FREE free
+
+#endif
 
 /// Function pointer that creates a deep element copy.
 typedef QUEUE_DATA_TYPE (*copy_queue_fn)    (const QUEUE_DATA_TYPE);
@@ -92,13 +110,13 @@ static inline queue_s create_queue(void) {
 /// @param destroy function pointer to destroy (or free) elements in queue or NULL if queue element has
 /// no allocated memory.
 static inline void destroy_queue(queue_s * queue, const destroy_queue_fn destroy) {
-    assert(queue && "[ERROR] Queue pointer is NULL");
+    QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL");
 
     if (queue->head == queue->tail) { // special case when first and last element are on the same list element array
         for (size_t s = queue->current; destroy && (s < queue->current + queue->size); s++) {
             destroy(&(queue->head->elements[s]));
         }
-        free(queue->head); // frees head and tail at the same time, or does nothing if both are NULL
+        QUEUE_FREE(queue->head); // frees head and tail at the same time, or does nothing if both are NULL
     } else {
         struct queue_list_array * list = queue->head;
         if (destroy) {
@@ -107,7 +125,7 @@ static inline void destroy_queue(queue_s * queue, const destroy_queue_fn destroy
                 destroy(&(queue->head->elements[s]));
             }
             list = list->next;
-            free(queue->head);
+            QUEUE_FREE(queue->head);
 
             while (list != queue->tail) {
                 for (size_t s = 0; s < (destroyed_size += LIST_ARRAY_QUEUE_CHUNK); s++) {
@@ -116,17 +134,17 @@ static inline void destroy_queue(queue_s * queue, const destroy_queue_fn destroy
 
                 struct queue_list_array * temp = list;
                 list = list->next;
-                free(temp);
+                QUEUE_FREE(temp);
             }
             for (size_t s = 0; s < queue->size - destroyed_size; s++) {
                 destroy(&(queue->tail->elements[s]));
             }
-            free(queue->tail);
+            QUEUE_FREE(queue->tail);
         } else {
             while (list != NULL) {
                 struct queue_list_array * temp = list;
                 list = list->next;
-                free(temp);
+                QUEUE_FREE(temp);
             }
         }
     }
@@ -145,8 +163,8 @@ static inline bool is_full_queue(const queue_s queue) {
 /// @param queue Queue structure.
 /// @return The top element of the queue as defined by 'QUEUE_DATA_TYPE' macro.
 static inline QUEUE_DATA_TYPE peek_queue(const queue_s queue) {
-    assert(queue.size && "[ERROR] Can't peek empty queue");
-    assert(queue.head && "[ERROR] Queue head is NULL");
+    QUEUE_ASSERT(queue.size && "[ERROR] Can't peek empty queue");
+    QUEUE_ASSERT(queue.head && "[ERROR] Queue head is NULL");
 
     return queue.head->elements[queue.current];
 }
@@ -155,15 +173,15 @@ static inline QUEUE_DATA_TYPE peek_queue(const queue_s queue) {
 /// @param queue Queue structure pointer.
 /// @param element Element to push to end of queue array.
 static inline void enqueue(queue_s * queue, QUEUE_DATA_TYPE element) {
-    assert(queue && "[ERROR] Queue pointer is NULL");
-    assert(~(queue->size) && "[ERROR] Queue's '.size' will overflow");
+    QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL");
+    QUEUE_ASSERT(~(queue->size) && "[ERROR] Queue's '.size' will overflow");
 
     // index where the next element will be enqueued
     const size_t next_index = (queue->current + queue->size) % LIST_ARRAY_QUEUE_CHUNK;
     if (0 == next_index) { // if head list array is full (is divisible) adds new list element to head
-        struct queue_list_array * temp = malloc(sizeof(struct queue_list_array));
+        struct queue_list_array * temp = QUEUE_ALLOC(sizeof(struct queue_list_array));
 
-        assert(temp && "[ERROR] Memory allocation failed");
+        QUEUE_ASSERT(temp && "[ERROR] Memory allocation failed");
         temp->next = NULL; // prevent access to uninitialized memory
 
         if (queue->head == NULL) queue->head = queue->tail = temp;
@@ -178,21 +196,21 @@ static inline void enqueue(queue_s * queue, QUEUE_DATA_TYPE element) {
 /// @param queue Queue structure pointer.
 /// @return The start element of the queue as defined by 'QUEUE_DATA_TYPE' macro.
 static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
-    assert(queue && "[ERROR] 'queue' pointer is empty");
-    assert(queue->size && "[ERROR] Can't dequeue empty queue");
-    assert(queue->head && "[ERROR] Queue head is NULL");
+    QUEUE_ASSERT(queue && "[ERROR] 'queue' pointer is empty");
+    QUEUE_ASSERT(queue->size && "[ERROR] Can't dequeue empty queue");
+    QUEUE_ASSERT(queue->head && "[ERROR] Queue head is NULL");
 
     QUEUE_DATA_TYPE element = queue->head->elements[queue->current];
     queue->size--;
     queue->current = (queue->current + 1) % LIST_ARRAY_QUEUE_CHUNK;
 
     if (!queue->size) { // queue is empty free memory and reset everything to zero
-        free(queue->head);
+        QUEUE_FREE(queue->head);
         //queue->current = 0;
         queue->head = queue->tail = NULL;
     } else if (queue->current == 0) { // current index circles back, free start list element and shift to next
         struct queue_list_array * temp = queue->head->next;
-        free(queue->head);
+        QUEUE_FREE(queue->head);
         queue->head = temp;
     }
 
@@ -215,8 +233,8 @@ static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) 
         const size_t start = current_queue == queue.head ? queue.current : 0; // start size current when head case
         const size_t end = current_queue != queue.tail || !tail_size ? LIST_ARRAY_QUEUE_CHUNK : tail_size;
 
-        queue_copy.tail = *current_copy = malloc(sizeof(struct queue_list_array));
-        assert(*current_copy && "[ERROR] Memory allocation failed");
+        queue_copy.tail = *current_copy = QUEUE_ALLOC(sizeof(struct queue_list_array));
+        QUEUE_ASSERT(*current_copy && "[ERROR] Memory allocation failed");
         (*current_copy)->next = NULL;
 
         if (copy) {
@@ -247,10 +265,10 @@ static inline bool is_empty_queue(const queue_s queue) {
 /// @param queue Queue structure pointer.
 /// @param sort_elements Function pointer to sorting algorithm or NULL, if bubble sort should be used.
 static inline void sort_queue(queue_s const * queue, void (*sort_elements)(QUEUE_DATA_TYPE *, size_t)) {
-    assert(queue && "[ERROR] 'queue' parameter is NULL");
+    QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter is NULL");
 
-    QUEUE_DATA_TYPE * elements_array = malloc(sizeof(QUEUE_DATA_TYPE) * queue->size);
-    assert((!(queue->size) || elements_array) && "[ERROR] Memory allocation failed.");
+    QUEUE_DATA_TYPE * elements_array = QUEUE_ALLOC(queue->size * sizeof(QUEUE_DATA_TYPE));
+    QUEUE_ASSERT((!(queue->size) || elements_array) && "[ERROR] Memory allocation failed.");
 
     if (queue->head == queue->tail) { // special case where either the queue is empty or only one chunk has elements
         memcpy(elements_array, &(queue->head->elements[queue->current]), sizeof(QUEUE_DATA_TYPE) * queue->size);
@@ -320,11 +338,11 @@ typedef struct queue {
 /// @param max Specifies maximum allocated size of queue structure.
 /// @return Queue structure.
 static inline queue_s create_queue(const size_t max) {
-    assert(max && "[ERROR] Maximum size can't be zero");
+    QUEUE_ASSERT(max && "[ERROR] Maximum size can't be zero");
     const queue_s create = {
-        .max = max, .elements = malloc(sizeof(QUEUE_DATA_TYPE) * max), .size = 0,
+        .max = max, .elements = QUEUE_ALLOC(max * sizeof(QUEUE_DATA_TYPE)), .size = 0,
     };
-    assert(create.elements && "[ERROR] Memory allocation failed");
+    QUEUE_ASSERT(create.elements && "[ERROR] Memory allocation failed");
     return create;
 }
 
@@ -333,7 +351,7 @@ static inline queue_s create_queue(const size_t max) {
 /// @param destroy function pointer to destroy (or free) elements in queue or NULL if queue element has
 /// no allocated memory.
 static inline void destroy_queue(queue_s * queue, const destroy_queue_fn destroy) {
-    assert(queue && "[ERROR] Queue pointer is NULL.");
+    QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL.");
 
     if (destroy) {
         for(size_t s = queue->current; s < queue->current + queue->size; s++) {
@@ -341,7 +359,7 @@ static inline void destroy_queue(queue_s * queue, const destroy_queue_fn destroy
         }
     }
 
-    free(queue->elements);
+    QUEUE_FREE(queue->elements);
     *queue = (queue_s) { 0 };
 }
 
@@ -356,8 +374,8 @@ static inline bool is_full_queue(const queue_s queue) {
 /// @param queue Queue structure.
 /// @return The top element of the queue as defined by 'QUEUE_DATA_TYPE' macro.
 static inline QUEUE_DATA_TYPE peek_queue(const queue_s queue) {
-    assert(queue.size && "[ERROR] Can't peek empty queue");
-    assert(queue.elements && "[ERROR] '.elements' is NULL");
+    QUEUE_ASSERT(queue.size && "[ERROR] Can't peek empty queue");
+    QUEUE_ASSERT(queue.elements && "[ERROR] '.elements' is NULL");
 
     return queue.elements[queue.current];
 }
@@ -366,10 +384,10 @@ static inline QUEUE_DATA_TYPE peek_queue(const queue_s queue) {
 /// @param queue Queue structure pointer.
 /// @param element Element to push to top of queue array.
 static inline void enqueue(queue_s * queue, QUEUE_DATA_TYPE element) {
-    assert(queue && "[ERROR] Queue pointer is NULL");
-    assert((queue->size < queue->max) && "[ERROR] Queue reached maximum size");
-    assert((queue->size + 1) && "[ERROR] Queue's '.size' will overflow");
-    assert(queue->elements && "[ERROR] '.elements' is NULL");
+    QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL");
+    QUEUE_ASSERT((queue->size < queue->max) && "[ERROR] Queue reached maximum size");
+    QUEUE_ASSERT((queue->size + 1) && "[ERROR] Queue's '.size' will overflow");
+    QUEUE_ASSERT(queue->elements && "[ERROR] '.elements' is NULL");
 
     queue->elements[(queue->current + queue->size++) % queue->max] = element;
 }
@@ -378,9 +396,9 @@ static inline void enqueue(queue_s * queue, QUEUE_DATA_TYPE element) {
 /// @param queue Queue structure pointer.
 /// @return The start element of the queue as defined by 'QUEUE_DATA_TYPE' macro.
 static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
-    assert(queue && "[ERROR] 'queue' pointer is empty");
-    assert(queue->size && "[ERROR] Can't pop empty queue");
-    assert(queue->elements && "[ERROR] '.elements' is NULL");
+    QUEUE_ASSERT(queue && "[ERROR] 'queue' pointer is empty");
+    QUEUE_ASSERT(queue->size && "[ERROR] Can't pop empty queue");
+    QUEUE_ASSERT(queue->elements && "[ERROR] '.elements' is NULL");
 
     QUEUE_DATA_TYPE element = queue->elements[queue->current];
     queue->size--;
@@ -395,13 +413,13 @@ static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
 /// @param copy Function pointer to create a copy of an element or NULL if 'QUEUE_DATA_TYPE' is a basic type.
 /// @return A copy of the specified 'queue' parameter.
 static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) {
-    assert(queue.elements && "[ERROR] 'queue' has uninitialized memory.");
+    QUEUE_ASSERT(queue.elements && "[ERROR] 'queue' has uninitialized memory.");
 
     const queue_s queue_copy = {
         .size = queue.size, .current = queue.current, .max = queue.max,
-        .elements = malloc(sizeof(QUEUE_DATA_TYPE) * queue.max),
+        .elements = QUEUE_ALLOC(queue.max * sizeof(QUEUE_DATA_TYPE)),
     };
-    assert(queue_copy.elements && "[ERROR] Memory allocation failed");
+    QUEUE_ASSERT(queue_copy.elements && "[ERROR] Memory allocation failed");
 
     if (queue.size > queue.max - queue.current) { // queue circles to beginning of elements array
         if (copy) {
@@ -441,11 +459,11 @@ static inline bool is_empty_queue(const queue_s queue) {
 /// @param queue Queue structure pointer.
 /// @param sort_elements Function pointer to sorting algorithm or NULL, if bubble sort should be used.
 static inline void sort_queue(queue_s const * queue, void (*sort_elements)(QUEUE_DATA_TYPE *, size_t)) {
-    assert(queue && "[ERROR] 'queue' parameter is NULL");
+    QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter is NULL");
 
     if (queue->size > queue->max - queue->current) {
-        QUEUE_DATA_TYPE * elements_array = malloc(sizeof(QUEUE_DATA_TYPE) * queue->size);
-        assert((!(queue->size) || elements_array) && "[ERROR] Memory allocation failed.");
+        QUEUE_DATA_TYPE * elements_array = QUEUE_ALLOC(queue->size * sizeof(QUEUE_DATA_TYPE));
+        QUEUE_ASSERT((!(queue->size) || elements_array) && "[ERROR] Memory allocation failed.");
 
         const size_t copy_size = queue->max - queue->current;
         memcpy(elements_array, &(queue->elements[queue->current]), sizeof(QUEUE_DATA_TYPE) * copy_size);
@@ -508,13 +526,13 @@ static inline queue_s create_queue(void) {
 /// @param destroy function pointer to destroy (or free) elements in queue or NULL if queue element
 /// has no allocated memory.
 static inline void destroy_queue(queue_s * queue, const destroy_queue_fn destroy) {
-    assert(queue && "[ERROR] Queue pointer is NULL");
+    QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL");
 
     for(size_t s = 0; destroy && (s < queue->size); s++) {
         destroy(&(queue->elements[s + queue->current]));
     }
 
-    free(queue->elements);
+    QUEUE_FREE(queue->elements);
 
     *queue = (queue_s) { 0 }; // reset queue to zero
 }
@@ -530,8 +548,8 @@ static inline bool is_full_queue(const queue_s queue) {
 /// @param queue Queue structure.
 /// @return The top element of the queue as defined by 'QUEUE_DATA_TYPE' macro.
 static inline QUEUE_DATA_TYPE peek_queue(const queue_s queue) {
-    assert(queue.size && "[ERROR] Can't peek empty queue");
-    assert(queue.elements && "[ERROR] Queue's '.elements' is NULL");
+    QUEUE_ASSERT(queue.size && "[ERROR] Can't peek empty queue");
+    QUEUE_ASSERT(queue.elements && "[ERROR] Queue's '.elements' is NULL");
 
     return queue.elements[queue.current];
 }
@@ -540,14 +558,14 @@ static inline QUEUE_DATA_TYPE peek_queue(const queue_s queue) {
 /// @param queue Queue structure pointer.
 /// @param element Element to enqueue to end of queue array.
 static inline void enqueue(queue_s * queue, QUEUE_DATA_TYPE element) {
-    assert(queue && "[ERROR] Queue pointer is NULL");
-    assert(~(queue->size) && "[ERROR] Queue's '.size' will overflow");
+    QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL");
+    QUEUE_ASSERT(~(queue->size) && "[ERROR] Queue's '.size' will overflow");
 
     // first expand memory if necessary and then add element
     size_t actual_size = queue->current + queue->size;
     if ((actual_size % REALLOC_QUEUE_CHUNK) == 0) {
         queue->elements = realloc(queue->elements, (actual_size + REALLOC_QUEUE_CHUNK) * sizeof(QUEUE_DATA_TYPE));
-        assert(queue->elements && "[ERROR] Memory allocation failed");
+        QUEUE_ASSERT(queue->elements && "[ERROR] Memory allocation failed");
     }
     queue->elements[queue->size++] = element;
 }
@@ -556,21 +574,21 @@ static inline void enqueue(queue_s * queue, QUEUE_DATA_TYPE element) {
 /// @param queue Queue structure pointer.
 /// @return The start element of the queue as defined by 'QUEUE_DATA_TYPE' macro.
 static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
-    assert(queue && "[ERROR] 'queue' pointer is empty");
-    assert(queue->size && "[ERROR] Can't dequeue empty queue");
-    assert(queue->elements && "[ERROR] Can't dequeue NULL elements");
+    QUEUE_ASSERT(queue && "[ERROR] 'queue' pointer is empty");
+    QUEUE_ASSERT(queue->size && "[ERROR] Can't dequeue empty queue");
+    QUEUE_ASSERT(queue->elements && "[ERROR] Can't dequeue NULL elements");
 
     // first remove element and then shrink memory if necessary
     QUEUE_DATA_TYPE element = queue->elements[queue->current++];
     queue->size--;
     if ((queue->size % REALLOC_QUEUE_CHUNK) == 0) {
-        QUEUE_DATA_TYPE * temp = queue->size ? malloc(queue->size * sizeof(QUEUE_DATA_TYPE)) : NULL;
+        QUEUE_DATA_TYPE * temp = queue->size ? QUEUE_ALLOC(queue->size * sizeof(QUEUE_DATA_TYPE)) : NULL;
 
-        // assertion fails if malloc returns NULL on non-zero chunk size
-        assert((!queue->size || temp) && "[ERROR] Memory allocation failed.");
+        // assertion fails if allocation returns NULL on non-zero chunk size
+        QUEUE_ASSERT((!queue->size || temp) && "[ERROR] Memory allocation failed.");
 
         memcpy(temp, &(queue->elements[queue->current]), queue->size * sizeof(QUEUE_DATA_TYPE));
-        free(queue->elements);
+        QUEUE_FREE(queue->elements);
         queue->elements = temp;
         queue->current = 0;
     }
@@ -592,9 +610,9 @@ static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) 
 
     const queue_s queue_copy = {
         .size = queue.size, .current = queue.current,
-        .elements = malloc(sizeof(QUEUE_DATA_TYPE) * copy_size),
+        .elements = QUEUE_ALLOC(copy_size * sizeof(QUEUE_DATA_TYPE)),
     };
-    assert(queue_copy.elements && "[ERROR] Memory allocation failed.");
+    QUEUE_ASSERT(queue_copy.elements && "[ERROR] Memory allocation failed.");
 
     if (copy) {
         for (size_t s = queue.current; s < queue.current + queue.size; s++) {
@@ -619,7 +637,7 @@ static inline bool is_empty_queue(const queue_s queue) {
 /// @param queue Queue structure pointer.
 /// @param sort_elements Function pointer to sorting algorithm or NULL, if bubble sort should be used.
 static inline void sort_queue(queue_s const * queue, void (*sort_elements)(QUEUE_DATA_TYPE *, size_t)) {
-    assert(queue && "[ERROR] 'queue' parameter is NULL");
+    QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter is NULL");
 
     if (sort_elements) {
         sort_elements(&(queue->elements[queue->current]), queue->size);
@@ -664,7 +682,7 @@ static inline queue_s create_queue(void) {
 /// @param destroy function pointer to destroy (or free) elements in queue or NULL if queue element has
 /// no allocated memory.
 static inline void destroy_queue(queue_s * queue, const destroy_queue_fn destroy) {
-    assert(queue && "[ERROR] Queue pointer is NULL");
+    QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL");
 
     if (destroy) {
         if (queue->size > PREPROCESSOR_QUEUE_SIZE - queue->current) { // queue circles to beginning of elements array
@@ -696,7 +714,7 @@ static inline bool is_full_queue(const queue_s queue) {
 /// @param queue Queue structure.
 /// @return The start element of the queue as defined by 'QUEUE_DATA_TYPE' macro.
 static inline QUEUE_DATA_TYPE peek_queue(const queue_s queue) {
-    assert(queue.size && "[ERROR] Can't peek empty queue");
+    QUEUE_ASSERT(queue.size && "[ERROR] Can't peek empty queue");
 
     return queue.elements[queue.current];
 }
@@ -705,10 +723,10 @@ static inline QUEUE_DATA_TYPE peek_queue(const queue_s queue) {
 /// @param queue Queue structure pointer.
 /// @param element Element to push to top of queue array.
 static inline void enqueue(queue_s * queue, QUEUE_DATA_TYPE element) {
-    assert(queue && "[ERROR] Queue pointer is NULL");
-    assert((queue->size < PREPROCESSOR_QUEUE_SIZE) && "[ERROR] Queue reached maximum size");
-    assert((queue->size + 1) && "[ERROR] Queue's '.size' will overflow");
-    assert(queue->elements && "[ERROR] '.elements' is NULL");
+    QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL");
+    QUEUE_ASSERT((queue->size < PREPROCESSOR_QUEUE_SIZE) && "[ERROR] Queue reached maximum size");
+    QUEUE_ASSERT((queue->size + 1) && "[ERROR] Queue's '.size' will overflow");
+    QUEUE_ASSERT(queue->elements && "[ERROR] '.elements' is NULL");
 
     queue->elements[(queue->current + queue->size) % PREPROCESSOR_QUEUE_SIZE] = element;
     queue->size++;
@@ -718,9 +736,9 @@ static inline void enqueue(queue_s * queue, QUEUE_DATA_TYPE element) {
 /// @param queue Queue structure pointer.
 /// @return The start element of the queue as defined by 'QUEUE_DATA_TYPE' macro.
 static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
-    assert(queue && "[ERROR] 'queue' pointer is empty");
-    assert(queue->size && "[ERROR] Can't pop empty queue");
-    assert(queue->elements && "[ERROR] '.elements' is NULL");
+    QUEUE_ASSERT(queue && "[ERROR] 'queue' pointer is empty");
+    QUEUE_ASSERT(queue->size && "[ERROR] Can't pop empty queue");
+    QUEUE_ASSERT(queue->elements && "[ERROR] '.elements' is NULL");
 
     QUEUE_DATA_TYPE element = queue->elements[queue->current];
     queue->size--;
@@ -777,7 +795,7 @@ static inline bool is_empty_queue(const queue_s queue) {
 /// @param queue Queue structure pointer.
 /// @param sort_elements Function pointer to sorting algorithm or NULL, if bubble sort should be used.
 static inline void sort_queue(queue_s * queue, void (*sort_elements)(QUEUE_DATA_TYPE *, size_t)) {
-    assert(queue && "[ERROR] 'queue' parameter is NULL");
+    QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter is NULL");
 
     const size_t copy_size = PREPROCESSOR_QUEUE_SIZE - queue->current;
     if (queue->size > copy_size) { // queue circles to beginning of elements array

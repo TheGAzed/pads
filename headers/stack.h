@@ -49,16 +49,22 @@
 #include <string.h>  // imports memcpy
 
 #ifndef STACK_ASSERT
-    #include <assert.h>  // imports assert for debugging
-    #define STACK_ASSERT(cond) assert(cond)
+
+#include <assert.h>  // imports assert for debugging
+
+#define STACK_ASSERT assert
 #endif
 
 #ifndef STACK_ALLOC
-    #define STACK_ALLOC(number, size) malloc(((size_t)(number)) * ((size_t)(size)))
+
+#define STACK_ALLOC malloc
+
 #endif
 
 #ifndef STACK_FREE
-    #define STACK_FREE(pointer) free((void*)(pointer))
+
+#define STACK_FREE free
+
 #endif
 
 /// Function pointer that creates a deep element copy.
@@ -164,7 +170,7 @@ static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
 
     const size_t next_index = stack->size % LIST_ARRAY_STACK_CHUNK; // index where the next element will be pushed
     if (next_index == 0) { // if head list array is full (is divisible) adds new list element to head
-        struct stack_list_array * temp = STACK_ALLOC(1, sizeof(struct stack_list_array));
+        struct stack_list_array * temp = STACK_ALLOC(sizeof(struct stack_list_array));
 
         STACK_ASSERT(temp && "[ERROR] Memory allocation failed");
         temp->next = NULL; // prevent access to uninitialized memory
@@ -211,7 +217,7 @@ static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) 
     struct stack_list_array ** current_copy = &(stack_copy.head); // two pointer list to remove special head case
     const size_t copy_size = stack.size % LIST_ARRAY_STACK_CHUNK;
     if (copy_size) { // special case when head stack
-        *current_copy = STACK_ALLOC(1, sizeof(struct stack_list_array));
+        *current_copy = STACK_ALLOC(sizeof(struct stack_list_array));
         STACK_ASSERT(*current_copy && "[ERROR] Memory allocation failed");
         (*current_copy)->next = NULL;
 
@@ -225,7 +231,7 @@ static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) 
         current_copy = &((*current_copy)->next);
     }
     while (current_stack) { // is not NULL
-        *current_copy = STACK_ALLOC(1, sizeof(struct stack_list_array));
+        *current_copy = STACK_ALLOC(sizeof(struct stack_list_array));
         STACK_ASSERT(*current_copy && "[ERROR] Memory allocation failed");
         (*current_copy)->next = NULL;
 
@@ -262,7 +268,7 @@ static inline void sort_stack(stack_s * stack, const sort_stack_fn sort, const c
     STACK_ASSERT(compare && "[ERROR] 'compare' parameter can't be NULL when 'sort_elements' parameter is given.");
     STACK_ASSERT(((stack->head && stack->size) || (!stack->head && !stack->size)) && "[ERROR] Invalid stack state.");
 
-    STACK_DATA_TYPE * elements_array = STACK_ALLOC(stack->size, sizeof(STACK_DATA_TYPE));
+    STACK_DATA_TYPE * elements_array = STACK_ALLOC(stack->size * sizeof(STACK_DATA_TYPE));
     STACK_ASSERT((!(stack->size) || elements_array) && "[ERROR] Memory allocation failed.");
 
     struct stack_list_array * list = stack->head;
@@ -348,7 +354,7 @@ static inline stack_s create_stack(const size_t max) {
     STACK_ASSERT(max && "[ERROR] Maximum size can't be zero");
 
     const stack_s create = {
-        .max = max, .elements = STACK_ALLOC(max, sizeof(STACK_DATA_TYPE)), .size = 0,
+        .max = max, .elements = STACK_ALLOC(max * sizeof(STACK_DATA_TYPE)), .size = 0,
     };
     assert(create.elements && "[ERROR] Memory allocation failed.");
 
@@ -429,7 +435,7 @@ static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) 
     STACK_ASSERT(stack.max && "[ERROR] Stack's max can't be zero.");
 
     stack_s stack_copy = stack;
-    stack_copy.elements = STACK_ALLOC(stack.max, sizeof(STACK_DATA_TYPE));
+    stack_copy.elements = STACK_ALLOC(stack.max * sizeof(STACK_DATA_TYPE));
     STACK_ASSERT(stack_copy.elements && "[ERROR] Memory allocation failed");
 
     if (copy) {
@@ -591,7 +597,7 @@ static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) 
     if (!stack.size) return (stack_s) { 0 };
 
     const size_t copy_size = stack.size - (stack.size % REALLOC_STACK_CHUNK) + REALLOC_STACK_CHUNK;
-    const stack_s stack_copy = { .size = stack.size, .elements = STACK_ALLOC(copy_size, sizeof(STACK_DATA_TYPE)), };
+    const stack_s stack_copy = { .size = stack.size, .elements = STACK_ALLOC(copy_size * sizeof(STACK_DATA_TYPE)), };
 
     // assertion fails if alloc returns NULL on non-zero copy size
     STACK_ASSERT((stack_copy.elements) && "[ERROR] Memory allocation failed.");
