@@ -618,6 +618,46 @@ TEST FAS_38(void) {
     PASS();
 }
 
+/// Tests if stack is not full when adding one element
+TEST FAS_39(void) {
+    stack_s test = create_stack();
+
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
+
+    ASSERT_FALSEm("[FAS-ERROR] Expected stack to not be full.", is_full_stack(test));
+    destroy_stack(&test, NULL);
+
+    PASS();
+}
+
+/// Tests if stack is not full when adding 'MAXIMUM_STACK_SIZE' - 1 elements
+TEST FAS_40(void) {
+    stack_s test = create_stack();
+
+    for (size_t i = 0; i < PREPROCESSOR_STACK_SIZE - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
+    }
+
+    ASSERT_FALSEm("[FAS-ERROR] Expected stack to not be full.", is_full_stack(test));
+    destroy_stack(&test, NULL);
+
+    PASS();
+}
+
+/// Tests if stack is not full when adding 'MAXIMUM_STACK_SIZE' - 1 elements
+TEST FAS_41(void) {
+    stack_s test = create_stack();
+
+    for (size_t i = 0; i < PREPROCESSOR_STACK_SIZE; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
+    }
+
+    ASSERTm("[FAS-ERROR] Expected stack to be full.", is_full_stack(test));
+    destroy_stack(&test, NULL);
+
+    PASS();
+}
+
 SUITE (finite_preprocessor_stack_test) {
     RUN_TEST(FAS_01); RUN_TEST(FAS_02); RUN_TEST(FAS_03); RUN_TEST(FAS_04);
     RUN_TEST(FAS_05); RUN_TEST(FAS_06); RUN_TEST(FAS_07); RUN_TEST(FAS_08);
@@ -628,5 +668,6 @@ SUITE (finite_preprocessor_stack_test) {
     RUN_TEST(FAS_25); RUN_TEST(FAS_26); RUN_TEST(FAS_27); RUN_TEST(FAS_28);
     RUN_TEST(FAS_29); RUN_TEST(FAS_30); RUN_TEST(FAS_31); RUN_TEST(FAS_32);
     RUN_TEST(FAS_33); RUN_TEST(FAS_34); RUN_TEST(FAS_35); RUN_TEST(FAS_36);
-    RUN_TEST(FAS_37); RUN_TEST(FAS_38);
+    RUN_TEST(FAS_37); RUN_TEST(FAS_38); RUN_TEST(FAS_39); RUN_TEST(FAS_40);
+    RUN_TEST(FAS_41);
 }
