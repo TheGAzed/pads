@@ -19,7 +19,14 @@
 #define INFINITE_LIST INFINITE_ALLOCATED_DOUBLE_LIST
 #define FINITE_LIST   FINITE_ALLOCATED_DOUBLE_LIST
 
+//#define LIST_MODE INFINITE_ALLOCATED_DOUBLE_LIST
+//#define LIST_MODE FINITE_ALLOCATED_DOUBLE_LIST
+//#define LIST_MODE INFINITE_REALLOC_DOUBLE_LIST
+//#define LIST_MODE FINITE_PRERPOCESSOR_DOUBLE_LIST
 #define LIST_MODE INFINITE_ALLOCATED_SINGLE_LIST
+//#define LIST_MODE FINITE_ALLOCATED_SINGLE_LIST
+//#define LIST_MODE INFINITE_REALLOC_SINGLE_LIST
+//#define LIST_MODE FINITE_PRERPOCESSOR_SINGLE_LIST
 // List mode that can be set to INFINITE_ALLOCATED_DOUBLE_LIST, FINITE_ALLOCATED_DOUBLE_LIST, INFINITE_REALLOC_DOUBLE_LIST or
 // FINITE_PRERPOCESSOR_DOUBLE_LIST, or INFINITE_ALLOCATED_DOUBLE_LIST or FINITE_ALLOCATED_DOUBLE_LIST
 // Default: INFINITE_ALLOCATED_DOUBLE_LIST
@@ -81,8 +88,8 @@ static inline void destroy_list(list_s * list, const destroy_list_fn destroy) {
 
     struct list_node * current = list->head;
     for (size_t s = 0; s < list->size; ++s) {
-        if (destroy_element) {
-            destroy_element(&(current->element));
+        if (destroy) {
+            destroy(&(current->element));
         }
 
         struct list_node * temp = current;
@@ -132,7 +139,7 @@ static inline LIST_DATA_TYPE remove_list(list_s * list, LIST_DATA_TYPE element, 
 
     struct list_node ** current = &(list->head);
     for (size_t s = 0; s < list->size; ++s) {
-        const int cmp = compare_element ? compare_element(&((*current)->element), &element) : memcmp(&((*current)->element), &element, sizeof(LIST_DATA_TYPE));
+        const int cmp = compare ? compare(&((*current)->element), &element) : memcmp(&((*current)->element), &element, sizeof(LIST_DATA_TYPE));
         if (cmp == 0) {
             LIST_DATA_TYPE found = (*current)->element;
 
@@ -231,7 +238,7 @@ static inline list_s concatenate_list(list_s * restrict list_one, list_s * restr
 static inline bool contains_list(const list_s list, LIST_DATA_TYPE element, const compare_list_fn compare) {
     struct list_node const * current = list.head;
     for (size_t i = 0; i < list.size; ++i) {
-        const int cmp = compare_element ? compare_element(&(current->element), &element) : memcmp(&(current->element), &element, sizeof(LIST_DATA_TYPE));
+        const int cmp = compare ? compare(&(current->element), &element) : memcmp(&(current->element), &element, sizeof(LIST_DATA_TYPE));
         if (cmp == 0) {
             return true;
         }
@@ -299,7 +306,7 @@ static inline size_t index_of_list(const list_s list, LIST_DATA_TYPE element, co
 
     struct list_node const * current = list.head;
     for (size_t s = 0; s < list.size; ++s) {
-        const int cmp = compare_element ? compare_element(&(current->element), &element) : memcmp(&(current->element), &element, sizeof(LIST_DATA_TYPE));
+        const int cmp = compare ? compare(&(current->element), &element) : memcmp(&(current->element), &element, sizeof(LIST_DATA_TYPE));
         if (cmp == 0) {
             return s;
         }
@@ -320,14 +327,14 @@ static inline bool is_full_list(const list_s list) {
 }
 
 static inline list_s copy_list(const list_s list, const copy_list_fn copy) {
-    list_s copy = { .head = NULL, .size = list.size };
+    list_s list_copy = { .head = NULL, .size = list.size };
 
     struct list_node const * current_list = list.head;
-    struct list_node ** current_copy = &(copy.head);
+    struct list_node ** current_copy = &(list_copy.head);
     for (size_t i = 0; i < list.size; ++i) {
         struct list_node * temp = malloc(sizeof(struct list_node));
         assert(temp && "[ERROR] Memory allocation failed");
-        temp->element = copy_element ? copy_element(current_list->element) : current_list->element;
+        temp->element = copy ? copy(current_list->element) : current_list->element;
 
         temp->prev = (*current_copy); // prev reference is stored in *current_copy
         (*current_copy) = temp->next = temp; // (*current_copy)->next will have reference to prev list node
@@ -336,12 +343,12 @@ static inline list_s copy_list(const list_s list, const copy_list_fn copy) {
         current_copy = &((*current_copy)->next);
     }
 
-    if (current_copy != &(copy.head)) {
-        copy.head->prev = (*current_copy); // copy.head won't have prev reference to last node
-        (*current_copy)->next = copy.head; // *current_copy or last node won't have reference to head
+    if (current_copy != &(list_copy.head)) {
+        list_copy.head->prev = (*current_copy); // copy.head won't have prev reference to last node
+        (*current_copy)->next = list_copy.head; // *current_copy or last node won't have reference to head
     }
 
-    return copy;
+    return list_copy;
 }
 
 static inline void sort_list(list_s const * list, void (*sort_elements)(LIST_DATA_TYPE *, size_t)) {
@@ -378,18 +385,15 @@ static inline void sort_list(list_s const * list, void (*sort_elements)(LIST_DAT
     free(elements_array);
 }
 
-static inline size_t count_list(const list_s list, LIST_DATA_TYPE element, const compare_list_fn compare) {
-    size_t count = 0;
-    struct list_node const * current = list.head;
-    for (size_t i = 0; i < list.size; ++i) {
-        const int cmp = compare_elements ? compare_elements(current->element, element) : memcmp(current->element, element, sizeof(LIST_DATA_TYPE));
-        if (cmp == 0) {
-            count++;
-        }
+static inline void foreach_list(list_s * list, const operate_list_fn operate, void * args) {
+    assert(list && "[ERROR] 'list' parameter pointer is NULL.");
+    assert(operate && "[ERROR] 'operate' parameter pointer is NULL.");
+
+    struct list_node * current = list->head;
+    for (size_t i = 0; i < list->size; ++i) {
+        operate(&current->element, args);
         current = current->next;
     }
-
-    return count;
 }
 
 #elif LIST_MODE == FINITE_ALLOCATED_DOUBLE_LIST
@@ -425,8 +429,8 @@ static inline void destroy_list(list_s * list, const destroy_list_fn destroy) {
     assert(list && "[ERROR] 'list' parameter is NULL.");
 
     size_t current = list->head;
-    for (size_t s = 0; destroy_element && (s < list->size); ++s) {
-        destroy_element(&(list->elements[current]));
+    for (size_t s = 0; destroy && (s < list->size); ++s) {
+        destroy(&(list->elements[current]));
         current = list->node[NEXT_IDX][current];
     }
 
@@ -472,8 +476,8 @@ static inline LIST_DATA_TYPE remove_list(list_s * list, LIST_DATA_TYPE element, 
 
     size_t current = list->head;
     for (size_t s = 0; s < list->size; ++s) {
-        if (compare_element) {
-            if (compare_element(&(list->elements[current]), &element) != 0) {
+        if (compare) {
+            if (compare(&(list->elements[current]), &element) != 0) {
                 current = list->node[NEXT_IDX][current];
                 continue;
             }
@@ -590,9 +594,9 @@ static inline list_s concatenate_list(list_s * restrict list_one, list_s * restr
 
 static inline bool contains_list(const list_s list, LIST_DATA_TYPE element, const compare_list_fn compare) {
     size_t current = list.head;
-    if (compare_element) {
+    if (compare) {
         for (size_t i = 0; i < list.size; ++i) {
-            if (compare_element(&(list.elements[current]), &element) == 0) {
+            if (compare(&(list.elements[current]), &element) == 0) {
                 return true;
             }
 
@@ -683,9 +687,9 @@ static inline size_t index_of_list(const list_s list, LIST_DATA_TYPE element, co
     assert(list.size && "[ERROR] Can't get index from empty list.");
 
     size_t current = list.head;
-    if (compare_element) {
+    if (compare) {
         for (size_t s = 0; s < list.size; ++s) {
-            if (compare_element(&(list.elements[current]), &element) == 0) return s;
+            if (compare(&(list.elements[current]), &element) == 0) return s;
 
             current = list.node[NEXT_IDX][current];
         }
@@ -710,29 +714,29 @@ static inline bool is_full_list(const list_s list) {
 }
 
 static inline list_s copy_list(const list_s list, const copy_list_fn copy) {
-    const list_s copy = {
+    const list_s list_copy = {
         .elements = malloc(sizeof(LIST_DATA_TYPE) * list.max),
         .node[NEXT_IDX] = malloc(sizeof(size_t) * list.max), .node[PREV_IDX] = malloc(sizeof(size_t) * list.max),
         .head = list.head, .max = list.max, .size = list.size,
     };
 
-    assert(copy.elements && "[ERROR] Memory allocation failed.");
-    assert(copy.node[NEXT_IDX] && "[ERROR] Memory allocation failed.");
-    assert(copy.node[PREV_IDX] && "[ERROR] Memory allocation failed.");
+    assert(list_copy.elements && "[ERROR] Memory allocation failed.");
+    assert(list_copy.node[NEXT_IDX] && "[ERROR] Memory allocation failed.");
+    assert(list_copy.node[PREV_IDX] && "[ERROR] Memory allocation failed.");
 
-    if (copy_element) {
+    if (copy) {
         for (size_t i = 0; i < list.size; ++i) {
-            copy.elements[i] = copy_element(list.elements[i]);
-            copy.node[NEXT_IDX][i] = list.node[NEXT_IDX][i];
-            copy.node[PREV_IDX][i] = list.node[PREV_IDX][i];
+            list_copy.elements[i] = copy(list.elements[i]);
+            list_copy.node[NEXT_IDX][i] = list.node[NEXT_IDX][i];
+            list_copy.node[PREV_IDX][i] = list.node[PREV_IDX][i];
         }
     } else {
-        memcpy(copy.elements, list.elements, list.size * sizeof(LIST_DATA_TYPE));
-        memcpy(copy.node[NEXT_IDX], list.node[NEXT_IDX], list.size * sizeof(size_t));
-        memcpy(copy.node[PREV_IDX], list.node[PREV_IDX], list.size * sizeof(size_t));
+        memcpy(list_copy.elements, list.elements, list.size * sizeof(LIST_DATA_TYPE));
+        memcpy(list_copy.node[NEXT_IDX], list.node[NEXT_IDX], list.size * sizeof(size_t));
+        memcpy(list_copy.node[PREV_IDX], list.node[PREV_IDX], list.size * sizeof(size_t));
     }
 
-    return copy;
+    return list_copy;
 }
 
 static inline void sort_list(list_s * list, void (*sort_elements)(LIST_DATA_TYPE *, size_t)) {
@@ -763,25 +767,15 @@ static inline void sort_list(list_s * list, void (*sort_elements)(LIST_DATA_TYPE
     }
 }
 
-static inline size_t count_list(const list_s list, LIST_DATA_TYPE element, const compare_list_fn compare) {
-    size_t count = 0;
-    size_t current = list.head;
-    if (compare_elements) {
-        for (size_t i = 0; i < list.size; ++i) {
-            if (compare_elements(list.elements[current], element) == 0) {
-                count++;
-            }
-            current = list.node[NEXT_IDX][current];
-        }
-    } else {
-        for (size_t i = 0; i < list.size; ++i) {
-            if (memcmp(list.elements[current], element, sizeof(LIST_DATA_TYPE)) == 0) {
-                count++;
-            }
-            current = list.node[NEXT_IDX][current];
-        }
+static inline void foreach_list(list_s * list, const operate_list_fn operate, void * args) {
+    assert(list && "[ERROR] 'list' parameter pointer is NULL.");
+    assert(operate && "[ERROR] 'operate' parameter pointer is NULL.");
+
+    size_t current = list->head;
+    for (size_t i = 0; i < list->size; ++i) {
+        operate(&(list->elements[current]), args);
+        current = list->node[NEXT_IDX][current];
     }
-    return count;
 }
 
 #undef NEXT_IDX
@@ -814,8 +808,8 @@ static inline void destroy_list(list_s * list, const destroy_list_fn destroy) {
     assert(list && "[ERROR] 'list' parameter pointer is NULL.");
 
     size_t current = list->head;
-    for (size_t s = 0; destroy_element && (s < list->size); ++s) {
-        destroy_element(&(list->elements[current]));
+    for (size_t s = 0; destroy && (s < list->size); ++s) {
+        destroy(&(list->elements[current]));
         current = list->node[NEXT_IDX][current];
     }
 
@@ -868,8 +862,8 @@ static inline LIST_DATA_TYPE remove_list(list_s * list, LIST_DATA_TYPE element, 
 
     size_t current = list->head;
     for (size_t s = 0; s < list->size; ++s) {
-        if (compare_element) {
-            if (compare_element(list->elements + current, &element) != 0) {
+        if (compare) {
+            if (compare(list->elements + current, &element) != 0) {
                 current = list->node[NEXT_IDX][current];
                 continue;
             }
@@ -999,9 +993,9 @@ static inline list_s concatenate_list(list_s * restrict list_one, list_s * restr
 
 static inline bool contains_list(const list_s list, LIST_DATA_TYPE element, const compare_list_fn compare) {
     size_t current = list.head;
-    if (compare_element) {
+    if (compare) {
         for (size_t i = 0; i < list.size; ++i) {
-            if (compare_element(&(list.elements[current]), &element) == 0) {
+            if (compare(&(list.elements[current]), &element) == 0) {
                 return true;
             }
 
@@ -1098,15 +1092,19 @@ static inline size_t index_of_list(const list_s list, LIST_DATA_TYPE element, co
     assert(list.size && "[ERROR] Can't get index from empty list.");
 
     size_t current = list.head;
-    if (compare_element) {
+    if (compare) {
         for (size_t s = 0; s < list.size; ++s) {
-            if (compare_element(&(list.elements[current]), &element) == 0) return s;
+            if (compare(&(list.elements[current]), &element) == 0) {
+                return s;
+            }
 
             current = list.node[NEXT_IDX][current];
         }
     } else {
         for (size_t s = 0; s < list.size; ++s) {
-            if (memcmp(&(list.elements[current]), &element, sizeof(LIST_DATA_TYPE)) == 0) return s;
+            if (memcmp(&(list.elements[current]), &element, sizeof(LIST_DATA_TYPE)) == 0) {
+                return s;
+            }
 
             current = list.node[NEXT_IDX][current];
         }
@@ -1128,29 +1126,29 @@ static inline list_s copy_list(const list_s list, const copy_list_fn copy) {
     if (!list.size) return (list_s) { 0 };
 
     const size_t copy_chunk = list.size - (list.size % REALLOC_LIST_CHUNK) + REALLOC_LIST_CHUNK;
-    const list_s copy = {
+    const list_s list_copy = {
         .elements = malloc(sizeof(LIST_DATA_TYPE) * copy_chunk),
         .node[NEXT_IDX] = malloc(sizeof(size_t) * copy_chunk), .node[PREV_IDX] = malloc(sizeof(size_t) * copy_chunk),
         .head = list.head, .size = list.size,
     };
 
-    assert(copy.elements && "[ERROR] Memory allocation failed.");
-    assert(copy.node[NEXT_IDX] && "[ERROR] Memory allocation failed.");
-    assert(copy.node[PREV_IDX] && "[ERROR] Memory allocation failed.");
+    assert(list_copy.elements && "[ERROR] Memory allocation failed.");
+    assert(list_copy.node[NEXT_IDX] && "[ERROR] Memory allocation failed.");
+    assert(list_copy.node[PREV_IDX] && "[ERROR] Memory allocation failed.");
 
-    if (copy_element) {
+    if (copy) {
         for (size_t i = 0; i < list.size; ++i) {
-            copy.elements[i] = copy_element(list.elements[i]);
-            copy.node[NEXT_IDX][i] = list.node[NEXT_IDX][i];
-            copy.node[PREV_IDX][i] = list.node[PREV_IDX][i];
+            list_copy.elements[i] = copy(list.elements[i]);
+            list_copy.node[NEXT_IDX][i] = list.node[NEXT_IDX][i];
+            list_copy.node[PREV_IDX][i] = list.node[PREV_IDX][i];
         }
     } else {
-        memcpy(copy.elements, list.elements, list.size * sizeof(LIST_DATA_TYPE));
-        memcpy(copy.node[NEXT_IDX], list.node[NEXT_IDX], list.size * sizeof(size_t));
-        memcpy(copy.node[PREV_IDX], list.node[PREV_IDX], list.size * sizeof(size_t));
+        memcpy(list_copy.elements, list.elements, list.size * sizeof(LIST_DATA_TYPE));
+        memcpy(list_copy.node[NEXT_IDX], list.node[NEXT_IDX], list.size * sizeof(size_t));
+        memcpy(list_copy.node[PREV_IDX], list.node[PREV_IDX], list.size * sizeof(size_t));
     }
 
-    return copy;
+    return list_copy;
 }
 
 static inline void sort_list(list_s * list, void (*sort_elements)(LIST_DATA_TYPE *, size_t)) {
@@ -1181,25 +1179,15 @@ static inline void sort_list(list_s * list, void (*sort_elements)(LIST_DATA_TYPE
     }
 }
 
-static inline size_t count_list(const list_s list, LIST_DATA_TYPE element, const compare_list_fn compare) {
-    size_t count = 0;
-    size_t current = list.head;
-    if (compare_elements) {
-        for (size_t i = 0; i < list.size; ++i) {
-            if (compare_elements(list.elements[current], element) == 0) {
-                count++;
-            }
-            current = list.node[NEXT_IDX][current];
-        }
-    } else {
-        for (size_t i = 0; i < list.size; ++i) {
-            if (memcmp(list.elements[current], element, sizeof(LIST_DATA_TYPE)) == 0) {
-                count++;
-            }
-            current = list.node[NEXT_IDX][current];
-        }
+static inline void foreach_list(list_s * list, const operate_list_fn operate, void * args) {
+    assert(list && "[ERROR] 'list' parameter pointer is NULL.");
+    assert(operate && "[ERROR] 'operate' parameter pointer is NULL.");
+
+    size_t current = list->head;
+    for (size_t i = 0; i < list->size; ++i) {
+        operate(&(list->elements[current]), args);
+        current = list->node[NEXT_IDX][current];
     }
-    return count;
 }
 
 #undef NEXT_IDX
@@ -1236,8 +1224,8 @@ static inline void destroy_list(list_s * list, const destroy_list_fn destroy) {
     assert(list && "[ERROR] 'list' parameter is NULL.");
 
     size_t current = list->head;
-    for (size_t s = 0; destroy_element && (s < list->size); ++s) {
-        destroy_element(&(list->elements[current]));
+    for (size_t s = 0; destroy && (s < list->size); ++s) {
+        destroy(&(list->elements[current]));
         current = list->node[NEXT_IDX][current];
     }
 
@@ -1276,40 +1264,23 @@ static inline LIST_DATA_TYPE remove_list(list_s * list, LIST_DATA_TYPE element, 
     assert(list->size && "[ERROR] Can't remove from empty list.");
 
     size_t current = list->head;
-    if (compare_element) {
-        for (size_t s = 0; s < list->size; ++s) {
-            if (compare_element(&(list->elements[current]), &element) != 0) {
-                current = list->node[NEXT_IDX][current]; continue;
-            }
-
-            list->node[NEXT_IDX][list->node[PREV_IDX][current]] = list->node[NEXT_IDX][current];
-            list->node[PREV_IDX][list->node[NEXT_IDX][current]] = list->node[PREV_IDX][current];
-
-            LIST_DATA_TYPE found = list->elements[current];
-
-            list->size--;
-            list->node[NEXT_IDX][list->node[PREV_IDX][list->size]] = list->node[PREV_IDX][list->node[NEXT_IDX][list->size]] = current;
-            list->elements[current] = list->elements[list->size];
-
-            return found;
+    for (size_t s = 0; s < list->size; ++s) {
+        int comparison = compare ? compare(&(list->elements[current]), &element) : memcmp(&(list->elements[current]), &element, sizeof(LIST_DATA_TYPE));
+        if (comparison != 0) {
+            current = list->node[NEXT_IDX][current];
+            continue;
         }
-    } else {
-        for (size_t s = 0; s < list->size; ++s) {
-            if (memcmp(&(list->elements[current]), &element, sizeof(LIST_DATA_TYPE)) != 0) {
-                current = list->node[NEXT_IDX][current]; continue;
-            }
 
-            list->node[NEXT_IDX][list->node[PREV_IDX][current]] = list->node[NEXT_IDX][current];
-            list->node[PREV_IDX][list->node[NEXT_IDX][current]] = list->node[PREV_IDX][current];
+        list->node[NEXT_IDX][list->node[PREV_IDX][current]] = list->node[NEXT_IDX][current];
+        list->node[PREV_IDX][list->node[NEXT_IDX][current]] = list->node[PREV_IDX][current];
 
-            LIST_DATA_TYPE found = list->elements[current];
+        LIST_DATA_TYPE found = list->elements[current];
 
-            list->size--;
-            list->node[NEXT_IDX][list->node[PREV_IDX][list->size]] = list->node[PREV_IDX][list->node[NEXT_IDX][list->size]] = current;
-            list->elements[current] = list->elements[list->size];
+        list->size--;
+        list->node[NEXT_IDX][list->node[PREV_IDX][list->size]] = list->node[PREV_IDX][list->node[NEXT_IDX][list->size]] = current;
+        list->elements[current] = list->elements[list->size];
 
-            return found;
-        }
+        return found;
     }
 
     assert(false && "[ERROR] Element not found in list.");
@@ -1402,15 +1373,19 @@ static inline list_s concatenate_list(list_s * restrict list_one, list_s * restr
 
 static inline bool contains_list(const list_s list, LIST_DATA_TYPE element, const compare_list_fn compare) {
     size_t current = list.head;
-    if (compare_element) {
+    if (compare) {
         for (size_t i = 0; i < list.size; ++i) {
-            if (compare_element(&(list.elements[current]), &element) == 0) return true;
+            if (compare(&(list.elements[current]), &element) == 0) {
+                return true;
+            }
 
             current = list.node[NEXT_IDX][current];
         }
     } else {
         for (size_t i = 0; i < list.size; ++i) {
-            if (memcmp(&(list.elements[current]), &element, sizeof(LIST_DATA_TYPE)) == 0) return true;
+            if (memcmp(&(list.elements[current]), &element, sizeof(LIST_DATA_TYPE)) == 0) {
+                return true;
+            }
 
             current = list.node[NEXT_IDX][current];
         }
@@ -1482,9 +1457,9 @@ static inline size_t index_of_list(const list_s list, LIST_DATA_TYPE element, co
     assert(list.size && "[ERROR] Can't get index from empty list.");
 
     size_t current = list.head;
-    if (compare_element) {
+    if (compare) {
         for (size_t s = 0; s < list.size; ++s) {
-            if (compare_element(&(list.elements[current]), &element) == 0) return s;
+            if (compare(&(list.elements[current]), &element) == 0) return s;
 
             current = list.node[NEXT_IDX][current];
         }
@@ -1509,21 +1484,21 @@ static inline bool is_full_list(const list_s list) {
 }
 
 static inline list_s copy_list(const list_s list, const copy_list_fn copy) {
-    list_s copy = { .head = list.head, .size = list.size, };
+    list_s list_copy = { .head = list.head, .size = list.size, };
 
-    if (copy_element) {
+    if (copy) {
         for (size_t i = 0; i < list.size; ++i) {
-            copy.elements[i] = copy_element(list.elements[i]);
-            copy.node[NEXT_IDX][i] = list.node[NEXT_IDX][i];
-            copy.node[PREV_IDX][i] = list.node[PREV_IDX][i];
+            list_copy.elements[i] = copy(list.elements[i]);
+            list_copy.node[NEXT_IDX][i] = list.node[NEXT_IDX][i];
+            list_copy.node[PREV_IDX][i] = list.node[PREV_IDX][i];
         }
     } else {
-        memcpy(copy.elements, list.elements, list.size * sizeof(LIST_DATA_TYPE));
-        memcpy(copy.node[NEXT_IDX], list.node[NEXT_IDX], list.size * sizeof(size_t));
-        memcpy(copy.node[PREV_IDX], list.node[PREV_IDX], list.size * sizeof(size_t));
+        memcpy(list_copy.elements, list.elements, list.size * sizeof(LIST_DATA_TYPE));
+        memcpy(list_copy.node[NEXT_IDX], list.node[NEXT_IDX], list.size * sizeof(size_t));
+        memcpy(list_copy.node[PREV_IDX], list.node[PREV_IDX], list.size * sizeof(size_t));
     }
 
-    return copy;
+    return list_copy;
 }
 
 static inline void sort_list(list_s * list, void (*sort_elements)(LIST_DATA_TYPE *, size_t)) {
@@ -1553,25 +1528,15 @@ static inline void sort_list(list_s * list, void (*sort_elements)(LIST_DATA_TYPE
     }
 }
 
-static inline size_t count_list(const list_s list, LIST_DATA_TYPE element, const compare_list_fn compare) {
-    size_t count = 0;
-    size_t current = list.head;
-    if (compare_elements) {
-        for (size_t i = 0; i < list.size; ++i) {
-            if (compare_elements(list.elements[current], element) == 0) {
-                count++;
-            }
-            current = list.node[NEXT_IDX][current];
-        }
-    } else {
-        for (size_t i = 0; i < list.size; ++i) {
-            if (memcmp(list.elements[current], element, sizeof(LIST_DATA_TYPE)) == 0) {
-                count++;
-            }
-            current = list.node[NEXT_IDX][current];
-        }
+static inline void foreach_list(list_s * list, const operate_list_fn operate, void * args) {
+    assert(list && "[ERROR] 'list' parameter pointer is NULL.");
+    assert(operate && "[ERROR] 'operate' parameter pointer is NULL.");
+
+    size_t current = list->head;
+    for (size_t i = 0; i < list->size; ++i) {
+        operate(&(list->elements[current]), args);
+        current = list->node[NEXT_IDX][current];
     }
-    return count;
 }
 
 #undef NEXT_IDX
@@ -1779,7 +1744,7 @@ static inline bool contains_list(const list_s list, LIST_DATA_TYPE element, cons
 static inline list_s split_list(list_s * list, const size_t index, const size_t size) {
     assert(list && "[ERROR] List pointer is NULL");
     assert(size <= list->size && "[ERROR] Size parameter bigger than list size.");
-    assert(index < list->size);
+    assert(index < list->size && "[ERROR] Index is above or equal to list size.");
 
     list_s split = { 0 };
     if (!size) {
@@ -1813,7 +1778,103 @@ static inline list_s split_list(list_s * list, const size_t index, const size_t 
     return split;
 }
 
+static inline LIST_DATA_TYPE get_list(const list_s list, const size_t index) {
+    assert(list.size && "[ERROR] Can't get element from empty list.");
+    assert(index < list.size && "[ERROR] 'index' parameter exceeds list size.");
+
+    struct list_node * previous = list.tail;
+    for (size_t i = 0; i < index + 1; ++i) {
+        previous = previous->next;
+    }
+
+    return previous->element;
+}
+
+static inline size_t index_of_list(const list_s list, LIST_DATA_TYPE element, const compare_list_fn compare) {
+    assert(list.size && "[ERROR] Can't get index from empty list.");
+
+    struct list_node * previous = list.tail;
+    for (size_t s = 0; s < list.size; ++s) {
+        if (compare(&(previous->element), &element) == 0) {
+            return s;
+        }
+
+        previous = previous->next;
+    }
+
+    assert(false && "[ERROR] Element index not found in list.");
+    exit(EXIT_FAILURE);
+}
+
+static inline bool is_empty_list(const list_s list) {
+    return list.size == 0;
+}
+
+static inline bool is_full_list(const list_s list) {
+    return !(~list.size);
+}
+
+static inline list_s copy_list(const list_s list, const copy_list_fn copy) {
+    list_s list_copy = { .tail = NULL, .size = list.size };
+
+    struct list_node const * previous_list = list.tail;
+    struct list_node ** previous_copy = &(list_copy.tail);
+    for (size_t i = 0; i < list.size; ++i) {
+        struct list_node * temp = malloc(sizeof(struct list_node));
+        assert(temp && "[ERROR] Memory allocation failed");
+        temp->element = copy ? copy(previous_list->element) : previous_list->element;
+
+        (*previous_copy) = temp->next = temp; // (*previous_copy)->next will have reference to prev list node
+
+        previous_list = previous_list->next;
+        previous_copy = &((*previous_copy)->next);
+    }
+
+    if (*previous_copy != list_copy.tail) {
+        (*previous_copy)->next = list_copy.tail;
+    }
+
+    return list_copy;
+}
+
+static inline void sort_list(list_s const * list, void (*sort_elements)(LIST_DATA_TYPE *, size_t)) {
+    assert(list && "[ERROR] 'list' parameter pointer is NULL");
+
+    LIST_DATA_TYPE * elements_array = malloc(sizeof(LIST_DATA_TYPE) * list->size);
+    assert((!(list->size) || elements_array) && "[ERROR] Memory allocation failed.");
+
+    struct list_node * previous = list->tail;
+    for (size_t i = 0; i < list->size; ++i) {
+        previous = previous->next; // gets to first element, since we start from tail
+        elements_array[i] = previous->element;
+    }
+
+    if (sort_elements) {
+        sort_elements(elements_array, list->size);
+    } else {
+        for (size_t s = 0; s < list->size - 1; ++s) {
+            for (size_t i = 0; i < list->size - s - 1; ++i) {
+                if (memcmp(&(elements_array[i]), &(elements_array[i + 1]), sizeof(LIST_DATA_TYPE)) > 0) {
+                    LIST_DATA_TYPE temp = elements_array[i];
+                    elements_array[i] = elements_array[i + 1];
+                    elements_array[i + 1] = temp;
+                }
+            }
+        }
+    }
+
+    previous = list->tail;
+    for (size_t i = 0; i < list->size; ++i) {
+        previous = previous->next; // gets to first element, since we start from tail
+        previous->element = elements_array[i];
+    }
+    free(elements_array);
+}
+
 static inline void foreach_list(list_s * list, const operate_list_fn operate, void * args) {
+    assert(list && "[ERROR] 'list' parameter pointer is NULL.");
+    assert(operate && "[ERROR] 'operate' parameter pointer is NULL.");
+
     struct list_node * previous = list->tail;
     for (size_t i = 0; i < list->size; ++i) {
         previous = previous->next; // go to next early to start from the beginning/head
