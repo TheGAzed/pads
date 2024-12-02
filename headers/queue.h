@@ -10,7 +10,10 @@
 #define INFINITE_QUEUE INFINITE_LIST_QUEUE
 #define FINITE_QUEUE   FINITE_ALLOCATED_QUEUE
 
+#define QUEUE_MODE INFINITE_LIST_QUEUE
 //#define QUEUE_MODE FINITE_ALLOCATED_QUEUE
+//#define QUEUE_MODE INFINITE_REALLOC_QUEUE
+//#define QUEUE_MODE FINITE_PREPORCESSOR_QUEUE
 // Queue mode that can be set to INFINITE_LIST_QUEUE, FINITE_ALLOCATED_QUEUE, INFINITE_REALLOC_QUEUE or
 // FINITE_PRERPOCESSOR_QUEUE.
 // Default: INFINITE_LIST_QUEUE
@@ -178,7 +181,7 @@ static inline void enqueue(queue_s * queue, QUEUE_DATA_TYPE element) {
 
     // index where the next element will be enqueued
     const size_t next_index = (queue->current + queue->size) % LIST_ARRAY_QUEUE_CHUNK;
-    if (0 == next_index) { // if head list array is full (is divisible) adds new list element to head
+    if (!next_index) { // if head list array is full (is divisible) adds new list element to head
         struct queue_list_array * temp = QUEUE_ALLOC(sizeof(struct queue_list_array));
 
         QUEUE_ASSERT(temp && "[ERROR] Memory allocation failed");
@@ -321,6 +324,39 @@ static inline void sort_queue(queue_s const * queue, void (*sort_elements)(QUEUE
             current = current->next;
         }
         memcpy(queue->tail->elements, &(elements_array[copied_size]), queue->size - copied_size);
+    }
+}
+
+/// @brief Foreach funtion that iterates over all elements in queue and performs 'operate' function on them using 'args'
+/// as parameters.
+/// @param queue Queue structure pointer.
+/// @param operate Function pointer taht operates on single element pointer using 'args' as arguments.
+/// @param args Arguments for 'operates' funtion pointer.
+static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate, void * args) {
+    assert(queue && "[ERROR] 'queue' parameter pointer is NULL.");
+    assert(operate && "[ERROR] 'operate' parameter pointer is NULL");
+
+    if (queue->head == queue->tail) { // if head and tail point to the same memory (including NULL)
+        for (size_t i = queue->current; i < queue->current + queue->size; ++i) { // won't run if size is 0
+            operate(queue->head->elements + i, args);
+        }
+    } else { // else queue is made up of more than one list node
+        for (size_t i = queue->current; i < LIST_ARRAY_QUEUE_CHUNK; ++i) { // operate on first node
+            operate(queue->head->elements + i, args);
+        }
+
+        struct queue_list_array * current = queue->head->next;
+        while (current->next) { // operate on all nodes between first and last node (excluding last)
+            for (size_t i = 0; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
+                operate(queue->head->elements + i, args);
+            }
+            current = current->next;
+        }
+        // calculate last node element count
+        const size_t chunk_size = (queue->current + queue->size) % LIST_ARRAY_QUEUE_CHUNK;
+        for (size_t i = 0; i < chunk_size; ++i) { // operate on last node
+            operate(queue->head->elements + i, args);
+        }
     }
 }
 
