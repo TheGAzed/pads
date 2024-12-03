@@ -153,7 +153,7 @@ TEST ILQ_10(void) {
 TEST ILQ_11(void) {
     queue_s test = create_queue();
 
-    ASSERTm("[ELQ-ERROR] Expected queue to be empty when creating it.", is_empty_queue(test));
+    ASSERTm("[ILQ-ERROR] Expected queue to be empty when creating it.", is_empty_queue(test));
 
     destroy_queue(&test, NULL);
 
@@ -165,7 +165,7 @@ TEST ILQ_12(void) {
     queue_s test = create_queue();
 
     enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
-    ASSERTm("[ELQ-ERROR] Expected queue to not be empty when enqueueing element.", is_empty_queue(test));
+    ASSERT_FALSEm("[ILQ-ERROR] Expected queue to not be empty when enqueueing element.", is_empty_queue(test));
 
     destroy_queue(&test, NULL);
 
