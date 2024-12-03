@@ -5,15 +5,15 @@
 #define INFINITE_LIST_QUEUE       0x08
 #define FINITE_ALLOCATED_QUEUE    0x0A
 #define INFINITE_REALLOC_QUEUE    0x18
-#define FINITE_PRERPOCESSOR_QUEUE 0x20
+#define FINITE_PREPROCESSOR_QUEUE 0x20
 
 #define INFINITE_QUEUE INFINITE_LIST_QUEUE
 #define FINITE_QUEUE   FINITE_ALLOCATED_QUEUE
 
-#define QUEUE_MODE INFINITE_LIST_QUEUE
+//#define QUEUE_MODE INFINITE_LIST_QUEUE
 //#define QUEUE_MODE FINITE_ALLOCATED_QUEUE
 //#define QUEUE_MODE INFINITE_REALLOC_QUEUE
-//#define QUEUE_MODE FINITE_PREPORCESSOR_QUEUE
+#define QUEUE_MODE FINITE_PREPROCESSOR_QUEUE
 // Queue mode that can be set to INFINITE_LIST_QUEUE, FINITE_ALLOCATED_QUEUE, INFINITE_REALLOC_QUEUE or
 // FINITE_PRERPOCESSOR_QUEUE.
 // Default: INFINITE_LIST_QUEUE
@@ -27,7 +27,7 @@
 
 // Check to make sure a valid queue mode is selected.
 #if (QUEUE_MODE != INFINITE_LIST_QUEUE)    && (QUEUE_MODE != FINITE_ALLOCATED_QUEUE) && \
-    (QUEUE_MODE != INFINITE_REALLOC_QUEUE) && (QUEUE_MODE != FINITE_PRERPOCESSOR_QUEUE)
+    (QUEUE_MODE != INFINITE_REALLOC_QUEUE) && (QUEUE_MODE != FINITE_PREPROCESSOR_QUEUE)
 
 #error Invalid type of queue mode.
 
@@ -538,6 +538,30 @@ static inline void sort_queue(queue_s const * queue, void (*sort_elements)(QUEUE
     }
 }
 
+/// @brief Foreach funtion that iterates over all elements in queue and performs 'operate' function on them using 'args'
+/// as parameters.
+/// @param queue Queue structure pointer.
+/// @param operate Function pointer taht operates on single element pointer using 'args' as arguments.
+/// @param args Arguments for 'operates' funtion pointer.
+static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate, void * args) {
+    assert(queue && "[ERROR] 'queue' parameter pointer is NULL.");
+    assert(operate && "[ERROR] 'operate' parameter pointer is NULL.");
+
+    const size_t right_size = queue->max - queue->current;
+    if (queue->size > right_size) { // if queue elements circle around
+        for (size_t i = queue->current; i < queue->max; ++i) { // operates on elements right of current index
+            operate(&(queue->elements[i]), args);
+        }
+        for (size_t i = 0; i < queue->size - right_size; i++) {// operates on elements left of current index
+            operate(&(queue->elements[i]), args);
+        }
+    } else { // else elements are continuous in array (they don't circle around)
+        for (size_t i = queue->current; i < queue->current + queue->size; ++i) {
+            operate(&(queue->elements[i]), args);
+        }
+    }
+}
+
 #elif QUEUE_MODE == INFINITE_REALLOC_QUEUE
 
 #ifndef REALLOC_QUEUE_CHUNK
@@ -690,7 +714,21 @@ static inline void sort_queue(queue_s const * queue, void (*sort_elements)(QUEUE
     }
 }
 
-#elif QUEUE_MODE == FINITE_PRERPOCESSOR_QUEUE
+/// @brief Foreach funtion that iterates over all elements in queue and performs 'operate' function on them using 'args'
+/// as parameters.
+/// @param queue Queue structure pointer.
+/// @param operate Function pointer taht operates on single element pointer using 'args' as arguments.
+/// @param args Arguments for 'operates' funtion pointer.
+static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate, void * args) {
+    assert(queue && "[ERROR] 'queue' parameter pointer is NULL.");
+    assert(operate && "[ERROR] 'operate' parameter pointer is NULL.");
+
+    for (size_t i = queue->current; i < queue->current + queue->size; ++i) {
+        operate(&(queue->elements[i]), args);
+    }
+}
+
+#elif QUEUE_MODE == FINITE_PREPROCESSOR_QUEUE
 
 #ifndef PREPROCESSOR_QUEUE_SIZE
 
@@ -873,6 +911,30 @@ static inline void sort_queue(queue_s * queue, void (*sort_elements)(QUEUE_DATA_
     }
 }
 
+/// @brief Foreach funtion that iterates over all elements in queue and performs 'operate' function on them using 'args'
+/// as parameters.
+/// @param queue Queue structure pointer.
+/// @param operate Function pointer taht operates on single element pointer using 'args' as arguments.
+/// @param args Arguments for 'operates' funtion pointer.
+static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate, void * args) {
+    assert(queue && "[ERROR] 'queue' parameter pointer is NULL.");
+    assert(operate && "[ERROR] 'operate' parameter pointer is NULL.");
+
+    const size_t right_size = PREPROCESSOR_QUEUE_SIZE - queue->current;
+    if (queue->size > right_size) { // if queue elements circle around
+        for (size_t i = queue->current; i < PREPROCESSOR_QUEUE_SIZE; ++i) { // operates on elements right of current index
+            operate(&(queue->elements[i]), args);
+        }
+        for (size_t i = 0; i < queue->size - right_size; i++) {// operates on elements left of current index
+            operate(&(queue->elements[i]), args);
+        }
+    } else { // else elements are continuous in array (they don't circle around)
+        for (size_t i = queue->current; i < queue->current + queue->size; ++i) {
+            operate(&(queue->elements[i]), args);
+        }
+    }
+}
+
 #endif
 
-#endif //QUEUE_H
+#endif // QUEUE_H
