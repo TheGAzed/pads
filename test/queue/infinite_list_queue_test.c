@@ -172,8 +172,66 @@ TEST ILQ_12(void) {
     PASS();
 }
 
+/// Tests if one enqueued element is peeked correctly.
+TEST ILQ_13(void) {
+    queue_s test = create_queue();
+    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
+
+    ASSERT_EQm("[ILQ-ERROR] Test queue peeked element not 42.", 42, dequeue(&test).sub_one);
+
+    destroy_queue(&test, NULL);
+
+    PASS();
+}
+
+/// Tests if 'LIST_ARRAY_QUEUE_CHUNK' - 1 enqueued element is peeked correctly.
+TEST ILQ_14(void) {
+    queue_s test = create_queue();
+    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
+    for (size_t i = 0; i < LIST_ARRAY_QUEUE_CHUNK - 2; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = -1, });
+    }
+
+    ASSERT_EQm("[ILQ-ERROR] Test queue peeked element not 42.", 42, dequeue(&test).sub_one);
+
+    destroy_queue(&test, NULL);
+
+    PASS();
+}
+
+/// Tests if 'LIST_ARRAY_QUEUE_CHUNK' enqueued element is peeked correctly.
+TEST ILQ_15(void) {
+    queue_s test = create_queue();
+    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
+    for (size_t i = 0; i < LIST_ARRAY_QUEUE_CHUNK - 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = -1, });
+    }
+
+    ASSERT_EQm("[ILQ-ERROR] Test queue peeked element not 42.", 42, dequeue(&test).sub_one);
+
+    destroy_queue(&test, NULL);
+
+    PASS();
+}
+
+/// Tests if 'LIST_ARRAY_QUEUE_CHUNK' + 1 enqueued element is peeked correctly.
+TEST ILQ_16(void) {
+    queue_s test = create_queue();
+    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
+    for (size_t i = 0; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = -1, });
+    }
+
+    ASSERT_EQm("[ILQ-ERROR] Test queue peeked element not 42.", 42, dequeue(&test).sub_one);
+
+    destroy_queue(&test, NULL);
+
+    PASS();
+}
+
 SUITE (infinite_list_queue_test) {
     RUN_TEST(ILQ_01); RUN_TEST(ILQ_02); RUN_TEST(ILQ_03); RUN_TEST(ILQ_04);
     RUN_TEST(ILQ_05); RUN_TEST(ILQ_06); RUN_TEST(ILQ_07); RUN_TEST(ILQ_08);
     RUN_TEST(ILQ_09); RUN_TEST(ILQ_10); RUN_TEST(ILQ_11); RUN_TEST(ILQ_12);
+    RUN_TEST(ILQ_13); RUN_TEST(ILQ_14); RUN_TEST(ILQ_15); RUN_TEST(ILQ_16);
 }

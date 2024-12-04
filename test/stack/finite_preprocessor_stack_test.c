@@ -5,7 +5,7 @@
 #include <stack.h>
 
 /// Tests if stack is created properly.
-TEST FAS_01(void) {
+TEST FPS_01(void) {
     stack_s test = create_stack();
 
     ASSERT_NEQm("[ILS-TEST] Stack's 'elements' parameter is NULL.", NULL, test.elements);
@@ -17,7 +17,7 @@ TEST FAS_01(void) {
 }
 
 /// Test if peeped top element is equal to 42
-TEST FAS_02(void) {
+TEST FPS_02(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
 
@@ -28,7 +28,7 @@ TEST FAS_02(void) {
 }
 
 /// Test if peeped top element is equal to 42
-TEST FAS_03(void) {
+TEST FPS_03(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1 });
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
@@ -40,7 +40,7 @@ TEST FAS_03(void) {
 }
 
 /// Test if peeped top element is equal to 42
-TEST FAS_04(void) {
+TEST FPS_04(void) {
     stack_s test = create_stack();
     for (size_t i = 0; i < PREPROCESSOR_STACK_SIZE - 1; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1 });
@@ -54,7 +54,7 @@ TEST FAS_04(void) {
 }
 
 /// Test if peep remains size
-TEST FAS_05(void) {
+TEST FPS_05(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     peep_stack(test);
@@ -66,7 +66,7 @@ TEST FAS_05(void) {
 }
 
 /// Test if peep remains size
-TEST FAS_06(void) {
+TEST FPS_06(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
@@ -79,7 +79,7 @@ TEST FAS_06(void) {
 }
 
 /// Test if peep remains size
-TEST FAS_07(void) {
+TEST FPS_07(void) {
     stack_s test = create_stack();
     for (size_t i = 0; i < PREPROCESSOR_STACK_SIZE; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1 });
@@ -93,7 +93,7 @@ TEST FAS_07(void) {
 }
 
 /// Test if popped top element is equal to 42
-TEST FAS_08(void) {
+TEST FPS_08(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
 
@@ -104,7 +104,7 @@ TEST FAS_08(void) {
 }
 
 /// Test if popped top element is equal to 42
-TEST FAS_09(void) {
+TEST FPS_09(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1 });
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
@@ -116,7 +116,7 @@ TEST FAS_09(void) {
 }
 
 /// Test if popped top element is equal to 42
-TEST FAS_10(void) {
+TEST FPS_10(void) {
     stack_s test = create_stack();
     for (size_t i = 0; i < PREPROCESSOR_STACK_SIZE - 1; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1 });
@@ -130,7 +130,7 @@ TEST FAS_10(void) {
 }
 
 /// Test if pop decreases size
-TEST FAS_11(void) {
+TEST FPS_11(void) {
     stack_s test = create_stack();
 
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
@@ -143,7 +143,7 @@ TEST FAS_11(void) {
 }
 
 /// Test if pop decreases size
-TEST FAS_12(void) {
+TEST FPS_12(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
@@ -156,7 +156,7 @@ TEST FAS_12(void) {
 }
 
 /// Test if pop decreases size
-TEST FAS_13(void) {
+TEST FPS_13(void) {
     stack_s test = create_stack();
     for (size_t i = 0; i < PREPROCESSOR_STACK_SIZE; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
@@ -170,7 +170,7 @@ TEST FAS_13(void) {
 }
 
 /// Test if destroyed element freed.
-TEST FAS_14(void) {
+TEST FPS_14(void) {
     stack_s test = create_stack();
 
     push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
@@ -180,7 +180,7 @@ TEST FAS_14(void) {
 }
 
 /// Test if destroyed element freed.
-TEST FAS_15(void) {
+TEST FPS_15(void) {
     stack_s test = create_stack();
     push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
     push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
@@ -190,7 +190,7 @@ TEST FAS_15(void) {
 }
 
 /// Test if destroyed element
-TEST FAS_16(void) {
+TEST FPS_16(void) {
     stack_s test = create_stack();
     for (size_t i = 0; i < PREPROCESSOR_STACK_SIZE; ++i) {
         push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
@@ -201,7 +201,7 @@ TEST FAS_16(void) {
 }
 
 /// Test if copied element
-TEST FAS_17(void) {
+TEST FPS_17(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
 
@@ -214,7 +214,7 @@ TEST FAS_17(void) {
 }
 
 /// Test if copied element
-TEST FAS_18(void) {
+TEST FPS_18(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 1 });
@@ -229,7 +229,7 @@ TEST FAS_18(void) {
 }
 
 /// Test if copied element
-TEST FAS_19(void) {
+TEST FPS_19(void) {
     stack_s test = create_stack();
     for (int i = 0; i < PREPROCESSOR_STACK_SIZE; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
@@ -245,7 +245,7 @@ TEST FAS_19(void) {
 }
 
 /// Test if copied element
-TEST FAS_20(void) {
+TEST FPS_20(void) {
     stack_s test = create_stack();
     push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
 
@@ -262,7 +262,7 @@ TEST FAS_20(void) {
 }
 
 /// Test if copied element
-TEST FAS_21(void) {
+TEST FPS_21(void) {
     stack_s test = create_stack();
     push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
     push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
@@ -286,7 +286,7 @@ TEST FAS_21(void) {
 }
 
 /// Test if copied element
-TEST FAS_22(void) {
+TEST FPS_22(void) {
     stack_s test = create_stack();
     for (int i = 0; i < PREPROCESSOR_STACK_SIZE; ++i) {
         push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
@@ -306,65 +306,65 @@ TEST FAS_22(void) {
 }
 
 /// Test if stack is not empty
-TEST FAS_23(void) {
+TEST FPS_23(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    ASSERT_FALSEm("[FAS_TEST] Stack is empty.", is_empty_stack(test));
+    ASSERT_FALSEm("[FPS_TEST] Stack is empty.", is_empty_stack(test));
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
 /// Test if stack is not empty
-TEST FAS_24(void) {
+TEST FPS_24(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    ASSERT_FALSEm("[FAS_TEST] Stack is empty.", is_empty_stack(test));
+    ASSERT_FALSEm("[FPS_TEST] Stack is empty.", is_empty_stack(test));
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
 /// Test if stack is not empty
-TEST FAS_25(void) {
+TEST FPS_25(void) {
     stack_s test = create_stack();
     for (int i = 0; i < PREPROCESSOR_STACK_SIZE; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     }
 
-    ASSERT_FALSEm("[FAS_TEST] Stack is empty.", is_empty_stack(test));
+    ASSERT_FALSEm("[FPS_TEST] Stack is empty.", is_empty_stack(test));
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
 /// Test if stack is empty
-TEST FAS_26(void) {
+TEST FPS_26(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     pop_stack(&test);
-    ASSERTm("[FAS_TEST] Stack is not empty.", is_empty_stack(test));
+    ASSERTm("[FPS_TEST] Stack is not empty.", is_empty_stack(test));
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
 /// Test if stack is empty
-TEST FAS_27(void) {
+TEST FPS_27(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     pop_stack(&test);
     pop_stack(&test);
-    ASSERTm("[FAS_TEST] Stack is not empty.", is_empty_stack(test));
+    ASSERTm("[FPS_TEST] Stack is not empty.", is_empty_stack(test));
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
 /// Test if stack is empty
-TEST FAS_28(void) {
+TEST FPS_28(void) {
     stack_s test = create_stack();
     for (int i = 0; i < PREPROCESSOR_STACK_SIZE; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
@@ -373,14 +373,14 @@ TEST FAS_28(void) {
         pop_stack(&test);
     }
 
-    ASSERTm("[FAS_TEST] Stack is not empty.", is_empty_stack(test));
+    ASSERTm("[FPS_TEST] Stack is not empty.", is_empty_stack(test));
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
 /// Test if int sorted ascending correctly qsort
-TEST FAS_29(void) {
+TEST FPS_29(void) {
     stack_s test = create_stack();
 
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 8 });
@@ -397,14 +397,14 @@ TEST FAS_29(void) {
     sort_stack(&test, qsort, compare_int_asc);
 
     for (int i = 9; i >= 0; i--) {
-        ASSERT_EQm("[FAS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+        ASSERT_EQm("[FPS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
     }
     destroy_stack(&test, NULL);
     PASS();
 }
 
 /// Test if int sorted descending correctly qsort
-TEST FAS_30(void) {
+TEST FPS_30(void) {
     stack_s test = create_stack();
 
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 8 });
@@ -421,62 +421,14 @@ TEST FAS_30(void) {
     sort_stack(&test, qsort, compare_int_desc);
 
     for (int i = 0; i < 10; i++) {
-        ASSERT_EQm("[FAS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
-    }
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Test if int sorted ascending correctly bubble sort
-TEST FAS_31(void) {
-    stack_s test = create_stack();
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 8 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 5 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 2 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 3 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 7 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 1 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 6 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 9 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 4 });
-
-    sort_stack(&test, NULL, compare_int_asc);
-
-    for (int i = 9; i >= 0; i--) {
-        ASSERT_EQm("[FAS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
-    }
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Test if int sorted descending correctly bubble sort
-TEST FAS_32(void) {
-    stack_s test = create_stack();
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 8 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 5 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 2 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 3 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 7 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 1 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 6 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 9 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 4 });
-
-    sort_stack(&test, NULL, compare_int_desc);
-
-    for (int i = 0; i < 10; i++) {
-        ASSERT_EQm("[FAS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+        ASSERT_EQm("[FPS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
     }
     destroy_stack(&test, NULL);
     PASS();
 }
 
 /// Test if string sorted ascending correctly qsort
-TEST FAS_33(void) {
+TEST FPS_31(void) {
     stack_s test = create_stack();
 
     push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "i" });
@@ -495,14 +447,14 @@ TEST FAS_33(void) {
     for (int i = 9; i >= 0; i--) {
         char temp[] = "a";
         temp[0] += i;
-        ASSERT_STRN_EQm("[FAS-ERROR] Expected sorted values to be equal", temp , pop_stack(&test).sub_two, sizeof(temp) - 1);
+        ASSERT_STRN_EQm("[FPS-ERROR] Expected sorted values to be equal", temp , pop_stack(&test).sub_two, sizeof(temp) - 1);
     }
     destroy_stack(&test, NULL);
     PASS();
 }
 
 /// Test if string sorted descending correctly qsort
-TEST FAS_34(void) {
+TEST FPS_32(void) {
     stack_s test = create_stack();
 
     push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "i" });
@@ -521,65 +473,14 @@ TEST FAS_34(void) {
     for (int i = 0; i < 10; i++) {
         char temp[] = "a";
         temp[0] += i;
-        ASSERT_STRN_EQm("[FAS-ERROR] Expected sorted values to be equal", temp , pop_stack(&test).sub_two, sizeof(temp) - 1);
-    }
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Test if string sorted ascending correctly bubble sort
-TEST FAS_35(void) {
-    stack_s test = create_stack();
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "i" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "a" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "f" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "c" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "d" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "h" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "b" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "g" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "j" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "e" });
-
-    sort_stack(&test, NULL, compare_string_asc);
-    for (int i = 9; i >= 0; i--) {
-        char temp[] = "a";
-        temp[0] += i;
-        ASSERT_STRN_EQm("[FAS-ERROR] Expected sorted values to be equal", temp , pop_stack(&test).sub_two, sizeof(temp) - 1);
-    }
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Test if string sorted descending correctly bubble sort
-TEST FAS_36(void) {
-    stack_s test = create_stack();
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "i" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "a" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "f" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "c" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "d" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "h" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "b" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "g" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "j" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "e" });
-
-    sort_stack(&test, NULL, compare_string_desc);
-
-    for (int i = 0; i < 10; i++) {
-        char temp[] = "a";
-        temp[0] += i;
-        ASSERT_STRN_EQm("[FAS-ERROR] Expected sorted values to be equal", temp , pop_stack(&test).sub_two, sizeof(temp) - 1);
+        ASSERT_STRN_EQm("[FPS-ERROR] Expected sorted values to be equal", temp , pop_stack(&test).sub_two, sizeof(temp) - 1);
     }
     destroy_stack(&test, NULL);
     PASS();
 }
 
 /// Test if all int values get incremented by 'increment'
-TEST FAS_37(void) {
+TEST FPS_33(void) {
     stack_s test = create_stack();
 
     for (int i = 0; i < 10; ++i) {
@@ -590,7 +491,7 @@ TEST FAS_37(void) {
     foreach_stack(&test, operation_int, &increment);
 
     for (int i = 9; i >= 0; --i) {
-        ASSERT_EQm("[FAS-ERROR] Expected incremented element by 'increment'.", i + increment, pop_stack(&test).sub_one);
+        ASSERT_EQm("[FPS-ERROR] Expected incremented element by 'increment'.", i + increment, pop_stack(&test).sub_one);
     }
 
     destroy_stack(&test, NULL);
@@ -598,7 +499,7 @@ TEST FAS_37(void) {
 }
 
 /// Test if all string values have changed to new string value
-TEST FAS_38(void) {
+TEST FPS_34(void) {
     stack_s test = create_stack();
 
     for (int i = 0; i < 10; ++i) {
@@ -610,7 +511,7 @@ TEST FAS_38(void) {
 
     for (int i = 0; i < 10; ++i) {
         STACK_DATA_TYPE element = pop_stack(&test);
-        ASSERT_STRN_EQm("[FAS-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
+        ASSERT_STRN_EQm("[FPS-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
         destroy_element(&element);
     }
 
@@ -619,55 +520,124 @@ TEST FAS_38(void) {
 }
 
 /// Tests if stack is not full when adding one element
-TEST FAS_39(void) {
+TEST FPS_35(void) {
     stack_s test = create_stack();
 
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_FALSEm("[FAS-ERROR] Expected stack to not be full.", is_full_stack(test));
+    ASSERT_FALSEm("[FPS-ERROR] Expected stack to not be full.", is_full_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
 }
 
-/// Tests if stack is not full when adding 'MAXIMUM_STACK_SIZE' - 1 elements
-TEST FAS_40(void) {
+/// Tests if stack is not full when adding 'PREPROCESSOR_STACK_SIZE' - 1 elements
+TEST FPS_36(void) {
     stack_s test = create_stack();
 
     for (size_t i = 0; i < PREPROCESSOR_STACK_SIZE - 1; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
     }
 
-    ASSERT_FALSEm("[FAS-ERROR] Expected stack to not be full.", is_full_stack(test));
+    ASSERT_FALSEm("[FPS-ERROR] Expected stack to not be full.", is_full_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
 }
 
-/// Tests if stack is not full when adding 'MAXIMUM_STACK_SIZE' - 1 elements
-TEST FAS_41(void) {
+/// Tests if stack is not full when adding 'PREPROCESSOR_STACK_SIZE' - 1 elements
+TEST FPS_37(void) {
     stack_s test = create_stack();
 
     for (size_t i = 0; i < PREPROCESSOR_STACK_SIZE; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
     }
 
-    ASSERTm("[FAS-ERROR] Expected stack to be full.", is_full_stack(test));
+    ASSERTm("[FPS-ERROR] Expected stack to be full.", is_full_stack(test));
     destroy_stack(&test, NULL);
 
     PASS();
 }
 
+/// Tests sorting 'PREPROCESSOR_STACK_SIZE' - 1 descending values into ascending
+TEST FPS_38(void) {
+    stack_s test = create_stack();
+    for (int i = PREPROCESSOR_STACK_SIZE - 2; i >= 0; i--) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_asc);
+
+    for (int i = PREPROCESSOR_STACK_SIZE - 2; i >= 0; i--) {
+        ASSERT_EQm("[FPS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Tests sorting 'PREPROCESSOR_STACK_SIZE' descending values into ascending
+TEST FPS_39(void) {
+    stack_s test = create_stack();
+    for (int i = PREPROCESSOR_STACK_SIZE - 1; i >= 0; i--) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_asc);
+
+    for (int i = PREPROCESSOR_STACK_SIZE - 1; i >= 0; i--) {
+        ASSERT_EQm("[FPS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Tests sorting 'PREPROCESSOR_STACK_SIZE' - 1 ascending values into descending
+TEST FPS_40(void) {
+    stack_s test = create_stack();
+    for (int i = 0; i < PREPROCESSOR_STACK_SIZE - 1; i++) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_desc);
+
+    for (int i = 0; i < PREPROCESSOR_STACK_SIZE - 1; i++) {
+        ASSERT_EQm("[FPS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Tests sorting 'PREPROCESSOR_STACK_SIZE' ascending values into descending
+TEST FPS_41(void) {
+    stack_s test = create_stack();
+    for (int i = 0; i < PREPROCESSOR_STACK_SIZE; i++) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_desc);
+
+    for (int i = 0; i < PREPROCESSOR_STACK_SIZE; i++) {
+        ASSERT_EQm("[FPS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+
 SUITE (finite_preprocessor_stack_test) {
-    RUN_TEST(FAS_01); RUN_TEST(FAS_02); RUN_TEST(FAS_03); RUN_TEST(FAS_04);
-    RUN_TEST(FAS_05); RUN_TEST(FAS_06); RUN_TEST(FAS_07); RUN_TEST(FAS_08);
-    RUN_TEST(FAS_09); RUN_TEST(FAS_10); RUN_TEST(FAS_11); RUN_TEST(FAS_12);
-    RUN_TEST(FAS_13); RUN_TEST(FAS_14); RUN_TEST(FAS_15); RUN_TEST(FAS_16);
-    RUN_TEST(FAS_17); RUN_TEST(FAS_18); RUN_TEST(FAS_19); RUN_TEST(FAS_20);
-    RUN_TEST(FAS_21); RUN_TEST(FAS_22); RUN_TEST(FAS_23); RUN_TEST(FAS_24);
-    RUN_TEST(FAS_25); RUN_TEST(FAS_26); RUN_TEST(FAS_27); RUN_TEST(FAS_28);
-    RUN_TEST(FAS_29); RUN_TEST(FAS_30); RUN_TEST(FAS_31); RUN_TEST(FAS_32);
-    RUN_TEST(FAS_33); RUN_TEST(FAS_34); RUN_TEST(FAS_35); RUN_TEST(FAS_36);
-    RUN_TEST(FAS_37); RUN_TEST(FAS_38); RUN_TEST(FAS_39); RUN_TEST(FAS_40);
-    RUN_TEST(FAS_41);
+    RUN_TEST(FPS_01); RUN_TEST(FPS_02); RUN_TEST(FPS_03); RUN_TEST(FPS_04);
+    RUN_TEST(FPS_05); RUN_TEST(FPS_06); RUN_TEST(FPS_07); RUN_TEST(FPS_08);
+    RUN_TEST(FPS_09); RUN_TEST(FPS_10); RUN_TEST(FPS_11); RUN_TEST(FPS_12);
+    RUN_TEST(FPS_13); RUN_TEST(FPS_14); RUN_TEST(FPS_15); RUN_TEST(FPS_16);
+    RUN_TEST(FPS_17); RUN_TEST(FPS_18); RUN_TEST(FPS_19); RUN_TEST(FPS_20);
+    RUN_TEST(FPS_21); RUN_TEST(FPS_22); RUN_TEST(FPS_23); RUN_TEST(FPS_24);
+    RUN_TEST(FPS_25); RUN_TEST(FPS_26); RUN_TEST(FPS_27); RUN_TEST(FPS_28);
+    RUN_TEST(FPS_29); RUN_TEST(FPS_30); RUN_TEST(FPS_31); RUN_TEST(FPS_32);
+    RUN_TEST(FPS_33); RUN_TEST(FPS_34); RUN_TEST(FPS_35); RUN_TEST(FPS_36);
+    RUN_TEST(FPS_37); RUN_TEST(FPS_38); RUN_TEST(FPS_39); RUN_TEST(FPS_40);
+    RUN_TEST(FPS_41);
 }

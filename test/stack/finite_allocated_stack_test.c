@@ -446,56 +446,8 @@ TEST FAS_31(void) {
     PASS();
 }
 
-/// Test if int sorted ascending correctly bubble sort
-TEST FAS_32(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 8 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 5 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 2 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 3 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 7 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 1 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 6 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 9 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 4 });
-
-    sort_stack(&test, NULL, compare_int_asc);
-
-    for (int i = 9; i >= 0; i--) {
-        ASSERT_EQm("[FAS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
-    }
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Test if int sorted descending correctly bubble sort
-TEST FAS_33(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 8 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 5 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 2 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 3 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 7 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 1 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 6 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 9 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 4 });
-
-    sort_stack(&test, NULL, compare_int_desc);
-
-    for (int i = 0; i < 10; i++) {
-        ASSERT_EQm("[FAS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
-    }
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
 /// Test if string sorted ascending correctly qsort
-TEST FAS_34(void) {
+TEST FAS_32(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
 
     push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "i" });
@@ -521,7 +473,7 @@ TEST FAS_34(void) {
 }
 
 /// Test if string sorted descending correctly qsort
-TEST FAS_35(void) {
+TEST FAS_33(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
 
     push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "i" });
@@ -546,59 +498,8 @@ TEST FAS_35(void) {
     PASS();
 }
 
-/// Test if string sorted ascending correctly bubble sort
-TEST FAS_36(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "i" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "a" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "f" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "c" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "d" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "h" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "b" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "g" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "j" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "e" });
-
-    sort_stack(&test, NULL, compare_string_asc);
-    for (int i = 9; i >= 0; i--) {
-        char temp[] = "a";
-        temp[0] += i;
-        ASSERT_STRN_EQm("[FAS-ERROR] Expected sorted values to be equal", temp , pop_stack(&test).sub_two, sizeof(temp) - 1);
-    }
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Test if string sorted descending correctly bubble sort
-TEST FAS_37(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "i" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "a" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "f" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "c" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "d" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "h" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "b" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "g" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "j" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "e" });
-
-    sort_stack(&test, NULL, compare_string_desc);
-
-    for (int i = 0; i < 10; i++) {
-        char temp[] = "a";
-        temp[0] += i;
-        ASSERT_STRN_EQm("[FAS-ERROR] Expected sorted values to be equal", temp , pop_stack(&test).sub_two, sizeof(temp) - 1);
-    }
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
 /// Test if all int values get incremented by 'increment'
-TEST FAS_38(void) {
+TEST FAS_34(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
 
     for (int i = 0; i < 10; ++i) {
@@ -617,7 +518,7 @@ TEST FAS_38(void) {
 }
 
 /// Test if all string values have changed to new string value
-TEST FAS_39(void) {
+TEST FAS_35(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
 
     for (int i = 0; i < 10; ++i) {
@@ -638,7 +539,7 @@ TEST FAS_39(void) {
 }
 
 /// Tests if stack is not full when adding one element
-TEST FAS_40(void) {
+TEST FAS_36(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
 
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
@@ -650,7 +551,7 @@ TEST FAS_40(void) {
 }
 
 /// Tests if stack is not full when adding 'MAXIMUM_STACK_SIZE' - 1 elements
-TEST FAS_41(void) {
+TEST FAS_37(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
 
     for (size_t i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
@@ -664,7 +565,7 @@ TEST FAS_41(void) {
 }
 
 /// Tests if stack is not full when adding 'MAXIMUM_STACK_SIZE' - 1 elements
-TEST FAS_42(void) {
+TEST FAS_38(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
 
     for (size_t i = 0; i < MAXIMUM_STACK_SIZE; ++i) {
@@ -674,6 +575,74 @@ TEST FAS_42(void) {
     ASSERTm("[FAS-ERROR] Expected stack to be full.", is_full_stack(test));
     destroy_stack(&test, NULL);
 
+    PASS();
+}
+
+/// Tests sorting 'MAXIMUM_STACK_SIZE' - 1 descending values into ascending
+TEST FAS_39(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+    for (int i = MAXIMUM_STACK_SIZE - 2; i >= 0; i--) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_asc);
+
+    for (int i = MAXIMUM_STACK_SIZE - 2; i >= 0; i--) {
+        ASSERT_EQm("[FAS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Tests sorting 'MAXIMUM_STACK_SIZE' descending values into ascending
+TEST FAS_40(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+    for (int i = MAXIMUM_STACK_SIZE - 1; i >= 0; i--) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_asc);
+
+    for (int i = MAXIMUM_STACK_SIZE - 1; i >= 0; i--) {
+        ASSERT_EQm("[FAS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Tests sorting 'MAXIMUM_STACK_SIZE' - 1 ascending values into descending
+TEST FAS_41(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+    for (int i = 0; i < MAXIMUM_STACK_SIZE - 1; i++) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_desc);
+
+    for (int i = 0; i < MAXIMUM_STACK_SIZE - 1; i++) {
+        ASSERT_EQm("[FAS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Tests sorting 'MAXIMUM_STACK_SIZE' ascending values into descending
+TEST FAS_42(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+    for (int i = 0; i < MAXIMUM_STACK_SIZE; i++) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_desc);
+
+    for (int i = 0; i < MAXIMUM_STACK_SIZE; i++) {
+        ASSERT_EQm("[FAS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
     PASS();
 }
 

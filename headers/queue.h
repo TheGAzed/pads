@@ -228,29 +228,45 @@ static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
 static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) {
     queue_s queue_copy = { .size = queue.size, .head = NULL, .tail = NULL, .current = queue.current };
 
-    struct queue_list_array const * current_queue = queue.head;
-    struct queue_list_array ** current_copy = &(queue_copy.head); // two pointer list to remove special .head case
-    while (current_queue) { // three special cases: head, middle, tail
-        const size_t tail_size = (queue.current + queue.size) % LIST_ARRAY_QUEUE_CHUNK; // end/tail size
+    if (queue.head == queue.tail) {
+        queue_copy.head = queue_copy.tail = QUEUE_ALLOC(sizeof(struct queue_list_array));
+        QUEUE_ASSERT(queue_copy.head && "[ERROR] Memory allocation failed");
+        queue_copy.head->next = NULL;
 
-        const size_t start = current_queue == queue.head ? queue.current : 0; // start size current when head case
-        const size_t end = current_queue != queue.tail || !tail_size ? LIST_ARRAY_QUEUE_CHUNK : tail_size;
+        for (size_t s = queue.current; s < queue.current + queue.size; s++) {
+            queue_copy.head->elements[s] = copy ? copy(queue.head->elements[s]) : queue.head->elements[s];
+        }
+    } else {
+        queue_copy.head = queue_copy.tail = QUEUE_ALLOC(sizeof(struct queue_list_array));
+        QUEUE_ASSERT(queue_copy.head && "[ERROR] Memory allocation failed");
 
-        queue_copy.tail = *current_copy = QUEUE_ALLOC(sizeof(struct queue_list_array));
-        QUEUE_ASSERT(*current_copy && "[ERROR] Memory allocation failed");
-        (*current_copy)->next = NULL;
+        for (size_t s = queue.current; s < LIST_ARRAY_QUEUE_CHUNK; s++) {
+            queue_copy.head->elements[s] = copy ? copy(queue.head->elements[s]) : queue.head->elements[s];
+        }
+        size_t copied_size = LIST_ARRAY_QUEUE_CHUNK - queue.current;
 
-        if (copy) {
-            for (size_t s = start; s < end; s++) {
-                (*current_copy)->elements[s] = copy(current_queue->elements[s]);
+        struct queue_list_array const * current_queue = queue.head->next;
+        struct queue_list_array ** current_copy = &(queue_copy.head->next); // two pointer list to remove special .head case
+        while (current_queue->next) {
+            (*current_copy) = queue_copy.tail = QUEUE_ALLOC(sizeof(struct queue_list_array));
+            QUEUE_ASSERT(*current_copy && "[ERROR] Memory allocation failed");
+
+            for (size_t s = 0; s < LIST_ARRAY_QUEUE_CHUNK; s++) {
+                queue_copy.head->elements[s] = copy ? copy(queue.head->elements[s]) : queue.head->elements[s];
             }
-        } else {
-            const size_t chunk_size = sizeof(QUEUE_DATA_TYPE) * (end - start);
-            memcpy(&((*current_copy)->elements[start]), &(current_queue->elements[start]), chunk_size);
+            copied_size += LIST_ARRAY_QUEUE_CHUNK;
+
+            current_queue = current_queue->next;
         }
 
-        current_queue = current_queue->next;
-        current_copy = &((*current_copy)->next);
+        (*current_copy) = queue_copy.tail = QUEUE_ALLOC(sizeof(struct queue_list_array));
+        QUEUE_ASSERT(*current_copy && "[ERROR] Memory allocation failed");
+        (*current_copy)->next = NULL; // only need to add NULL at the last node's next
+
+        // calculate last node element count
+        for (size_t s = 0; s < queue_copy.size - copied_size; s++) {
+            queue_copy.head->elements[s] = copy ? copy(queue.head->elements[s]) : queue.head->elements[s];
+        }
     }
 
     return queue_copy;
@@ -263,36 +279,23 @@ static inline bool is_empty_queue(const queue_s queue) {
     return queue.size == 0;
 }
 
-/// @brief Sorts queue elements using a function specified by the user, if function parameter is NULL a bubble sort
-/// implementation with 'memcmp' will be used.
+/// @brief Sorts stack elements using a function specified by the user.
 /// @param queue Queue structure pointer.
-/// @param sort_elements Function pointer to sorting algorithm or NULL, if bubble sort should be used.
-static inline void sort_queue(queue_s const * queue, void (*sort_elements)(QUEUE_DATA_TYPE *, size_t)) {
+/// @param sort Function pointer to sorting algorithm.
+/// @param compare Function pointer to compare two elements.
+static inline void sort_queue(queue_s * queue, const sort_queue_fn sort, const compare_queue_fn compare) {
     QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter is NULL");
+    QUEUE_ASSERT(sort && "[ERROR] 'sort' parameter is NULL");
+    QUEUE_ASSERT(compare && "[ERROR] 'compare' parameter is NULL");
 
-    QUEUE_DATA_TYPE * elements_array = QUEUE_ALLOC(queue->size * sizeof(QUEUE_DATA_TYPE));
-    QUEUE_ASSERT((!(queue->size) || elements_array) && "[ERROR] Memory allocation failed.");
-
+    QUEUE_DATA_TYPE * elements_array = NULL;
     if (queue->head == queue->tail) { // special case where either the queue is empty or only one chunk has elements
-        memcpy(elements_array, &(queue->head->elements[queue->current]), sizeof(QUEUE_DATA_TYPE) * queue->size);
+        elements_array = queue->head->elements + queue->current;
+    } else {
+        elements_array = QUEUE_ALLOC(queue->size * sizeof(QUEUE_DATA_TYPE));
+        QUEUE_ASSERT((!(queue->size) || elements_array) && "[ERROR] Memory allocation failed.");
 
-        if (sort_elements) {
-            sort_elements(elements_array, queue->size);
-        } else {
-            for (size_t s = 0; s < queue->size - 1; ++s) { // bubble sort bad !!!
-                for (size_t i = 0; i < queue->size - s - 1; ++i) {
-                    if (memcmp(&(elements_array[i]), &(elements_array[i + 1]), sizeof(QUEUE_DATA_TYPE)) > 0) {
-                        QUEUE_DATA_TYPE temp = elements_array[i];
-                        elements_array[i] = elements_array[i + 1];
-                        elements_array[i + 1] = temp;
-                    }
-                }
-            }
-        }
-
-        memcpy(&(queue->head->elements[queue->current]), elements_array, sizeof(QUEUE_DATA_TYPE) * queue->size);
-    } else { // other case when more list chunks are allocated
-        size_t copied_size = (LIST_ARRAY_QUEUE_CHUNK - queue->current); // filled size in one chunk
+        size_t copied_size = (LIST_ARRAY_QUEUE_CHUNK - queue->current);
 
         memcpy(elements_array, &(queue->head->elements[queue->current]), sizeof(QUEUE_DATA_TYPE) * copied_size);
         struct queue_list_array * current = queue->head->next;
@@ -301,29 +304,21 @@ static inline void sort_queue(queue_s const * queue, void (*sort_elements)(QUEUE
             current = current->next;
         }
         memcpy(&(elements_array[copied_size]), queue->tail->elements, queue->size - copied_size); // copy tail
+    }
 
-        if (sort_elements) {
-            sort_elements(elements_array, queue->size);
-        } else {
-            for (size_t s = 0; queue->size && s < queue->size - 1; ++s) {
-                for (size_t i = 0; i < queue->size - s - 1; ++i) {
-                    if (memcmp(&(elements_array[i]), &(elements_array[i + 1]), sizeof(QUEUE_DATA_TYPE)) > 0) {
-                        QUEUE_DATA_TYPE temp = elements_array[i];
-                        elements_array[i] = elements_array[i + 1];
-                        elements_array[i + 1] = temp;
-                    }
-                }
-            }
-        }
+    sort(elements_array, queue->size, sizeof(QUEUE_DATA_TYPE), compare);
 
-        copied_size = (LIST_ARRAY_QUEUE_CHUNK - queue->current); // reset copy size
+    if (queue->head != queue->tail) {
+        size_t copied_size = (LIST_ARRAY_QUEUE_CHUNK - queue->current); // reset copy size
         memcpy(&(queue->head->elements[queue->current]), elements_array, sizeof(QUEUE_DATA_TYPE) * copied_size);
-        current = queue->head->next; // reset current pointer to head's next chunk
+        struct queue_list_array * current = queue->head->next; // reset current pointer to head's next chunk
         while (current != queue->tail) {
             memcpy(current->elements, &(elements_array[copied_size]), copied_size += LIST_ARRAY_QUEUE_CHUNK);
             current = current->next;
         }
         memcpy(queue->tail->elements, &(elements_array[copied_size]), queue->size - copied_size);
+
+        free(elements_array);
     }
 }
 
@@ -344,18 +339,20 @@ static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate
         for (size_t i = queue->current; i < LIST_ARRAY_QUEUE_CHUNK; ++i) { // operate on first node
             operate(queue->head->elements + i, args);
         }
+        size_t iterated_size = LIST_ARRAY_QUEUE_CHUNK - queue->current;
 
         struct queue_list_array * current = queue->head->next;
         while (current->next) { // operate on all nodes between first and last node (excluding last)
             for (size_t i = 0; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
-                operate(queue->head->elements + i, args);
+                operate(current->elements + i, args);
             }
+            iterated_size += LIST_ARRAY_QUEUE_CHUNK;
+
             current = current->next;
         }
-        // calculate last node element count
-        const size_t chunk_size = (queue->current + queue->size) % LIST_ARRAY_QUEUE_CHUNK;
-        for (size_t i = 0; i < chunk_size; ++i) { // operate on last node
-            operate(queue->head->elements + i, args);
+
+        for (size_t i = 0; i < queue->size - iterated_size; ++i) { // operate on last node
+            operate(current->elements + i, args);
         }
     }
 }
@@ -490,12 +487,14 @@ static inline bool is_empty_queue(const queue_s queue) {
     return queue.size == 0;
 }
 
-/// @brief Sorts queue elements using a function specified by the user, if function parameter is NULL a bubble sort
-/// implementation with 'memcmp' will be used.
+/// @brief Sorts stack elements using a function specified by the user.
 /// @param queue Queue structure pointer.
-/// @param sort_elements Function pointer to sorting algorithm or NULL, if bubble sort should be used.
-static inline void sort_queue(queue_s const * queue, void (*sort_elements)(QUEUE_DATA_TYPE *, size_t)) {
+/// @param sort Function pointer to sorting algorithm.
+/// @param compare Function pointer to compare two elements.
+static inline void sort_queue(queue_s * queue, const sort_queue_fn sort, const compare_queue_fn compare) {
     QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter is NULL");
+    QUEUE_ASSERT(sort && "[ERROR] 'sort' parameter is NULL");
+    QUEUE_ASSERT(compare && "[ERROR] 'compare' parameter is NULL");
 
     if (queue->size > queue->max - queue->current) {
         QUEUE_DATA_TYPE * elements_array = QUEUE_ALLOC(queue->size * sizeof(QUEUE_DATA_TYPE));
@@ -505,36 +504,12 @@ static inline void sort_queue(queue_s const * queue, void (*sort_elements)(QUEUE
         memcpy(elements_array, &(queue->elements[queue->current]), sizeof(QUEUE_DATA_TYPE) * copy_size);
         memcpy(&(elements_array[copy_size]), queue->elements, queue->size - copy_size);
 
-        if (sort_elements) {
-            sort_elements(elements_array, queue->size);
-        } else {
-            for (size_t s = 0; queue->size && s < queue->size - 1; ++s) {
-                for (size_t i = 0; i < queue->size - s - 1; ++i) {
-                    if (memcmp(&(elements_array[i]), &(elements_array[i + 1]), sizeof(QUEUE_DATA_TYPE)) > 0) {
-                        QUEUE_DATA_TYPE temp = elements_array[i];
-                        elements_array[i] = elements_array[i + 1];
-                        elements_array[i + 1] = temp;
-                    }
-                }
-            }
-        }
+        sort(elements_array, queue->size, sizeof(QUEUE_DATA_TYPE), compare);
 
         memcpy(&(queue->elements[queue->current]), elements_array, sizeof(QUEUE_DATA_TYPE) * copy_size);
         memcpy(queue->elements, &(elements_array[copy_size]), queue->size - copy_size);
     } else {
-        if (sort_elements) {
-            sort_elements(queue->elements, queue->size);
-        } else {
-            for (size_t s = queue->current; queue->size && s < queue->current + queue->size - 1; ++s) {
-                for (size_t i = queue->current; i < queue->current + queue->size - s - 1; ++i) {
-                    if (memcmp(&(queue->elements[i]), &(queue->elements[i + 1]), sizeof(QUEUE_DATA_TYPE)) > 0) {
-                        QUEUE_DATA_TYPE temp = queue->elements[i];
-                        queue->elements[i] = queue->elements[i + 1];
-                        queue->elements[i + 1] = temp;
-                    }
-                }
-            }
-        }
+        sort(queue->elements, queue->size, sizeof(QUEUE_DATA_TYPE), compare);
     }
 }
 
@@ -692,26 +667,16 @@ static inline bool is_empty_queue(const queue_s queue) {
     return queue.size == 0;
 }
 
-/// @brief Sorts queue elements using a function specified by the user, if function parameter is NULL a bubble sort
-/// implementation with 'memcmp' will be used.
+/// @brief Sorts stack elements using a function specified by the user.
 /// @param queue Queue structure pointer.
-/// @param sort_elements Function pointer to sorting algorithm or NULL, if bubble sort should be used.
-static inline void sort_queue(queue_s const * queue, void (*sort_elements)(QUEUE_DATA_TYPE *, size_t)) {
+/// @param sort Function pointer to sorting algorithm.
+/// @param compare Function pointer to compare two elements.
+static inline void sort_queue(queue_s * queue, const sort_queue_fn sort, const compare_queue_fn compare) {
     QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter is NULL");
+    QUEUE_ASSERT(sort && "[ERROR] 'sort' parameter is NULL");
+    QUEUE_ASSERT(compare && "[ERROR] 'compare' parameter is NULL");
 
-    if (sort_elements) {
-        sort_elements(&(queue->elements[queue->current]), queue->size);
-    } else {
-        for (size_t s = queue->current; queue->size && s < queue->current + queue->size - 1; ++s) {
-            for (size_t i = queue->current; i < queue->current + queue->size - s - 1; ++i) {
-                if (memcmp(&(queue->elements[i]), &(queue->elements[i + 1]), sizeof(QUEUE_DATA_TYPE)) > 0) {
-                    QUEUE_DATA_TYPE temp = queue->elements[i];
-                    queue->elements[i] = queue->elements[i + 1];
-                    queue->elements[i + 1] = temp;
-                }
-            }
-        }
-    }
+    sort(queue->elements + queue->current, queue->size, sizeof(QUEUE_DATA_TYPE), compare);
 }
 
 /// @brief Foreach funtion that iterates over all elements in queue and performs 'operate' function on them using 'args'
@@ -864,50 +829,28 @@ static inline bool is_empty_queue(const queue_s queue) {
     return queue.size == 0;
 }
 
-/// @brief Sorts queue elements using a function specified by the user, if function parameter is NULL a bubble sort
-/// implementation with 'memcmp' will be used.
+/// @brief Sorts stack elements using a function specified by the user.
 /// @param queue Queue structure pointer.
-/// @param sort_elements Function pointer to sorting algorithm or NULL, if bubble sort should be used.
-static inline void sort_queue(queue_s * queue, void (*sort_elements)(QUEUE_DATA_TYPE *, size_t)) {
+/// @param sort Function pointer to sorting algorithm.
+/// @param compare Function pointer to compare two elements.
+static inline void sort_queue(queue_s * queue, const sort_queue_fn sort, const compare_queue_fn compare) {
     QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter is NULL");
+    QUEUE_ASSERT(sort && "[ERROR] 'sort' parameter is NULL");
+    QUEUE_ASSERT(compare && "[ERROR] 'compare' parameter is NULL");
 
     const size_t copy_size = PREPROCESSOR_QUEUE_SIZE - queue->current;
     if (queue->size > copy_size) { // queue circles to beginning of elements array
         QUEUE_DATA_TYPE elements_array[PREPROCESSOR_QUEUE_SIZE];
 
-        memcpy(elements_array, &(queue->elements[queue->current]), sizeof(QUEUE_DATA_TYPE) * copy_size);
+        memcpy(elements_array, queue->elements + queue->current, sizeof(QUEUE_DATA_TYPE) * copy_size);
         memcpy(&(elements_array[copy_size]), queue->elements, queue->size - copy_size);
 
-        if (sort_elements) {
-            sort_elements(elements_array, queue->size);
-        } else {
-            for (size_t s = 0; queue->size && s < queue->size - 1; ++s) {
-                for (size_t i = 0; i < queue->size - s - 1; ++i) {
-                    if (memcmp(&(elements_array[i]), &(elements_array[i + 1]), sizeof(QUEUE_DATA_TYPE)) > 0) {
-                        QUEUE_DATA_TYPE temp = elements_array[i];
-                        elements_array[i] = elements_array[i + 1];
-                        elements_array[i + 1] = temp;
-                    }
-                }
-            }
-        }
+        sort(elements_array, queue->size, sizeof(QUEUE_DATA_TYPE), compare);
 
-        memcpy(&(queue->elements[queue->current]), elements_array, sizeof(QUEUE_DATA_TYPE) * copy_size);
+        memcpy(queue->elements + queue->current, elements_array, sizeof(QUEUE_DATA_TYPE) * copy_size);
         memcpy(queue->elements, &(elements_array[copy_size]), queue->size - copy_size);
     } else {
-        if (sort_elements) {
-            sort_elements(queue->elements, queue->size);
-        } else {
-            for (size_t s = queue->current; queue->size && s < queue->current + queue->size - 1; ++s) {
-                for (size_t i = queue->current; i < queue->current + queue->size - s - 1; ++i) {
-                    if (memcmp(&(queue->elements[i]), &(queue->elements[i + 1]), sizeof(QUEUE_DATA_TYPE)) > 0) {
-                        QUEUE_DATA_TYPE temp = queue->elements[i];
-                        queue->elements[i] = queue->elements[i + 1];
-                        queue->elements[i + 1] = temp;
-                    }
-                }
-            }
-        }
+        sort(queue->elements, queue->size, sizeof(QUEUE_DATA_TYPE), compare);
     }
 }
 

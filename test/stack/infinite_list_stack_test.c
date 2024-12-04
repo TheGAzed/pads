@@ -570,56 +570,8 @@ TEST ILS_40(void) {
     PASS();
 }
 
-/// Test if int sorted ascending correctly bubble sort
-TEST ILS_41(void) {
-    stack_s test = create_stack();
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 8 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 5 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 2 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 3 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 7 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 1 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 6 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 9 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 4 });
-
-    sort_stack(&test, NULL, compare_int_asc);
-
-    for (int i = 9; i >= 0; i--) {
-        ASSERT_EQm("[ILS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
-    }
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Test if int sorted descending correctly bubble sort
-TEST ILS_42(void) {
-    stack_s test = create_stack();
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 8 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 5 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 2 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 3 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 7 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 1 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 6 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 9 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 4 });
-
-    sort_stack(&test, NULL, compare_int_desc);
-
-    for (int i = 0; i < 10; i++) {
-        ASSERT_EQm("[ILS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
-    }
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
 /// Test if string sorted ascending correctly qsort
-TEST ILS_43(void) {
+TEST ILS_41(void) {
     stack_s test = create_stack();
 
     push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "i" });
@@ -645,7 +597,7 @@ TEST ILS_43(void) {
 }
 
 /// Test if string sorted descending correctly qsort
-TEST ILS_44(void) {
+TEST ILS_42(void) {
     stack_s test = create_stack();
 
     push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "i" });
@@ -670,59 +622,8 @@ TEST ILS_44(void) {
     PASS();
 }
 
-/// Test if string sorted ascending correctly bubble sort
-TEST ILS_45(void) {
-    stack_s test = create_stack();
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "i" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "a" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "f" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "c" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "d" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "h" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "b" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "g" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "j" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "e" });
-
-    sort_stack(&test, NULL, compare_string_asc);
-    for (int i = 9; i >= 0; i--) {
-        char temp[] = "a";
-        temp[0] += i;
-        ASSERT_STRN_EQm("[ILS-ERROR] Expected sorted values to be equal", temp , pop_stack(&test).sub_two, sizeof(temp) - 1);
-    }
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Test if string sorted descending correctly bubble sort
-TEST ILS_46(void) {
-    stack_s test = create_stack();
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "i" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "a" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "f" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "c" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "d" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "h" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "b" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "g" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "j" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "e" });
-
-    sort_stack(&test, NULL, compare_string_desc);
-
-    for (int i = 0; i < 10; i++) {
-        char temp[] = "a";
-        temp[0] += i;
-        ASSERT_STRN_EQm("[ILS-ERROR] Expected sorted values to be equal", temp , pop_stack(&test).sub_two, sizeof(temp) - 1);
-    }
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
 /// Test if all int values get incremented by 'increment'
-TEST ILS_47(void) {
+TEST ILS_43(void) {
     stack_s test = create_stack();
 
     for (int i = 0; i < 10; ++i) {
@@ -741,7 +642,7 @@ TEST ILS_47(void) {
 }
 
 /// Test if all string values have changed to new string value
-TEST ILS_48(void) {
+TEST ILS_44(void) {
     stack_s test = create_stack();
 
     for (int i = 0; i < 10; ++i) {
@@ -762,12 +663,131 @@ TEST ILS_48(void) {
 }
 
 /// Test if head is NULL after push and pop.
-TEST ILS_49(void) {
+TEST ILS_45(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     pop_stack(&test);
 
     ASSERT_EQm("[ILS-ERROR] Expected stack's 'head' parameter to be NULL.", NULL, test.head);
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Tests sorting 'LIST_ARRAY_STACK_CHUNK' - 1 descending values into ascending
+TEST ILS_46(void) {
+    stack_s test = create_stack();
+    for (int i = LIST_ARRAY_STACK_CHUNK - 2; i >= 0; i--) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_asc);
+
+    for (int i = LIST_ARRAY_STACK_CHUNK - 2; i >= 0; i--) {
+        ASSERT_EQm("[ILS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Tests sorting 'LIST_ARRAY_STACK_CHUNK' descending values into ascending
+TEST ILS_47(void) {
+    stack_s test = create_stack();
+    for (int i = LIST_ARRAY_STACK_CHUNK - 1; i >= 0; i--) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_asc);
+
+    for (int i = LIST_ARRAY_STACK_CHUNK - 1; i >= 0; i--) {
+        ASSERT_EQm("[ILS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Tests sorting 'LIST_ARRAY_STACK_CHUNK' + 1 descending values into ascending
+TEST ILS_48(void) {
+    stack_s test = create_stack();
+    for (int i = LIST_ARRAY_STACK_CHUNK; i >= 0; i--) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_asc);
+
+    for (int i = LIST_ARRAY_STACK_CHUNK; i >= 0; i--) {
+        ASSERT_EQm("[ILS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Tests sorting 'LIST_ARRAY_STACK_CHUNK' + 2 descending values into ascending
+TEST ILS_49(void) {
+    stack_s test = create_stack();
+    for (int i = LIST_ARRAY_STACK_CHUNK + 1; i >= 0; i--) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_asc);
+
+    for (int i = LIST_ARRAY_STACK_CHUNK + 1; i >= 0; i--) {
+        ASSERT_EQm("[ILS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Tests sorting 'LIST_ARRAY_STACK_CHUNK' - 1 ascending values into descending
+TEST ILS_50(void) {
+    stack_s test = create_stack();
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK - 1; i++) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_desc);
+
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK - 1; i++) {
+        ASSERT_EQm("[ILS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Tests sorting 'LIST_ARRAY_STACK_CHUNK' ascending values into descending
+TEST ILS_51(void) {
+    stack_s test = create_stack();
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK; i++) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_desc);
+
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK; i++) {
+        ASSERT_EQm("[ILS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Tests sorting 'LIST_ARRAY_STACK_CHUNK' + 1 ascending values into descending
+TEST ILS_52(void) {
+    stack_s test = create_stack();
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; i++) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_desc);
+
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; i++) {
+        ASSERT_EQm("[ILS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
 
     destroy_stack(&test, NULL);
     PASS();
@@ -786,5 +806,5 @@ SUITE (infinite_list_stack_test) {
     RUN_TEST(ILS_37); RUN_TEST(ILS_38); RUN_TEST(ILS_39); RUN_TEST(ILS_40);
     RUN_TEST(ILS_41); RUN_TEST(ILS_42); RUN_TEST(ILS_43); RUN_TEST(ILS_44);
     RUN_TEST(ILS_45); RUN_TEST(ILS_46); RUN_TEST(ILS_47); RUN_TEST(ILS_48);
-    RUN_TEST(ILS_49);
+    RUN_TEST(ILS_49); RUN_TEST(ILS_50); RUN_TEST(ILS_51); RUN_TEST(ILS_52);
 }

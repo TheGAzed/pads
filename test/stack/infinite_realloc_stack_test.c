@@ -8,8 +8,8 @@
 TEST IRS_01(void) {
     stack_s test = create_stack();
 
-    ASSERT_EQm("[ILS-TEST] Stack's 'head' parameter is not NULL.", NULL, test.elements);
-    ASSERT_EQm("[ILS-TEST] Stack's 'size' parameter is not zero.", 0, test.size);
+    ASSERT_EQm("[IRS-TEST] Stack's 'head' parameter is not NULL.", NULL, test.elements);
+    ASSERT_EQm("[IRS-TEST] Stack's 'size' parameter is not zero.", 0, test.size);
 
     destroy_stack(&test, NULL);
 
@@ -21,8 +21,8 @@ TEST IRS_02(void) {
     stack_s test = create_stack();
     destroy_stack(&test, NULL);
 
-    ASSERT_EQm("[ILS-TEST] Stack's 'head' parameter is not NULL.", NULL, test.elements);
-    ASSERT_EQm("[ILS-TEST] Stack's 'size' parameter is not zero.", 0, test.size);
+    ASSERT_EQm("[IRS-TEST] Stack's 'head' parameter is not NULL.", NULL, test.elements);
+    ASSERT_EQm("[IRS-TEST] Stack's 'size' parameter is not zero.", 0, test.size);
 
     PASS();
 }
@@ -32,7 +32,7 @@ TEST IRS_03(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
 
-    ASSERT_EQm("[ILS-TEST] Stack's top element is not 42.", 42, peep_stack(test).sub_one);
+    ASSERT_EQm("[IRS-TEST] Stack's top element is not 42.", 42, peep_stack(test).sub_one);
 
     destroy_stack(&test, NULL);
     PASS();
@@ -44,7 +44,7 @@ TEST IRS_04(void) {
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1 });
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
 
-    ASSERT_EQm("[ILS-TEST] Stack's top element is not 42.", 42, peep_stack(test).sub_one);
+    ASSERT_EQm("[IRS-TEST] Stack's top element is not 42.", 42, peep_stack(test).sub_one);
 
     destroy_stack(&test, NULL);
     PASS();
@@ -58,7 +58,7 @@ TEST IRS_05(void) {
     }
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
 
-    ASSERT_EQm("[ILS-TEST] Stack's top element is not 42.", 42, peep_stack(test).sub_one);
+    ASSERT_EQm("[IRS-TEST] Stack's top element is not 42.", 42, peep_stack(test).sub_one);
 
     destroy_stack(&test, NULL);
     PASS();
@@ -72,7 +72,7 @@ TEST IRS_06(void) {
     }
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
 
-    ASSERT_EQm("[ILS-TEST] Stack's top element is not 42.", 42, peep_stack(test).sub_one);
+    ASSERT_EQm("[IRS-TEST] Stack's top element is not 42.", 42, peep_stack(test).sub_one);
 
     destroy_stack(&test, NULL);
     PASS();
@@ -84,7 +84,7 @@ TEST IRS_07(void) {
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     peep_stack(test);
 
-    ASSERT_EQm("[ILS-TEST] Stack's size is not 1.", 1, test.size);
+    ASSERT_EQm("[IRS-TEST] Stack's size is not 1.", 1, test.size);
 
     destroy_stack(&test, NULL);
     PASS();
@@ -97,7 +97,7 @@ TEST IRS_08(void) {
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     peep_stack(test);
 
-    ASSERT_EQm("[ILS-TEST] Stack's size is not 2.", 2, test.size);
+    ASSERT_EQm("[IRS-TEST] Stack's size is not 2.", 2, test.size);
 
     destroy_stack(&test, NULL);
     PASS();
@@ -111,7 +111,7 @@ TEST IRS_09(void) {
     }
     peep_stack(test);
 
-    ASSERT_EQm("[ILS-TEST] Stack's size is not 'REALLOC_STACK_CHUNK'.", REALLOC_STACK_CHUNK, test.size);
+    ASSERT_EQm("[IRS-TEST] Stack's size is not 'REALLOC_STACK_CHUNK'.", REALLOC_STACK_CHUNK, test.size);
 
     destroy_stack(&test, NULL);
     PASS();
@@ -125,7 +125,7 @@ TEST IRS_10(void) {
     }
     peep_stack(test);
 
-    ASSERT_EQm("[ILS-TEST] Stack's size is not 'REALLOC_STACK_CHUNK' + 1.", REALLOC_STACK_CHUNK + 1, test.size);
+    ASSERT_EQm("[IRS-TEST] Stack's size is not 'REALLOC_STACK_CHUNK' + 1.", REALLOC_STACK_CHUNK + 1, test.size);
 
     destroy_stack(&test, NULL);
     PASS();
@@ -136,7 +136,7 @@ TEST IRS_11(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
 
-    ASSERT_EQm("[ILS-TEST] Stack's popped element is not 42.", 42, pop_stack(&test).sub_one);
+    ASSERT_EQm("[IRS-TEST] Stack's popped element is not 42.", 42, pop_stack(&test).sub_one);
 
     destroy_stack(&test, NULL);
     PASS();
@@ -148,7 +148,7 @@ TEST IRS_12(void) {
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1 });
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
 
-    ASSERT_EQm("[ILS-TEST] Stack's popped element is not 42.", 42, pop_stack(&test).sub_one);
+    ASSERT_EQm("[IRS-TEST] Stack's popped element is not 42.", 42, pop_stack(&test).sub_one);
 
     destroy_stack(&test, NULL);
     PASS();
@@ -162,7 +162,7 @@ TEST IRS_13(void) {
     }
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
 
-    ASSERT_EQm("[ILS-TEST] Stack's popped element is not 42.", 42, pop_stack(&test).sub_one);
+    ASSERT_EQm("[IRS-TEST] Stack's popped element is not 42.", 42, pop_stack(&test).sub_one);
 
     destroy_stack(&test, NULL);
     PASS();
@@ -176,7 +176,7 @@ TEST IRS_14(void) {
     }
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
 
-    ASSERT_EQm("[ILS-TEST] Stack's popped element is not 42.", 42, pop_stack(&test).sub_one);
+    ASSERT_EQm("[IRS-TEST] Stack's popped element is not 42.", 42, pop_stack(&test).sub_one);
 
     destroy_stack(&test, NULL);
     PASS();
@@ -189,7 +189,7 @@ TEST IRS_15(void) {
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     pop_stack(&test);
 
-    ASSERT_EQm("[ILS-TEST] Stack's size is not zero.", 0, test.size);
+    ASSERT_EQm("[IRS-TEST] Stack's size is not zero.", 0, test.size);
 
     destroy_stack(&test, NULL);
     PASS();
@@ -202,7 +202,7 @@ TEST IRS_16(void) {
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     pop_stack(&test);
 
-    ASSERT_EQm("[ILS-TEST] Stack's size is not one.", 1, test.size);
+    ASSERT_EQm("[IRS-TEST] Stack's size is not one.", 1, test.size);
 
     destroy_stack(&test, NULL);
     PASS();
@@ -216,7 +216,7 @@ TEST IRS_17(void) {
     }
     pop_stack(&test);
 
-    ASSERT_EQm("[ILS-TEST] Stack's size is not 'REALLOC_STACK_CHUNK' - 1.", REALLOC_STACK_CHUNK - 1, test.size);
+    ASSERT_EQm("[IRS-TEST] Stack's size is not 'REALLOC_STACK_CHUNK' - 1.", REALLOC_STACK_CHUNK - 1, test.size);
 
     destroy_stack(&test, NULL);
     PASS();
@@ -230,7 +230,7 @@ TEST IRS_18(void) {
     }
     pop_stack(&test);
 
-    ASSERT_EQm("[ILS-TEST] Stack's size is not 'REALLOC_STACK_CHUNK'.", REALLOC_STACK_CHUNK, test.size);
+    ASSERT_EQm("[IRS-TEST] Stack's size is not 'REALLOC_STACK_CHUNK'.", REALLOC_STACK_CHUNK, test.size);
 
     destroy_stack(&test, NULL);
     PASS();
@@ -285,7 +285,7 @@ TEST IRS_23(void) {
 
     stack_s copy = copy_stack(test, NULL);
 
-    ASSERT_EQm("[ILS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+    ASSERT_EQm("[IRS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
 
     destroy_stack(&test, NULL);
     PASS();
@@ -299,8 +299,8 @@ TEST IRS_24(void) {
 
     stack_s copy = copy_stack(test, NULL);
 
-    ASSERT_EQm("[ILS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
-    ASSERT_EQm("[ILS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+    ASSERT_EQm("[IRS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+    ASSERT_EQm("[IRS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
 
     destroy_stack(&test, NULL);
     PASS();
@@ -315,7 +315,7 @@ TEST IRS_25(void) {
 
     stack_s copy = copy_stack(test, NULL);
     for (int i = 0; i < REALLOC_STACK_CHUNK; ++i) {
-        ASSERT_EQm("[ILS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+        ASSERT_EQm("[IRS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
     }
 
     destroy_stack(&test, NULL);
@@ -331,7 +331,7 @@ TEST IRS_26(void) {
 
     stack_s copy = copy_stack(test, NULL);
     for (int i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
-        ASSERT_EQm("[ILS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+        ASSERT_EQm("[IRS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
     }
 
     destroy_stack(&test, NULL);
@@ -347,7 +347,7 @@ TEST IRS_27(void) {
 
     STACK_DATA_TYPE elemen_test = pop_stack(&test);
     STACK_DATA_TYPE element_copy = pop_stack(&copy);
-    ASSERT_STRN_EQm("[ILS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
+    ASSERT_STRN_EQm("[IRS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
     destroy_element(&elemen_test);
     destroy_element(&element_copy);
 
@@ -365,13 +365,13 @@ TEST IRS_28(void) {
 
     STACK_DATA_TYPE elemen_test = pop_stack(&test);
     STACK_DATA_TYPE element_copy = pop_stack(&copy);
-    ASSERT_STRN_EQm("[ILS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
+    ASSERT_STRN_EQm("[IRS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
     destroy_element(&elemen_test);
     destroy_element(&element_copy);
 
     elemen_test = pop_stack(&test);
     element_copy = pop_stack(&copy);
-    ASSERT_STRN_EQm("[ILS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
+    ASSERT_STRN_EQm("[IRS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
     destroy_element(&elemen_test);
     destroy_element(&element_copy);
 
@@ -390,7 +390,7 @@ TEST IRS_29(void) {
     for (int i = 0; i < REALLOC_STACK_CHUNK; ++i) {
         STACK_DATA_TYPE elemen_test = pop_stack(&test);
         STACK_DATA_TYPE element_copy = pop_stack(&copy);
-        ASSERT_STRN_EQm("[ILS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
+        ASSERT_STRN_EQm("[IRS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
         destroy_element(&elemen_test);
         destroy_element(&element_copy);
     }
@@ -410,7 +410,7 @@ TEST IRS_30(void) {
     for (int i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
         STACK_DATA_TYPE elemen_test = pop_stack(&test);
         STACK_DATA_TYPE element_copy = pop_stack(&copy);
-        ASSERT_STRN_EQm("[ILS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
+        ASSERT_STRN_EQm("[IRS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
         destroy_element(&elemen_test);
         destroy_element(&element_copy);
     }
@@ -570,56 +570,8 @@ TEST IRS_40(void) {
     PASS();
 }
 
-/// Test if int sorted ascending correctly bubble sort
-TEST IRS_41(void) {
-    stack_s test = create_stack();
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 8 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 5 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 2 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 3 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 7 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 1 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 6 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 9 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 4 });
-
-    sort_stack(&test, NULL, compare_int_asc);
-
-    for (int i = 9; i >= 0; i--) {
-        ASSERT_EQm("[IRS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
-    }
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Test if int sorted descending correctly bubble sort
-TEST IRS_42(void) {
-    stack_s test = create_stack();
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 8 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 5 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 2 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 3 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 7 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 1 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 6 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 9 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 4 });
-
-    sort_stack(&test, NULL, compare_int_desc);
-
-    for (int i = 0; i < 10; i++) {
-        ASSERT_EQm("[IRS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
-    }
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
 /// Test if string sorted ascending correctly qsort
-TEST IRS_43(void) {
+TEST IRS_41(void) {
     stack_s test = create_stack();
 
     push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "i" });
@@ -645,7 +597,7 @@ TEST IRS_43(void) {
 }
 
 /// Test if string sorted descending correctly qsort
-TEST IRS_44(void) {
+TEST IRS_42(void) {
     stack_s test = create_stack();
 
     push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "i" });
@@ -670,59 +622,8 @@ TEST IRS_44(void) {
     PASS();
 }
 
-/// Test if string sorted ascending correctly bubble sort
-TEST IRS_45(void) {
-    stack_s test = create_stack();
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "i" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "a" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "f" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "c" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "d" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "h" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "b" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "g" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "j" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "e" });
-
-    sort_stack(&test, NULL, compare_string_asc);
-    for (int i = 9; i >= 0; i--) {
-        char temp[] = "a";
-        temp[0] += i;
-        ASSERT_STRN_EQm("[IRS-ERROR] Expected sorted values to be equal", temp , pop_stack(&test).sub_two, sizeof(temp) - 1);
-    }
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Test if string sorted descending correctly bubble sort
-TEST IRS_46(void) {
-    stack_s test = create_stack();
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "i" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "a" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "f" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "c" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "d" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "h" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "b" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "g" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "j" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "e" });
-
-    sort_stack(&test, NULL, compare_string_desc);
-
-    for (int i = 0; i < 10; i++) {
-        char temp[] = "a";
-        temp[0] += i;
-        ASSERT_STRN_EQm("[IRS-ERROR] Expected sorted values to be equal", temp , pop_stack(&test).sub_two, sizeof(temp) - 1);
-    }
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
 /// Test if all int values get incremented by 'increment'
-TEST IRS_47(void) {
+TEST IRS_43(void) {
     stack_s test = create_stack();
 
     for (int i = 0; i < 10; ++i) {
@@ -741,7 +642,7 @@ TEST IRS_47(void) {
 }
 
 /// Test if all string values have changed to new string value
-TEST IRS_48(void) {
+TEST IRS_44(void) {
     stack_s test = create_stack();
 
     for (int i = 0; i < 10; ++i) {
@@ -762,12 +663,131 @@ TEST IRS_48(void) {
 }
 
 /// Test if head is NULL after push and pop.
-TEST IRS_49(void) {
+TEST IRS_45(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     pop_stack(&test);
 
     ASSERT_EQm("[IRS-ERROR] Expected stack's 'head' parameter to be NULL.", NULL, test.elements);
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Tests sorting 'REALLOC_STACK_CHUNK' - 1 descending values into ascending
+TEST IRS_46(void) {
+    stack_s test = create_stack();
+    for (int i = REALLOC_STACK_CHUNK - 2; i >= 0; i--) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_asc);
+
+    for (int i = REALLOC_STACK_CHUNK - 2; i >= 0; i--) {
+        ASSERT_EQm("[IRS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Tests sorting 'REALLOC_STACK_CHUNK' descending values into ascending
+TEST IRS_47(void) {
+    stack_s test = create_stack();
+    for (int i = REALLOC_STACK_CHUNK - 1; i >= 0; i--) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_asc);
+
+    for (int i = REALLOC_STACK_CHUNK - 1; i >= 0; i--) {
+        ASSERT_EQm("[IRS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Tests sorting 'REALLOC_STACK_CHUNK' + 1 descending values into ascending
+TEST IRS_48(void) {
+    stack_s test = create_stack();
+    for (int i = REALLOC_STACK_CHUNK; i >= 0; i--) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_asc);
+
+    for (int i = REALLOC_STACK_CHUNK; i >= 0; i--) {
+        ASSERT_EQm("[IRS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Tests sorting 'REALLOC_STACK_CHUNK' + 2 descending values into ascending
+TEST IRS_49(void) {
+    stack_s test = create_stack();
+    for (int i = REALLOC_STACK_CHUNK + 1; i >= 0; i--) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_asc);
+
+    for (int i = REALLOC_STACK_CHUNK + 1; i >= 0; i--) {
+        ASSERT_EQm("[IRS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Tests sorting 'REALLOC_STACK_CHUNK' - 1 ascending values into descending
+TEST IRS_50(void) {
+    stack_s test = create_stack();
+    for (int i = 0; i < REALLOC_STACK_CHUNK - 1; i++) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_desc);
+
+    for (int i = 0; i < REALLOC_STACK_CHUNK - 1; i++) {
+        ASSERT_EQm("[IRS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Tests sorting 'REALLOC_STACK_CHUNK' ascending values into descending
+TEST IRS_51(void) {
+    stack_s test = create_stack();
+    for (int i = 0; i < REALLOC_STACK_CHUNK; i++) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_desc);
+
+    for (int i = 0; i < REALLOC_STACK_CHUNK; i++) {
+        ASSERT_EQm("[IRS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Tests sorting 'REALLOC_STACK_CHUNK' + 1 ascending values into descending
+TEST IRS_52(void) {
+    stack_s test = create_stack();
+    for (int i = 0; i < REALLOC_STACK_CHUNK + 1; i++) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    sort_stack(&test, qsort, compare_int_desc);
+
+    for (int i = 0; i < REALLOC_STACK_CHUNK + 1; i++) {
+        ASSERT_EQm("[IRS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
+    }
 
     destroy_stack(&test, NULL);
     PASS();
@@ -786,5 +806,5 @@ SUITE (infinite_realloc_stack_test) {
     RUN_TEST(IRS_37); RUN_TEST(IRS_38); RUN_TEST(IRS_39); RUN_TEST(IRS_40);
     RUN_TEST(IRS_41); RUN_TEST(IRS_42); RUN_TEST(IRS_43); RUN_TEST(IRS_44);
     RUN_TEST(IRS_45); RUN_TEST(IRS_46); RUN_TEST(IRS_47); RUN_TEST(IRS_48);
-    RUN_TEST(IRS_49);
+    RUN_TEST(IRS_49); RUN_TEST(IRS_50); RUN_TEST(IRS_51); RUN_TEST(IRS_52);
 }

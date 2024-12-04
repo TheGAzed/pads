@@ -264,8 +264,9 @@ static inline bool is_empty_stack(const stack_s stack) {
 /// @param compare non NULL function pointer that compares two STACK_DATA_TYPE elements as void pointers. Used as
 /// parameter for sort function.
 static inline void sort_stack(stack_s * stack, const sort_stack_fn sort, const compare_stack_fn compare) {
-    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
-    STACK_ASSERT(compare && "[ERROR] 'compare' parameter can't be NULL when 'sort_elements' parameter is given.");
+    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
+    STACK_ASSERT(sort && "[ERROR] 'sort' parameter is NULL.");
+    STACK_ASSERT(compare && "[ERROR] 'compare' parameter is NULL.");
     STACK_ASSERT(((stack->head && stack->size) || (!stack->head && !stack->size)) && "[ERROR] Invalid stack state.");
 
     STACK_DATA_TYPE * elements_array = STACK_ALLOC(stack->size * sizeof(STACK_DATA_TYPE));
@@ -283,19 +284,7 @@ static inline void sort_stack(stack_s * stack, const sort_stack_fn sort, const c
         list = list->next;
     }
 
-    if (sort) {
-        sort(elements_array, stack->size, sizeof(STACK_DATA_TYPE), compare);
-    } else {
-        for (size_t s = 0; stack->size && s < stack->size - 1; ++s) {
-            for (size_t i = 0; i < stack->size - s - 1; ++i) {
-                if (compare(elements_array + i, elements_array + (i + 1)) > 0) {
-                    STACK_DATA_TYPE temp = elements_array[i];
-                    elements_array[i] = elements_array[i + 1];
-                    elements_array[i + 1] = temp;
-                }
-            }
-        }
-    }
+    sort(elements_array, stack->size, sizeof(STACK_DATA_TYPE), compare);
 
     list = stack->head;
     copied_size = stack->size % LIST_ARRAY_STACK_CHUNK;
@@ -459,28 +448,18 @@ static inline bool is_empty_stack(const stack_s stack) {
     return (stack.size == 0);
 }
 
-/// @param stack
-/// @param sort
-/// @param compare
+/// @brief Sorts stack elements using a function specified by the user.
+/// @param stack Queue structure pointer.
+/// @param sort Function pointer to sorting algorithm.
+/// @param compare Function pointer to compare two elements.
 static inline void sort_stack(stack_s * stack, const sort_stack_fn sort, const compare_stack_fn compare) {
+    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
+    STACK_ASSERT(compare && "[ERROR] 'compare' parameter is NULL.");
+    STACK_ASSERT(sort && "[ERROR] 'sort' parameter is NULL.");
     STACK_ASSERT(stack->elements && "[ERROR] Stack's element array can't be NULL.");
     STACK_ASSERT(stack->max && "[ERROR] Stack's max can't be zero.");
-    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
-    STACK_ASSERT(compare && "[ERROR] 'compare' parameter can't be NULL when 'sort_elements' is not NULL");
 
-    if (sort) {
-        sort(stack->elements, stack->size, sizeof(STACK_DATA_TYPE), compare);
-    } else {
-        for (size_t s = 0; stack->size && s < stack->size - 1; ++s) {
-            for (size_t i = 0; i < stack->size - s - 1; ++i) {
-                if (compare(stack->elements + i, stack->elements + (i + 1)) > 0) {
-                    STACK_DATA_TYPE temp = stack->elements[i];
-                    stack->elements[i] = stack->elements[i + 1];
-                    stack->elements[i + 1] = temp;
-                }
-            }
-        }
-    }
+    sort(stack->elements, stack->size, sizeof(STACK_DATA_TYPE), compare);
 }
 
 /// @brief For each function that does an operation on element reference specified by args.
@@ -622,29 +601,17 @@ static inline bool is_empty_stack(const stack_s stack) {
     return stack.size == 0;
 }
 
-/// @brief Sorts elements in stack based on provided function pointer sorter or bubble sort with memcmp if
-/// parameter is NULL.
-/// @param stack Stack structure pointer.
-/// @param sort Sorting function pointer or NULL, when bubble sort with memcmp should be used.
-/// @param compare
+/// @brief Sorts stack elements using a function specified by the user.
+/// @param stack Queue structure pointer.
+/// @param sort Function pointer to sorting algorithm.
+/// @param compare Function pointer to compare two elements.
 static inline void sort_stack(stack_s * stack, const sort_stack_fn sort, const compare_stack_fn compare) {
-    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
+    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
+    STACK_ASSERT(sort && "[ERROR] 'sort' parameter is NULL.");
+    STACK_ASSERT(compare && "[ERROR] 'compare' parameter is NULL.");
     STACK_ASSERT(((stack->elements && stack->size) || (!stack->elements && !stack->size)) && "[ERROR] Invalid stack state.");
-    STACK_ASSERT(compare && "[ERROR] 'compare' parameter can't be NULL when 'sort_elements' is not NULL");
 
-    if (sort) { // function pointer is provided/isn't NULL
-        sort(stack->elements, stack->size, sizeof(STACK_DATA_TYPE), compare);
-    } else { // use bubble sort with memcmp
-        for (size_t s = 0; stack->size && s < stack->size - 1; ++s) {
-            for (size_t i = 0; i < stack->size - s - 1; ++i) {
-                if (compare(stack->elements + i, stack->elements + (i + 1)) > 0) {
-                    STACK_DATA_TYPE temp = stack->elements[i];
-                    stack->elements[i] = stack->elements[i + 1];
-                    stack->elements[i + 1] = temp;
-                }
-            }
-        }
-    }
+    sort(stack->elements, stack->size, sizeof(STACK_DATA_TYPE), compare);
 }
 
 /// @brief For each function that does an operation on element reference specified by args.
@@ -761,29 +728,16 @@ static inline bool is_empty_stack(const stack_s stack) {
     return stack.size == 0;
 }
 
-/// @brief Sorts elements in stack based on provided function pointer sorter or bubble sort with memcmp if
-/// parameter is NULL.
-/// @param stack Stack structure pointer.
-/// @param sort Sorting function pointer or NULL, when bubble sort with memcmp should be used.
-/// @param compare Function pointer that compares two elements and returns zero if match, or negative/positive if
-/// first element is less/more than the second. Basically like 'strcmp'.
+/// @brief Sorts stack elements using a function specified by the user.
+/// @param stack Queue structure pointer.
+/// @param sort Function pointer to sorting algorithm.
+/// @param compare Function pointer to compare two elements.
 static inline void sort_stack(stack_s * stack, const sort_stack_fn sort, const compare_stack_fn compare) {
-    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
-    STACK_ASSERT(compare && "[ERROR] 'compare' parameter can't be NULL when 'sort_elements' is not NULL");
+    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
+    STACK_ASSERT(sort && "[ERROR] 'sort' parameter is NULL.");
+    STACK_ASSERT(compare && "[ERROR] 'compare' parameter is NULL.");
 
-    if (sort) { // function pointer is provided/isn't NULL
-        sort(stack->elements, stack->size, sizeof(STACK_DATA_TYPE), compare);
-    } else { // use bubble sort with memcmp
-        for (size_t s = 0; stack->size && s < stack->size - 1; ++s) {
-            for (size_t i = 0; i < stack->size - s - 1; ++i) {
-                if (compare(stack->elements + i, stack->elements + (i + 1)) > 0) {
-                    STACK_DATA_TYPE temp = stack->elements[i]; // swap
-                    stack->elements[i] = stack->elements[i + 1];
-                    stack->elements[i + 1] = temp;
-                }
-            }
-        }
-    }
+    sort(stack->elements, stack->size, sizeof(STACK_DATA_TYPE), compare);
 }
 
 /// @brief For each function that does an operation on element reference specified by args.
