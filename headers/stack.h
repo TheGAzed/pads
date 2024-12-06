@@ -2,12 +2,6 @@
 
 #define STACK_H
 
-#ifdef STACK_HELP
-
-#error The stack.h file is a single header preprocesor abstracted implementation of the 'stack' data structure. The header has 4 implementations of a stack structure which can be divided into 2 categories: finite and infinite stacks (defined as macro's 'FINITE_STACK' and 'INFINITE_STACK'). The category 'INFINITE_STACK' uses the 'INFINITE_LIST_STACK' implementation as default. 'FINITE_STACK' uses 'FINITE_ALLOCATED_STACK' as default. The other two modes are 'INFINITE_REALLOC_STACK' and 'FINITE_PRERPOCESSOR_STACK'. In order to determine which category is selected the macro 'IS_INFINITE_STACK' can be used. The default stack mode is 'INFINITE_STACK' (or 'INFINITE_LIST_STACK' to be precise) as defined by 'STACK_MODE'. To use another of the available modes use '#define STACK_MODE [category or mode macro]' before including the header. To specify the data type to be stacked use '#define STACK_DATA_TYPE [data type]' before including the header (default is 'void*' or 'void pointer'). The 'INFINITE_LIST_STACK' mode uses a linked list implementation to create an infinite sized stacks. Since this mode's element is an array of 'STACK_DATA_TYPE' variables, the size of the allocated list element's array can be changed using 'LIST_ARRAY_STACK_CHUNK' macro like '#define LIST_ARRAY_STACK_CHUNK [size]' (default size is (1 << 10) or 1024). The 'FINITE_ALLOCATED_STACK' mode uses an allocated array, the user can specify the maximum size of the stack when calling 'create_stack([maximum size])' function, it is not necessary to define the stack's size using a macro (the user can create multiple stacks of variable length). The 'INFINITE_REALLOC_STACK' mode relies on the 'realloc()' function to guarantee infinite size, after the allocated array reaches its maximum length it is expanded (not doubled) by 'REALLOC_STACK_CHUNK', when the size shrinks to the point that a 'REALLOC_STACK_CHUNK' chunk is 'empty' the array also shrinks by 'REALLOC_STACK_CHUNK'. The user can use '#define REALLOC_STACK_CHUNK [size]' to define the chunk size. The 'FINITE_PRERPOCESSOR_STACK' mode uses the 'PREPROCESSOR_STACK_SIZE' macro to define the stack size. This mode does not use any memory allocation as the user can specify the size using '#define PREPROCESSOR_STACK_SIZE [size]'.
-
-#endif
-
 // stack mode macros in octal to prevent future overlap with other data structure modes
 #define INFINITE_LIST_STACK       0x1
 #define FINITE_ALLOCATED_STACK    0x2
@@ -58,6 +52,12 @@
 #ifndef STACK_ALLOC
 
 #define STACK_ALLOC malloc
+
+#endif
+
+#ifndef STACK_REALLOC
+
+#define STACK_REALLOC realloc
 
 #endif
 
@@ -585,7 +585,7 @@ static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
 
     // first expand memory if necessary and then add element
     if ((stack->size % REALLOC_STACK_CHUNK) == 0) {
-        stack->elements = realloc(stack->elements, (stack->size + REALLOC_STACK_CHUNK) * sizeof(STACK_DATA_TYPE));
+        stack->elements = STACK_REALLOC(stack->elements, (stack->size + REALLOC_STACK_CHUNK) * sizeof(STACK_DATA_TYPE));
         STACK_ASSERT(stack->elements && "[ERROR] Memory allocation failed");
     }
     memcpy(stack->elements + stack->size++, &element, sizeof(STACK_DATA_TYPE));
@@ -603,7 +603,7 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
     // first remove element and then shrink memory if necessary
     STACK_DATA_TYPE element = stack->elements[--(stack->size)];
     if ((stack->size % REALLOC_STACK_CHUNK) == 0) {
-        STACK_DATA_TYPE * elements = realloc(stack->elements, (stack->size) * sizeof(STACK_DATA_TYPE));
+        STACK_DATA_TYPE * elements = STACK_REALLOC(stack->elements, (stack->size) * sizeof(STACK_DATA_TYPE));
         stack->elements = stack->size ? elements : NULL;
     }
 
