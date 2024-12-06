@@ -326,6 +326,37 @@ static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate
     }
 }
 
+/// @brief Clears all elements from the stack.
+/// @param stack Stack structure pointer.
+/// @param destroy Function pointer to destroy an element in stack.
+static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) {
+    STACK_ASSERT(stack && "[ERROR] Stack pointer is NULL");
+    STACK_ASSERT(((stack->head && stack->size) || (!stack->head && !stack->size)) && "[ERROR] Invalid stack state.");
+
+    struct stack_list_array * list = stack->head; // list pointer to head elements array
+    const size_t mod_size = stack->size % LIST_ARRAY_STACK_CHUNK; // check if first elements array is full or partially filled
+    if (mod_size) { // special case when list elements array is not full
+        for (size_t s = 0; destroy && s < mod_size; s++) { // destroys stack elements
+            destroy(&(list->elements[s])); // calls destroy element function if not NULL
+        }
+
+        struct stack_list_array * temp = list; // temporary pointer to not lose reference
+        list = list->next; // go to next pointer
+        STACK_FREE(temp); // free temporary
+    }
+    while (list) { // if first list elements array is full then starts here else it first destroys partially filled elements
+        for (size_t s = 0; destroy && s < LIST_ARRAY_STACK_CHUNK; s++) { // destroys stack elements
+            destroy(&(list->elements[s])); // calls destroy element function if not NULL
+        }
+
+        struct stack_list_array * temp = list; // temporary pointer to not lose reference
+        list = list->next; // go to next pointer
+        STACK_FREE(temp); // free temporary
+    }
+
+    *stack = (stack_s) { 0 }; // resets everything in stack to zero/NULL
+}
+
 #elif STACK_MODE == FINITE_ALLOCATED_STACK
 
 /// @brief Stack implementation that uses allocated memory array and pushes elements based on the current
@@ -354,10 +385,9 @@ static inline stack_s create_stack(const size_t max) {
 /// @param stack Stack structure pointer.
 /// @param destroy Function pointer that destroys/frees an element reference.
 static inline void destroy_stack(stack_s * stack, const destroy_stack_fn destroy) {
+    STACK_ASSERT(stack && "[ERROR] Stack pointer is NULL");
     STACK_ASSERT(stack->elements && "[ERROR] Stack's element array can't be NULL.");
     STACK_ASSERT(stack->max && "[ERROR] Stack's max can't be zero.");
-
-    STACK_ASSERT(stack && "[ERROR] Stack pointer is NULL");
 
     for(size_t s = 0; destroy && (s < stack->size); s++) {
         destroy(&(stack->elements[s]));
@@ -473,6 +503,21 @@ static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate
     for (size_t i = 0; i < stack->size; ++i) {
         operate(stack->elements + i, args);
     }
+}
+
+/// @brief Clears all elements from the stack.
+/// @param stack Stack structure pointer.
+/// @param destroy Function pointer to destroy an element in stack.
+static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) {
+    STACK_ASSERT(stack && "[ERROR] Stack pointer is NULL");
+    STACK_ASSERT(stack->elements && "[ERROR] Stack's element array can't be NULL.");
+    STACK_ASSERT(stack->max && "[ERROR] Stack's max can't be zero.");
+
+    for(size_t s = 0; destroy && (s < stack->size); s++) {
+        destroy(&(stack->elements[s]));
+    }
+
+    stack->size = 0;
 }
 
 #elif STACK_MODE == INFINITE_REALLOC_STACK
@@ -628,6 +673,20 @@ static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate
     }
 }
 
+/// @brief Clears all elements from the stack.
+/// @param stack Stack structure pointer.
+/// @param destroy Function pointer to destroy an element in stack.
+static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) {
+    STACK_ASSERT(stack && "[ERROR] Stack pointer is NULL");
+    STACK_ASSERT(((stack->elements && stack->size) || (!stack->elements && !stack->size)) && "[ERROR] Invalid stack state.");
+
+    for(size_t s = 0; destroy && (s < stack->size); s++) {
+        destroy(&(stack->elements[s]));
+    }
+
+    *stack = (stack_s) { 0 }; // reset stack to zero
+}
+
 #elif STACK_MODE == FINITE_PRERPOCESSOR_STACK
 
 #ifndef PREPROCESSOR_STACK_SIZE
@@ -751,6 +810,19 @@ static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate
     for (size_t i = 0; i < stack->size; ++i) {
         operate(stack->elements + i, args);
     }
+}
+
+/// @brief Clears all elements from the stack.
+/// @param stack Stack structure pointer.
+/// @param destroy Function pointer to destroy an element in stack.
+static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) {
+    STACK_ASSERT(stack && "[ERROR] Stack pointer is NULL");
+
+    for(size_t s = 0; destroy && (s < stack->size); s++) {
+        destroy(&(stack->elements[s]));
+    }
+
+    stack->size = 0;
 }
 
 #endif
