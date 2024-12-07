@@ -57,7 +57,6 @@
 typedef BINARY_SET_DATA_TYPE (*copy_binary_set_fn)    (const BINARY_SET_DATA_TYPE);
 typedef void                 (*destroy_binary_set_fn) (BINARY_SET_DATA_TYPE *);
 typedef int                  (*compare_binary_set_fn) (const void *, const void *);
-typedef void                 (*operate_binary_set_fn) (BINARY_SET_DATA_TYPE *, void *);
 
 #if BINARY_SET_MODE == INFINITE_REALLOC_BINARY_SET
 
@@ -479,15 +478,6 @@ static inline binary_set_s copy_binary_set(const binary_set_s set, const copy_bi
     }
 
     return set_copy;
-}
-
-static inline void foreach_binary_set(binary_set_s * set, const operate_binary_set_fn operate, void * args) {
-    BINARY_SET_ASSERT(set && "[ERROR] 'set' parameter pointer is NULL.");
-    BINARY_SET_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
-
-    for (size_t i = 0; i < set->size; ++i) {
-        operate(set->elements + i, args);
-    }
 }
 
 #endif

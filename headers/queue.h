@@ -58,6 +58,12 @@
 
 #endif
 
+#ifndef QUEUE_REALLOC
+
+#define QUEUE_REALLOC realloc
+
+#endif
+
 #ifndef QUEUE_FREE
 
 #define QUEUE_FREE free
@@ -68,12 +74,6 @@
 typedef QUEUE_DATA_TYPE (*copy_queue_fn)    (const QUEUE_DATA_TYPE);
 /// Function pointer that destroys a deep element.
 typedef void            (*destroy_queue_fn) (QUEUE_DATA_TYPE *);
-/// Function pointer that compares two elements, used in sorting function.
-typedef int             (*compare_queue_fn) (const void *, const void *);
-/// Function pointer that sorts an array of elements, uses 'qsort()' function parameter template.
-typedef void            (*sort_queue_fn)    (void * array, size_t number, size_t size, compare_queue_fn);
-/// Function pointer that changes an element pointer using void pointer arguments if needed.
-typedef void            (*operate_queue_fn) (QUEUE_DATA_TYPE *, void *);
 
 #if   QUEUE_MODE == INFINITE_LIST_QUEUE
 
@@ -279,84 +279,6 @@ static inline bool is_empty_queue(const queue_s queue) {
     return queue.size == 0;
 }
 
-/// @brief Sorts stack elements using a function specified by the user.
-/// @param queue Queue structure pointer.
-/// @param sort Function pointer to sorting algorithm.
-/// @param compare Function pointer to compare two elements.
-static inline void sort_queue(queue_s * queue, const sort_queue_fn sort, const compare_queue_fn compare) {
-    QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter is NULL");
-    QUEUE_ASSERT(sort && "[ERROR] 'sort' parameter is NULL");
-    QUEUE_ASSERT(compare && "[ERROR] 'compare' parameter is NULL");
-
-    QUEUE_DATA_TYPE * elements_array = NULL;
-    if (queue->head == queue->tail) { // special case where either the queue is empty or only one chunk has elements
-        elements_array = queue->head->elements + queue->current;
-    } else {
-        elements_array = QUEUE_ALLOC(queue->size * sizeof(QUEUE_DATA_TYPE));
-        QUEUE_ASSERT((!(queue->size) || elements_array) && "[ERROR] Memory allocation failed.");
-
-        size_t copied_size = (LIST_ARRAY_QUEUE_CHUNK - queue->current);
-
-        memcpy(elements_array, &(queue->head->elements[queue->current]), sizeof(QUEUE_DATA_TYPE) * copied_size);
-        struct queue_list_array * current = queue->head->next;
-        while (current != queue->tail) { // copy other chunks between head and tail where elements arrays are full
-            memcpy(&(elements_array[copied_size]), current->elements, copied_size += LIST_ARRAY_QUEUE_CHUNK);
-            current = current->next;
-        }
-        memcpy(&(elements_array[copied_size]), queue->tail->elements, queue->size - copied_size); // copy tail
-    }
-
-    sort(elements_array, queue->size, sizeof(QUEUE_DATA_TYPE), compare);
-
-    if (queue->head != queue->tail) {
-        size_t copied_size = (LIST_ARRAY_QUEUE_CHUNK - queue->current); // reset copy size
-        memcpy(&(queue->head->elements[queue->current]), elements_array, sizeof(QUEUE_DATA_TYPE) * copied_size);
-        struct queue_list_array * current = queue->head->next; // reset current pointer to head's next chunk
-        while (current != queue->tail) {
-            memcpy(current->elements, &(elements_array[copied_size]), copied_size += LIST_ARRAY_QUEUE_CHUNK);
-            current = current->next;
-        }
-        memcpy(queue->tail->elements, &(elements_array[copied_size]), queue->size - copied_size);
-
-        free(elements_array);
-    }
-}
-
-/// @brief Foreach funtion that iterates over all elements in queue and performs 'operate' function on them using 'args'
-/// as parameters.
-/// @param queue Queue structure pointer.
-/// @param operate Function pointer taht operates on single element pointer using 'args' as arguments.
-/// @param args Arguments for 'operates' funtion pointer.
-static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate, void * args) {
-    assert(queue && "[ERROR] 'queue' parameter pointer is NULL.");
-    assert(operate && "[ERROR] 'operate' parameter pointer is NULL");
-
-    if (queue->head == queue->tail) { // if head and tail point to the same memory (including NULL)
-        for (size_t i = queue->current; i < queue->current + queue->size; ++i) { // won't run if size is 0
-            operate(queue->head->elements + i, args);
-        }
-    } else { // else queue is made up of more than one list node
-        for (size_t i = queue->current; i < LIST_ARRAY_QUEUE_CHUNK; ++i) { // operate on first node
-            operate(queue->head->elements + i, args);
-        }
-        size_t iterated_size = LIST_ARRAY_QUEUE_CHUNK - queue->current;
-
-        struct queue_list_array * current = queue->head->next;
-        while (current->next) { // operate on all nodes between first and last node (excluding last)
-            for (size_t i = 0; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
-                operate(current->elements + i, args);
-            }
-            iterated_size += LIST_ARRAY_QUEUE_CHUNK;
-
-            current = current->next;
-        }
-
-        for (size_t i = 0; i < queue->size - iterated_size; ++i) { // operate on last node
-            operate(current->elements + i, args);
-        }
-    }
-}
-
 #elif QUEUE_MODE == FINITE_ALLOCATED_QUEUE
 
 /// @brief Queue implementation that uses allocated memory array and pushes elements based on the current
@@ -487,56 +409,6 @@ static inline bool is_empty_queue(const queue_s queue) {
     return queue.size == 0;
 }
 
-/// @brief Sorts stack elements using a function specified by the user.
-/// @param queue Queue structure pointer.
-/// @param sort Function pointer to sorting algorithm.
-/// @param compare Function pointer to compare two elements.
-static inline void sort_queue(queue_s * queue, const sort_queue_fn sort, const compare_queue_fn compare) {
-    QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter is NULL");
-    QUEUE_ASSERT(sort && "[ERROR] 'sort' parameter is NULL");
-    QUEUE_ASSERT(compare && "[ERROR] 'compare' parameter is NULL");
-
-    if (queue->size > queue->max - queue->current) {
-        QUEUE_DATA_TYPE * elements_array = QUEUE_ALLOC(queue->size * sizeof(QUEUE_DATA_TYPE));
-        QUEUE_ASSERT((!(queue->size) || elements_array) && "[ERROR] Memory allocation failed.");
-
-        const size_t copy_size = queue->max - queue->current;
-        memcpy(elements_array, &(queue->elements[queue->current]), sizeof(QUEUE_DATA_TYPE) * copy_size);
-        memcpy(&(elements_array[copy_size]), queue->elements, queue->size - copy_size);
-
-        sort(elements_array, queue->size, sizeof(QUEUE_DATA_TYPE), compare);
-
-        memcpy(&(queue->elements[queue->current]), elements_array, sizeof(QUEUE_DATA_TYPE) * copy_size);
-        memcpy(queue->elements, &(elements_array[copy_size]), queue->size - copy_size);
-    } else {
-        sort(queue->elements, queue->size, sizeof(QUEUE_DATA_TYPE), compare);
-    }
-}
-
-/// @brief Foreach funtion that iterates over all elements in queue and performs 'operate' function on them using 'args'
-/// as parameters.
-/// @param queue Queue structure pointer.
-/// @param operate Function pointer taht operates on single element pointer using 'args' as arguments.
-/// @param args Arguments for 'operates' funtion pointer.
-static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate, void * args) {
-    assert(queue && "[ERROR] 'queue' parameter pointer is NULL.");
-    assert(operate && "[ERROR] 'operate' parameter pointer is NULL.");
-
-    const size_t right_size = queue->max - queue->current;
-    if (queue->size > right_size) { // if queue elements circle around
-        for (size_t i = queue->current; i < queue->max; ++i) { // operates on elements right of current index
-            operate(&(queue->elements[i]), args);
-        }
-        for (size_t i = 0; i < queue->size - right_size; i++) {// operates on elements left of current index
-            operate(&(queue->elements[i]), args);
-        }
-    } else { // else elements are continuous in array (they don't circle around)
-        for (size_t i = queue->current; i < queue->current + queue->size; ++i) {
-            operate(&(queue->elements[i]), args);
-        }
-    }
-}
-
 #elif QUEUE_MODE == INFINITE_REALLOC_QUEUE
 
 #ifndef REALLOC_QUEUE_CHUNK
@@ -599,7 +471,7 @@ static inline void enqueue(queue_s * queue, QUEUE_DATA_TYPE element) {
     // first expand memory if necessary and then add element
     size_t actual_size = queue->current + queue->size;
     if ((actual_size % REALLOC_QUEUE_CHUNK) == 0) {
-        queue->elements = realloc(queue->elements, (actual_size + REALLOC_QUEUE_CHUNK) * sizeof(QUEUE_DATA_TYPE));
+        queue->elements = QUEUE_REALLOC(queue->elements, (actual_size + REALLOC_QUEUE_CHUNK) * sizeof(QUEUE_DATA_TYPE));
         QUEUE_ASSERT(queue->elements && "[ERROR] Memory allocation failed");
     }
     queue->elements[queue->size++] = element;
@@ -665,32 +537,6 @@ static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) 
 /// @return true if queue size is zero, false otherwise
 static inline bool is_empty_queue(const queue_s queue) {
     return queue.size == 0;
-}
-
-/// @brief Sorts stack elements using a function specified by the user.
-/// @param queue Queue structure pointer.
-/// @param sort Function pointer to sorting algorithm.
-/// @param compare Function pointer to compare two elements.
-static inline void sort_queue(queue_s * queue, const sort_queue_fn sort, const compare_queue_fn compare) {
-    QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter is NULL");
-    QUEUE_ASSERT(sort && "[ERROR] 'sort' parameter is NULL");
-    QUEUE_ASSERT(compare && "[ERROR] 'compare' parameter is NULL");
-
-    sort(queue->elements + queue->current, queue->size, sizeof(QUEUE_DATA_TYPE), compare);
-}
-
-/// @brief Foreach funtion that iterates over all elements in queue and performs 'operate' function on them using 'args'
-/// as parameters.
-/// @param queue Queue structure pointer.
-/// @param operate Function pointer taht operates on single element pointer using 'args' as arguments.
-/// @param args Arguments for 'operates' funtion pointer.
-static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate, void * args) {
-    assert(queue && "[ERROR] 'queue' parameter pointer is NULL.");
-    assert(operate && "[ERROR] 'operate' parameter pointer is NULL.");
-
-    for (size_t i = queue->current; i < queue->current + queue->size; ++i) {
-        operate(&(queue->elements[i]), args);
-    }
 }
 
 #elif QUEUE_MODE == FINITE_PREPROCESSOR_QUEUE
@@ -827,55 +673,6 @@ static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) 
 /// @return true if queue size is zero, false otherwise
 static inline bool is_empty_queue(const queue_s queue) {
     return queue.size == 0;
-}
-
-/// @brief Sorts stack elements using a function specified by the user.
-/// @param queue Queue structure pointer.
-/// @param sort Function pointer to sorting algorithm.
-/// @param compare Function pointer to compare two elements.
-static inline void sort_queue(queue_s * queue, const sort_queue_fn sort, const compare_queue_fn compare) {
-    QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter is NULL");
-    QUEUE_ASSERT(sort && "[ERROR] 'sort' parameter is NULL");
-    QUEUE_ASSERT(compare && "[ERROR] 'compare' parameter is NULL");
-
-    const size_t copy_size = PREPROCESSOR_QUEUE_SIZE - queue->current;
-    if (queue->size > copy_size) { // queue circles to beginning of elements array
-        QUEUE_DATA_TYPE elements_array[PREPROCESSOR_QUEUE_SIZE];
-
-        memcpy(elements_array, queue->elements + queue->current, sizeof(QUEUE_DATA_TYPE) * copy_size);
-        memcpy(&(elements_array[copy_size]), queue->elements, queue->size - copy_size);
-
-        sort(elements_array, queue->size, sizeof(QUEUE_DATA_TYPE), compare);
-
-        memcpy(queue->elements + queue->current, elements_array, sizeof(QUEUE_DATA_TYPE) * copy_size);
-        memcpy(queue->elements, &(elements_array[copy_size]), queue->size - copy_size);
-    } else {
-        sort(queue->elements, queue->size, sizeof(QUEUE_DATA_TYPE), compare);
-    }
-}
-
-/// @brief Foreach funtion that iterates over all elements in queue and performs 'operate' function on them using 'args'
-/// as parameters.
-/// @param queue Queue structure pointer.
-/// @param operate Function pointer taht operates on single element pointer using 'args' as arguments.
-/// @param args Arguments for 'operates' funtion pointer.
-static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate, void * args) {
-    assert(queue && "[ERROR] 'queue' parameter pointer is NULL.");
-    assert(operate && "[ERROR] 'operate' parameter pointer is NULL.");
-
-    const size_t right_size = PREPROCESSOR_QUEUE_SIZE - queue->current;
-    if (queue->size > right_size) { // if queue elements circle around
-        for (size_t i = queue->current; i < PREPROCESSOR_QUEUE_SIZE; ++i) { // operates on elements right of current index
-            operate(&(queue->elements[i]), args);
-        }
-        for (size_t i = 0; i < queue->size - right_size; i++) {// operates on elements left of current index
-            operate(&(queue->elements[i]), args);
-        }
-    } else { // else elements are continuous in array (they don't circle around)
-        for (size_t i = queue->current; i < queue->current + queue->size; ++i) {
-            operate(&(queue->elements[i]), args);
-        }
-    }
 }
 
 #endif
