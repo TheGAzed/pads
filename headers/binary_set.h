@@ -986,8 +986,9 @@ static inline bool contains_binary_set(const binary_set_s set, const BINARY_SET_
         return (bool) bsearch(&element, set.elements, set.size, sizeof(BINARY_SET_DATA_TYPE), set.compare);
     }
 
+    const BINARY_SET_DATA_TYPE * test = set.elements;
     BINARY_SET_DATA_TYPE * base = NULL;
-    memcpy(&base, &(set.elements), sizeof(BINARY_SET_DATA_TYPE *));
+    memcpy(&base, &test, sizeof(BINARY_SET_DATA_TYPE *));
     for (size_t limit = set.size; limit != 0; limit >>= 1) {
         BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
         const int cmp = set.compare ? set.compare(&element, current_element) : memcmp(&element, current_element, sizeof(BINARY_SET_DATA_TYPE));
@@ -1092,8 +1093,9 @@ static inline binary_set_s intersect_binary_set(const binary_set_s set_one, cons
 
     binary_set_s set = { .compare = set_one.compare, .size = set_one.size, };
 
+    const BINARY_SET_DATA_TYPE * test = set_one.elements;
     BINARY_SET_DATA_TYPE * base = NULL;
-    memcpy(&base, &(set_one.elements), sizeof(BINARY_SET_DATA_TYPE *));
+    memcpy(&base, &test, sizeof(BINARY_SET_DATA_TYPE *));
     for (size_t i = 0; i < set_two.size; ++i) { // for each element in set two
         const size_t index = (base - set_one.elements);
         for (size_t limit = set_one.size - index; limit != 0; limit >>= 1) {
@@ -1123,8 +1125,9 @@ static inline binary_set_s subtract_binary_set(const binary_set_s set_one, const
 
     binary_set_s set = { .compare = set_one.compare, .size = set_one.size, };
 
+    const BINARY_SET_DATA_TYPE * test = set_two.elements;
     BINARY_SET_DATA_TYPE * base = NULL;
-    memcpy(&base, &(set_two.elements), sizeof(BINARY_SET_DATA_TYPE *));
+    memcpy(&base, &test, sizeof(BINARY_SET_DATA_TYPE *));
     for (size_t i = 0; i < set_one.size; ++i) { // for each element in set two
         bool found_element = false;
         for (size_t limit = set_two.size - (base - set_two.elements); limit != 0; limit >>= 1) {
@@ -1204,8 +1207,9 @@ static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const 
 static inline bool is_subset_binary_set(const binary_set_s set_one, const binary_set_s set_two) {
     BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't check subset with different compare functions.");
 
+    const BINARY_SET_DATA_TYPE * test = set_two.elements;
     BINARY_SET_DATA_TYPE * base = NULL;
-    memcpy(&base, &(set_two.elements), sizeof(BINARY_SET_DATA_TYPE *));
+    memcpy(&base, &test, sizeof(BINARY_SET_DATA_TYPE *));
     for (size_t i = 0; i < set_one.size; ++i) { // for each element in set one
         bool found_element = false;
         for (size_t limit = set_two.size - (base - set_two.elements); limit != 0; limit >>= 1) {
@@ -1231,8 +1235,9 @@ static inline bool is_subset_binary_set(const binary_set_s set_one, const binary
 static inline bool is_proper_subset_binary_set(const binary_set_s set_one, const binary_set_s set_two) {
     BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't check proper subset with different compare functions.");
 
+    const BINARY_SET_DATA_TYPE * test = set_two.elements;
     BINARY_SET_DATA_TYPE * base = NULL;
-    memcpy(&base, &(set_two.elements), sizeof(BINARY_SET_DATA_TYPE *));
+    memcpy(&base, &test, sizeof(BINARY_SET_DATA_TYPE *));
     for (size_t i = 0; i < set_one.size; ++i) { // for each element in set one
         bool found_element = false;
         for (size_t limit = set_two.size - (base - set_two.elements); limit != 0; limit >>= 1) {
@@ -1258,8 +1263,9 @@ static inline bool is_proper_subset_binary_set(const binary_set_s set_one, const
 static inline bool is_superset_binary_set(const binary_set_s set_one, const binary_set_s set_two) {
     BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't check superset with different compare functions.");
 
+    const BINARY_SET_DATA_TYPE * test = set_one.elements;
     BINARY_SET_DATA_TYPE * base = NULL;
-    memcpy(&base, &(set_one.elements), sizeof(BINARY_SET_DATA_TYPE *));
+    memcpy(&base, &test, sizeof(BINARY_SET_DATA_TYPE *));
     for (size_t i = 0; i < set_two.size; ++i) { // for each element in set two
         bool found_element = false;
         for (size_t limit = set_one.size - (base - set_one.elements); limit != 0; limit >>= 1) {
@@ -1285,8 +1291,9 @@ static inline bool is_superset_binary_set(const binary_set_s set_one, const bina
 static inline bool is_proper_superset_binary_set(const binary_set_s set_one, const binary_set_s set_two) {
     BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't check proper superset with different compare functions.");
 
+    const BINARY_SET_DATA_TYPE * test = set_one.elements;
     BINARY_SET_DATA_TYPE * base = NULL;
-    memcpy(&base, &(set_one.elements), sizeof(BINARY_SET_DATA_TYPE *));
+    memcpy(&base, &test, sizeof(BINARY_SET_DATA_TYPE *));
     for (size_t i = 0; i < set_two.size; ++i) { // for each element in set two
         bool found_element = false;
         for (size_t limit = set_one.size - (base - set_one.elements); limit != 0; limit >>= 1) {
@@ -1312,8 +1319,9 @@ static inline bool is_proper_superset_binary_set(const binary_set_s set_one, con
 static inline bool is_disjoint_binary_set(const binary_set_s set_one, const binary_set_s set_two) {
     BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't check disjoint with different compare functions.");
 
+    const BINARY_SET_DATA_TYPE * test = set_two.elements;
     BINARY_SET_DATA_TYPE * base = NULL;
-    memcpy(&base, &(set_two.elements), sizeof(BINARY_SET_DATA_TYPE *));
+    memcpy(&base, &test, sizeof(BINARY_SET_DATA_TYPE *));
     for (size_t i = 0; i < set_one.size; ++i) { // for each element in set one
         for (size_t limit = set_two.size - (base - set_two.elements); limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
@@ -1358,4 +1366,4 @@ static inline bool is_full_binary_set(const binary_set_s set) {
 
 #endif
 
-#endif //BINARY_SET_H
+#endif // BINARY_SET_H

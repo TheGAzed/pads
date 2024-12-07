@@ -19,7 +19,9 @@
 // 'FINITE_PRERPOCESSOR_STACK'.
 // Default: 'INFINITE_LIST_STACK'
 #ifndef STACK_MODE
-    #define STACK_MODE INFINITE_STACK
+
+#define STACK_MODE INFINITE_STACK
+
 #endif
 
 #define IS_INFINITE_STACK ((bool)(STACK_MODE & 0x1))
@@ -35,7 +37,9 @@
 // Stack data type to specify what datatype to stack.
 // DEFAULT: void *
 #ifndef STACK_DATA_TYPE
-    #define STACK_DATA_TYPE void*
+
+#define STACK_DATA_TYPE void*
+
 #endif
 
 #include <stdlib.h>  // imports size_t and malloc
