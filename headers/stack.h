@@ -501,8 +501,8 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
     // first remove element and then shrink memory if necessary
     STACK_DATA_TYPE element = stack->elements[--(stack->size)];
     if ((stack->size % REALLOC_STACK_CHUNK) == 0) {
-        STACK_DATA_TYPE * elements = STACK_REALLOC(stack->elements, (stack->size) * sizeof(STACK_DATA_TYPE));
-        stack->elements = stack->size ? elements : NULL;
+        stack->elements = stack->size ? STACK_REALLOC(stack->elements, stack->size * sizeof(STACK_DATA_TYPE)) : NULL;
+        STACK_ASSERT((!(stack->size) || stack->elements) && "[ERROR] Memory allocation failed.");
     }
 
     return element;
