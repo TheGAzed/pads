@@ -71,12 +71,6 @@
 typedef STACK_DATA_TYPE (*copy_stack_fn)    (const STACK_DATA_TYPE);
 /// Function pointer that destroys a deep element.
 typedef void            (*destroy_stack_fn) (STACK_DATA_TYPE *);
-/// Function pointer that compares two elements, used in sorting function.
-typedef int             (*compare_stack_fn) (const void *, const void *);
-/// Function pointer that sorts an array of elements, uses 'qsort()' function parameter template.
-typedef void            (*sort_stack_fn)    (void * array, size_t number, size_t size, compare_stack_fn);
-/// Function pointer that changes an element pointer using void pointer arguments if needed.
-typedef void            (*operate_stack_fn) (STACK_DATA_TYPE *, void *);
 
 #if   STACK_MODE == INFINITE_LIST_STACK
 
@@ -257,75 +251,6 @@ static inline bool is_empty_stack(const stack_s stack) {
     return !(stack.size);
 }
 
-/// @brief Sorts elements in stack based on provided function pointer sorter or bubble sort with memcmp if
-/// parameter is NULL.
-/// @param stack Stack structure pointer.
-/// @param sort Sorting function pointer or NULL, to use bubble sort with 'compare'/'memcmp'.
-/// @param compare non NULL function pointer that compares two STACK_DATA_TYPE elements as void pointers. Used as
-/// parameter for sort function.
-static inline void sort_stack(stack_s * stack, const sort_stack_fn sort, const compare_stack_fn compare) {
-    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
-    STACK_ASSERT(sort && "[ERROR] 'sort' parameter is NULL.");
-    STACK_ASSERT(compare && "[ERROR] 'compare' parameter is NULL.");
-    STACK_ASSERT(((stack->head && stack->size) || (!stack->head && !stack->size)) && "[ERROR] Invalid stack state.");
-
-    STACK_DATA_TYPE * elements_array = STACK_ALLOC(stack->size * sizeof(STACK_DATA_TYPE));
-    STACK_ASSERT((!(stack->size) || elements_array) && "[ERROR] Memory allocation failed.");
-
-    struct stack_list_array * list = stack->head;
-    size_t copied_size = stack->size % LIST_ARRAY_STACK_CHUNK;
-    if (copied_size) { // initial case when first list can have size less than LIST_ARRAY_STACK_CHUNK
-        memcpy(elements_array, list->elements, sizeof(STACK_DATA_TYPE) * copied_size);
-        list = list->next;
-    }
-    while (list) { // all lists with full list arrays/chunks
-        memcpy(elements_array + copied_size, list->elements, sizeof(STACK_DATA_TYPE) * LIST_ARRAY_STACK_CHUNK);
-        copied_size += LIST_ARRAY_STACK_CHUNK;
-        list = list->next;
-    }
-
-    sort(elements_array, stack->size, sizeof(STACK_DATA_TYPE), compare);
-
-    list = stack->head;
-    copied_size = stack->size % LIST_ARRAY_STACK_CHUNK;
-    if (copied_size) {
-        memcpy(list->elements, elements_array + (stack->size - copied_size), sizeof(STACK_DATA_TYPE) * copied_size);
-        list = list->next;
-    }
-    while (list) {
-        copied_size += LIST_ARRAY_STACK_CHUNK;
-        memcpy(list->elements, elements_array + (stack->size - copied_size), sizeof(STACK_DATA_TYPE) * LIST_ARRAY_STACK_CHUNK);
-        list = list->next;
-    }
-
-    STACK_FREE(elements_array);
-}
-
-/// @brief For each function that does an operation on element reference specified by args.
-/// @param stack Stack structure pointer.
-/// @param operate Function pointer that takes an element pointer and 'args' as parameters
-/// @param args Arguments for operation function pointer.
-static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args) {
-    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
-    STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL");
-    STACK_ASSERT(((stack->head && stack->size) || (!stack->head && !stack->size)) && "[ERROR] Invalid stack state.");
-
-    struct stack_list_array * current = stack->head;
-    const size_t chunk_size = stack->size % LIST_ARRAY_STACK_CHUNK;
-    if (chunk_size) {
-        for (size_t i = 0; i < chunk_size; ++i) {
-            operate(current->elements + i, args);
-        }
-        current = current->next;
-    }
-    while (current) {
-        for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
-            operate(current->elements + i, args);
-        }
-        current = current->next;
-    }
-}
-
 /// @brief Clears all elements from the stack.
 /// @param stack Stack structure pointer.
 /// @param destroy Function pointer to destroy an element in stack.
@@ -478,33 +403,6 @@ static inline bool is_empty_stack(const stack_s stack) {
     return (stack.size == 0);
 }
 
-/// @brief Sorts stack elements using a function specified by the user.
-/// @param stack Queue structure pointer.
-/// @param sort Function pointer to sorting algorithm.
-/// @param compare Function pointer to compare two elements.
-static inline void sort_stack(stack_s * stack, const sort_stack_fn sort, const compare_stack_fn compare) {
-    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
-    STACK_ASSERT(compare && "[ERROR] 'compare' parameter is NULL.");
-    STACK_ASSERT(sort && "[ERROR] 'sort' parameter is NULL.");
-    STACK_ASSERT(stack->elements && "[ERROR] Stack's element array can't be NULL.");
-    STACK_ASSERT(stack->max && "[ERROR] Stack's max can't be zero.");
-
-    sort(stack->elements, stack->size, sizeof(STACK_DATA_TYPE), compare);
-}
-
-/// @brief For each function that does an operation on element reference specified by args.
-/// @param stack Stack structure pointer.
-/// @param operate Non NULL function pointer that takes an element pointer and 'args' as parameters.
-/// @param args Arguments for operation function pointer.
-static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args) {
-    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
-    STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL");
-
-    for (size_t i = 0; i < stack->size; ++i) {
-        operate(stack->elements + i, args);
-    }
-}
-
 /// @brief Clears all elements from the stack.
 /// @param stack Stack structure pointer.
 /// @param destroy Function pointer to destroy an element in stack.
@@ -646,33 +544,6 @@ static inline bool is_empty_stack(const stack_s stack) {
     return stack.size == 0;
 }
 
-/// @brief Sorts stack elements using a function specified by the user.
-/// @param stack Queue structure pointer.
-/// @param sort Function pointer to sorting algorithm.
-/// @param compare Function pointer to compare two elements.
-static inline void sort_stack(stack_s * stack, const sort_stack_fn sort, const compare_stack_fn compare) {
-    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
-    STACK_ASSERT(sort && "[ERROR] 'sort' parameter is NULL.");
-    STACK_ASSERT(compare && "[ERROR] 'compare' parameter is NULL.");
-    STACK_ASSERT(((stack->elements && stack->size) || (!stack->elements && !stack->size)) && "[ERROR] Invalid stack state.");
-
-    sort(stack->elements, stack->size, sizeof(STACK_DATA_TYPE), compare);
-}
-
-/// @brief For each function that does an operation on element reference specified by args.
-/// @param stack Stack structure pointer.
-/// @param operate Function pointer that takes an element pointer and 'args' as parameters
-/// @param args Arguments for operation function pointer.
-static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args) {
-    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
-    STACK_ASSERT(((stack->elements && stack->size) || (!stack->elements && !stack->size)) && "[ERROR] Invalid stack state.");
-    STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL");
-
-    for (size_t i = 0; i < stack->size; ++i) {
-        operate(stack->elements + i, args);
-    }
-}
-
 /// @brief Clears all elements from the stack.
 /// @param stack Stack structure pointer.
 /// @param destroy Function pointer to destroy an element in stack.
@@ -785,31 +656,6 @@ static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) 
 /// @return true if stack size is zero, false otherwise
 static inline bool is_empty_stack(const stack_s stack) {
     return stack.size == 0;
-}
-
-/// @brief Sorts stack elements using a function specified by the user.
-/// @param stack Queue structure pointer.
-/// @param sort Function pointer to sorting algorithm.
-/// @param compare Function pointer to compare two elements.
-static inline void sort_stack(stack_s * stack, const sort_stack_fn sort, const compare_stack_fn compare) {
-    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
-    STACK_ASSERT(sort && "[ERROR] 'sort' parameter is NULL.");
-    STACK_ASSERT(compare && "[ERROR] 'compare' parameter is NULL.");
-
-    sort(stack->elements, stack->size, sizeof(STACK_DATA_TYPE), compare);
-}
-
-/// @brief For each function that does an operation on element reference specified by args.
-/// @param stack Stack structure pointer.
-/// @param operate Function pointer that takes an element pointer and 'args' as parameters
-/// @param args Arguments for operation function pointer.
-static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args) {
-    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
-    STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL");
-
-    for (size_t i = 0; i < stack->size; ++i) {
-        operate(stack->elements + i, args);
-    }
 }
 
 /// @brief Clears all elements from the stack.

@@ -398,148 +398,8 @@ TEST FAS_29(void) {
     PASS();
 }
 
-/// Test if int sorted ascending correctly qsort
-TEST FAS_30(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 8 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 5 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 2 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 3 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 7 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 1 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 6 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 9 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 4 });
-
-    sort_stack(&test, qsort, compare_int_asc);
-
-    for (int i = 9; i >= 0; i--) {
-        ASSERT_EQm("[FAS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
-    }
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Test if int sorted descending correctly qsort
-TEST FAS_31(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 8 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 5 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 2 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 3 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 7 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 1 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 6 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 9 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 4 });
-
-    sort_stack(&test, qsort, compare_int_desc);
-
-    for (int i = 0; i < 10; i++) {
-        ASSERT_EQm("[FAS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
-    }
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Test if string sorted ascending correctly qsort
-TEST FAS_32(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "i" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "a" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "f" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "c" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "d" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "h" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "b" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "g" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "j" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "e" });
-
-    sort_stack(&test, qsort, compare_string_asc);
-
-    for (int i = 9; i >= 0; i--) {
-        char temp[] = "a";
-        temp[0] += i;
-        ASSERT_STRN_EQm("[FAS-ERROR] Expected sorted values to be equal", temp , pop_stack(&test).sub_two, sizeof(temp) - 1);
-    }
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Test if string sorted descending correctly qsort
-TEST FAS_33(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "i" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "a" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "f" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "c" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "d" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "h" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "b" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "g" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "j" });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_two = "e" });
-
-    sort_stack(&test, qsort, compare_string_desc);
-
-    for (int i = 0; i < 10; i++) {
-        char temp[] = "a";
-        temp[0] += i;
-        ASSERT_STRN_EQm("[FAS-ERROR] Expected sorted values to be equal", temp , pop_stack(&test).sub_two, sizeof(temp) - 1);
-    }
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Test if all int values get incremented by 'increment'
-TEST FAS_34(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-
-    for (int i = 0; i < 10; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
-    }
-
-    int increment = 5;
-    foreach_stack(&test, operation_int, &increment);
-
-    for (int i = 9; i >= 0; --i) {
-        ASSERT_EQm("[FAS-ERROR] Expected incremented element by 'increment'.", i + increment, pop_stack(&test).sub_one);
-    }
-
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Test if all string values have changed to new string value
-TEST FAS_35(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-
-    for (int i = 0; i < 10; ++i) {
-        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
-    }
-
-    char new_string[] = "[REDACTED]";
-    foreach_stack(&test, operation_string, new_string);
-
-    for (int i = 0; i < 10; ++i) {
-        STACK_DATA_TYPE element = pop_stack(&test);
-        ASSERT_STRN_EQm("[FAS-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
-        destroy_element(&element);
-    }
-
-    destroy_stack(&test, destroy_element);
-    PASS();
-}
-
 /// Tests if stack is not full when adding one element
-TEST FAS_36(void) {
+TEST FAS_30(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
 
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
@@ -551,7 +411,7 @@ TEST FAS_36(void) {
 }
 
 /// Tests if stack is not full when adding 'MAXIMUM_STACK_SIZE' - 1 elements
-TEST FAS_37(void) {
+TEST FAS_31(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
 
     for (size_t i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
@@ -565,7 +425,7 @@ TEST FAS_37(void) {
 }
 
 /// Tests if stack is not full when adding 'MAXIMUM_STACK_SIZE' - 1 elements
-TEST FAS_38(void) {
+TEST FAS_32(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
 
     for (size_t i = 0; i < MAXIMUM_STACK_SIZE; ++i) {
@@ -578,74 +438,6 @@ TEST FAS_38(void) {
     PASS();
 }
 
-/// Tests sorting 'MAXIMUM_STACK_SIZE' - 1 descending values into ascending
-TEST FAS_39(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-    for (int i = MAXIMUM_STACK_SIZE - 2; i >= 0; i--) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
-    }
-
-    sort_stack(&test, qsort, compare_int_asc);
-
-    for (int i = MAXIMUM_STACK_SIZE - 2; i >= 0; i--) {
-        ASSERT_EQm("[FAS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
-    }
-
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Tests sorting 'MAXIMUM_STACK_SIZE' descending values into ascending
-TEST FAS_40(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-    for (int i = MAXIMUM_STACK_SIZE - 1; i >= 0; i--) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
-    }
-
-    sort_stack(&test, qsort, compare_int_asc);
-
-    for (int i = MAXIMUM_STACK_SIZE - 1; i >= 0; i--) {
-        ASSERT_EQm("[FAS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
-    }
-
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Tests sorting 'MAXIMUM_STACK_SIZE' - 1 ascending values into descending
-TEST FAS_41(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-    for (int i = 0; i < MAXIMUM_STACK_SIZE - 1; i++) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
-    }
-
-    sort_stack(&test, qsort, compare_int_desc);
-
-    for (int i = 0; i < MAXIMUM_STACK_SIZE - 1; i++) {
-        ASSERT_EQm("[FAS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
-    }
-
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Tests sorting 'MAXIMUM_STACK_SIZE' ascending values into descending
-TEST FAS_42(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-    for (int i = 0; i < MAXIMUM_STACK_SIZE; i++) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
-    }
-
-    sort_stack(&test, qsort, compare_int_desc);
-
-    for (int i = 0; i < MAXIMUM_STACK_SIZE; i++) {
-        ASSERT_EQm("[FAS-ERROR] Expected sorted values to be equal", i, pop_stack(&test).sub_one);
-    }
-
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
 SUITE (finite_allocated_stack_test) {
     RUN_TEST(FAS_01); RUN_TEST(FAS_02); RUN_TEST(FAS_03); RUN_TEST(FAS_04);
     RUN_TEST(FAS_05); RUN_TEST(FAS_06); RUN_TEST(FAS_07); RUN_TEST(FAS_08);
@@ -655,7 +447,4 @@ SUITE (finite_allocated_stack_test) {
     RUN_TEST(FAS_21); RUN_TEST(FAS_22); RUN_TEST(FAS_23); RUN_TEST(FAS_24);
     RUN_TEST(FAS_25); RUN_TEST(FAS_26); RUN_TEST(FAS_27); RUN_TEST(FAS_28);
     RUN_TEST(FAS_29); RUN_TEST(FAS_30); RUN_TEST(FAS_31); RUN_TEST(FAS_32);
-    RUN_TEST(FAS_33); RUN_TEST(FAS_34); RUN_TEST(FAS_35); RUN_TEST(FAS_36);
-    RUN_TEST(FAS_37); RUN_TEST(FAS_38); RUN_TEST(FAS_39); RUN_TEST(FAS_40);
-    RUN_TEST(FAS_41); RUN_TEST(FAS_42);
 }
