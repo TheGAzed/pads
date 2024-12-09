@@ -281,6 +281,7 @@ TEST ILQ_21(void) {
     ASSERT_EQm("[ILQ-TEST] Test queue is not equal to copy.", dequeue(&test).sub_one, dequeue(&copy).sub_one);
 
     destroy_queue(&test, NULL);
+    destroy_queue(&copy, NULL);
     PASS();
 }
 
@@ -296,6 +297,7 @@ TEST ILQ_22(void) {
     ASSERT_EQm("[ILQ-TEST] Test queue is not equal to copy.", dequeue(&test).sub_one, dequeue(&copy).sub_one);
 
     destroy_queue(&test, NULL);
+    destroy_queue(&copy, NULL);
     PASS();
 }
 
@@ -312,6 +314,7 @@ TEST ILQ_23(void) {
     }
 
     destroy_queue(&test, NULL);
+    destroy_queue(&copy, NULL);
     PASS();
 }
 
@@ -328,6 +331,7 @@ TEST ILQ_24(void) {
     }
 
     destroy_queue(&test, NULL);
+    destroy_queue(&copy, NULL);
     PASS();
 }
 
@@ -345,6 +349,7 @@ TEST ILQ_25(void) {
     destroy_element(&element_copy);
 
     destroy_queue(&test, destroy_element);
+    destroy_queue(&copy, destroy_element);
     PASS();
 }
 
@@ -369,6 +374,7 @@ TEST ILQ_26(void) {
     destroy_element(&element_copy);
 
     destroy_queue(&test, destroy_element);
+    destroy_queue(&copy, destroy_element);
     PASS();
 }
 
@@ -389,6 +395,7 @@ TEST ILQ_27(void) {
     }
 
     destroy_queue(&test, destroy_element);
+    destroy_queue(&copy, destroy_element);
     PASS();
 }
 
@@ -409,6 +416,7 @@ TEST ILQ_28(void) {
     }
 
     destroy_queue(&test, destroy_element);
+    destroy_queue(&copy, destroy_element);
     PASS();
 }
 
