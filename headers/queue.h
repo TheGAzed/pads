@@ -265,7 +265,7 @@ static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) 
 
         // calculate last node element count
         for (size_t s = 0; s < queue_copy.size - copied_size; s++) {
-            queue_copy.head->elements[s] = copy ? copy(queue.head->elements[s]) : queue.head->elements[s];
+            queue_copy.tail->elements[s] = copy ? copy(queue.tail->elements[s]) : queue.tail->elements[s];
         }
     }
 

@@ -288,6 +288,7 @@ TEST IRS_23(void) {
     ASSERT_EQm("[IRS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
 
     destroy_stack(&test, NULL);
+    destroy_stack(&copy, NULL);
     PASS();
 }
 
@@ -303,6 +304,7 @@ TEST IRS_24(void) {
     ASSERT_EQm("[IRS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
 
     destroy_stack(&test, NULL);
+    destroy_stack(&copy, NULL);
     PASS();
 }
 
@@ -319,6 +321,7 @@ TEST IRS_25(void) {
     }
 
     destroy_stack(&test, NULL);
+    destroy_stack(&copy, NULL);
     PASS();
 }
 
@@ -335,6 +338,7 @@ TEST IRS_26(void) {
     }
 
     destroy_stack(&test, NULL);
+    destroy_stack(&copy, NULL);
     PASS();
 }
 
@@ -352,6 +356,7 @@ TEST IRS_27(void) {
     destroy_element(&element_copy);
 
     destroy_stack(&test, destroy_element);
+    destroy_stack(&copy, destroy_element);
     PASS();
 }
 
@@ -376,6 +381,7 @@ TEST IRS_28(void) {
     destroy_element(&element_copy);
 
     destroy_stack(&test, destroy_element);
+    destroy_stack(&copy, destroy_element);
     PASS();
 }
 
@@ -396,6 +402,7 @@ TEST IRS_29(void) {
     }
 
     destroy_stack(&test, destroy_element);
+    destroy_stack(&copy, destroy_element);
     PASS();
 }
 
@@ -416,6 +423,7 @@ TEST IRS_30(void) {
     }
 
     destroy_stack(&test, destroy_element);
+    destroy_stack(&copy, destroy_element);
     PASS();
 }
 

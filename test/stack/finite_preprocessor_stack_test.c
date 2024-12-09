@@ -210,6 +210,7 @@ TEST FPS_17(void) {
     ASSERT_EQm("[ILS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
 
     destroy_stack(&test, NULL);
+    destroy_stack(&copy, NULL);
     PASS();
 }
 
@@ -225,6 +226,7 @@ TEST FPS_18(void) {
     ASSERT_EQm("[ILS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
 
     destroy_stack(&test, NULL);
+    destroy_stack(&copy, NULL);
     PASS();
 }
 
@@ -241,6 +243,7 @@ TEST FPS_19(void) {
     }
 
     destroy_stack(&test, NULL);
+    destroy_stack(&copy, NULL);
     PASS();
 }
 
@@ -258,6 +261,7 @@ TEST FPS_20(void) {
     destroy_element(&element_copy);
 
     destroy_stack(&test, destroy_element);
+    destroy_stack(&copy, destroy_element);
     PASS();
 }
 
@@ -282,6 +286,7 @@ TEST FPS_21(void) {
     destroy_element(&element_copy);
 
     destroy_stack(&test, destroy_element);
+    destroy_stack(&copy, destroy_element);
     PASS();
 }
 
@@ -302,6 +307,7 @@ TEST FPS_22(void) {
     }
 
     destroy_stack(&test, destroy_element);
+    destroy_stack(&copy, destroy_element);
     PASS();
 }
 
