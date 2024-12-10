@@ -75,6 +75,8 @@
 typedef STACK_DATA_TYPE (*copy_stack_fn)    (const STACK_DATA_TYPE);
 /// Function pointer that destroys a deep element.
 typedef void            (*destroy_stack_fn) (STACK_DATA_TYPE *);
+/// Function pointer that changes an element pointer using void pointer arguments if needed.
+typedef void            (*operate_stack_fn) (STACK_DATA_TYPE *, void *);
 
 #if   STACK_MODE == INFINITE_LIST_STACK
 
@@ -92,8 +94,8 @@ typedef void            (*destroy_stack_fn) (STACK_DATA_TYPE *);
 
 /// @brief Linked list of arrays that appends new list element at the start after array is full.
 struct stack_list_array {
-    struct stack_list_array * next; // next linked list array
     STACK_DATA_TYPE elements[LIST_ARRAY_STACK_CHUNK]; // array to store elements
+    struct stack_list_array * next; // next linked list array
 };
 
 /// @brief Stack implementation that uses appended lists of arrays and pushes elements based on the size.
@@ -286,6 +288,31 @@ static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) 
     *stack = (stack_s) { 0 }; // resets everything in stack to zero/NULL
 }
 
+/// @brief For each function that does an operation on element reference specified by args.
+/// @param stack Stack structure pointer.
+/// @param operate Function pointer that takes an element pointer and 'args' as parameters
+/// @param args Arguments for operation function pointer.
+static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args) {
+    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
+    STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL");
+    STACK_ASSERT(((stack->head && stack->size) || (!stack->head && !stack->size)) && "[ERROR] Invalid stack state.");
+
+    struct stack_list_array * current = stack->head;
+    const size_t chunk_size = stack->size % LIST_ARRAY_STACK_CHUNK;
+    if (chunk_size) {
+        for (size_t i = 0; i < chunk_size; ++i) {
+            operate(current->elements + i, args);
+        }
+        current = current->next;
+    }
+    while (current) {
+        for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
+            operate(current->elements + i, args);
+        }
+        current = current->next;
+    }
+}
+
 #elif STACK_MODE == FINITE_ALLOCATED_STACK
 
 /// @brief Stack implementation that uses allocated memory array and pushes elements based on the current
@@ -420,6 +447,19 @@ static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) 
     }
 
     stack->size = 0;
+}
+
+/// @brief For each function that does an operation on element reference specified by args.
+/// @param stack Stack structure pointer.
+/// @param operate Non NULL function pointer that takes an element pointer and 'args' as parameters.
+/// @param args Arguments for operation function pointer.
+static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args) {
+    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
+    STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL");
+
+    for (size_t i = 0; i < stack->size; ++i) {
+        operate(stack->elements + i, args);
+    }
 }
 
 #elif STACK_MODE == INFINITE_REALLOC_STACK
@@ -565,6 +605,20 @@ static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) 
     *stack = (stack_s) { 0 }; // reset stack to zero
 }
 
+/// @brief For each function that does an operation on element reference specified by args.
+/// @param stack Stack structure pointer.
+/// @param operate Function pointer that takes an element pointer and 'args' as parameters
+/// @param args Arguments for operation function pointer.
+static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args) {
+    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
+    STACK_ASSERT(((stack->elements && stack->size) || (!stack->elements && !stack->size)) && "[ERROR] Invalid stack state.");
+    STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL");
+
+    for (size_t i = 0; i < stack->size; ++i) {
+        operate(stack->elements + i, args);
+    }
+}
+
 #elif STACK_MODE == FINITE_PRERPOCESSOR_STACK
 
 #ifndef PREPROCESSOR_STACK_SIZE
@@ -676,6 +730,19 @@ static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) 
     }
 
     stack->size = 0;
+}
+
+/// @brief For each function that does an operation on element reference specified by args.
+/// @param stack Stack structure pointer.
+/// @param operate Function pointer that takes an element pointer and 'args' as parameters
+/// @param args Arguments for operation function pointer.
+static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args) {
+    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
+    STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL");
+
+    for (size_t i = 0; i < stack->size; ++i) {
+        operate(stack->elements + i, args);
+    }
 }
 
 #endif

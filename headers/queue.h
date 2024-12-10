@@ -74,6 +74,8 @@
 typedef QUEUE_DATA_TYPE (*copy_queue_fn)    (const QUEUE_DATA_TYPE);
 /// Function pointer that destroys a deep element.
 typedef void            (*destroy_queue_fn) (QUEUE_DATA_TYPE *);
+/// Function pointer that changes an element pointer using void pointer arguments if needed.
+typedef void            (*operate_queue_fn) (QUEUE_DATA_TYPE *, void *);
 
 #if   QUEUE_MODE == INFINITE_LIST_QUEUE
 
@@ -91,8 +93,8 @@ typedef void            (*destroy_queue_fn) (QUEUE_DATA_TYPE *);
 
 /// @brief Linked list of arrays that appends new list element at the end after array is full.
 struct queue_list_array {
-    struct queue_list_array * next; // next linked list array
     QUEUE_DATA_TYPE elements[LIST_ARRAY_QUEUE_CHUNK]; // array to store elements
+    struct queue_list_array * next; // next linked list array
 };
 
 /// @brief Queue implementation that uses appended lists of arrays and pushes elements based on the size.
@@ -279,6 +281,84 @@ static inline bool is_empty_queue(const queue_s queue) {
     return queue.size == 0;
 }
 
+/// @brief Clears all elements from the queue.
+/// @param queue Queue structure pointer.
+/// @param destroy Function pointer to destroy an element in queue.
+static inline void clear_queue(queue_s * queue, const destroy_queue_fn destroy) {
+    QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL");
+
+    if (queue->head == queue->tail) { // special case when first and last element are on the same list element array
+        for (size_t s = queue->current; destroy && (s < queue->current + queue->size); s++) {
+            destroy(&(queue->head->elements[s]));
+        }
+        QUEUE_FREE(queue->head); // frees head and tail at the same time, or does nothing if both are NULL
+    } else {
+        struct queue_list_array * list = queue->head;
+        if (destroy) {
+            size_t destroyed_size = LIST_ARRAY_QUEUE_CHUNK - queue->current;
+            for (size_t s = queue->current; s < LIST_ARRAY_QUEUE_CHUNK; s++) {
+                destroy(&(queue->head->elements[s]));
+            }
+            list = list->next;
+            QUEUE_FREE(queue->head);
+
+            while (list != queue->tail) {
+                for (size_t s = 0; s < (destroyed_size += LIST_ARRAY_QUEUE_CHUNK); s++) {
+                    destroy(&(list->elements[s]));
+                }
+
+                struct queue_list_array * temp = list;
+                list = list->next;
+                QUEUE_FREE(temp);
+            }
+            for (size_t s = 0; s < queue->size - destroyed_size; s++) {
+                destroy(&(queue->tail->elements[s]));
+            }
+            QUEUE_FREE(queue->tail);
+        } else {
+            while (list != NULL) {
+                struct queue_list_array * temp = list;
+                list = list->next;
+                QUEUE_FREE(temp);
+            }
+        }
+    }
+
+    *queue = (queue_s) { 0 }; // reset queue to zero
+}
+
+/// @brief Foreach funtion that iterates over all elements in queue and performs 'operate' function on them using 'args'
+/// as parameters.
+/// @param queue Queue structure pointer.
+/// @param operate Function pointer taht operates on single element pointer using 'args' as arguments.
+/// @param args Arguments for 'operates' funtion pointer.
+static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate, void * args) {
+    QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter pointer is NULL.");
+    QUEUE_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL");
+
+    if (queue->head == queue->tail) { // if head and tail point to the same memory (including NULL)
+        for (size_t i = queue->current; i < queue->current + queue->size; ++i) { // won't run if size is 0
+            operate(queue->head->elements + i, args);
+        }
+    } else { // else queue is made up of more than one list node
+        for (size_t i = queue->current; i < LIST_ARRAY_QUEUE_CHUNK; ++i) { // operate on head node
+            operate(queue->head->elements + i, args);
+        }
+        size_t iterated_size = LIST_ARRAY_QUEUE_CHUNK - queue->current;
+        struct queue_list_array * current = queue->head->next;
+        while (current->next) { // operate on all nodes between head and tail node (excluding tail)
+            for (size_t i = 0; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
+                operate(current->elements + i, args);
+            }
+            iterated_size += LIST_ARRAY_QUEUE_CHUNK;
+            current = current->next;
+        }
+        for (size_t i = 0; i < queue->size - iterated_size; ++i) { // operate on tail node
+            operate(queue->tail->elements + i, args);
+        }
+    }
+}
+
 #elif QUEUE_MODE == FINITE_ALLOCATED_QUEUE
 
 /// @brief Queue implementation that uses allocated memory array and pushes elements based on the current
@@ -308,10 +388,8 @@ static inline queue_s create_queue(const size_t max) {
 static inline void destroy_queue(queue_s * queue, const destroy_queue_fn destroy) {
     QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL.");
 
-    if (destroy) {
-        for(size_t s = queue->current; s < queue->current + queue->size; s++) {
-            destroy(queue->elements + (s % queue->max));
-        }
+    for(size_t s = queue->current; destroy && s < queue->current + queue->size; s++) {
+        destroy(queue->elements + (s % queue->max));
     }
 
     QUEUE_FREE(queue->elements);
@@ -409,6 +487,43 @@ static inline bool is_empty_queue(const queue_s queue) {
     return queue.size == 0;
 }
 
+/// @brief Clears all elements from the queue.
+/// @param queue Queue structure pointer.
+/// @param destroy Function pointer to destroy an element in queue.
+static inline void clear_queue(queue_s * queue, const destroy_queue_fn destroy) {
+    QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL.");
+
+    for(size_t s = queue->current; destroy && s < queue->current + queue->size; s++) {
+        destroy(queue->elements + (s % queue->max));
+    }
+
+    queue->size = 0;
+}
+
+/// @brief Foreach funtion that iterates over all elements in queue and performs 'operate' function on them using 'args'
+/// as parameters.
+/// @param queue Queue structure pointer.
+/// @param operate Function pointer taht operates on single element pointer using 'args' as arguments.
+/// @param args Arguments for 'operates' funtion pointer.
+static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate, void * args) {
+    QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter pointer is NULL.");
+    QUEUE_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
+
+    const size_t right_size = queue->max - queue->current;
+    if (queue->size > right_size) { // if queue elements circle around
+        for (size_t i = queue->current; i < queue->max; ++i) { // operates on elements right of current index
+            operate(&(queue->elements[i]), args);
+        }
+        for (size_t i = 0; i < queue->size - right_size; i++) {// operates on elements left of current index
+            operate(&(queue->elements[i]), args);
+        }
+    } else { // else elements are continuous in array (they don't circle around)
+        for (size_t i = queue->current; i < queue->current + queue->size; ++i) {
+            operate(&(queue->elements[i]), args);
+        }
+    }
+}
+
 #elif QUEUE_MODE == INFINITE_REALLOC_QUEUE
 
 #ifndef REALLOC_QUEUE_CHUNK
@@ -491,7 +606,7 @@ static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
     if ((queue->size % REALLOC_QUEUE_CHUNK) == 0) {
         QUEUE_DATA_TYPE * temp = queue->size ? QUEUE_ALLOC(queue->size * sizeof(QUEUE_DATA_TYPE)) : NULL;
 
-        // assertion fails if allocation returns NULL on non-zero chunk size
+        // QUEUE_ASSERTion fails if allocation returns NULL on non-zero chunk size
         QUEUE_ASSERT((!queue->size || temp) && "[ERROR] Memory allocation failed.");
 
         memcpy(temp, &(queue->elements[queue->current]), queue->size * sizeof(QUEUE_DATA_TYPE));
@@ -537,6 +652,35 @@ static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) 
 /// @return true if queue size is zero, false otherwise
 static inline bool is_empty_queue(const queue_s queue) {
     return queue.size == 0;
+}
+
+/// @brief Clears all elements from the queue.
+/// @param queue Queue structure pointer.
+/// @param destroy Function pointer to destroy an element in queue.
+static inline void clear_queue(queue_s * queue, const destroy_queue_fn destroy) {
+    QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL");
+
+    for(size_t s = 0; destroy && (s < queue->size); s++) {
+        destroy(&(queue->elements[s + queue->current]));
+    }
+
+    QUEUE_FREE(queue->elements);
+
+    *queue = (queue_s) { 0 }; // reset queue to zero
+}
+
+/// @brief Foreach funtion that iterates over all elements in queue and performs 'operate' function on them using 'args'
+/// as parameters.
+/// @param queue Queue structure pointer.
+/// @param operate Function pointer taht operates on single element pointer using 'args' as arguments.
+/// @param args Arguments for 'operates' funtion pointer.
+static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate, void * args) {
+    QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter pointer is NULL.");
+    QUEUE_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
+
+    for (size_t i = queue->current; i < queue->current + queue->size; ++i) {
+        operate(&(queue->elements[i]), args);
+    }
 }
 
 #elif QUEUE_MODE == FINITE_PREPROCESSOR_QUEUE
@@ -673,6 +817,55 @@ static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) 
 /// @return true if queue size is zero, false otherwise
 static inline bool is_empty_queue(const queue_s queue) {
     return queue.size == 0;
+}
+
+/// @brief Clears all elements from the queue.
+/// @param queue Queue structure pointer.
+/// @param destroy Function pointer to destroy an element in queue.
+static inline void clear_queue(queue_s * queue, const destroy_queue_fn destroy) {
+    QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL");
+
+    if (destroy) {
+        if (queue->size > PREPROCESSOR_QUEUE_SIZE - queue->current) { // queue circles to beginning of elements array
+            for(size_t s = queue->current; s < PREPROCESSOR_QUEUE_SIZE; s++) {
+                destroy(queue->elements + s);
+            }
+            for(size_t s = 0; s < (queue->size - (PREPROCESSOR_QUEUE_SIZE - queue->current)); s++) {
+                destroy(queue->elements + s);
+            }
+        } else { // queue has all element to the right
+            for(size_t s = queue->current; s < queue->current + queue->size; s++) {
+                destroy(queue->elements + s);
+            }
+        }
+    }
+
+    queue->size = 0;
+    queue->current = 0;
+}
+
+/// @brief Foreach funtion that iterates over all elements in queue and performs 'operate' function on them using 'args'
+/// as parameters.
+/// @param queue Queue structure pointer.
+/// @param operate Function pointer taht operates on single element pointer using 'args' as arguments.
+/// @param args Arguments for 'operates' funtion pointer.
+static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate, void * args) {
+    QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter pointer is NULL.");
+    QUEUE_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
+
+    const size_t right_size = PREPROCESSOR_QUEUE_SIZE - queue->current;
+    if (queue->size > right_size) { // if queue elements circle around
+        for (size_t i = queue->current; i < PREPROCESSOR_QUEUE_SIZE; ++i) { // operates on elements right of current index
+            operate(&(queue->elements[i]), args);
+        }
+        for (size_t i = 0; i < queue->size - right_size; i++) {// operates on elements left of current index
+            operate(&(queue->elements[i]), args);
+        }
+    } else { // else elements are continuous in array (they don't circle around)
+        for (size_t i = queue->current; i < queue->current + queue->size; ++i) {
+            operate(&(queue->elements[i]), args);
+        }
+    }
 }
 
 #endif
