@@ -542,6 +542,54 @@ TEST IRS_39(void) {
     PASS();
 }
 
+/// Test if head is NULL after 'REALLOC_STACK_CHUNK - 1' push and pop.
+TEST IRS_40(void) {
+    stack_s test = create_stack();
+    for (size_t i = 0; i < REALLOC_STACK_CHUNK - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    }
+    for (size_t i = 0; i < REALLOC_STACK_CHUNK - 1; ++i) {
+        pop_stack(&test);
+    }
+
+    ASSERT_EQm("[IRS-ERROR] Expected stack's 'head' parameter to be NULL.", NULL, test.elements);
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Test if head is NULL after 'REALLOC_STACK_CHUNK' push and pop.
+TEST IRS_41(void) {
+    stack_s test = create_stack();
+    for (size_t i = 0; i < REALLOC_STACK_CHUNK; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    }
+    for (size_t i = 0; i < REALLOC_STACK_CHUNK; ++i) {
+        pop_stack(&test);
+    }
+
+    ASSERT_EQm("[IRS-ERROR] Expected stack's 'head' parameter to be NULL.", NULL, test.elements);
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Test if head is NULL after 'REALLOC_STACK_CHUNK + 1' push and pop.
+TEST IRS_42(void) {
+    stack_s test = create_stack();
+    for (size_t i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    }
+    for (size_t i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
+        pop_stack(&test);
+    }
+
+    ASSERT_EQm("[IRS-ERROR] Expected stack's 'head' parameter to be NULL.", NULL, test.elements);
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
 SUITE (infinite_realloc_stack_test) {
     RUN_TEST(IRS_01); RUN_TEST(IRS_02); RUN_TEST(IRS_03); RUN_TEST(IRS_04);
     RUN_TEST(IRS_05); RUN_TEST(IRS_06); RUN_TEST(IRS_07); RUN_TEST(IRS_08);
@@ -552,5 +600,6 @@ SUITE (infinite_realloc_stack_test) {
     RUN_TEST(IRS_25); RUN_TEST(IRS_26); RUN_TEST(IRS_27); RUN_TEST(IRS_28);
     RUN_TEST(IRS_29); RUN_TEST(IRS_30); RUN_TEST(IRS_31); RUN_TEST(IRS_32);
     RUN_TEST(IRS_33); RUN_TEST(IRS_34); RUN_TEST(IRS_35); RUN_TEST(IRS_36);
-    RUN_TEST(IRS_37); RUN_TEST(IRS_38); RUN_TEST(IRS_39);
+    RUN_TEST(IRS_37); RUN_TEST(IRS_38); RUN_TEST(IRS_39); RUN_TEST(IRS_40);
+    RUN_TEST(IRS_41); RUN_TEST(IRS_42);
 }

@@ -530,11 +530,59 @@ TEST ILS_38(void) {
     PASS();
 }
 
-/// Test if head is NULL after push and pop.
+/// Test if head is NULL after 1 push and pop.
 TEST ILS_39(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     pop_stack(&test);
+
+    ASSERT_EQm("[ILS-ERROR] Expected stack's 'head' parameter to be NULL.", NULL, test.head);
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Test if head is NULL after 'LIST_ARRAY_STACK_CHUNK - 1' push and pop.
+TEST ILS_40(void) {
+    stack_s test = create_stack();
+    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    }
+    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK - 1; ++i) {
+        pop_stack(&test);
+    }
+
+    ASSERT_EQm("[ILS-ERROR] Expected stack's 'head' parameter to be NULL.", NULL, test.head);
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Test if head is NULL after 'LIST_ARRAY_STACK_CHUNK' push and pop.
+TEST ILS_41(void) {
+    stack_s test = create_stack();
+    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    }
+    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
+        pop_stack(&test);
+    }
+
+    ASSERT_EQm("[ILS-ERROR] Expected stack's 'head' parameter to be NULL.", NULL, test.head);
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+/// Test if head is NULL after 'LIST_ARRAY_STACK_CHUNK + 1' push and pop.
+TEST ILS_42(void) {
+    stack_s test = create_stack();
+    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    }
+    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
+        pop_stack(&test);
+    }
 
     ASSERT_EQm("[ILS-ERROR] Expected stack's 'head' parameter to be NULL.", NULL, test.head);
 
@@ -552,5 +600,6 @@ SUITE (infinite_list_stack_test) {
     RUN_TEST(ILS_25); RUN_TEST(ILS_26); RUN_TEST(ILS_27); RUN_TEST(ILS_28);
     RUN_TEST(ILS_29); RUN_TEST(ILS_30); RUN_TEST(ILS_31); RUN_TEST(ILS_32);
     RUN_TEST(ILS_33); RUN_TEST(ILS_34); RUN_TEST(ILS_35); RUN_TEST(ILS_36);
-    RUN_TEST(ILS_37); RUN_TEST(ILS_38); RUN_TEST(ILS_39);
+    RUN_TEST(ILS_37); RUN_TEST(ILS_38); RUN_TEST(ILS_39); RUN_TEST(ILS_40);
+    RUN_TEST(ILS_41); RUN_TEST(ILS_42);
 }

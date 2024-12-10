@@ -271,7 +271,7 @@ TEST ILQ_20(void) {
     PASS();
 }
 
-/// Test if copied element
+/// Test if 1 copied int element
 TEST ILQ_21(void) {
     queue_s test = create_queue();
     enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 0 });
@@ -285,7 +285,7 @@ TEST ILQ_21(void) {
     PASS();
 }
 
-/// Test if copied element
+/// Test if 2 copied int element
 TEST ILQ_22(void) {
     queue_s test = create_queue();
     enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 0 });
@@ -301,7 +301,7 @@ TEST ILQ_22(void) {
     PASS();
 }
 
-/// Test if copied element
+/// Test if 'LIST_ARRAY_QUEUE_CHUNK 'copied int element
 TEST ILQ_23(void) {
     queue_s test = create_queue();
     for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
@@ -318,7 +318,7 @@ TEST ILQ_23(void) {
     PASS();
 }
 
-/// Test if copied element
+/// Test if 'LIST_ARRAY_QUEUE_CHUNK + 1' copied int element
 TEST ILQ_24(void) {
     queue_s test = create_queue();
     for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK + 1; ++i) {
@@ -335,7 +335,7 @@ TEST ILQ_24(void) {
     PASS();
 }
 
-/// Test if copied element
+/// Test if 1 copied string element
 TEST ILQ_25(void) {
     queue_s test = create_queue();
     enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
@@ -353,7 +353,7 @@ TEST ILQ_25(void) {
     PASS();
 }
 
-/// Test if copied element
+/// Test if 2 copied string element
 TEST ILQ_26(void) {
     queue_s test = create_queue();
     enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
@@ -378,7 +378,7 @@ TEST ILQ_26(void) {
     PASS();
 }
 
-/// Test if copied element
+/// Test if 'LIST_ARRAY_QUEUE_CHUNK' copied string element
 TEST ILQ_27(void) {
     queue_s test = create_queue();
     for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
@@ -399,7 +399,7 @@ TEST ILQ_27(void) {
     PASS();
 }
 
-/// Test if copied element
+/// Test if 'LIST_ARRAY_QUEUE_CHUNK + 1' copied string element
 TEST ILQ_28(void) {
     queue_s test = create_queue();
     for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK + 1; ++i) {
@@ -420,6 +420,147 @@ TEST ILQ_28(void) {
     PASS();
 }
 
+/// Test if queue is not empty
+TEST ILQ_29(void) {
+    queue_s test = create_queue();
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
+    }
+
+    ASSERT_FALSEm("[ILQ-TEST] Stack is empty.", is_empty_queue(test));
+
+    destroy_queue(&test, NULL);
+    PASS();
+}
+
+/// Test if queue is not empty
+TEST ILQ_30(void) {
+    queue_s test = create_queue();
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK + 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
+    }
+
+    ASSERT_FALSEm("[ILQ_TEST] Stack is empty.", is_empty_queue(test));
+
+    destroy_queue(&test, NULL);
+    PASS();
+}
+
+/// Test if queue is empty after 1 enqueue/dequeue
+TEST ILQ_31(void) {
+    queue_s test = create_queue();
+    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
+    dequeue(&test);
+    ASSERTm("[ILQ-TEST] Stack is not empty.", is_empty_queue(test));
+
+    destroy_queue(&test, NULL);
+    PASS();
+}
+
+/// Test if queue is empty after 2 enqueue/dequeue
+TEST ILQ_32(void) {
+    queue_s test = create_queue();
+    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
+    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
+    dequeue(&test);
+    dequeue(&test);
+    ASSERTm("[ILQ-TEST] Stack is not empty.", is_empty_queue(test));
+
+    destroy_queue(&test, NULL);
+    PASS();
+}
+
+/// Test if queue is empty after 'LIST_ARRAY_QUEUE_CHUNK' enqueue/dequeue
+TEST ILQ_33(void) {
+    queue_s test = create_queue();
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
+    }
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
+        dequeue(&test);
+    }
+
+    ASSERTm("[ILQ-TEST] Stack is not empty.", is_empty_queue(test));
+
+    destroy_queue(&test, NULL);
+    PASS();
+}
+
+/// Test if queue is empty  'LIST_ARRAY_QUEUE_CHUNK + 1' enqueue/dequeue
+TEST ILQ_34(void) {
+    queue_s test = create_queue();
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK + 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
+    }
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK + 1; ++i) {
+        dequeue(&test);
+    }
+
+    ASSERTm("[ILQ-TEST] Stack is not empty.", is_empty_queue(test));
+
+    destroy_queue(&test, NULL);
+    PASS();
+}
+
+/// Test if head is NULL after 1 push and pop.
+TEST ILQ_35(void) {
+    queue_s test = create_queue();
+    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
+    dequeue(&test);
+
+    ASSERT_EQm("[ILQ-ERROR] Expected queue's 'head' parameter to be NULL.", NULL, test.head);
+
+    destroy_queue(&test, NULL);
+    PASS();
+}
+
+/// Test if head is NULL after 'LIST_ARRAY_QUEUE_CHUNK - 1' push and pop.
+TEST ILQ_36(void) {
+    queue_s test = create_queue();
+    for (size_t i = 0; i < LIST_ARRAY_QUEUE_CHUNK - 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
+    }
+    for (size_t i = 0; i < LIST_ARRAY_QUEUE_CHUNK - 1; ++i) {
+        dequeue(&test);
+    }
+
+    ASSERT_EQm("[ILQ-ERROR] Expected queue's 'head' parameter to be NULL.", NULL, test.head);
+
+    destroy_queue(&test, NULL);
+    PASS();
+}
+
+/// Test if head is NULL after 'LIST_ARRAY_QUEUE_CHUNK' push and pop.
+TEST ILQ_37(void) {
+    queue_s test = create_queue();
+    for (size_t i = 0; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
+    }
+    for (size_t i = 0; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
+        dequeue(&test);
+    }
+
+    ASSERT_EQm("[ILQ-ERROR] Expected queue's 'head' parameter to be NULL.", NULL, test.head);
+
+    destroy_queue(&test, NULL);
+    PASS();
+}
+
+/// Test if head is NULL after 'LIST_ARRAY_QUEUE_CHUNK + 1' push and pop.
+TEST ILQ_38(void) {
+    queue_s test = create_queue();
+    for (size_t i = 0; i < LIST_ARRAY_QUEUE_CHUNK + 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
+    }
+    for (size_t i = 0; i < LIST_ARRAY_QUEUE_CHUNK + 1; ++i) {
+        dequeue(&test);
+    }
+
+    ASSERT_EQm("[ILQ-ERROR] Expected queue's 'head' parameter to be NULL.", NULL, test.head);
+
+    destroy_queue(&test, NULL);
+    PASS();
+}
 
 SUITE (infinite_list_queue_test) {
     RUN_TEST(ILQ_01); RUN_TEST(ILQ_02); RUN_TEST(ILQ_03); RUN_TEST(ILQ_04);
@@ -429,4 +570,7 @@ SUITE (infinite_list_queue_test) {
     RUN_TEST(ILQ_17); RUN_TEST(ILQ_18); RUN_TEST(ILQ_19); RUN_TEST(ILQ_20);
     RUN_TEST(ILQ_21); RUN_TEST(ILQ_22); RUN_TEST(ILQ_23); RUN_TEST(ILQ_24);
     RUN_TEST(ILQ_25); RUN_TEST(ILQ_26); RUN_TEST(ILQ_27); RUN_TEST(ILQ_28);
+    RUN_TEST(ILQ_29); RUN_TEST(ILQ_30); RUN_TEST(ILQ_31); RUN_TEST(ILQ_32);
+    RUN_TEST(ILQ_33); RUN_TEST(ILQ_34); RUN_TEST(ILQ_35); RUN_TEST(ILQ_36);
+    RUN_TEST(ILQ_37); RUN_TEST(ILQ_38);
 }
