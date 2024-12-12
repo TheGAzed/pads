@@ -2,9 +2,9 @@
 #define BINARY_SET_H
 
 // list mode macros in octal to prevent future overlap with other data structure modes
-#define INFINITE_REALLOC_BINARY_SET    0x800
-#define FINITE_ALLOCATED_BINARY_SET    0x400
-#define FINITE_PRERPOCESSOR_BINARY_SET 0xC00
+#define INFINITE_REALLOC_BINARY_SET    0x9
+#define FINITE_ALLOCATED_BINARY_SET    0xA
+#define FINITE_PRERPOCESSOR_BINARY_SET 0xC
 
 #define INFINITE_BINARY_SET INFINITE_REALLOC_BINARY_SET
 #define FINITE_BINARY_SET   FINITE_ALLOCATED_BINARY_SET
@@ -21,7 +21,7 @@
 
 #endif
 
-#define IS_INFINITE_BINARY_SET !((bool)(BINARY_SET_MODE & 0x400))
+#define IS_INFINITE_BINARY_SET ((bool)(BINARY_SET_MODE & 0x1))
 
 // Check to make sure a valid list mode is selected.
 #if (BINARY_SET_MODE != INFINITE_REALLOC_BINARY_SET) && (BINARY_SET_MODE != FINITE_ALLOCATED_BINARY_SET)    && \

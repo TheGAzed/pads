@@ -2,10 +2,10 @@
 #define QUEUE_H
 
 // queue mode macros in octal to prevent future overlap with other data structure modes
-#define INFINITE_LIST_QUEUE       0x08
-#define FINITE_ALLOCATED_QUEUE    0x0A
-#define INFINITE_REALLOC_QUEUE    0x18
-#define FINITE_PREPROCESSOR_QUEUE 0x20
+#define INFINITE_LIST_QUEUE       0x5
+#define FINITE_ALLOCATED_QUEUE    0x6
+#define INFINITE_REALLOC_QUEUE    0x7
+#define FINITE_PREPROCESSOR_QUEUE 0x8
 
 #define INFINITE_QUEUE INFINITE_LIST_QUEUE
 #define FINITE_QUEUE   FINITE_ALLOCATED_QUEUE
@@ -23,7 +23,7 @@
 
 #endif
 
-#define IS_INFINITE_QUEUE ((bool)(QUEUE_MODE & 0x08))
+#define IS_INFINITE_QUEUE ((bool)(QUEUE_MODE & 0x01))
 
 // Check to make sure a valid queue mode is selected.
 #if (QUEUE_MODE != INFINITE_LIST_QUEUE)    && (QUEUE_MODE != FINITE_ALLOCATED_QUEUE) && \

@@ -172,19 +172,19 @@ TEST ILQ_12(void) {
     PASS();
 }
 
-/// Tests if one enqueued element is peeked correctly.
+/// Tests if one enqueued element is dequeued correctly.
 TEST ILQ_13(void) {
     queue_s test = create_queue();
     enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_EQm("[ILQ-ERROR] Test queue peeked element not 42.", 42, dequeue(&test).sub_one);
+    ASSERT_EQm("[ILQ-ERROR] Test queue dequeued element not 42.", 42, dequeue(&test).sub_one);
 
     destroy_queue(&test, NULL);
 
     PASS();
 }
 
-/// Tests if 'LIST_ARRAY_QUEUE_CHUNK' - 1 enqueued element is peeked correctly.
+/// Tests if 'LIST_ARRAY_QUEUE_CHUNK' - 1 enqueued element is dequeued correctly.
 TEST ILQ_14(void) {
     queue_s test = create_queue();
     enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
@@ -192,14 +192,14 @@ TEST ILQ_14(void) {
         enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = -1, });
     }
 
-    ASSERT_EQm("[ILQ-ERROR] Test queue peeked element not 42.", 42, dequeue(&test).sub_one);
+    ASSERT_EQm("[ILQ-ERROR] Test queue dequeued element not 42.", 42, dequeue(&test).sub_one);
 
     destroy_queue(&test, NULL);
 
     PASS();
 }
 
-/// Tests if 'LIST_ARRAY_QUEUE_CHUNK' enqueued element is peeked correctly.
+/// Tests if 'LIST_ARRAY_QUEUE_CHUNK' enqueued element is dequeued correctly.
 TEST ILQ_15(void) {
     queue_s test = create_queue();
     enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
@@ -207,14 +207,14 @@ TEST ILQ_15(void) {
         enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = -1, });
     }
 
-    ASSERT_EQm("[ILQ-ERROR] Test queue peeked element not 42.", 42, dequeue(&test).sub_one);
+    ASSERT_EQm("[ILQ-ERROR] Test queue dequeued element not 42.", 42, dequeue(&test).sub_one);
 
     destroy_queue(&test, NULL);
 
     PASS();
 }
 
-/// Tests if 'LIST_ARRAY_QUEUE_CHUNK' + 1 enqueued element is peeked correctly.
+/// Tests if 'LIST_ARRAY_QUEUE_CHUNK' + 1 enqueued element is dequeued correctly.
 TEST ILQ_16(void) {
     queue_s test = create_queue();
     enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
@@ -222,7 +222,7 @@ TEST ILQ_16(void) {
         enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = -1, });
     }
 
-    ASSERT_EQm("[ILQ-ERROR] Test queue peeked element not 42.", 42, dequeue(&test).sub_one);
+    ASSERT_EQm("[ILQ-ERROR] Test queue dequeued element not 42.", 42, dequeue(&test).sub_one);
 
     destroy_queue(&test, NULL);
 
@@ -285,16 +285,17 @@ TEST ILQ_21(void) {
     PASS();
 }
 
-/// Test if 2 copied int element
+/// Test if 'LIST_ARRAY_QUEUE_CHUNK' - 1 copied int element
 TEST ILQ_22(void) {
     queue_s test = create_queue();
-    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 0 });
-    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 1 });
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK - 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
+    }
 
     queue_s copy = copy_queue(test, NULL);
-
-    ASSERT_EQm("[ILQ-TEST] Test queue is not equal to copy.", dequeue(&test).sub_one, dequeue(&copy).sub_one);
-    ASSERT_EQm("[ILQ-TEST] Test queue is not equal to copy.", dequeue(&test).sub_one, dequeue(&copy).sub_one);
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK - 1; ++i) {
+        ASSERT_EQm("[ILQ-TEST] Test queue is not equal to copy.", dequeue(&test).sub_one, dequeue(&copy).sub_one);
+    }
 
     destroy_queue(&test, NULL);
     destroy_queue(&copy, NULL);
@@ -318,7 +319,7 @@ TEST ILQ_23(void) {
     PASS();
 }
 
-/// Test if 'LIST_ARRAY_QUEUE_CHUNK + 1' copied int element
+/// Test if 'LIST_ARRAY_QUEUE_CHUNK' + 1 copied int element
 TEST ILQ_24(void) {
     queue_s test = create_queue();
     for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK + 1; ++i) {
@@ -353,25 +354,21 @@ TEST ILQ_25(void) {
     PASS();
 }
 
-/// Test if 2 copied string element
+/// Test if 'LIST_ARRAY_QUEUE_CHUNK' - 1 copied string element
 TEST ILQ_26(void) {
     queue_s test = create_queue();
-    enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
-    enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK - 1; ++i) {
+        enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
 
     queue_s copy = copy_queue(test, copy_element);
-
-    QUEUE_DATA_TYPE elemen_test = dequeue(&test);
-    QUEUE_DATA_TYPE element_copy = dequeue(&copy);
-    ASSERT_STRN_EQm("[ILQ-TEST] Test queue string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
-    destroy_element(&elemen_test);
-    destroy_element(&element_copy);
-
-    elemen_test = dequeue(&test);
-    element_copy = dequeue(&copy);
-    ASSERT_STRN_EQm("[ILQ-TEST] Test queue string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
-    destroy_element(&elemen_test);
-    destroy_element(&element_copy);
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK - 1; ++i) {
+        QUEUE_DATA_TYPE elemen_test = dequeue(&test);
+        QUEUE_DATA_TYPE element_copy = dequeue(&copy);
+        ASSERT_STRN_EQm("[ILQ-TEST] Test queue string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
+        destroy_element(&elemen_test);
+        destroy_element(&element_copy);
+    }
 
     destroy_queue(&test, destroy_element);
     destroy_queue(&copy, destroy_element);
@@ -399,7 +396,7 @@ TEST ILQ_27(void) {
     PASS();
 }
 
-/// Test if 'LIST_ARRAY_QUEUE_CHUNK + 1' copied string element
+/// Test if 'LIST_ARRAY_QUEUE_CHUNK' + 1 copied string element
 TEST ILQ_28(void) {
     queue_s test = create_queue();
     for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK + 1; ++i) {
@@ -457,13 +454,16 @@ TEST ILQ_31(void) {
     PASS();
 }
 
-/// Test if queue is empty after 2 enqueue/dequeue
+/// Test if queue is empty after 'LIST_ARRAY_QUEUE_CHUNK' - 1 enqueue/dequeue
 TEST ILQ_32(void) {
     queue_s test = create_queue();
-    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
-    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
-    dequeue(&test);
-    dequeue(&test);
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK - 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
+    }
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK - 1; ++i) {
+        dequeue(&test);
+    }
+
     ASSERTm("[ILQ-TEST] Stack is not empty.", is_empty_queue(test));
 
     destroy_queue(&test, NULL);
@@ -486,7 +486,7 @@ TEST ILQ_33(void) {
     PASS();
 }
 
-/// Test if queue is empty  'LIST_ARRAY_QUEUE_CHUNK + 1' enqueue/dequeue
+/// Test if queue is empty  'LIST_ARRAY_QUEUE_CHUNK' + 1 enqueue/dequeue
 TEST ILQ_34(void) {
     queue_s test = create_queue();
     for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK + 1; ++i) {
@@ -514,7 +514,7 @@ TEST ILQ_35(void) {
     PASS();
 }
 
-/// Test if head is NULL after 'LIST_ARRAY_QUEUE_CHUNK - 1' push and pop.
+/// Test if head is NULL after 'LIST_ARRAY_QUEUE_CHUNK' - 1 push and pop.
 TEST ILQ_36(void) {
     queue_s test = create_queue();
     for (size_t i = 0; i < LIST_ARRAY_QUEUE_CHUNK - 1; ++i) {
@@ -546,7 +546,7 @@ TEST ILQ_37(void) {
     PASS();
 }
 
-/// Test if head is NULL after 'LIST_ARRAY_QUEUE_CHUNK + 1' push and pop.
+/// Test if head is NULL after 'LIST_ARRAY_QUEUE_CHUNK' + 1 push and pop.
 TEST ILQ_38(void) {
     queue_s test = create_queue();
     for (size_t i = 0; i < LIST_ARRAY_QUEUE_CHUNK + 1; ++i) {
@@ -562,6 +562,162 @@ TEST ILQ_38(void) {
     PASS();
 }
 
+/// Test if all one int values get incremented by 'increment'
+TEST ILQ_39(void) {
+    queue_s test = create_queue();
+    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 0 });
+
+    int increment = 5;
+    foreach_queue(&test, operation_int, &increment);
+
+    ASSERT_EQm("[ILQ-ERROR] Expected incremented element by 'increment'.", 0 + increment, dequeue(&test).sub_one);
+
+    destroy_queue(&test, NULL);
+
+    PASS();
+}
+
+/// Test if all 'LIST_ARRAY_QUEUE_CHUNK' - 1 int values get incremented by 'increment'
+TEST ILQ_40(void) {
+    queue_s test = create_queue();
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK - 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
+    }
+
+    int increment = 5;
+    foreach_queue(&test, operation_int, &increment);
+
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK - 1; ++i) {
+        ASSERT_EQm("[ILQ-ERROR] Expected incremented element by 'increment'.", i + increment, dequeue(&test).sub_one);
+    }
+
+    destroy_queue(&test, NULL);
+
+    PASS();
+}
+
+/// Test if all 'LIST_ARRAY_QUEUE_CHUNK' int values get incremented by 'increment'
+TEST ILQ_41(void) {
+    queue_s test = create_queue();
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
+    }
+
+    int increment = 5;
+    foreach_queue(&test, operation_int, &increment);
+
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
+        ASSERT_EQm("[ILQ-ERROR] Expected incremented element by 'increment'.", i + increment, dequeue(&test).sub_one);
+    }
+
+    destroy_queue(&test, NULL);
+
+    PASS();
+}
+
+/// Test if all 'LIST_ARRAY_QUEUE_CHUNK' + 1 int values get incremented by 'increment'
+TEST ILQ_42(void) {
+    queue_s test = create_queue();
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK + 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
+    }
+
+    int increment = 5;
+    foreach_queue(&test, operation_int, &increment);
+
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK + 1; ++i) {
+        ASSERT_EQm("[ILQ-ERROR] Expected incremented element by 'increment'.", i + increment, dequeue(&test).sub_one);
+    }
+
+    destroy_queue(&test, NULL);
+
+    PASS();
+}
+
+/// Test if all one string values have changed to new string value
+TEST ILQ_43(void) {
+    queue_s test = create_queue();
+
+    enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
+
+    char new_string[] = "[REDACTED]";
+    foreach_queue(&test, operation_string, new_string);
+
+    QUEUE_DATA_TYPE element = dequeue(&test);
+    ASSERT_STRN_EQm("[ILQ-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
+    destroy_element(&element);
+
+    destroy_queue(&test, destroy_element);
+
+    PASS();
+}
+
+/// Test if all 'LIST_ARRAY_QUEUE_CHUNK' - 1 string values have changed to new string value
+TEST ILQ_44(void) {
+    queue_s test = create_queue();
+
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK - 1; ++i) {
+        enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
+
+    char new_string[] = "[REDACTED]";
+    foreach_queue(&test, operation_string, new_string);
+
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK - 1; ++i) {
+        QUEUE_DATA_TYPE element = dequeue(&test);
+        ASSERT_STRN_EQm("[ILQ-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
+        destroy_element(&element);
+    }
+
+    destroy_queue(&test, destroy_element);
+
+    PASS();
+}
+
+/// Test if all 'LIST_ARRAY_QUEUE_CHUNK' string values have changed to new string value
+TEST ILQ_45(void) {
+    queue_s test = create_queue();
+
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
+        enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
+
+    char new_string[] = "[REDACTED]";
+    foreach_queue(&test, operation_string, new_string);
+
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
+        QUEUE_DATA_TYPE element = dequeue(&test);
+        ASSERT_STRN_EQm("[ILQ-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
+        destroy_element(&element);
+    }
+
+    destroy_queue(&test, destroy_element);
+
+    PASS();
+}
+
+/// Test if all 'LIST_ARRAY_QUEUE_CHUNK' + 1 string values have changed to new string value
+TEST ILQ_46(void) {
+    queue_s test = create_queue();
+
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK + 1; ++i) {
+        enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
+
+    char new_string[] = "[REDACTED]";
+    foreach_queue(&test, operation_string, new_string);
+
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK + 1; ++i) {
+        QUEUE_DATA_TYPE element = dequeue(&test);
+        ASSERT_STRN_EQm("[ILQ-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
+        destroy_element(&element);
+    }
+
+    destroy_queue(&test, destroy_element);
+
+    PASS();
+}
+
 SUITE (infinite_list_queue_test) {
     RUN_TEST(ILQ_01); RUN_TEST(ILQ_02); RUN_TEST(ILQ_03); RUN_TEST(ILQ_04);
     RUN_TEST(ILQ_05); RUN_TEST(ILQ_06); RUN_TEST(ILQ_07); RUN_TEST(ILQ_08);
@@ -572,5 +728,7 @@ SUITE (infinite_list_queue_test) {
     RUN_TEST(ILQ_25); RUN_TEST(ILQ_26); RUN_TEST(ILQ_27); RUN_TEST(ILQ_28);
     RUN_TEST(ILQ_29); RUN_TEST(ILQ_30); RUN_TEST(ILQ_31); RUN_TEST(ILQ_32);
     RUN_TEST(ILQ_33); RUN_TEST(ILQ_34); RUN_TEST(ILQ_35); RUN_TEST(ILQ_36);
-    RUN_TEST(ILQ_37); RUN_TEST(ILQ_38);
+    RUN_TEST(ILQ_37); RUN_TEST(ILQ_38); RUN_TEST(ILQ_39); RUN_TEST(ILQ_40);
+    RUN_TEST(ILQ_41); RUN_TEST(ILQ_42); RUN_TEST(ILQ_43); RUN_TEST(ILQ_44);
+    RUN_TEST(ILQ_45); RUN_TEST(ILQ_46);
 }

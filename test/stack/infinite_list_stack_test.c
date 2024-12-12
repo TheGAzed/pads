@@ -1,246 +1,257 @@
 #include "stack_test.h"
 
 #define STACK_MODE INFINITE_LIST_STACK
-#define LIST_ARRAY_STACK_CHUNK  (1 << 3)
+#define LIST_ARRAY_STACK_CHUNK (1 << 4)
 #include <stack.h>
 
-/// Tests if stack is created properly.
+/// Tests if stack is initialized correctly when creating it.
 TEST ILS_01(void) {
     stack_s test = create_stack();
 
-    ASSERT_EQm("[ILS-TEST] Stack's 'head' parameter is not NULL.", NULL, test.head);
-    ASSERT_EQm("[ILS-TEST] Stack's 'size' parameter is not zero.", 0, test.size);
+    ASSERT_EQm("[ILS-ERROR] Test stack size is not zero.", 0, test.size);
+    ASSERT_EQm("[ILS-ERROR] Test stack head is not NULL.", NULL, test.head);
 
     destroy_stack(&test, NULL);
-
     PASS();
 }
 
-/// Tests if stack is destroyed properly.
+/// Tests if stack is initialized correctly when creating and then destroying it.
 TEST ILS_02(void) {
     stack_s test = create_stack();
     destroy_stack(&test, NULL);
 
-    ASSERT_EQm("[ILS-TEST] Stack's 'head' parameter is not NULL.", NULL, test.head);
-    ASSERT_EQm("[ILS-TEST] Stack's 'size' parameter is not zero.", 0, test.size);
+    ASSERT_EQm("[ILS-ERROR] Test stack size is not zero.", 0, test.size);
+    ASSERT_EQm("[ILS-ERROR] Test stack head is not NULL.", NULL, test.head);
 
     PASS();
 }
 
-/// Test if peeped top element is equal to 42
+/// Tests if one pushed element is peeked correctly.
 TEST ILS_03(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_EQm("[ILS-TEST] Stack's top element is not 42.", 42, peep_stack(test).sub_one);
+    ASSERT_EQm("[ILS-ERROR] Test stack peeked element not 42.", 42, peep_stack(test).sub_one);
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if peeped top element is equal to 42
+/// Tests if 'LIST_ARRAY_STACK_CHUNK' - 1 pushed element is peeked correctly.
 TEST ILS_04(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK - 2; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1, });
+    }
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_EQm("[ILS-TEST] Stack's top element is not 42.", 42, peep_stack(test).sub_one);
+    ASSERT_EQm("[ILS-ERROR] Test stack peeked element not 42.", 42, peep_stack(test).sub_one);
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if peeped top element is equal to 42
+/// Tests if 'LIST_ARRAY_STACK_CHUNK' pushed element is peeked correctly.
 TEST ILS_05(void) {
     stack_s test = create_stack();
     for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK - 1; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1 });
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1, });
     }
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_EQm("[ILS-TEST] Stack's top element is not 42.", 42, peep_stack(test).sub_one);
+    ASSERT_EQm("[ILS-ERROR] Test stack peeked element not 42.", 42, peep_stack(test).sub_one);
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if peeped top element is equal to 42
+/// Tests if 'LIST_ARRAY_STACK_CHUNK' + 1 pushed element is peeked correctly.
 TEST ILS_06(void) {
     stack_s test = create_stack();
     for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1 });
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1, });
     }
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_EQm("[ILS-TEST] Stack's top element is not 42.", 42, peep_stack(test).sub_one);
+    ASSERT_EQm("[ILS-ERROR] Test stack peeked element not 42.", 42, peep_stack(test).sub_one);
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if peep remains size
+/// Tests if sequence of 'LIST_ARRAY_STACK_CHUNK' - 1 pushed numbers is popped correctly
 TEST ILS_07(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    peep_stack(test);
 
-    ASSERT_EQm("[ILS-TEST] Stack's size is not 1.", 1, test.size);
+    for (int i = 1; i <= LIST_ARRAY_STACK_CHUNK - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = LIST_ARRAY_STACK_CHUNK - 1; i >= 1; --i) {
+        ASSERT_EQm("[ILS-ERROR] Test stack popped element not 'i'.", i, pop_stack(&test).sub_one);
+    }
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if peep remains size
+/// Tests if sequence of 'LIST_ARRAY_STACK_CHUNK' pushed numbers is popped correctly
 TEST ILS_08(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    peep_stack(test);
 
-    ASSERT_EQm("[ILS-TEST] Stack's size is not 2.", 2, test.size);
+    for (int i = 1; i <= LIST_ARRAY_STACK_CHUNK; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = LIST_ARRAY_STACK_CHUNK; i >= 1; --i) {
+        ASSERT_EQm("[ILS-ERROR] Test stack popped element not 'i'.", i, pop_stack(&test).sub_one);
+    }
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if peep remains size
+/// Tests if sequence of 'LIST_ARRAY_STACK_CHUNK' - 1 pushed numbers is popped correctly
 TEST ILS_09(void) {
     stack_s test = create_stack();
-    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1 });
-    }
-    peep_stack(test);
 
-    ASSERT_EQm("[ILS-TEST] Stack's size is not 'LIST_ARRAY_STACK_CHUNK'.", LIST_ARRAY_STACK_CHUNK, test.size);
+    for (int i = 1; i <= LIST_ARRAY_STACK_CHUNK + 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = LIST_ARRAY_STACK_CHUNK + 1; i >= 1; --i) {
+        ASSERT_EQm("[ILS-ERROR] Test stack popped element not 'i'.", i, pop_stack(&test).sub_one);
+    }
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if peep remains size
+/// Tests if peek does not change size
 TEST ILS_10(void) {
     stack_s test = create_stack();
-    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    }
+
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
     peep_stack(test);
 
-    ASSERT_EQm("[ILS-TEST] Stack's size is not 'LIST_ARRAY_STACK_CHUNK' + 1.", LIST_ARRAY_STACK_CHUNK + 1, test.size);
+    ASSERT_EQm("[ILS-ERROR] Expected stack size to not change after peek.", 1, test.size);
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if popped top element is equal to 42
+/// Tests if stack is empty when creating it.
 TEST ILS_11(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
 
-    ASSERT_EQm("[ILS-TEST] Stack's popped element is not 42.", 42, pop_stack(&test).sub_one);
+    ASSERTm("[ILS-ERROR] Expected stack to be empty when creating it.", is_empty_stack(test));
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if popped top element is equal to 42
+/// Tests if stack is not empty when push_stacking element.
 TEST ILS_12(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
 
-    ASSERT_EQm("[ILS-TEST] Stack's popped element is not 42.", 42, pop_stack(&test).sub_one);
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
+    ASSERT_FALSEm("[ILS-ERROR] Expected stack to not be empty when push_stacking element.", is_empty_stack(test));
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if popped top element is equal to 42
+/// Tests if one pushed element is popped correctly.
 TEST ILS_13(void) {
     stack_s test = create_stack();
-    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK - 1; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1 });
-    }
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_EQm("[ILS-TEST] Stack's popped element is not 42.", 42, pop_stack(&test).sub_one);
+    ASSERT_EQm("[ILS-ERROR] Test stack popped element not 42.", 42, pop_stack(&test).sub_one);
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if popped top element is equal to 42
+/// Tests if 'LIST_ARRAY_STACK_CHUNK' - 1 pushed element is popped correctly.
 TEST ILS_14(void) {
     stack_s test = create_stack();
-    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1 });
+    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK - 2; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1, });
     }
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_EQm("[ILS-TEST] Stack's popped element is not 42.", 42, pop_stack(&test).sub_one);
+    ASSERT_EQm("[ILS-ERROR] Test stack popped element not 42.", 42, pop_stack(&test).sub_one);
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if pop decreases size
+/// Tests if 'LIST_ARRAY_STACK_CHUNK' pushed element is popped correctly.
 TEST ILS_15(void) {
     stack_s test = create_stack();
+    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1, });
+    }
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
 
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    pop_stack(&test);
-
-    ASSERT_EQm("[ILS-TEST] Stack's size is not zero.", 0, test.size);
+    ASSERT_EQm("[ILS-ERROR] Test stack popped element not 42.", 42, pop_stack(&test).sub_one);
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if pop decreases size
+/// Tests if 'LIST_ARRAY_STACK_CHUNK' + 1 pushed element is popped correctly.
 TEST ILS_16(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    pop_stack(&test);
+    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1, });
+    }
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_EQm("[ILS-TEST] Stack's size is not one.", 1, test.size);
+    ASSERT_EQm("[ILS-ERROR] Test stack popped element not 42.", 42, pop_stack(&test).sub_one);
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if pop decreases size
+/// Test if destroyed element
 TEST ILS_17(void) {
     stack_s test = create_stack();
-    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    }
-    pop_stack(&test);
 
-    ASSERT_EQm("[ILS-TEST] Stack's size is not 'LIST_ARRAY_STACK_CHUNK' - 1.", LIST_ARRAY_STACK_CHUNK - 1, test.size);
+    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
 
-    destroy_stack(&test, NULL);
+    destroy_stack(&test, destroy_element);
     PASS();
 }
 
-/// Test if pop decreases size
+/// Test if destroyed element
 TEST ILS_18(void) {
     stack_s test = create_stack();
-    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK - 1; ++i) {
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
     }
-    pop_stack(&test);
 
-    ASSERT_EQm("[ILS-TEST] Stack's size is not 'LIST_ARRAY_STACK_CHUNK'.", LIST_ARRAY_STACK_CHUNK, test.size);
-
-    destroy_stack(&test, NULL);
+    destroy_stack(&test, destroy_element);
     PASS();
 }
 
 /// Test if destroyed element
 TEST ILS_19(void) {
     stack_s test = create_stack();
-
-    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
 
     destroy_stack(&test, destroy_element);
     PASS();
@@ -249,27 +260,6 @@ TEST ILS_19(void) {
 /// Test if destroyed element
 TEST ILS_20(void) {
     stack_s test = create_stack();
-    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
-    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
-
-    destroy_stack(&test, destroy_element);
-    PASS();
-}
-
-/// Test if destroyed element
-TEST ILS_21(void) {
-    stack_s test = create_stack();
-    for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
-        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
-    }
-
-    destroy_stack(&test, destroy_element);
-    PASS();
-}
-
-/// Test if destroyed element
-TEST ILS_22(void) {
-    stack_s test = create_stack();
     for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
         push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
     }
@@ -278,260 +268,239 @@ TEST ILS_22(void) {
     PASS();
 }
 
-/// Test if copied element
+/// Test if 1 copied int element
+TEST ILS_21(void) {
+    stack_s test = create_stack();
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
+
+    stack_s copy = copy_stack(test, NULL);
+
+    ASSERT_EQm("[ILS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+
+    destroy_stack(&test, NULL);
+    destroy_stack(&copy, NULL);
+    PASS();
+}
+
+/// Test if 'LIST_ARRAY_STACK_CHUNK' - 1 copied int element
+TEST ILS_22(void) {
+    stack_s test = create_stack();
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    stack_s copy = copy_stack(test, NULL);
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK - 1; ++i) {
+        ASSERT_EQm("[ILS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    destroy_stack(&copy, NULL);
+    PASS();
+}
+
+/// Test if 'LIST_ARRAY_STACK_CHUNK' copied int element
 TEST ILS_23(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
 
     stack_s copy = copy_stack(test, NULL);
-
-    ASSERT_EQm("[ILS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
+        ASSERT_EQm("[ILS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+    }
 
     destroy_stack(&test, NULL);
     destroy_stack(&copy, NULL);
     PASS();
 }
 
-/// Test if copied element
+/// Test if 'LIST_ARRAY_STACK_CHUNK' + 1 copied int element
 TEST ILS_24(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 1 });
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
 
     stack_s copy = copy_stack(test, NULL);
-
-    ASSERT_EQm("[ILS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
-    ASSERT_EQm("[ILS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
+        ASSERT_EQm("[ILS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+    }
 
     destroy_stack(&test, NULL);
     destroy_stack(&copy, NULL);
     PASS();
 }
 
-/// Test if copied element
+/// Test if 1 copied string element
 TEST ILS_25(void) {
     stack_s test = create_stack();
-    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
-    }
+    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
 
-    stack_s copy = copy_stack(test, NULL);
-    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
-        ASSERT_EQm("[ILS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
-    }
+    stack_s copy = copy_stack(test, copy_element);
 
-    destroy_stack(&test, NULL);
-    destroy_stack(&copy, NULL);
+    STACK_DATA_TYPE elemen_test = pop_stack(&test);
+    STACK_DATA_TYPE element_copy = pop_stack(&copy);
+    ASSERT_STRN_EQm("[ILS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
+    destroy_element(&elemen_test);
+    destroy_element(&element_copy);
+
+    destroy_stack(&test, destroy_element);
+    destroy_stack(&copy, destroy_element);
     PASS();
 }
 
-/// Test if copied element
+/// Test if 'LIST_ARRAY_STACK_CHUNK' - 1 copied string element
 TEST ILS_26(void) {
     stack_s test = create_stack();
-    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK - 1; ++i) {
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
     }
 
-    stack_s copy = copy_stack(test, NULL);
-    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
-        ASSERT_EQm("[ILS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+    stack_s copy = copy_stack(test, copy_element);
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK - 1; ++i) {
+        STACK_DATA_TYPE elemen_test = pop_stack(&test);
+        STACK_DATA_TYPE element_copy = pop_stack(&copy);
+        ASSERT_STRN_EQm("[ILS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
+        destroy_element(&elemen_test);
+        destroy_element(&element_copy);
     }
 
-    destroy_stack(&test, NULL);
-    destroy_stack(&copy, NULL);
+    destroy_stack(&test, destroy_element);
+    destroy_stack(&copy, destroy_element);
     PASS();
 }
 
-/// Test if copied element
+/// Test if 'LIST_ARRAY_STACK_CHUNK' copied string element
 TEST ILS_27(void) {
     stack_s test = create_stack();
-    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
 
     stack_s copy = copy_stack(test, copy_element);
-
-    STACK_DATA_TYPE elemen_test = pop_stack(&test);
-    STACK_DATA_TYPE element_copy = pop_stack(&copy);
-    ASSERT_STRN_EQm("[ILS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
-    destroy_element(&elemen_test);
-    destroy_element(&element_copy);
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
+        STACK_DATA_TYPE elemen_test = pop_stack(&test);
+        STACK_DATA_TYPE element_copy = pop_stack(&copy);
+        ASSERT_STRN_EQm("[ILS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
+        destroy_element(&elemen_test);
+        destroy_element(&element_copy);
+    }
 
     destroy_stack(&test, destroy_element);
     destroy_stack(&copy, destroy_element);
     PASS();
 }
 
-/// Test if copied element
+/// Test if 'LIST_ARRAY_STACK_CHUNK' + 1 copied string element
 TEST ILS_28(void) {
     stack_s test = create_stack();
-    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
-    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
 
     stack_s copy = copy_stack(test, copy_element);
-
-    STACK_DATA_TYPE elemen_test = pop_stack(&test);
-    STACK_DATA_TYPE element_copy = pop_stack(&copy);
-    ASSERT_STRN_EQm("[ILS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
-    destroy_element(&elemen_test);
-    destroy_element(&element_copy);
-
-    elemen_test = pop_stack(&test);
-    element_copy = pop_stack(&copy);
-    ASSERT_STRN_EQm("[ILS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
-    destroy_element(&elemen_test);
-    destroy_element(&element_copy);
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
+        STACK_DATA_TYPE elemen_test = pop_stack(&test);
+        STACK_DATA_TYPE element_copy = pop_stack(&copy);
+        ASSERT_STRN_EQm("[ILS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
+        destroy_element(&elemen_test);
+        destroy_element(&element_copy);
+    }
 
     destroy_stack(&test, destroy_element);
     destroy_stack(&copy, destroy_element);
     PASS();
 }
 
-/// Test if copied element
+/// Test if stack is not empty
 TEST ILS_29(void) {
     stack_s test = create_stack();
     for (int i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
-        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     }
 
-    stack_s copy = copy_stack(test, copy_element);
-    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
-        STACK_DATA_TYPE elemen_test = pop_stack(&test);
-        STACK_DATA_TYPE element_copy = pop_stack(&copy);
-        ASSERT_STRN_EQm("[ILS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
-        destroy_element(&elemen_test);
-        destroy_element(&element_copy);
-    }
+    ASSERT_FALSEm("[ILS-TEST] Stack is empty.", is_empty_stack(test));
 
-    destroy_stack(&test, destroy_element);
-    destroy_stack(&copy, destroy_element);
+    destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if copied element
+/// Test if stack is not empty
 TEST ILS_30(void) {
     stack_s test = create_stack();
     for (int i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
-        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     }
 
-    stack_s copy = copy_stack(test, copy_element);
-    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
-        STACK_DATA_TYPE elemen_test = pop_stack(&test);
-        STACK_DATA_TYPE element_copy = pop_stack(&copy);
-        ASSERT_STRN_EQm("[ILS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
-        destroy_element(&elemen_test);
-        destroy_element(&element_copy);
-    }
+    ASSERT_FALSEm("[ILS_TEST] Stack is empty.", is_empty_stack(test));
 
-    destroy_stack(&test, destroy_element);
-    destroy_stack(&copy, destroy_element);
+    destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if stack is not empty
+/// Test if stack is empty after 1 push_stack/pop_stack
 TEST ILS_31(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    ASSERT_FALSEm("[ILS_TEST] Stack is empty.", is_empty_stack(test));
+    pop_stack(&test);
+    ASSERTm("[ILS-TEST] Stack is not empty.", is_empty_stack(test));
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if stack is not empty
+/// Test if stack is empty after 'LIST_ARRAY_STACK_CHUNK' - 1 push_stack/pop_stack
 TEST ILS_32(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    ASSERT_FALSEm("[ILS_TEST] Stack is empty.", is_empty_stack(test));
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    }
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK - 1; ++i) {
+        pop_stack(&test);
+    }
+
+    ASSERTm("[ILS-TEST] Stack is not empty.", is_empty_stack(test));
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if stack is not empty
+/// Test if stack is empty after 'LIST_ARRAY_STACK_CHUNK' push_stack/pop_stack
 TEST ILS_33(void) {
     stack_s test = create_stack();
     for (int i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     }
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
+        pop_stack(&test);
+    }
 
-    ASSERT_FALSEm("[ILS_TEST] Stack is empty.", is_empty_stack(test));
+    ASSERTm("[ILS-TEST] Stack is not empty.", is_empty_stack(test));
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if stack is not empty
+/// Test if stack is empty 'LIST_ARRAY_STACK_CHUNK' + 1 push_stack/pop_stack
 TEST ILS_34(void) {
     stack_s test = create_stack();
     for (int i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     }
-
-    ASSERT_FALSEm("[ILS_TEST] Stack is empty.", is_empty_stack(test));
-
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Test if stack is empty
-TEST ILS_35(void) {
-    stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    pop_stack(&test);
-    ASSERTm("[ILS_TEST] Stack is not empty.", is_empty_stack(test));
-
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Test if stack is empty
-TEST ILS_36(void) {
-    stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    pop_stack(&test);
-    pop_stack(&test);
-    ASSERTm("[ILS_TEST] Stack is not empty.", is_empty_stack(test));
-
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Test if stack is empty
-TEST ILS_37(void) {
-    stack_s test = create_stack();
-    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    }
-    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
-        pop_stack(&test);
-    }
-
-    ASSERTm("[ILS_TEST] Stack is not empty.", is_empty_stack(test));
-
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Test if stack is empty
-TEST ILS_38(void) {
-    stack_s test = create_stack();
-    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    }
     for (int i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
         pop_stack(&test);
     }
 
-    ASSERTm("[ILS_TEST] Stack is not empty.", is_empty_stack(test));
+    ASSERTm("[ILS-TEST] Stack is not empty.", is_empty_stack(test));
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
 /// Test if head is NULL after 1 push and pop.
-TEST ILS_39(void) {
+TEST ILS_35(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     pop_stack(&test);
@@ -543,7 +512,7 @@ TEST ILS_39(void) {
 }
 
 /// Test if head is NULL after 'LIST_ARRAY_STACK_CHUNK - 1' push and pop.
-TEST ILS_40(void) {
+TEST ILS_36(void) {
     stack_s test = create_stack();
     for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK - 1; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
@@ -559,7 +528,7 @@ TEST ILS_40(void) {
 }
 
 /// Test if head is NULL after 'LIST_ARRAY_STACK_CHUNK' push and pop.
-TEST ILS_41(void) {
+TEST ILS_37(void) {
     stack_s test = create_stack();
     for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
@@ -575,7 +544,7 @@ TEST ILS_41(void) {
 }
 
 /// Test if head is NULL after 'LIST_ARRAY_STACK_CHUNK + 1' push and pop.
-TEST ILS_42(void) {
+TEST ILS_38(void) {
     stack_s test = create_stack();
     for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
@@ -590,6 +559,162 @@ TEST ILS_42(void) {
     PASS();
 }
 
+/// Test if all one int values get incremented by 'increment'
+TEST ILS_39(void) {
+    stack_s test = create_stack();
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
+
+    int increment = 5;
+    foreach_stack(&test, operation_int, &increment);
+
+    ASSERT_EQm("[ILS-ERROR] Expected incremented element by 'increment'.", 0 + increment, pop_stack(&test).sub_one);
+
+    destroy_stack(&test, NULL);
+
+    PASS();
+}
+
+/// Test if all 'LIST_ARRAY_STACK_CHUNK - 1' int values get incremented by 'increment'
+TEST ILS_40(void) {
+    stack_s test = create_stack();
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    int increment = 5;
+    foreach_stack(&test, operation_int, &increment);
+
+    for (int i = LIST_ARRAY_STACK_CHUNK - 2; i >= 0; --i) {
+        ASSERT_EQm("[ILS-ERROR] Expected incremented element by 'increment'.", i + increment, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+
+    PASS();
+}
+
+/// Test if all 'LIST_ARRAY_STACK_CHUNK' int values get incremented by 'increment'
+TEST ILS_41(void) {
+    stack_s test = create_stack();
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    int increment = 5;
+    foreach_stack(&test, operation_int, &increment);
+
+    for (int i = LIST_ARRAY_STACK_CHUNK - 1; i >= 0; --i) {
+        ASSERT_EQm("[ILS-ERROR] Expected incremented element by 'increment'.", i + increment, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+
+    PASS();
+}
+
+/// Test if all 'LIST_ARRAY_STACK_CHUNK + 1' int values get incremented by 'increment'
+TEST ILS_42(void) {
+    stack_s test = create_stack();
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    int increment = 5;
+    foreach_stack(&test, operation_int, &increment);
+
+    for (int i = LIST_ARRAY_STACK_CHUNK; i >= 0; --i) {
+        ASSERT_EQm("[ILS-ERROR] Expected incremented element by 'increment'.", i + increment, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+
+    PASS();
+}
+
+/// Test if all one string values have changed to new string value
+TEST ILS_43(void) {
+    stack_s test = create_stack();
+
+    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+
+    char new_string[] = "[REDACTED]";
+    foreach_stack(&test, operation_string, new_string);
+
+    STACK_DATA_TYPE element = pop_stack(&test);
+    ASSERT_STRN_EQm("[ILS-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
+    destroy_element(&element);
+
+    destroy_stack(&test, destroy_element);
+
+    PASS();
+}
+
+/// Test if all 'LIST_ARRAY_STACK_CHUNK' - 1 string values have changed to new string value
+TEST ILS_44(void) {
+    stack_s test = create_stack();
+
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK - 1; ++i) {
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
+
+    char new_string[] = "[REDACTED]";
+    foreach_stack(&test, operation_string, new_string);
+
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK - 1; ++i) {
+        STACK_DATA_TYPE element = pop_stack(&test);
+        ASSERT_STRN_EQm("[ILS-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
+        destroy_element(&element);
+    }
+
+    destroy_stack(&test, destroy_element);
+
+    PASS();
+}
+
+/// Test if all 'LIST_ARRAY_STACK_CHUNK' string values have changed to new string value
+TEST ILS_45(void) {
+    stack_s test = create_stack();
+
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
+
+    char new_string[] = "[REDACTED]";
+    foreach_stack(&test, operation_string, new_string);
+
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
+        STACK_DATA_TYPE element = pop_stack(&test);
+        ASSERT_STRN_EQm("[ILS-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
+        destroy_element(&element);
+    }
+
+    destroy_stack(&test, destroy_element);
+
+    PASS();
+}
+
+/// Test if all 'LIST_ARRAY_STACK_CHUNK' + 1 string values have changed to new string value
+TEST ILS_46(void) {
+    stack_s test = create_stack();
+
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
+
+    char new_string[] = "[REDACTED]";
+    foreach_stack(&test, operation_string, new_string);
+
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
+        STACK_DATA_TYPE element = pop_stack(&test);
+        ASSERT_STRN_EQm("[ILS-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
+        destroy_element(&element);
+    }
+
+    destroy_stack(&test, destroy_element);
+
+    PASS();
+}
+
 SUITE (infinite_list_stack_test) {
     RUN_TEST(ILS_01); RUN_TEST(ILS_02); RUN_TEST(ILS_03); RUN_TEST(ILS_04);
     RUN_TEST(ILS_05); RUN_TEST(ILS_06); RUN_TEST(ILS_07); RUN_TEST(ILS_08);
@@ -601,5 +726,6 @@ SUITE (infinite_list_stack_test) {
     RUN_TEST(ILS_29); RUN_TEST(ILS_30); RUN_TEST(ILS_31); RUN_TEST(ILS_32);
     RUN_TEST(ILS_33); RUN_TEST(ILS_34); RUN_TEST(ILS_35); RUN_TEST(ILS_36);
     RUN_TEST(ILS_37); RUN_TEST(ILS_38); RUN_TEST(ILS_39); RUN_TEST(ILS_40);
-    RUN_TEST(ILS_41); RUN_TEST(ILS_42);
+    RUN_TEST(ILS_41); RUN_TEST(ILS_42); RUN_TEST(ILS_43); RUN_TEST(ILS_44);
+    RUN_TEST(ILS_45); RUN_TEST(ILS_46);
 }

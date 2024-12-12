@@ -1,5 +1,6 @@
 #include <greatest.h>
-#include <list.h>
+#include <double_list.h>
+#include <single_list.h>
 
 GREATEST_MAIN_DEFS();
 

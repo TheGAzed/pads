@@ -389,7 +389,7 @@ static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
 
 /// @brief Gets the top element in stack and decrements stack size (pops top element).
 /// @param stack Stack structure pointer.
-/// @return The top element of the stack as defined by 'STACK_DATA_TYPE' macro. 
+/// @return The top element of the stack as defined by 'STACK_DATA_TYPE' macro.
 static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
     STACK_ASSERT(stack->elements && "[ERROR] Stack's element array can't be NULL.");
     STACK_ASSERT(stack->max && "[ERROR] Stack's max can't be zero.");
@@ -684,7 +684,7 @@ static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
 
 /// @brief Gets the top element in stack and decrements stack size (pops top element).
 /// @param stack Stack structure pointer.
-/// @return The top element of the stack as defined by 'STACK_DATA_TYPE' macro. 
+/// @return The top element of the stack as defined by 'STACK_DATA_TYPE' macro.
 static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
     STACK_ASSERT(stack && "[ERROR] 'stack' pointer is empty");
     STACK_ASSERT(stack->size && "[ERROR] Can't pop empty stack");

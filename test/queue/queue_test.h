@@ -14,12 +14,6 @@ typedef union type_dst {
 void destroy_element(QUEUE_DATA_TYPE * element);
 QUEUE_DATA_TYPE copy_element(const QUEUE_DATA_TYPE element);
 
-int compare_int_asc(const void * a, const void * b);
-int compare_int_desc(const void * a, const void * b);
-
-int compare_string_asc(const void * a, const void * b);
-int compare_string_desc(const void * a, const void * b);
-
 void operation_int(QUEUE_DATA_TYPE * element, void * args);
 void operation_string(QUEUE_DATA_TYPE * element, void * args);
 

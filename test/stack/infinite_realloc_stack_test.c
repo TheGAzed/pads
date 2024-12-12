@@ -4,243 +4,254 @@
 #define REALLOC_STACK_CHUNK  (1 << 3)
 #include <stack.h>
 
-/// Tests if stack is created properly.
+/// Tests if stack is initialized correctly when creating it.
 TEST IRS_01(void) {
     stack_s test = create_stack();
 
-    ASSERT_EQm("[IRS-TEST] Stack's 'head' parameter is not NULL.", NULL, test.elements);
-    ASSERT_EQm("[IRS-TEST] Stack's 'size' parameter is not zero.", 0, test.size);
+    ASSERT_EQm("[IRS-ERROR] Test stack size is not zero.", 0, test.size);
+    ASSERT_EQm("[IRS-ERROR] Test stack elements is not NULL.", NULL, test.elements);
 
     destroy_stack(&test, NULL);
-
     PASS();
 }
 
-/// Tests if stack is destroyed properly.
+/// Tests if stack is initialized correctly when creating and then destroying it.
 TEST IRS_02(void) {
     stack_s test = create_stack();
     destroy_stack(&test, NULL);
 
-    ASSERT_EQm("[IRS-TEST] Stack's 'head' parameter is not NULL.", NULL, test.elements);
-    ASSERT_EQm("[IRS-TEST] Stack's 'size' parameter is not zero.", 0, test.size);
+    ASSERT_EQm("[IRS-ERROR] Test stack size is not zero.", 0, test.size);
+    ASSERT_EQm("[IRS-ERROR] Test stack elements is not NULL.", NULL, test.elements);
 
     PASS();
 }
 
-/// Test if peeped top element is equal to 42
+/// Tests if one pushed element is peeked correctly.
 TEST IRS_03(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_EQm("[IRS-TEST] Stack's top element is not 42.", 42, peep_stack(test).sub_one);
+    ASSERT_EQm("[IRS-ERROR] Test stack peeked element not 42.", 42, peep_stack(test).sub_one);
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if peeped top element is equal to 42
+/// Tests if 'REALLOC_STACK_CHUNK' - 1 pushed element is peeked correctly.
 TEST IRS_04(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    for (size_t i = 0; i < REALLOC_STACK_CHUNK - 2; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1, });
+    }
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_EQm("[IRS-TEST] Stack's top element is not 42.", 42, peep_stack(test).sub_one);
+    ASSERT_EQm("[IRS-ERROR] Test stack peeked element not 42.", 42, peep_stack(test).sub_one);
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if peeped top element is equal to 42
+/// Tests if 'REALLOC_STACK_CHUNK' pushed element is peeked correctly.
 TEST IRS_05(void) {
     stack_s test = create_stack();
     for (size_t i = 0; i < REALLOC_STACK_CHUNK - 1; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1 });
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1, });
     }
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_EQm("[IRS-TEST] Stack's top element is not 42.", 42, peep_stack(test).sub_one);
+    ASSERT_EQm("[IRS-ERROR] Test stack peeked element not 42.", 42, peep_stack(test).sub_one);
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if peeped top element is equal to 42
+/// Tests if 'REALLOC_STACK_CHUNK' + 1 pushed element is peeked correctly.
 TEST IRS_06(void) {
     stack_s test = create_stack();
     for (size_t i = 0; i < REALLOC_STACK_CHUNK; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1 });
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1, });
     }
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_EQm("[IRS-TEST] Stack's top element is not 42.", 42, peep_stack(test).sub_one);
+    ASSERT_EQm("[IRS-ERROR] Test stack peeked element not 42.", 42, peep_stack(test).sub_one);
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if peep remains size
+/// Tests if sequence of 'REALLOC_STACK_CHUNK' - 1 pushed numbers is popped correctly
 TEST IRS_07(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    peep_stack(test);
 
-    ASSERT_EQm("[IRS-TEST] Stack's size is not 1.", 1, test.size);
+    for (int i = 1; i <= REALLOC_STACK_CHUNK - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = REALLOC_STACK_CHUNK - 1; i >= 1; --i) {
+        ASSERT_EQm("[IRS-ERROR] Test stack popped element not 'i'.", i, pop_stack(&test).sub_one);
+    }
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if peep remains size
+/// Tests if sequence of 'REALLOC_STACK_CHUNK' pushed numbers is popped correctly
 TEST IRS_08(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    peep_stack(test);
 
-    ASSERT_EQm("[IRS-TEST] Stack's size is not 2.", 2, test.size);
+    for (int i = 1; i <= REALLOC_STACK_CHUNK; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = REALLOC_STACK_CHUNK; i >= 1; --i) {
+        ASSERT_EQm("[IRS-ERROR] Test stack popped element not 'i'.", i, pop_stack(&test).sub_one);
+    }
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if peep remains size
+/// Tests if sequence of 'REALLOC_STACK_CHUNK' - 1 pushed numbers is popped correctly
 TEST IRS_09(void) {
     stack_s test = create_stack();
-    for (size_t i = 0; i < REALLOC_STACK_CHUNK; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1 });
-    }
-    peep_stack(test);
 
-    ASSERT_EQm("[IRS-TEST] Stack's size is not 'REALLOC_STACK_CHUNK'.", REALLOC_STACK_CHUNK, test.size);
+    for (int i = 1; i <= REALLOC_STACK_CHUNK + 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = REALLOC_STACK_CHUNK + 1; i >= 1; --i) {
+        ASSERT_EQm("[IRS-ERROR] Test stack popped element not 'i'.", i, pop_stack(&test).sub_one);
+    }
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if peep remains size
+/// Tests if peek does not change size
 TEST IRS_10(void) {
     stack_s test = create_stack();
-    for (size_t i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    }
+
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
     peep_stack(test);
 
-    ASSERT_EQm("[IRS-TEST] Stack's size is not 'REALLOC_STACK_CHUNK' + 1.", REALLOC_STACK_CHUNK + 1, test.size);
+    ASSERT_EQm("[IRS-ERROR] Expected stack size to not change after peek.", 1, test.size);
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if popped top element is equal to 42
+/// Tests if stack is empty when creating it.
 TEST IRS_11(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
 
-    ASSERT_EQm("[IRS-TEST] Stack's popped element is not 42.", 42, pop_stack(&test).sub_one);
+    ASSERTm("[IRS-ERROR] Expected stack to be empty when creating it.", is_empty_stack(test));
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if popped top element is equal to 42
+/// Tests if stack is not empty when push_stacking element.
 TEST IRS_12(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
 
-    ASSERT_EQm("[IRS-TEST] Stack's popped element is not 42.", 42, pop_stack(&test).sub_one);
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
+    ASSERT_FALSEm("[IRS-ERROR] Expected stack to not be empty when push_stacking element.", is_empty_stack(test));
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if popped top element is equal to 42
+/// Tests if one pushed element is popped correctly.
 TEST IRS_13(void) {
     stack_s test = create_stack();
-    for (size_t i = 0; i < REALLOC_STACK_CHUNK - 1; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1 });
-    }
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_EQm("[IRS-TEST] Stack's popped element is not 42.", 42, pop_stack(&test).sub_one);
+    ASSERT_EQm("[IRS-ERROR] Test stack popped element not 42.", 42, pop_stack(&test).sub_one);
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if popped top element is equal to 42
+/// Tests if 'REALLOC_STACK_CHUNK' - 1 pushed element is popped correctly.
 TEST IRS_14(void) {
     stack_s test = create_stack();
-    for (size_t i = 0; i < REALLOC_STACK_CHUNK; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1 });
+    for (size_t i = 0; i < REALLOC_STACK_CHUNK - 2; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1, });
     }
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_EQm("[IRS-TEST] Stack's popped element is not 42.", 42, pop_stack(&test).sub_one);
+    ASSERT_EQm("[IRS-ERROR] Test stack popped element not 42.", 42, pop_stack(&test).sub_one);
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if pop decreases size
+/// Tests if 'REALLOC_STACK_CHUNK' pushed element is popped correctly.
 TEST IRS_15(void) {
     stack_s test = create_stack();
+    for (size_t i = 0; i < REALLOC_STACK_CHUNK - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1, });
+    }
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
 
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    pop_stack(&test);
-
-    ASSERT_EQm("[IRS-TEST] Stack's size is not zero.", 0, test.size);
+    ASSERT_EQm("[IRS-ERROR] Test stack popped element not 42.", 42, pop_stack(&test).sub_one);
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if pop decreases size
+/// Tests if 'REALLOC_STACK_CHUNK' + 1 pushed element is popped correctly.
 TEST IRS_16(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    pop_stack(&test);
+    for (size_t i = 0; i < REALLOC_STACK_CHUNK; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1, });
+    }
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_EQm("[IRS-TEST] Stack's size is not one.", 1, test.size);
+    ASSERT_EQm("[IRS-ERROR] Test stack popped element not 42.", 42, pop_stack(&test).sub_one);
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if pop decreases size
+/// Test if destroyed element
 TEST IRS_17(void) {
     stack_s test = create_stack();
-    for (size_t i = 0; i < REALLOC_STACK_CHUNK; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    }
-    pop_stack(&test);
 
-    ASSERT_EQm("[IRS-TEST] Stack's size is not 'REALLOC_STACK_CHUNK' - 1.", REALLOC_STACK_CHUNK - 1, test.size);
+    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
 
-    destroy_stack(&test, NULL);
+    destroy_stack(&test, destroy_element);
     PASS();
 }
 
-/// Test if pop decreases size
+/// Test if destroyed element
 TEST IRS_18(void) {
     stack_s test = create_stack();
-    for (size_t i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    for (size_t i = 0; i < REALLOC_STACK_CHUNK - 1; ++i) {
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
     }
-    pop_stack(&test);
 
-    ASSERT_EQm("[IRS-TEST] Stack's size is not 'REALLOC_STACK_CHUNK'.", REALLOC_STACK_CHUNK, test.size);
-
-    destroy_stack(&test, NULL);
+    destroy_stack(&test, destroy_element);
     PASS();
 }
 
 /// Test if destroyed element
 TEST IRS_19(void) {
     stack_s test = create_stack();
-
-    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+    for (size_t i = 0; i < REALLOC_STACK_CHUNK; ++i) {
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
 
     destroy_stack(&test, destroy_element);
     PASS();
@@ -249,27 +260,6 @@ TEST IRS_19(void) {
 /// Test if destroyed element
 TEST IRS_20(void) {
     stack_s test = create_stack();
-    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
-    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
-
-    destroy_stack(&test, destroy_element);
-    PASS();
-}
-
-/// Test if destroyed element
-TEST IRS_21(void) {
-    stack_s test = create_stack();
-    for (size_t i = 0; i < REALLOC_STACK_CHUNK; ++i) {
-        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
-    }
-
-    destroy_stack(&test, destroy_element);
-    PASS();
-}
-
-/// Test if destroyed element
-TEST IRS_22(void) {
-    stack_s test = create_stack();
     for (size_t i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
         push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
     }
@@ -278,315 +268,450 @@ TEST IRS_22(void) {
     PASS();
 }
 
-/// Test if copied element
+/// Test if 1 copied int element
+TEST IRS_21(void) {
+    stack_s test = create_stack();
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
+
+    stack_s copy = copy_stack(test, NULL);
+
+    ASSERT_EQm("[IRS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+
+    destroy_stack(&test, NULL);
+    destroy_stack(&copy, NULL);
+    PASS();
+}
+
+/// Test if 'REALLOC_STACK_CHUNK' - 1 copied int element
+TEST IRS_22(void) {
+    stack_s test = create_stack();
+    for (int i = 0; i < REALLOC_STACK_CHUNK - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    stack_s copy = copy_stack(test, NULL);
+    for (int i = 0; i < REALLOC_STACK_CHUNK - 1; ++i) {
+        ASSERT_EQm("[IRS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    destroy_stack(&copy, NULL);
+    PASS();
+}
+
+/// Test if 'REALLOC_STACK_CHUNK' copied int element
 TEST IRS_23(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
+    for (int i = 0; i < REALLOC_STACK_CHUNK; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
 
     stack_s copy = copy_stack(test, NULL);
-
-    ASSERT_EQm("[IRS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+    for (int i = 0; i < REALLOC_STACK_CHUNK; ++i) {
+        ASSERT_EQm("[IRS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+    }
 
     destroy_stack(&test, NULL);
     destroy_stack(&copy, NULL);
     PASS();
 }
 
-/// Test if copied element
+/// Test if 'REALLOC_STACK_CHUNK' + 1 copied int element
 TEST IRS_24(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 1 });
+    for (int i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
 
     stack_s copy = copy_stack(test, NULL);
-
-    ASSERT_EQm("[IRS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
-    ASSERT_EQm("[IRS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+    for (int i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
+        ASSERT_EQm("[IRS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+    }
 
     destroy_stack(&test, NULL);
     destroy_stack(&copy, NULL);
     PASS();
 }
 
-/// Test if copied element
+/// Test if 1 copied string element
 TEST IRS_25(void) {
     stack_s test = create_stack();
-    for (int i = 0; i < REALLOC_STACK_CHUNK; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
-    }
+    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
 
-    stack_s copy = copy_stack(test, NULL);
-    for (int i = 0; i < REALLOC_STACK_CHUNK; ++i) {
-        ASSERT_EQm("[IRS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
-    }
+    stack_s copy = copy_stack(test, copy_element);
 
-    destroy_stack(&test, NULL);
-    destroy_stack(&copy, NULL);
+    STACK_DATA_TYPE elemen_test = pop_stack(&test);
+    STACK_DATA_TYPE element_copy = pop_stack(&copy);
+    ASSERT_STRN_EQm("[IRS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
+    destroy_element(&elemen_test);
+    destroy_element(&element_copy);
+
+    destroy_stack(&test, destroy_element);
+    destroy_stack(&copy, destroy_element);
     PASS();
 }
 
-/// Test if copied element
+/// Test if 'REALLOC_STACK_CHUNK' - 1 copied string element
 TEST IRS_26(void) {
     stack_s test = create_stack();
-    for (int i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    for (int i = 0; i < REALLOC_STACK_CHUNK - 1; ++i) {
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
     }
 
-    stack_s copy = copy_stack(test, NULL);
-    for (int i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
-        ASSERT_EQm("[IRS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+    stack_s copy = copy_stack(test, copy_element);
+    for (int i = 0; i < REALLOC_STACK_CHUNK - 1; ++i) {
+        STACK_DATA_TYPE elemen_test = pop_stack(&test);
+        STACK_DATA_TYPE element_copy = pop_stack(&copy);
+        ASSERT_STRN_EQm("[IRS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
+        destroy_element(&elemen_test);
+        destroy_element(&element_copy);
     }
 
-    destroy_stack(&test, NULL);
-    destroy_stack(&copy, NULL);
+    destroy_stack(&test, destroy_element);
+    destroy_stack(&copy, destroy_element);
     PASS();
 }
 
-/// Test if copied element
+/// Test if 'REALLOC_STACK_CHUNK' copied string element
 TEST IRS_27(void) {
     stack_s test = create_stack();
-    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+    for (int i = 0; i < REALLOC_STACK_CHUNK; ++i) {
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
 
     stack_s copy = copy_stack(test, copy_element);
-
-    STACK_DATA_TYPE elemen_test = pop_stack(&test);
-    STACK_DATA_TYPE element_copy = pop_stack(&copy);
-    ASSERT_STRN_EQm("[IRS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
-    destroy_element(&elemen_test);
-    destroy_element(&element_copy);
+    for (int i = 0; i < REALLOC_STACK_CHUNK; ++i) {
+        STACK_DATA_TYPE elemen_test = pop_stack(&test);
+        STACK_DATA_TYPE element_copy = pop_stack(&copy);
+        ASSERT_STRN_EQm("[IRS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
+        destroy_element(&elemen_test);
+        destroy_element(&element_copy);
+    }
 
     destroy_stack(&test, destroy_element);
     destroy_stack(&copy, destroy_element);
     PASS();
 }
 
-/// Test if copied element
+/// Test if 'REALLOC_STACK_CHUNK' + 1 copied string element
 TEST IRS_28(void) {
     stack_s test = create_stack();
-    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
-    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+    for (int i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
 
     stack_s copy = copy_stack(test, copy_element);
-
-    STACK_DATA_TYPE elemen_test = pop_stack(&test);
-    STACK_DATA_TYPE element_copy = pop_stack(&copy);
-    ASSERT_STRN_EQm("[IRS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
-    destroy_element(&elemen_test);
-    destroy_element(&element_copy);
-
-    elemen_test = pop_stack(&test);
-    element_copy = pop_stack(&copy);
-    ASSERT_STRN_EQm("[IRS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
-    destroy_element(&elemen_test);
-    destroy_element(&element_copy);
+    for (int i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
+        STACK_DATA_TYPE elemen_test = pop_stack(&test);
+        STACK_DATA_TYPE element_copy = pop_stack(&copy);
+        ASSERT_STRN_EQm("[IRS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
+        destroy_element(&elemen_test);
+        destroy_element(&element_copy);
+    }
 
     destroy_stack(&test, destroy_element);
     destroy_stack(&copy, destroy_element);
     PASS();
 }
 
-/// Test if copied element
+/// Test if stack is not empty
 TEST IRS_29(void) {
     stack_s test = create_stack();
     for (int i = 0; i < REALLOC_STACK_CHUNK; ++i) {
-        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     }
 
-    stack_s copy = copy_stack(test, copy_element);
-    for (int i = 0; i < REALLOC_STACK_CHUNK; ++i) {
-        STACK_DATA_TYPE elemen_test = pop_stack(&test);
-        STACK_DATA_TYPE element_copy = pop_stack(&copy);
-        ASSERT_STRN_EQm("[IRS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
-        destroy_element(&elemen_test);
-        destroy_element(&element_copy);
-    }
+    ASSERT_FALSEm("[IRS-TEST] Stack is empty.", is_empty_stack(test));
 
-    destroy_stack(&test, destroy_element);
-    destroy_stack(&copy, destroy_element);
+    destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if copied element
+/// Test if stack is not empty
 TEST IRS_30(void) {
     stack_s test = create_stack();
     for (int i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
-        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     }
 
-    stack_s copy = copy_stack(test, copy_element);
-    for (int i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
-        STACK_DATA_TYPE elemen_test = pop_stack(&test);
-        STACK_DATA_TYPE element_copy = pop_stack(&copy);
-        ASSERT_STRN_EQm("[IRS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
-        destroy_element(&elemen_test);
-        destroy_element(&element_copy);
-    }
+    ASSERT_FALSEm("[IRS_TEST] Stack is empty.", is_empty_stack(test));
 
-    destroy_stack(&test, destroy_element);
-    destroy_stack(&copy, destroy_element);
+    destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if stack is not empty
+/// Test if stack is empty after 1 push_stack/pop_stack
 TEST IRS_31(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    ASSERT_FALSEm("[IRS_TEST] Stack is empty.", is_empty_stack(test));
+    pop_stack(&test);
+    ASSERTm("[IRS-TEST] Stack is not empty.", is_empty_stack(test));
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if stack is not empty
+/// Test if stack is empty after 'REALLOC_STACK_CHUNK' - 1 push_stack/pop_stack
 TEST IRS_32(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    ASSERT_FALSEm("[IRS_TEST] Stack is empty.", is_empty_stack(test));
+    for (int i = 0; i < REALLOC_STACK_CHUNK - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    }
+    for (int i = 0; i < REALLOC_STACK_CHUNK - 1; ++i) {
+        pop_stack(&test);
+    }
+
+    ASSERTm("[IRS-TEST] Stack is not empty.", is_empty_stack(test));
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if stack is not empty
+/// Test if stack is empty after 'REALLOC_STACK_CHUNK' push_stack/pop_stack
 TEST IRS_33(void) {
     stack_s test = create_stack();
     for (int i = 0; i < REALLOC_STACK_CHUNK; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     }
+    for (int i = 0; i < REALLOC_STACK_CHUNK; ++i) {
+        pop_stack(&test);
+    }
 
-    ASSERT_FALSEm("[IRS_TEST] Stack is empty.", is_empty_stack(test));
+    ASSERTm("[IRS-TEST] Stack is not empty.", is_empty_stack(test));
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if stack is not empty
+/// Test if stack is empty 'REALLOC_STACK_CHUNK' + 1 push_stack/pop_stack
 TEST IRS_34(void) {
     stack_s test = create_stack();
     for (int i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     }
+    for (int i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
+        pop_stack(&test);
+    }
 
-    ASSERT_FALSEm("[IRS_TEST] Stack is empty.", is_empty_stack(test));
+    ASSERTm("[IRS-TEST] Stack is not empty.", is_empty_stack(test));
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if stack is empty
+/// Test if elements is NULL after 1 push and pop.
 TEST IRS_35(void) {
     stack_s test = create_stack();
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     pop_stack(&test);
-    ASSERTm("[IRS_TEST] Stack is not empty.", is_empty_stack(test));
+
+    ASSERT_EQm("[IRS-ERROR] Expected stack's 'elements' parameter to be NULL.", NULL, test.elements);
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if stack is empty
+/// Test if elements is NULL after 'REALLOC_STACK_CHUNK - 1' push and pop.
 TEST IRS_36(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    pop_stack(&test);
-    pop_stack(&test);
-    ASSERTm("[IRS_TEST] Stack is not empty.", is_empty_stack(test));
+    for (size_t i = 0; i < REALLOC_STACK_CHUNK - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+    }
+    for (size_t i = 0; i < REALLOC_STACK_CHUNK - 1; ++i) {
+        pop_stack(&test);
+    }
+
+    ASSERT_EQm("[IRS-ERROR] Expected stack's 'elements' parameter to be NULL.", NULL, test.elements);
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if stack is empty
+/// Test if elements is NULL after 'REALLOC_STACK_CHUNK' push and pop.
 TEST IRS_37(void) {
     stack_s test = create_stack();
-    for (int i = 0; i < REALLOC_STACK_CHUNK; ++i) {
+    for (size_t i = 0; i < REALLOC_STACK_CHUNK; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     }
-    for (int i = 0; i < REALLOC_STACK_CHUNK; ++i) {
+    for (size_t i = 0; i < REALLOC_STACK_CHUNK; ++i) {
         pop_stack(&test);
     }
 
-    ASSERTm("[IRS_TEST] Stack is not empty.", is_empty_stack(test));
+    ASSERT_EQm("[IRS-ERROR] Expected stack's 'elements' parameter to be NULL.", NULL, test.elements);
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if stack is empty
+/// Test if elements is NULL after 'REALLOC_STACK_CHUNK + 1' push and pop.
 TEST IRS_38(void) {
     stack_s test = create_stack();
-    for (int i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
+    for (size_t i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
     }
-    for (int i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
+    for (size_t i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
         pop_stack(&test);
     }
 
-    ASSERTm("[IRS_TEST] Stack is not empty.", is_empty_stack(test));
+    ASSERT_EQm("[IRS-ERROR] Expected stack's 'elements' parameter to be NULL.", NULL, test.elements);
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if head is NULL after push and pop.
+/// Test if all one int values get incremented by 'increment'
 TEST IRS_39(void) {
     stack_s test = create_stack();
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    pop_stack(&test);
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
 
-    ASSERT_EQm("[IRS-ERROR] Expected stack's 'head' parameter to be NULL.", NULL, test.elements);
+    int increment = 5;
+    foreach_stack(&test, operation_int, &increment);
+
+    ASSERT_EQm("[IRS-ERROR] Expected incremented element by 'increment'.", 0 + increment, pop_stack(&test).sub_one);
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if head is NULL after 'REALLOC_STACK_CHUNK - 1' push and pop.
+/// Test if all 'REALLOC_STACK_CHUNK - 1' int values get incremented by 'increment'
 TEST IRS_40(void) {
     stack_s test = create_stack();
-    for (size_t i = 0; i < REALLOC_STACK_CHUNK - 1; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    }
-    for (size_t i = 0; i < REALLOC_STACK_CHUNK - 1; ++i) {
-        pop_stack(&test);
+    for (int i = 0; i < REALLOC_STACK_CHUNK - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
     }
 
-    ASSERT_EQm("[IRS-ERROR] Expected stack's 'head' parameter to be NULL.", NULL, test.elements);
+    int increment = 5;
+    foreach_stack(&test, operation_int, &increment);
+
+    for (int i = REALLOC_STACK_CHUNK - 2; i >= 0; --i) {
+        ASSERT_EQm("[IRS-ERROR] Expected incremented element by 'increment'.", i + increment, pop_stack(&test).sub_one);
+    }
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if head is NULL after 'REALLOC_STACK_CHUNK' push and pop.
+/// Test if all 'REALLOC_STACK_CHUNK' int values get incremented by 'increment'
 TEST IRS_41(void) {
     stack_s test = create_stack();
-    for (size_t i = 0; i < REALLOC_STACK_CHUNK; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    }
-    for (size_t i = 0; i < REALLOC_STACK_CHUNK; ++i) {
-        pop_stack(&test);
+    for (int i = 0; i < REALLOC_STACK_CHUNK; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
     }
 
-    ASSERT_EQm("[IRS-ERROR] Expected stack's 'head' parameter to be NULL.", NULL, test.elements);
+    int increment = 5;
+    foreach_stack(&test, operation_int, &increment);
+
+    for (int i = REALLOC_STACK_CHUNK - 1; i >= 0; --i) {
+        ASSERT_EQm("[IRS-ERROR] Expected incremented element by 'increment'.", i + increment, pop_stack(&test).sub_one);
+    }
 
     destroy_stack(&test, NULL);
+
     PASS();
 }
 
-/// Test if head is NULL after 'REALLOC_STACK_CHUNK + 1' push and pop.
+/// Test if all 'REALLOC_STACK_CHUNK + 1' int values get incremented by 'increment'
 TEST IRS_42(void) {
     stack_s test = create_stack();
-    for (size_t i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    }
-    for (size_t i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
-        pop_stack(&test);
+    for (int i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
     }
 
-    ASSERT_EQm("[IRS-ERROR] Expected stack's 'head' parameter to be NULL.", NULL, test.elements);
+    int increment = 5;
+    foreach_stack(&test, operation_int, &increment);
+
+    for (int i = REALLOC_STACK_CHUNK; i >= 0; --i) {
+        ASSERT_EQm("[IRS-ERROR] Expected incremented element by 'increment'.", i + increment, pop_stack(&test).sub_one);
+    }
 
     destroy_stack(&test, NULL);
+
+    PASS();
+}
+
+/// Test if all one string values have changed to new string value
+TEST IRS_43(void) {
+    stack_s test = create_stack();
+
+    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+
+    char new_string[] = "[REDACTED]";
+    foreach_stack(&test, operation_string, new_string);
+
+    STACK_DATA_TYPE element = pop_stack(&test);
+    ASSERT_STRN_EQm("[IRS-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
+    destroy_element(&element);
+
+    destroy_stack(&test, destroy_element);
+
+    PASS();
+}
+
+/// Test if all 'REALLOC_STACK_CHUNK' - 1 string values have changed to new string value
+TEST IRS_44(void) {
+    stack_s test = create_stack();
+
+    for (int i = 0; i < REALLOC_STACK_CHUNK - 1; ++i) {
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
+
+    char new_string[] = "[REDACTED]";
+    foreach_stack(&test, operation_string, new_string);
+
+    for (int i = 0; i < REALLOC_STACK_CHUNK - 1; ++i) {
+        STACK_DATA_TYPE element = pop_stack(&test);
+        ASSERT_STRN_EQm("[IRS-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
+        destroy_element(&element);
+    }
+
+    destroy_stack(&test, destroy_element);
+
+    PASS();
+}
+
+/// Test if all 'REALLOC_STACK_CHUNK' string values have changed to new string value
+TEST IRS_45(void) {
+    stack_s test = create_stack();
+
+    for (int i = 0; i < REALLOC_STACK_CHUNK; ++i) {
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
+
+    char new_string[] = "[REDACTED]";
+    foreach_stack(&test, operation_string, new_string);
+
+    for (int i = 0; i < REALLOC_STACK_CHUNK; ++i) {
+        STACK_DATA_TYPE element = pop_stack(&test);
+        ASSERT_STRN_EQm("[IRS-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
+        destroy_element(&element);
+    }
+
+    destroy_stack(&test, destroy_element);
+
+    PASS();
+}
+
+/// Test if all 'REALLOC_STACK_CHUNK' + 1 string values have changed to new string value
+TEST IRS_46(void) {
+    stack_s test = create_stack();
+
+    for (int i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
+
+    char new_string[] = "[REDACTED]";
+    foreach_stack(&test, operation_string, new_string);
+
+    for (int i = 0; i < REALLOC_STACK_CHUNK + 1; ++i) {
+        STACK_DATA_TYPE element = pop_stack(&test);
+        ASSERT_STRN_EQm("[IRS-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
+        destroy_element(&element);
+    }
+
+    destroy_stack(&test, destroy_element);
+
     PASS();
 }
 
@@ -601,5 +726,6 @@ SUITE (infinite_realloc_stack_test) {
     RUN_TEST(IRS_29); RUN_TEST(IRS_30); RUN_TEST(IRS_31); RUN_TEST(IRS_32);
     RUN_TEST(IRS_33); RUN_TEST(IRS_34); RUN_TEST(IRS_35); RUN_TEST(IRS_36);
     RUN_TEST(IRS_37); RUN_TEST(IRS_38); RUN_TEST(IRS_39); RUN_TEST(IRS_40);
-    RUN_TEST(IRS_41); RUN_TEST(IRS_42);
+    RUN_TEST(IRS_41); RUN_TEST(IRS_42); RUN_TEST(IRS_43); RUN_TEST(IRS_44);
+    RUN_TEST(IRS_45); RUN_TEST(IRS_46);
 }

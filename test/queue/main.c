@@ -9,20 +9,6 @@ QUEUE_DATA_TYPE copy_element(const QUEUE_DATA_TYPE element) {
     return (QUEUE_DATA_TYPE) { .sub_two = strdup(element.sub_two), };
 }
 
-int compare_int_asc(const void * a, const void * b) {
-    return ((QUEUE_DATA_TYPE*)(a))->sub_one - ((QUEUE_DATA_TYPE*)(b))->sub_one;
-}
-int compare_int_desc(const void * a, const void * b) {
-    return ((QUEUE_DATA_TYPE*)(b))->sub_one - ((QUEUE_DATA_TYPE*)(a))->sub_one;
-}
-
-int compare_string_asc(const void * a, const void * b) {
-    return strncmp(((QUEUE_DATA_TYPE*)(a))->sub_two, ((QUEUE_DATA_TYPE*)(b))->sub_two, sizeof(TEST_STRING) - 1);
-}
-int compare_string_desc(const void * a, const void * b) {
-    return strncmp(((QUEUE_DATA_TYPE*)(b))->sub_two, ((QUEUE_DATA_TYPE*)(a))->sub_two, sizeof(TEST_STRING) - 1);
-}
-
 void operation_int(QUEUE_DATA_TYPE * element, void * args) {
     element->sub_one += *((int *)(args));
 }
