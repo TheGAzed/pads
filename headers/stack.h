@@ -384,7 +384,7 @@ static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
     STACK_ASSERT((stack->size < stack->max) && "[ERROR] Stack reached maximum size");
     STACK_ASSERT((stack->size + 1) && "[ERROR] Stack's '.size' will overflow");
 
-    memcpy(stack->elements + stack->size++, &element, sizeof(STACK_DATA_TYPE));
+    memcpy(stack->elements + (stack->size++), &element, sizeof(STACK_DATA_TYPE));
 }
 
 /// @brief Gets the top element in stack and decrements stack size (pops top element).
@@ -530,7 +530,7 @@ static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
         stack->elements = STACK_REALLOC(stack->elements, (stack->size + REALLOC_STACK_CHUNK) * sizeof(STACK_DATA_TYPE));
         STACK_ASSERT(stack->elements && "[ERROR] Memory allocation failed");
     }
-    memcpy(stack->elements + stack->size++, &element, sizeof(STACK_DATA_TYPE));
+    memcpy(stack->elements + (stack->size++), &element, sizeof(STACK_DATA_TYPE));
 }
 
 /// @brief Gets the top element in stack and decrements stack size (pops top element).
@@ -679,7 +679,7 @@ static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
     STACK_ASSERT((stack->size < PREPROCESSOR_STACK_SIZE) && "[ERROR] Stack reached maximum size");
     STACK_ASSERT((stack->size + 1) && "[ERROR] Stack's '.size' will overflow");
     // treat size as next index, add element and increment size
-    memcpy(stack->elements + stack->size++, &element, sizeof(STACK_DATA_TYPE));
+    memcpy(stack->elements + (stack->size++), &element, sizeof(STACK_DATA_TYPE));
 }
 
 /// @brief Gets the top element in stack and decrements stack size (pops top element).

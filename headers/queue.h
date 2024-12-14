@@ -177,7 +177,7 @@ static inline QUEUE_DATA_TYPE peek_queue(const queue_s queue) {
 /// @brief Sets the next end element in queue array to 'element' parameter (enqueues element).
 /// @param queue Queue structure pointer.
 /// @param element Element to push to end of queue array.
-static inline void enqueue(queue_s * queue, QUEUE_DATA_TYPE element) {
+static inline void enqueue(queue_s * queue, const QUEUE_DATA_TYPE element) {
     QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL");
     QUEUE_ASSERT(~(queue->size) && "[ERROR] Queue's '.size' will overflow");
 
@@ -193,7 +193,7 @@ static inline void enqueue(queue_s * queue, QUEUE_DATA_TYPE element) {
         else queue->tail = queue->tail->next = temp;
     }
 
-    queue->tail->elements[next_index] = element;
+    memcpy(queue->tail->elements + next_index, &element, sizeof(QUEUE_DATA_TYPE));
     queue->size++;
 }
 
@@ -416,13 +416,14 @@ static inline QUEUE_DATA_TYPE peek_queue(const queue_s queue) {
 /// @brief Sets the next end empty element in queue array to 'element' parameter (enqueues element to end).
 /// @param queue Queue structure pointer.
 /// @param element Element to push to top of queue array.
-static inline void enqueue(queue_s * queue, QUEUE_DATA_TYPE element) {
+static inline void enqueue(queue_s * queue, const QUEUE_DATA_TYPE element) {
     QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL");
     QUEUE_ASSERT((queue->size < queue->max) && "[ERROR] Queue reached maximum size");
     QUEUE_ASSERT((queue->size + 1) && "[ERROR] Queue's '.size' will overflow");
     QUEUE_ASSERT(queue->elements && "[ERROR] '.elements' is NULL");
 
-    queue->elements[(queue->current + queue->size++) % queue->max] = element;
+    memcpy(queue->elements + ((queue->current + queue->size) % queue->max), &element, sizeof(QUEUE_DATA_TYPE));
+    queue->size++;
 }
 
 /// @brief Gets the start element in queue and decrements queue size (dequeues element).
@@ -582,17 +583,18 @@ static inline QUEUE_DATA_TYPE peek_queue(const queue_s queue) {
 /// @brief Sets the next top empty element in queue array to 'element' parameter (enqueues element to end).
 /// @param queue Queue structure pointer.
 /// @param element Element to enqueue to end of queue array.
-static inline void enqueue(queue_s * queue, QUEUE_DATA_TYPE element) {
+static inline void enqueue(queue_s * queue, const QUEUE_DATA_TYPE element) {
     QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL");
     QUEUE_ASSERT(~(queue->size) && "[ERROR] Queue's '.size' will overflow");
 
     // first expand memory if necessary and then add element
-    size_t actual_size = queue->current + queue->size;
+    const size_t actual_size = queue->current + queue->size;
     if ((actual_size % REALLOC_QUEUE_CHUNK) == 0) {
         queue->elements = QUEUE_REALLOC(queue->elements, (actual_size + REALLOC_QUEUE_CHUNK) * sizeof(QUEUE_DATA_TYPE));
         QUEUE_ASSERT(queue->elements && "[ERROR] Memory allocation failed");
     }
-    queue->elements[queue->size++] = element;
+    memcpy(queue->elements + actual_size, &element, sizeof(QUEUE_DATA_TYPE));
+    queue->size++;
 }
 
 /// @brief Gets the start element in queue and decrements queue size (dequeues start element).
@@ -692,9 +694,9 @@ static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate
 
 #define PREPROCESSOR_QUEUE_SIZE (1 << 10)
 
-#elif PREPROCESSOR_QUEUE_SIZE == 0
+#elif PREPROCESSOR_QUEUE_SIZE <= 0
 
-#error 'PREPROCESSOR_QUEUE_SIZE' cannot be zero
+#error 'PREPROCESSOR_QUEUE_SIZE' cannot be less than or equal to zero
 
 #endif
 
@@ -754,13 +756,12 @@ static inline QUEUE_DATA_TYPE peek_queue(const queue_s queue) {
 /// @brief Sets the next end empty element in queue array to 'element' parameter (enqueues element to end).
 /// @param queue Queue structure pointer.
 /// @param element Element to push to top of queue array.
-static inline void enqueue(queue_s * queue, QUEUE_DATA_TYPE element) {
+static inline void enqueue(queue_s * queue, const QUEUE_DATA_TYPE element) {
     QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL");
     QUEUE_ASSERT((queue->size < PREPROCESSOR_QUEUE_SIZE) && "[ERROR] Queue reached maximum size");
-    QUEUE_ASSERT((queue->size + 1) && "[ERROR] Queue's '.size' will overflow");
-    QUEUE_ASSERT(queue->elements && "[ERROR] '.elements' is NULL");
+    QUEUE_ASSERT((~queue->size) && "[ERROR] Queue's '.size' will overflow");
 
-    queue->elements[(queue->current + queue->size) % PREPROCESSOR_QUEUE_SIZE] = element;
+    memcpy(queue->elements + ((queue->current + queue->size) % PREPROCESSOR_QUEUE_SIZE), &element, sizeof(QUEUE_DATA_TYPE));
     queue->size++;
 }
 
@@ -770,7 +771,6 @@ static inline void enqueue(queue_s * queue, QUEUE_DATA_TYPE element) {
 static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
     QUEUE_ASSERT(queue && "[ERROR] 'queue' pointer is empty");
     QUEUE_ASSERT(queue->size && "[ERROR] Can't pop empty queue");
-    QUEUE_ASSERT(queue->elements && "[ERROR] '.elements' is NULL");
 
     QUEUE_DATA_TYPE element = queue->elements[queue->current];
     queue->size--;

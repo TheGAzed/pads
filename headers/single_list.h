@@ -51,6 +51,7 @@ typedef void                  (*destroy_single_list_fn) (SINGLE_LIST_DATA_TYPE *
 typedef int                   (*compare_single_list_fn) (const void *, const void *);
 typedef void                  (*operate_single_list_fn) (SINGLE_LIST_DATA_TYPE *, void *);
 typedef void                  (*sort_single_list_fn)    (void * array, size_t number, size_t size, compare_single_list_fn);
+typedef bool                  (*filter_single_list_fn)  (const SINGLE_LIST_DATA_TYPE);
 
 #if SINGLE_LIST_MODE == INFINITE_ALLOCATED_SINGLE_LIST
 
@@ -370,6 +371,37 @@ static inline void foreach_single_list(single_list_s * list, const operate_singl
         previous = previous->next; // go to next early to start from the beginning/head
         operate(&(previous->element), args);
     }
+}
+
+static inline single_list_s filter_single_list(single_list_s * list, const filter_single_list_fn filter) {
+    assert(list && "[ERROR] 'list' parameter poiinter is NULL.");
+    assert(filter && "[ERROR] 'filter' parameter poiinter is NULL.");
+
+    single_list_s filter_list = { 0 };
+
+    struct single_list_node ** current_list    = list->size ? &(list->tail->next) : &(list->tail);
+    struct single_list_node ** previous_filter = &(filter_list.tail);
+    for (size_t i = 0; i < list->size; ++i) {
+        if (filter((*current_list)->element)) {
+            *previous_filter = *current_list; // if filter returns true add element to new list
+            filter_list.size++; // increments filtered list size
+
+            *current_list = (*current_list)->next; // shrink old list/go to next node
+            previous_filter = &((*previous_filter)->next); // go to next pointer to pointer in filtered list
+        } else {
+            current_list = &((*current_list)->next); // go to next node without shrinking old list
+        }
+    }
+    struct single_list_node * temp = *previous_filter;
+    *previous_filter = filter_list.tail; // make last node point to first node (which is in tail)
+    filter_list.tail = temp; // make last node into tail since tail actually contains first node
+
+    list->size -= filter_list.size; // subtract filtered list's size from list (alt. dencrement old list's size in loop)
+    if (!list->size) {
+        list->tail = NULL; // null terminate old list's tail when it's empty
+    }
+
+    return filter_list;
 }
 
 #endif

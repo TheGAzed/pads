@@ -715,6 +715,103 @@ TEST ILS_46(void) {
     PASS();
 }
 
+/// Tests if adding 'LIST_ARRAY_STACK_CHUNK' - 2, removing half and readding half elements is correct
+TEST ILS_47(void) {
+    stack_s test = create_stack();
+    stack_s temp = create_stack();
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK - 2; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i, });
+    }
+    for (int i = 0; i < (LIST_ARRAY_STACK_CHUNK - 2) / 2; ++i) {
+        push_stack(&temp, pop_stack(&test));
+    }
+    for (int i = 0; i < (LIST_ARRAY_STACK_CHUNK - 2) / 2; ++i) {
+        push_stack(&test, pop_stack(&temp));
+    }
+
+    for (int i = LIST_ARRAY_STACK_CHUNK - 3; i >= 0; --i) {
+        ASSERT_EQm("[ILS-ERROR] Popped elemet not equal to i", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, destroy_element);
+    destroy_stack(&temp, destroy_element);
+
+    PASS();
+}
+
+/// Tests if adding 'LIST_ARRAY_STACK_CHUNK' - 1, removing half and readding half elements is correct
+TEST ILS_48(void) {
+    stack_s test = create_stack();
+    stack_s temp = create_stack();
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i, });
+    }
+    for (int i = 0; i < (LIST_ARRAY_STACK_CHUNK - 1) / 2; ++i) {
+        push_stack(&temp, pop_stack(&test));
+    }
+    for (int i = 0; i < (LIST_ARRAY_STACK_CHUNK - 1) / 2; ++i) {
+        push_stack(&test, pop_stack(&temp));
+    }
+
+    for (int i = LIST_ARRAY_STACK_CHUNK - 2; i >= 0; --i) {
+        ASSERT_EQm("[ILS-ERROR] Popped elemet not equal to i", i, pop_stack(&test).sub_one);
+    }
+
+
+    destroy_stack(&test, destroy_element);
+    destroy_stack(&temp, destroy_element);
+
+    PASS();
+}
+
+/// Tests if adding 'LIST_ARRAY_STACK_CHUNK', removing half and readding half elements is correct
+TEST ILS_49(void) {
+    stack_s test = create_stack();
+    stack_s temp = create_stack();
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i, });
+    }
+    for (int i = 0; i < (LIST_ARRAY_STACK_CHUNK) / 2; ++i) {
+        push_stack(&temp, pop_stack(&test));
+    }
+    for (int i = 0; i < (LIST_ARRAY_STACK_CHUNK) / 2; ++i) {
+        push_stack(&test, pop_stack(&temp));
+    }
+
+    for (int i = LIST_ARRAY_STACK_CHUNK - 1; i >= 0; --i) {
+        ASSERT_EQm("[ILS-ERROR] Popped elemet not equal to i", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, destroy_element);
+    destroy_stack(&temp, destroy_element);
+
+    PASS();
+}
+
+/// Tests if adding 'LIST_ARRAY_STACK_CHUNK' + 1, removing half and readding half elements is correct
+TEST ILS_50(void) {
+    stack_s test = create_stack();
+    stack_s temp = create_stack();
+    for (int i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i, });
+    }
+    for (int i = 0; i < (LIST_ARRAY_STACK_CHUNK + 1) / 2; ++i) {
+        push_stack(&temp, pop_stack(&test));
+    }
+    for (int i = 0; i < (LIST_ARRAY_STACK_CHUNK + 1) / 2; ++i) {
+        push_stack(&test, pop_stack(&temp));
+    }
+
+    for (int i = LIST_ARRAY_STACK_CHUNK; i >= 0; --i) {
+        ASSERT_EQm("[ILS-ERROR] Popped elemet not equal to i", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, destroy_element);
+    destroy_stack(&temp, destroy_element);
+
+    PASS();
+}
+
 SUITE (infinite_list_stack_test) {
     RUN_TEST(ILS_01); RUN_TEST(ILS_02); RUN_TEST(ILS_03); RUN_TEST(ILS_04);
     RUN_TEST(ILS_05); RUN_TEST(ILS_06); RUN_TEST(ILS_07); RUN_TEST(ILS_08);
@@ -727,5 +824,6 @@ SUITE (infinite_list_stack_test) {
     RUN_TEST(ILS_33); RUN_TEST(ILS_34); RUN_TEST(ILS_35); RUN_TEST(ILS_36);
     RUN_TEST(ILS_37); RUN_TEST(ILS_38); RUN_TEST(ILS_39); RUN_TEST(ILS_40);
     RUN_TEST(ILS_41); RUN_TEST(ILS_42); RUN_TEST(ILS_43); RUN_TEST(ILS_44);
-    RUN_TEST(ILS_45); RUN_TEST(ILS_46);
+    RUN_TEST(ILS_45); RUN_TEST(ILS_46); RUN_TEST(ILS_47); RUN_TEST(ILS_48);
+    RUN_TEST(ILS_49); RUN_TEST(ILS_50);
 }

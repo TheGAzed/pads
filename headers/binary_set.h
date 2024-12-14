@@ -11,7 +11,7 @@
 
 //#define BINARY_SET_MODE INFINITE_REALLOC_BINARY_SET
 //#define BINARY_SET_MODE FINITE_ALLOCATED_BINARY_SET
-#define BINARY_SET_MODE FINITE_PRERPOCESSOR_BINARY_SET
+//#define BINARY_SET_MODE FINITE_PRERPOCESSOR_BINARY_SET
 // List mode that can be set to INFINITE_REALLOC_BINARY_SET, FINITE_ALLOCATED_BINARY_SET, INFINITE_REALLOC_DOUBLE_BINARY_SET or
 // FINITE_PRERPOCESSOR_BINARY_SET, or INFINITE_REALLOC_BINARY_SET or FINITE_ALLOCATED_BINARY_SET
 // Default: INFINITE_REALLOC_BINARY_SET
@@ -171,15 +171,14 @@ static inline binary_set_s union_binary_set(const binary_set_s set_one, const bi
 
     binary_set_s set = { .compare = set_one.compare, .size = set_one.size, .elements = NULL, };
     if (set.size) {
-        set.elements = malloc(set_one.size - (set_one.size % REALLOC_BINARY_SET_CHUNK) + REALLOC_BINARY_SET_CHUNK * sizeof(BINARY_SET_DATA_TYPE));
+        set.elements = malloc((set_one.size - (set_one.size % REALLOC_BINARY_SET_CHUNK) + REALLOC_BINARY_SET_CHUNK) * sizeof(BINARY_SET_DATA_TYPE));
         memcpy(set.elements, set_one.elements, set_one.size * sizeof(BINARY_SET_DATA_TYPE));
     }
 
     BINARY_SET_DATA_TYPE * base = set.elements;
     for (size_t i = 0; i < set_two.size; ++i) { // for each element in set two
         bool found_element = false;
-        const size_t index = (base - set.elements);
-        for (size_t limit = set.size - index; limit != 0; limit >>= 1) {
+        for (size_t limit = set.size - (base - set.elements); limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
             const int comparison = set_one.compare ? set_one.compare(set_two.elements + i, current_element) : memcmp(set_two.elements + i, current_element, sizeof(BINARY_SET_DATA_TYPE));
             if (comparison == 0) {
@@ -192,13 +191,14 @@ static inline binary_set_s union_binary_set(const binary_set_s set_one, const bi
             }
         }
         if (!found_element) {
+            const size_t index = (base - set.elements);
             if ((set.size % REALLOC_BINARY_SET_CHUNK) == 0) { // expand set chunk size if needed
                 set.elements = realloc(set.elements, (set.size + REALLOC_BINARY_SET_CHUNK) * sizeof(BINARY_SET_DATA_TYPE)); // expand set.elements array
                 BINARY_SET_ASSERT(set.elements && "[ERROR] Memory allocation failed.");
                 base = set.elements + index; // reset current_element pointer to new memory position if set.elements array changes
             }
 
-            memmove(base + 1, base, (set.size - (base - set.elements)) * sizeof(BINARY_SET_DATA_TYPE));
+            memmove(base + 1, base, (set.size - index) * sizeof(BINARY_SET_DATA_TYPE));
             *base = set_two.elements[i];
             set.size++;
         }
@@ -218,8 +218,7 @@ static inline binary_set_s intersect_binary_set(const binary_set_s set_one, cons
 
     BINARY_SET_DATA_TYPE * base = set_one.elements;
     for (size_t i = 0; i < set_two.size; ++i) { // for each element in set two
-        const size_t index = (base - set_one.elements);
-        for (size_t limit = set_one.size - index; limit != 0; limit >>= 1) {
+        for (size_t limit = set_one.size - (base - set_one.elements); limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
             const int comparison = set.compare ? set.compare(set_two.elements + i, current_element) : memcmp(set_two.elements + i, current_element, sizeof(BINARY_SET_DATA_TYPE));
             if (comparison == 0) {
@@ -288,15 +287,14 @@ static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const 
 
     binary_set_s set = { .compare = set_one.compare, .size = set_one.size, .elements = set_one.elements, };
     if (set_one.size) {
-        set.elements = malloc(set_one.size - (set_one.size % REALLOC_BINARY_SET_CHUNK) + REALLOC_BINARY_SET_CHUNK * sizeof(BINARY_SET_DATA_TYPE));
+        set.elements = malloc((set_one.size - (set_one.size % REALLOC_BINARY_SET_CHUNK) + REALLOC_BINARY_SET_CHUNK) * sizeof(BINARY_SET_DATA_TYPE));
         memcpy(set.elements, set_one.elements, set_one.size * sizeof(BINARY_SET_DATA_TYPE));
     }
 
     BINARY_SET_DATA_TYPE * base = set.elements;
     for (size_t i = 0; i < set_two.size; ++i) { // for each element in set two
         bool found_element = false;
-        const size_t index = base - set.elements;
-        for (size_t limit = set.size - index; limit != 0; limit >>= 1) {
+        for (size_t limit = set.size - (base - set.elements); limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
             const int comparison = set.compare ? set.compare(set_two.elements + i, current_element) : memcmp(set_two.elements + i, current_element, sizeof(BINARY_SET_DATA_TYPE));
             if (comparison == 0) {
@@ -305,8 +303,9 @@ static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const 
                 memmove(current_element, current_element + 1, (set.size - (current_element - set.elements)) * sizeof(BINARY_SET_DATA_TYPE)); // shift left if in both
 
                 if ((set.size % REALLOC_BINARY_SET_CHUNK) == 0) { // contract set chunk size if it elements can fit
+                    const size_t index = base - set.elements;
                     set.elements = realloc(set.elements, set.size * sizeof(BINARY_SET_DATA_TYPE)); // contract set's elements array
-                    BINARY_SET_ASSERT((!(set->size) || set->elements) && "[ERROR] Memory allocation failed.");
+                    BINARY_SET_ASSERT((!(set.size) || set.elements) && "[ERROR] Memory allocation failed.");
                     base = set.elements + index; // reset current_element pointer to new memory position if set.elements array changes
                 }
                 break;
@@ -317,6 +316,7 @@ static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const 
             }
         }
         if (!found_element) {
+            const size_t index = base - set.elements;
             if ((set.size % REALLOC_BINARY_SET_CHUNK) == 0) { // expand set chunk size if needed
                 set.elements = realloc(set.elements, (set.size + REALLOC_BINARY_SET_CHUNK) * sizeof(BINARY_SET_DATA_TYPE)); // expand set.elements array
                 BINARY_SET_ASSERT(set.elements && "[ERROR] Memory allocation failed.");
@@ -612,8 +612,7 @@ static inline binary_set_s union_binary_set(const binary_set_s set_one, const bi
     BINARY_SET_DATA_TYPE * base = set.elements;
     for (size_t i = 0; i < set_two.size; ++i) { // for each element in set two
         bool found_element = false;
-        const size_t index = (base - set.elements);
-        for (size_t limit = set.size - index; limit != 0; limit >>= 1) {
+        for (size_t limit = set.size - (base - set.elements); limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
             const int comparison = set_one.compare ? set_one.compare(set_two.elements + i, current_element) : memcmp(set_two.elements + i, current_element, sizeof(BINARY_SET_DATA_TYPE));
             if (comparison == 0) {
@@ -656,8 +655,7 @@ static inline binary_set_s intersect_binary_set(const binary_set_s set_one, cons
 
     BINARY_SET_DATA_TYPE * base = set_one.elements;
     for (size_t i = 0; i < set_two.size; ++i) { // for each element in set two
-        const size_t index = (base - set_one.elements);
-        for (size_t limit = set_one.size - index; limit != 0; limit >>= 1) {
+        for (size_t limit = set_one.size - (base - set_one.elements); limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
             const int comparison = set.compare ? set.compare(set_two.elements + i, current_element) : memcmp(set_two.elements + i, current_element, sizeof(BINARY_SET_DATA_TYPE));
             if (comparison == 0) {
@@ -739,8 +737,7 @@ static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const 
     BINARY_SET_DATA_TYPE * base = set.elements;
     for (size_t i = 0; i < set_two.size; ++i) { // for each element in set two
         bool found_element = false;
-        const size_t index = base - set.elements;
-        for (size_t limit = set.size - index; limit != 0; limit >>= 1) {
+        for (size_t limit = set.size - (base - set.elements); limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
             const int comparison = set.compare ? set.compare(set_two.elements + i, current_element) : memcmp(set_two.elements + i, current_element, sizeof(BINARY_SET_DATA_TYPE));
             if (comparison == 0) {
@@ -756,7 +753,7 @@ static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const 
         }
         if (!found_element) {
             // shift current element + rest to the right to make space for uncontained element
-            memmove(base + 1, base, (set.size - index) * sizeof(BINARY_SET_DATA_TYPE));
+            memmove(base + 1, base, (set.size - (base - set.elements)) * sizeof(BINARY_SET_DATA_TYPE));
 
             *base = set_two.elements[i]; // push set to new point
             set.size++;
@@ -1060,8 +1057,7 @@ static inline binary_set_s union_binary_set(const binary_set_s set_one, const bi
     BINARY_SET_DATA_TYPE * base = set.elements;
     for (size_t i = 0; i < set_two.size; ++i) { // for each element in set two
         bool found_element = false;
-        const size_t index = (base - set.elements);
-        for (size_t limit = set.size - index; limit != 0; limit >>= 1) {
+        for (size_t limit = set.size - (base - set.elements); limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
             const int comparison = set_one.compare ? set_one.compare(set_two.elements + i, current_element) : memcmp(set_two.elements + i, current_element, sizeof(BINARY_SET_DATA_TYPE));
             if (comparison == 0) {
@@ -1097,8 +1093,7 @@ static inline binary_set_s intersect_binary_set(const binary_set_s set_one, cons
     BINARY_SET_DATA_TYPE * base = NULL;
     memcpy(&base, &decay, sizeof(BINARY_SET_DATA_TYPE *));
     for (size_t i = 0; i < set_two.size; ++i) { // for each element in set two
-        const size_t index = (base - set_one.elements);
-        for (size_t limit = set_one.size - index; limit != 0; limit >>= 1) {
+        for (size_t limit = set_one.size - (base - set_one.elements); limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
             const int comparison = set.compare ? set.compare(set_two.elements + i, current_element) : memcmp(set_two.elements + i, current_element, sizeof(BINARY_SET_DATA_TYPE));
             if (comparison == 0) {
@@ -1169,8 +1164,7 @@ static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const 
     BINARY_SET_DATA_TYPE * base = extended.elements;
     for (size_t i = 0; i < set_two.size; ++i) { // for each element in set two
         bool found_element = false;
-        const size_t index = base - extended.elements;
-        for (size_t limit = extended.size - index; limit != 0; limit >>= 1) {
+        for (size_t limit = extended.size - (base - extended.elements); limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
             const int comparison = extended.compare ? extended.compare(set_two.elements + i, current_element) : memcmp(set_two.elements + i, current_element, sizeof(BINARY_SET_DATA_TYPE));
             if (comparison == 0) {
@@ -1186,7 +1180,7 @@ static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const 
         }
         if (!found_element) {
             // shift current element + rest to the right to make space for uncontained element
-            memmove(base + 1, base, (extended.size - index) * sizeof(BINARY_SET_DATA_TYPE));
+            memmove(base + 1, base, (extended.size - (base - extended.elements)) * sizeof(BINARY_SET_DATA_TYPE));
 
             *base = set_two.elements[i]; // push set to new point
             extended.size++;

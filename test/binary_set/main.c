@@ -1,42 +1,31 @@
-#include <greatest.h>
-#define BINARY_SET_DATA_TYPE int
-#include <binary_set.h>
+#include "binary_set_test.h"
+
+void destroy_element(BINARY_SET_DATA_TYPE * element) {
+    free(element->sub_two);
+    *element = (BINARY_SET_DATA_TYPE) { 0 };
+}
+
+BINARY_SET_DATA_TYPE copy_element(const BINARY_SET_DATA_TYPE element) {
+    return (BINARY_SET_DATA_TYPE) { .sub_two = strdup(element.sub_two), };
+}
+
+void operation_int(BINARY_SET_DATA_TYPE * element, void * args) {
+    element->sub_one += *((int *)(args));
+}
+
+void operation_string(BINARY_SET_DATA_TYPE * element, void * args) {
+    free(element->sub_two);
+    element->sub_two = strdup(args);
+}
 
 GREATEST_MAIN_DEFS();
 
 int main(const int argc, char **argv) {
     GREATEST_MAIN_BEGIN();
-#ifndef TEST_BINARY_SET
-    binary_set_s set_one = create_binary_set(NULL);
-    add_binary_set(&set_one, 2);
-    add_binary_set(&set_one, 4);
-    add_binary_set(&set_one, 6);
-    add_binary_set(&set_one, 5);
-    add_binary_set(&set_one, 3);
-    add_binary_set(&set_one, 1);
 
-    binary_set_s set_two = create_binary_set(NULL);
-    add_binary_set(&set_two, 4);
-    add_binary_set(&set_two, 5);
-    add_binary_set(&set_two, 6);
-    add_binary_set(&set_two, 7);
-    add_binary_set(&set_two, 8);
-    add_binary_set(&set_two, 9);
+    RUN_SUITE(infinite_realloc_binary_set_test);
+    RUN_SUITE(finite_allocated_binary_set_test);
+    RUN_SUITE(finite_preprocessor_binary_set_test);
 
-    binary_set_s set = union_binary_set(set_one, set_two, NULL);
-    destroy_binary_set(&set, NULL);
-
-    set = intersect_binary_set(set_one, set_two, NULL);
-    destroy_binary_set(&set, NULL);
-
-    set = subtract_binary_set(set_one, set_two, NULL);
-    destroy_binary_set(&set, NULL);
-
-    set = exclude_binary_set(set_one, set_two, NULL);
-    destroy_binary_set(&set, NULL);
-
-    destroy_binary_set(&set_one, NULL);
-    destroy_binary_set(&set_two, NULL);
-#endif
     GREATEST_MAIN_END();
 }

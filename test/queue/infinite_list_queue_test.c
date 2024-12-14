@@ -718,6 +718,114 @@ TEST ILQ_46(void) {
     PASS();
 }
 
+/// Tests if adding 'LIST_ARRAY_QUEUE_CHUNK' - 2, removing half and readding half elements is correct
+TEST ILQ_47(void) {
+    queue_s test = create_queue();
+    queue_s temp = create_queue();
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK - 2; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i, });
+    }
+    for (int i = 0; i < (LIST_ARRAY_QUEUE_CHUNK - 2) / 2; ++i) {
+        enqueue(&temp, dequeue(&test));
+    }
+    for (int i = 0; i < (LIST_ARRAY_QUEUE_CHUNK - 2) / 2; ++i) {
+        enqueue(&test, dequeue(&temp));
+    }
+
+    for (int i = (LIST_ARRAY_QUEUE_CHUNK - 2) / 2; i < LIST_ARRAY_QUEUE_CHUNK - 2; ++i) {
+        ASSERT_EQm("[ILQ-ERROR] Popped element not equal to i", i, dequeue(&test).sub_one);
+    }
+    for (int i = 0; i < (LIST_ARRAY_QUEUE_CHUNK - 2) / 2; ++i) {
+        ASSERT_EQm("[ILQ-ERROR] Popped element not equal to i", i, dequeue(&test).sub_one);
+    }
+
+    destroy_queue(&test, destroy_element);
+    destroy_queue(&temp, destroy_element);
+
+    PASS();
+}
+
+/// Tests if adding 'LIST_ARRAY_QUEUE_CHUNK' - 1, removing half and readding half elements is correct
+TEST ILQ_48(void) {
+    queue_s test = create_queue();
+    queue_s temp = create_queue();
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK - 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i, });
+    }
+    for (int i = 0; i < (LIST_ARRAY_QUEUE_CHUNK - 1) / 2; ++i) {
+        enqueue(&temp, dequeue(&test));
+    }
+    for (int i = 0; i < (LIST_ARRAY_QUEUE_CHUNK - 1) / 2; ++i) {
+        enqueue(&test, dequeue(&temp));
+    }
+
+    for (int i = (LIST_ARRAY_QUEUE_CHUNK - 1) / 2; i < LIST_ARRAY_QUEUE_CHUNK - 1; ++i) {
+        ASSERT_EQm("[ILQ-ERROR] Popped element not equal to i", i, dequeue(&test).sub_one);
+    }
+    for (int i = 0; i < (LIST_ARRAY_QUEUE_CHUNK - 1) / 2; ++i) {
+        ASSERT_EQm("[ILQ-ERROR] Popped element not equal to i", i, dequeue(&test).sub_one);
+    }
+
+    destroy_queue(&test, destroy_element);
+    destroy_queue(&temp, destroy_element);
+
+    PASS();
+}
+
+/// Tests if adding 'LIST_ARRAY_QUEUE_CHUNK', removing half and readding half elements is correct
+TEST ILQ_49(void) {
+    queue_s test = create_queue();
+    queue_s temp = create_queue();
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i, });
+    }
+    for (int i = 0; i < (LIST_ARRAY_QUEUE_CHUNK) / 2; ++i) {
+        enqueue(&temp, dequeue(&test));
+    }
+    for (int i = 0; i < (LIST_ARRAY_QUEUE_CHUNK) / 2; ++i) {
+        enqueue(&test, dequeue(&temp));
+    }
+
+    for (int i = (LIST_ARRAY_QUEUE_CHUNK) / 2; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
+        ASSERT_EQm("[ILQ-ERROR] Popped element not equal to i", i, dequeue(&test).sub_one);
+    }
+    for (int i = 0; i < (LIST_ARRAY_QUEUE_CHUNK) / 2; ++i) {
+        ASSERT_EQm("[ILQ-ERROR] Popped element not equal to i", i, dequeue(&test).sub_one);
+    }
+
+    destroy_queue(&test, destroy_element);
+    destroy_queue(&temp, destroy_element);
+
+    PASS();
+}
+
+/// Tests if adding 'LIST_ARRAY_QUEUE_CHUNK' + 1, removing half and readding half elements is correct
+TEST ILQ_50(void) {
+    queue_s test = create_queue();
+    queue_s temp = create_queue();
+    for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK + 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i, });
+    }
+    for (int i = 0; i < (LIST_ARRAY_QUEUE_CHUNK + 1) / 2; ++i) {
+        enqueue(&temp, dequeue(&test));
+    }
+    for (int i = 0; i < (LIST_ARRAY_QUEUE_CHUNK + 1) / 2; ++i) {
+        enqueue(&test, dequeue(&temp));
+    }
+
+    for (int i = (LIST_ARRAY_QUEUE_CHUNK + 1) / 2; i < LIST_ARRAY_QUEUE_CHUNK + 1; ++i) {
+        ASSERT_EQm("[ILQ-ERROR] Popped element not equal to i", i, dequeue(&test).sub_one);
+    }
+    for (int i = 0; i < (LIST_ARRAY_QUEUE_CHUNK + 1) / 2; ++i) {
+        ASSERT_EQm("[ILQ-ERROR] Popped element not equal to i", i, dequeue(&test).sub_one);
+    }
+
+    destroy_queue(&test, destroy_element);
+    destroy_queue(&temp, destroy_element);
+
+    PASS();
+}
+
 SUITE (infinite_list_queue_test) {
     RUN_TEST(ILQ_01); RUN_TEST(ILQ_02); RUN_TEST(ILQ_03); RUN_TEST(ILQ_04);
     RUN_TEST(ILQ_05); RUN_TEST(ILQ_06); RUN_TEST(ILQ_07); RUN_TEST(ILQ_08);
@@ -730,5 +838,5 @@ SUITE (infinite_list_queue_test) {
     RUN_TEST(ILQ_33); RUN_TEST(ILQ_34); RUN_TEST(ILQ_35); RUN_TEST(ILQ_36);
     RUN_TEST(ILQ_37); RUN_TEST(ILQ_38); RUN_TEST(ILQ_39); RUN_TEST(ILQ_40);
     RUN_TEST(ILQ_41); RUN_TEST(ILQ_42); RUN_TEST(ILQ_43); RUN_TEST(ILQ_44);
-    RUN_TEST(ILQ_45); RUN_TEST(ILQ_46);
+    RUN_TEST(ILQ_45); RUN_TEST(ILQ_46); RUN_TEST(ILQ_47); RUN_TEST(ILQ_48);
 }
