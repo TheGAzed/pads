@@ -1,7 +1,68 @@
 #ifndef BINARY_SET_H
 #define BINARY_SET_H
 
-// list mode macros in octal to prevent future overlap with other data structure modes
+// SOURCE AND LICENCE OF BINARY SEACH IMPLEMENTATION: https://github.com/gcc-mirror/gcc/blob/master/libiberty/bsearch.c
+/*
+ * Copyright (c) 1990 Regents of the University of California.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. [rescinded 22 July 1999]
+ * 4. Neither the name of the University nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+
+#ifdef STACK_LICENCE
+
+#error \
+    This is free and unencumbered software released into the public domain. \
+    \
+    Anyone is free to copy, modify, publish, use, compile, sell, or         \
+    distribute this software, either in source code form or as a compiled   \
+    binary, for any purpose, commercial or non-commercial, and by any       \
+    means.                                                                  \
+    \
+    In jurisdictions that recognize copyright laws, the author or authors   \
+    of this software dedicate any and all copyright interest in the         \
+    software to the public domain. We make this dedication for the benefit  \
+    of the public at large and to the detriment of our heirs and            \
+    successors. We intend this dedication to be an overt act of             \
+    relinquishment in perpetuity of all present and future rights to this   \
+    software under copyright law.                                           \
+    \
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,         \
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF      \
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  \
+    IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR       \
+    OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,   \
+    ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR   \
+    OTHER DEALINGS IN THE SOFTWARE.                                         \
+    \
+    For more information, please refer to <https://unlicense.org>           \
+
+#endif
+
+// set mode macros in octal to prevent future overlap with other data structure modes
 #define INFINITE_REALLOC_BINARY_SET    0x9
 #define FINITE_ALLOCATED_BINARY_SET    0xA
 #define FINITE_PRERPOCESSOR_BINARY_SET 0xC
@@ -12,8 +73,8 @@
 //#define BINARY_SET_MODE INFINITE_REALLOC_BINARY_SET
 //#define BINARY_SET_MODE FINITE_ALLOCATED_BINARY_SET
 //#define BINARY_SET_MODE FINITE_PRERPOCESSOR_BINARY_SET
-// List mode that can be set to INFINITE_REALLOC_BINARY_SET, FINITE_ALLOCATED_BINARY_SET, INFINITE_REALLOC_DOUBLE_BINARY_SET or
-// FINITE_PRERPOCESSOR_BINARY_SET, or INFINITE_REALLOC_BINARY_SET or FINITE_ALLOCATED_BINARY_SET
+// Set mode that can be set to INFINITE_REALLOC_BINARY_SET, FINITE_ALLOCATED_BINARY_SET or
+// FINITE_PRERPOCESSOR_BINARY_SET
 // Default: INFINITE_REALLOC_BINARY_SET
 #ifndef BINARY_SET_MODE
 
@@ -31,7 +92,7 @@
 
 #endif
 
-// List data type to specify what datatype to list.
+// Set data type to specify what datatype to set.
 // DEFAULT: void *
 #ifndef BINARY_SET_DATA_TYPE
 
@@ -54,11 +115,17 @@
 
 #endif
 
+#ifndef BINARY_SET_REALLOC
+
+#define BINARY_SET_REALLOC realloc
+
 #endif
 
-typedef BINARY_SET_DATA_TYPE (*copy_binary_set_fn)    (const BINARY_SET_DATA_TYPE);
-typedef void                 (*destroy_binary_set_fn) (BINARY_SET_DATA_TYPE *);
-typedef int                  (*compare_binary_set_fn) (const void *, const void *);
+#endif
+
+typedef BINARY_SET_DATA_TYPE (*copy_binary_set_fn)    (const BINARY_SET_DATA_TYPE); // copies and returns set element
+typedef void                 (*destroy_binary_set_fn) (BINARY_SET_DATA_TYPE *);     // destroys and sets to zero set element
+typedef int                  (*compare_binary_set_fn) (const void *, const void *); // compares two set elements like strcmp or memcmp
 
 #if BINARY_SET_MODE == INFINITE_REALLOC_BINARY_SET
 
@@ -68,16 +135,25 @@ typedef int                  (*compare_binary_set_fn) (const void *, const void 
 
 #endif
 
+/// Binary set data structure
 typedef struct binary_set {
-    size_t size;
-    BINARY_SET_DATA_TYPE * elements;
-    compare_binary_set_fn compare;
+    size_t size;                     // set size/number of elements
+    BINARY_SET_DATA_TYPE * elements; // elements array
+    compare_binary_set_fn compare;   // comapre function pointer
 } binary_set_s;
 
+/// @brief Creates and returns an empty binary set structure.
+/// @param compare Function pointer that compares two set elements like strcmp or memcmp does. 'memcmp' will be used if
+/// parameter is NULL.
+/// @return Empty binary set data structure.
 static inline binary_set_s create_binary_set(const compare_binary_set_fn compare) {
     return (binary_set_s) { .compare = compare, .elements = NULL, .size = 0, };
 }
 
+/// @brief Destroys and frees/nullifies binary set structure.
+/// @param set Pointer to binary set data structure to destroy.
+/// @param destroy Function pointer that frees/nullifies a set element. Can be NULL if element doesn't use allocated
+/// memory.
 static inline void destroy_binary_set(binary_set_s * set, const destroy_binary_set_fn destroy) {
     BINARY_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL");
 
@@ -89,9 +165,11 @@ static inline void destroy_binary_set(binary_set_s * set, const destroy_binary_s
 }
 
 static inline bool contains_binary_set(const binary_set_s set, const BINARY_SET_DATA_TYPE element) {
-    if (set.compare) {
+    if (set.compare) { // uses buildin binary search implmentation if compare function is specified
         return (bool) bsearch(&element, set.elements, set.size, sizeof(BINARY_SET_DATA_TYPE), set.compare);
     }
+    // else custom binary search is used as memcmp takes three arguments as input
+    // (bsearch requires a 2 argument compare function). IF ONLY NESTED FUNCTION WERE PART OF THE C STANDARD.
 
     BINARY_SET_DATA_TYPE * base = set.elements;
     for (size_t limit = set.size; limit != 0; limit >>= 1) {
@@ -113,7 +191,7 @@ static inline void add_binary_set(binary_set_s * set, const BINARY_SET_DATA_TYPE
     BINARY_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL");
 
     if ((set->size % REALLOC_BINARY_SET_CHUNK) == 0) {
-        set->elements = realloc(set->elements, (set->size + REALLOC_BINARY_SET_CHUNK) * sizeof(BINARY_SET_DATA_TYPE));
+        set->elements = BINARY_SET_REALLOC(set->elements, (set->size + REALLOC_BINARY_SET_CHUNK) * sizeof(BINARY_SET_DATA_TYPE));
         BINARY_SET_ASSERT(set->elements && "[ERROR] Memory allocation failed.");
     }
 
@@ -151,7 +229,7 @@ static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const B
             memmove(current_element, current_element + 1, (set->size - (current_element - set->elements)) * sizeof(BINARY_SET_DATA_TYPE));
 
             if ((set->size % REALLOC_BINARY_SET_CHUNK) == 0) {
-                set->elements = set->size ? realloc(set->elements, set->size * sizeof(BINARY_SET_DATA_TYPE)) : NULL;
+                set->elements = set->size ? BINARY_SET_REALLOC(set->elements, set->size * sizeof(BINARY_SET_DATA_TYPE)) : NULL;
                 BINARY_SET_ASSERT((!(set->size) || set->elements) && "[ERROR] Memory allocation failed.");
             }
 
@@ -193,7 +271,7 @@ static inline binary_set_s union_binary_set(const binary_set_s set_one, const bi
         if (!found_element) {
             const size_t index = (base - set.elements);
             if ((set.size % REALLOC_BINARY_SET_CHUNK) == 0) { // expand set chunk size if needed
-                set.elements = realloc(set.elements, (set.size + REALLOC_BINARY_SET_CHUNK) * sizeof(BINARY_SET_DATA_TYPE)); // expand set.elements array
+                set.elements = BINARY_SET_REALLOC(set.elements, (set.size + REALLOC_BINARY_SET_CHUNK) * sizeof(BINARY_SET_DATA_TYPE)); // expand set.elements array
                 BINARY_SET_ASSERT(set.elements && "[ERROR] Memory allocation failed.");
                 base = set.elements + index; // reset current_element pointer to new memory position if set.elements array changes
             }
@@ -223,7 +301,7 @@ static inline binary_set_s intersect_binary_set(const binary_set_s set_one, cons
             const int comparison = set.compare ? set.compare(set_two.elements + i, current_element) : memcmp(set_two.elements + i, current_element, sizeof(BINARY_SET_DATA_TYPE));
             if (comparison == 0) {
                 if ((set.size % REALLOC_BINARY_SET_CHUNK) == 0) { // expand set chunk size if needed
-                    set.elements = realloc(set.elements, (set.size + REALLOC_BINARY_SET_CHUNK) * sizeof(BINARY_SET_DATA_TYPE)); // expand set.elements array
+                    set.elements = BINARY_SET_REALLOC(set.elements, (set.size + REALLOC_BINARY_SET_CHUNK) * sizeof(BINARY_SET_DATA_TYPE)); // expand set.elements array
                     BINARY_SET_ASSERT(set.elements && "[ERROR] Memory allocation failed.");
                 }
 
@@ -267,7 +345,7 @@ static inline binary_set_s subtract_binary_set(const binary_set_s set_one, const
         if (!found_element) {
             // if set_one's element was not found in set_two push it to new set (set_one does not contain elements in set two)
             if ((set.size % REALLOC_BINARY_SET_CHUNK) == 0) { // expand set chunk size if needed
-                set.elements = realloc(set.elements, (set.size + REALLOC_BINARY_SET_CHUNK) * sizeof(BINARY_SET_DATA_TYPE)); // expand set.elements array
+                set.elements = BINARY_SET_REALLOC(set.elements, (set.size + REALLOC_BINARY_SET_CHUNK) * sizeof(BINARY_SET_DATA_TYPE)); // expand set.elements array
                 BINARY_SET_ASSERT(set.elements && "[ERROR] Memory allocation failed.");
             }
 
@@ -304,7 +382,7 @@ static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const 
 
                 if ((set.size % REALLOC_BINARY_SET_CHUNK) == 0) { // contract set chunk size if it elements can fit
                     const size_t index = base - set.elements;
-                    set.elements = realloc(set.elements, set.size * sizeof(BINARY_SET_DATA_TYPE)); // contract set's elements array
+                    set.elements = BINARY_SET_REALLOC(set.elements, set.size * sizeof(BINARY_SET_DATA_TYPE)); // contract set's elements array
                     BINARY_SET_ASSERT((!(set.size) || set.elements) && "[ERROR] Memory allocation failed.");
                     base = set.elements + index; // reset current_element pointer to new memory position if set.elements array changes
                 }
@@ -318,7 +396,7 @@ static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const 
         if (!found_element) {
             const size_t index = base - set.elements;
             if ((set.size % REALLOC_BINARY_SET_CHUNK) == 0) { // expand set chunk size if needed
-                set.elements = realloc(set.elements, (set.size + REALLOC_BINARY_SET_CHUNK) * sizeof(BINARY_SET_DATA_TYPE)); // expand set.elements array
+                set.elements = BINARY_SET_REALLOC(set.elements, (set.size + REALLOC_BINARY_SET_CHUNK) * sizeof(BINARY_SET_DATA_TYPE)); // expand set.elements array
                 BINARY_SET_ASSERT(set.elements && "[ERROR] Memory allocation failed.");
                 base = set.elements + index; // reset current_element pointer to new memory position if set.elements array changes
             }
@@ -495,6 +573,11 @@ typedef struct binary_set {
     compare_binary_set_fn compare;
 } binary_set_s;
 
+/// @brief Creates and returns an empty binary set structure.
+/// @param max Maximum size of elements the sset can have/allocated memory array.
+/// @param compare Function pointer that compares two set elements like strcmp or memcmp does. 'memcmp' will be used if
+/// parameter is NULL.
+/// @return Empty binary set data structure.
 static inline binary_set_s create_binary_set(const size_t max, const compare_binary_set_fn compare) {
     BINARY_SET_ASSERT(max && "[ERROR] 'max' parameter can't be zero");
     const binary_set_s set =  {
@@ -506,6 +589,10 @@ static inline binary_set_s create_binary_set(const size_t max, const compare_bin
     return set;
 }
 
+/// @brief Destroys and frees/nullifies binary set structure.
+/// @param set Pointer to binary set data structure to destroy.
+/// @param destroy Function pointer that frees/nullifies a set element. Can be NULL if element doesn't use allocated
+/// memory.
 static inline void destroy_binary_set(binary_set_s * set, const destroy_binary_set_fn destroy) {
     BINARY_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL.");
     BINARY_SET_ASSERT(set->max && "[ERROR] Set's max size can't be zero");
@@ -761,7 +848,7 @@ static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const 
     }
 
     BINARY_SET_ASSERT(set.size <= set.max && "[ERROR] Set is full.");
-    set.elements = realloc(set.elements, set.max * sizeof(BINARY_SET_DATA_TYPE));  // shorten elements array to max
+    set.elements = BINARY_SET_REALLOC(set.elements, set.max * sizeof(BINARY_SET_DATA_TYPE));  // shorten elements array to max
 
     for (size_t i = 0; copy && i < set.size; ++i) {
         set.elements[i] = copy(set.elements[i]);
@@ -962,12 +1049,20 @@ typedef struct binary_set {
     compare_binary_set_fn compare;
 } binary_set_s;
 
+/// @brief Creates and returns an empty binary set structure.
+/// @param compare Function pointer that compares two set elements like strcmp or memcmp does. 'memcmp' will be used if
+/// parameter is NULL.
+/// @return Empty binary set data structure.
 static inline binary_set_s create_binary_set(const compare_binary_set_fn compare) {
     return (binary_set_s) {
         .compare = compare, .size = 0,
     };
 }
 
+/// @brief Destroys and frees/nullifies binary set structure.
+/// @param set Pointer to binary set data structure to destroy.
+/// @param destroy Function pointer that frees/nullifies a set element. Can be NULL if element doesn't use allocated
+/// memory.
 static inline void destroy_binary_set(binary_set_s * set, const destroy_binary_set_fn destroy) {
     BINARY_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL.");
 

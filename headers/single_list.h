@@ -10,7 +10,7 @@
 #define INFINITE_SINGLE_LIST INFINITE_ALLOCATED_SINGLE_LIST
 #define FINITE_SINGLE_LIST   FINITE_ALLOCATED_SINGLE_LIST
 
-#define SINGLE_LIST_MODE INFINITE_ALLOCATED_SINGLE_LIST
+//#define SINGLE_LIST_MODE INFINITE_ALLOCATED_SINGLE_LIST
 //#define SINGLE_LIST_MODE FINITE_ALLOCATED_SINGLE_LIST
 //#define SINGLE_LIST_MODE INFINITE_REALLOC_SINGLE_LIST
 //#define SINGLE_LIST_MODE FINITE_PRERPOCESSOR_SINGLE_LIST
@@ -51,7 +51,6 @@ typedef void                  (*destroy_single_list_fn) (SINGLE_LIST_DATA_TYPE *
 typedef int                   (*compare_single_list_fn) (const void *, const void *);
 typedef void                  (*operate_single_list_fn) (SINGLE_LIST_DATA_TYPE *, void *);
 typedef void                  (*sort_single_list_fn)    (void * array, size_t number, size_t size, compare_single_list_fn);
-typedef bool                  (*filter_single_list_fn)  (const SINGLE_LIST_DATA_TYPE);
 
 #if SINGLE_LIST_MODE == INFINITE_ALLOCATED_SINGLE_LIST
 
