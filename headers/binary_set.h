@@ -1,7 +1,7 @@
 #ifndef BINARY_SET_H
 #define BINARY_SET_H
 
-// SOURCE AND LICENCE OF BINARY SEACH IMPLEMENTATION: https://github.com/gcc-mirror/gcc/blob/master/libiberty/bsearch.c
+// SOURCE AND LICENCE OF BINARY SEARCH IMPLEMENTATION: https://github.com/gcc-mirror/gcc/blob/master/libiberty/bsearch.c
 /*
  * Copyright (c) 1990 Regents of the University of California.
  * All rights reserved.
