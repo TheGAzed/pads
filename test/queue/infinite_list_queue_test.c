@@ -10,7 +10,6 @@ TEST ILQ_01(void) {
 
     ASSERT_EQm("[ILQ-ERROR] Test queue size is not zero.", 0, test.size);
     ASSERT_EQm("[ILQ-ERROR] Test queue current is not zero.", 0, test.current);
-    ASSERT_EQm("[ILQ-ERROR] Test queue head is not NULL.", NULL, test.head);
     ASSERT_EQm("[ILQ-ERROR] Test queue tail is not NULL.", NULL, test.tail);
 
     destroy_queue(&test, NULL);
@@ -24,7 +23,6 @@ TEST ILQ_02(void) {
 
     ASSERT_EQm("[ILQ-ERROR] Test queue size is not zero.", 0, test.size);
     ASSERT_EQm("[ILQ-ERROR] Test queue current is not zero.", 0, test.current);
-    ASSERT_EQm("[ILQ-ERROR] Test queue head is not NULL.", NULL, test.head);
     ASSERT_EQm("[ILQ-ERROR] Test queue tail is not NULL.", NULL, test.tail);
 
     PASS();
@@ -502,19 +500,19 @@ TEST ILQ_34(void) {
     PASS();
 }
 
-/// Test if head is NULL after 1 push and pop.
+/// Test if tail is NULL after 1 push and pop.
 TEST ILQ_35(void) {
     queue_s test = create_queue();
     enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
     dequeue(&test);
 
-    ASSERT_EQm("[ILQ-ERROR] Expected queue's 'head' parameter to be NULL.", NULL, test.head);
+    ASSERT_EQm("[ILQ-ERROR] Expected queue's 'tail' parameter to be NULL.", NULL, test.tail);
 
     destroy_queue(&test, NULL);
     PASS();
 }
 
-/// Test if head is NULL after 'LIST_ARRAY_QUEUE_CHUNK' - 1 push and pop.
+/// Test if tail is NULL after 'LIST_ARRAY_QUEUE_CHUNK' - 1 push and pop.
 TEST ILQ_36(void) {
     queue_s test = create_queue();
     for (size_t i = 0; i < LIST_ARRAY_QUEUE_CHUNK - 1; ++i) {
@@ -524,13 +522,13 @@ TEST ILQ_36(void) {
         dequeue(&test);
     }
 
-    ASSERT_EQm("[ILQ-ERROR] Expected queue's 'head' parameter to be NULL.", NULL, test.head);
+    ASSERT_EQm("[ILQ-ERROR] Expected queue's 'tail' parameter to be NULL.", NULL, test.tail);
 
     destroy_queue(&test, NULL);
     PASS();
 }
 
-/// Test if head is NULL after 'LIST_ARRAY_QUEUE_CHUNK' push and pop.
+/// Test if tail is NULL after 'LIST_ARRAY_QUEUE_CHUNK' push and pop.
 TEST ILQ_37(void) {
     queue_s test = create_queue();
     for (size_t i = 0; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
@@ -540,13 +538,13 @@ TEST ILQ_37(void) {
         dequeue(&test);
     }
 
-    ASSERT_EQm("[ILQ-ERROR] Expected queue's 'head' parameter to be NULL.", NULL, test.head);
+    ASSERT_EQm("[ILQ-ERROR] Expected queue's 'tail' parameter to be NULL.", NULL, test.tail);
 
     destroy_queue(&test, NULL);
     PASS();
 }
 
-/// Test if head is NULL after 'LIST_ARRAY_QUEUE_CHUNK' + 1 push and pop.
+/// Test if tail is NULL after 'LIST_ARRAY_QUEUE_CHUNK' + 1 push and pop.
 TEST ILQ_38(void) {
     queue_s test = create_queue();
     for (size_t i = 0; i < LIST_ARRAY_QUEUE_CHUNK + 1; ++i) {
@@ -556,7 +554,7 @@ TEST ILQ_38(void) {
         dequeue(&test);
     }
 
-    ASSERT_EQm("[ILQ-ERROR] Expected queue's 'head' parameter to be NULL.", NULL, test.head);
+    ASSERT_EQm("[ILQ-ERROR] Expected queue's 'tail' parameter to be NULL.", NULL, test.tail);
 
     destroy_queue(&test, NULL);
     PASS();

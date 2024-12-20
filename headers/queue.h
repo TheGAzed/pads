@@ -127,9 +127,9 @@ struct queue_list_array {
     struct queue_list_array * next; // next linked list array
 };
 
-/// @brief Queue implementation that uses appended lists of arrays and pushes elements based on the size.
+/// @brief Queue implementation that uses circled appended lists of arrays and pushes elements based on the size.
 typedef struct queue {
-    struct queue_list_array * head; // head list element with the top of the queue
+    //struct queue_list_array * head; // head list element with the top of the queue
     struct queue_list_array * tail; // tail list element with the bottom of the queue
     size_t size, current; // size of queue and current index
 } queue_s;
@@ -147,40 +147,44 @@ static inline queue_s create_queue(void) {
 static inline void destroy_queue(queue_s * queue, const destroy_queue_fn destroy) {
     QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL");
 
-    if (queue->head == queue->tail) { // special case when first and last element are on the same list element array
-        for (size_t s = queue->current; destroy && (s < queue->current + queue->size); s++) {
-            destroy(&(queue->head->elements[s]));
+    if (queue->current + queue->size <= LIST_ARRAY_QUEUE_CHUNK) {
+        for (size_t i = queue->current; destroy && (i < queue->current + queue->size); ++i) {
+            destroy(&(queue->tail->elements[i]));
         }
-        QUEUE_FREE(queue->head); // frees head and tail at the same time, or does nothing if both are NULL
+        QUEUE_FREE(queue->tail); // frees head and tail at the same time, or does nothing if both are NULL
     } else {
-        struct queue_list_array * list = queue->head;
+        struct queue_list_array * list = queue->tail->next;
         if (destroy) {
             size_t destroyed_size = LIST_ARRAY_QUEUE_CHUNK - queue->current;
             for (size_t s = queue->current; s < LIST_ARRAY_QUEUE_CHUNK; s++) {
-                destroy(&(queue->head->elements[s]));
+                destroy(list->elements + s);
             }
+            struct queue_list_array * temp = list;
             list = list->next;
-            QUEUE_FREE(queue->head);
+            QUEUE_FREE(temp);
 
             while (list != queue->tail) {
-                for (size_t s = 0; s < (destroyed_size += LIST_ARRAY_QUEUE_CHUNK); s++) {
+                destroyed_size += LIST_ARRAY_QUEUE_CHUNK;
+                for (size_t s = 0; s < destroyed_size; s++) {
                     destroy(&(list->elements[s]));
                 }
 
-                struct queue_list_array * temp = list;
+                temp = list;
                 list = list->next;
                 QUEUE_FREE(temp);
             }
+
             for (size_t s = 0; s < queue->size - destroyed_size; s++) {
-                destroy(&(queue->tail->elements[s]));
+                destroy(queue->tail->elements + s);
             }
             QUEUE_FREE(queue->tail);
         } else {
-            while (list != NULL) {
+            while (list != queue->tail) {
                 struct queue_list_array * temp = list;
                 list = list->next;
                 QUEUE_FREE(temp);
             }
+            free(queue->tail);
         }
     }
 
@@ -199,9 +203,10 @@ static inline bool is_full_queue(const queue_s queue) {
 /// @return The top element of the queue as defined by 'QUEUE_DATA_TYPE' macro.
 static inline QUEUE_DATA_TYPE peek_queue(const queue_s queue) {
     QUEUE_ASSERT(queue.size && "[ERROR] Can't peek empty queue");
-    QUEUE_ASSERT(queue.head && "[ERROR] Queue head is NULL");
+    QUEUE_ASSERT(queue.tail && "[ERROR] Queue tail is NULL");
+    QUEUE_ASSERT(queue.tail->next && "[ERROR] Queue tail's next node is NULL");
 
-    return queue.head->elements[queue.current];
+    return queue.tail->next->elements[queue.current]; // tail's next node is queue's head
 }
 
 /// @brief Sets the next end element in queue array to 'element' parameter (enqueues element).
@@ -215,12 +220,15 @@ static inline void enqueue(queue_s * queue, const QUEUE_DATA_TYPE element) {
     const size_t next_index = (queue->current + queue->size) % LIST_ARRAY_QUEUE_CHUNK;
     if (!next_index) { // if head list array is full (is divisible) adds new list element to head
         struct queue_list_array * temp = QUEUE_ALLOC(sizeof(struct queue_list_array));
-
         QUEUE_ASSERT(temp && "[ERROR] Memory allocation failed");
-        temp->next = NULL; // prevent access to uninitialized memory
 
-        if (queue->head == NULL) queue->head = queue->tail = temp;
-        else queue->tail = queue->tail->next = temp;
+        if (queue->tail == NULL) {
+            temp->next = temp; // create initial circle
+        } else {
+            temp->next = queue->tail->next; // make temp's next node head node
+            queue->tail->next = temp; // make previous tail's next node point to temp
+        }
+        queue->tail = temp;
     }
 
     memcpy(queue->tail->elements + next_index, &element, sizeof(QUEUE_DATA_TYPE));
@@ -233,20 +241,20 @@ static inline void enqueue(queue_s * queue, const QUEUE_DATA_TYPE element) {
 static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
     QUEUE_ASSERT(queue && "[ERROR] 'queue' pointer is empty");
     QUEUE_ASSERT(queue->size && "[ERROR] Can't dequeue empty queue");
-    QUEUE_ASSERT(queue->head && "[ERROR] Queue head is NULL");
+    QUEUE_ASSERT(queue->tail && "[ERROR] Queue tail is NULL");
+    QUEUE_ASSERT(queue->tail->next && "[ERROR] Queue tail's next node is NULL");
 
-    QUEUE_DATA_TYPE element = queue->head->elements[queue->current];
+    QUEUE_DATA_TYPE element = queue->tail->next->elements[queue->current];
     queue->size--;
     queue->current = (queue->current + 1) % LIST_ARRAY_QUEUE_CHUNK;
 
     if (!queue->size) { // queue is empty free memory and reset everything to zero
-        QUEUE_FREE(queue->head);
-        //queue->current = 0;
-        queue->head = queue->tail = NULL;
+        QUEUE_FREE(queue->tail);
+        queue->tail = NULL;
     } else if (queue->current == 0) { // current index circles back, free start list element and shift to next
-        struct queue_list_array * temp = queue->head->next;
-        QUEUE_FREE(queue->head);
-        queue->head = temp;
+        struct queue_list_array * temp = queue->tail->next;
+        queue->tail->next = queue->tail->next->next;
+        QUEUE_FREE(temp);
     }
 
     return element;
@@ -258,42 +266,43 @@ static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
 /// @param copy Function pointer to create a copy of an element or NULL if 'QUEUE_DATA_TYPE' is a basic type.
 /// @return A copy of the specified 'queue' parameter.
 static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) {
-    queue_s queue_copy = { .size = queue.size, .head = NULL, .tail = NULL, .current = queue.current };
+    queue_s queue_copy = { .size = queue.size, .tail = NULL, .current = queue.current };
 
-    if (queue.head == queue.tail) {
-        queue_copy.head = queue_copy.tail = QUEUE_ALLOC(sizeof(struct queue_list_array));
-        QUEUE_ASSERT(queue_copy.head && "[ERROR] Memory allocation failed");
-        queue_copy.head->next = NULL;
+    if (queue.current + queue.size <= LIST_ARRAY_QUEUE_CHUNK) {
+        queue_copy.tail = QUEUE_ALLOC(sizeof(struct queue_list_array));
+        QUEUE_ASSERT(queue_copy.tail && "[ERROR] Memory allocation failed");
+        queue_copy.tail->next = queue_copy.tail;
 
         for (size_t s = queue.current; s < queue.current + queue.size; s++) {
-            queue_copy.head->elements[s] = copy ? copy(queue.head->elements[s]) : queue.head->elements[s];
+            queue_copy.tail->elements[s] = copy ? copy(queue.tail->elements[s]) : queue.tail->elements[s];
         }
     } else {
-        queue_copy.head = queue_copy.tail = QUEUE_ALLOC(sizeof(struct queue_list_array));
-        QUEUE_ASSERT(queue_copy.head && "[ERROR] Memory allocation failed");
+        queue_copy.tail = QUEUE_ALLOC(sizeof(struct queue_list_array)); // allocate to tail and leave behind for now
+        QUEUE_ASSERT(queue_copy.tail && "[ERROR] Memory allocation failed");
+
+        queue_copy.tail->next = QUEUE_ALLOC(sizeof(struct queue_list_array));
+        QUEUE_ASSERT(queue_copy.tail->next && "[ERROR] Memory allocation failed");
 
         for (size_t s = queue.current; s < LIST_ARRAY_QUEUE_CHUNK; s++) {
-            queue_copy.head->elements[s] = copy ? copy(queue.head->elements[s]) : queue.head->elements[s];
+            queue_copy.tail->next->elements[s] = copy ? copy(queue.tail->next->elements[s]) : queue.tail->next->elements[s];
         }
         size_t copied_size = LIST_ARRAY_QUEUE_CHUNK - queue.current;
 
-        struct queue_list_array const * current_queue = queue.head->next;
-        struct queue_list_array ** current_copy = &(queue_copy.head->next); // two pointer list to remove special .head case
-        while (current_queue->next) {
-            (*current_copy) = queue_copy.tail = QUEUE_ALLOC(sizeof(struct queue_list_array));
+        struct queue_list_array const * current_queue = queue.tail->next->next;
+        struct queue_list_array ** current_copy = &(queue_copy.tail->next->next); // two pointer list to remove special .head case
+        while (current_queue != queue.tail) {
+            (*current_copy) = QUEUE_ALLOC(sizeof(struct queue_list_array));
             QUEUE_ASSERT(*current_copy && "[ERROR] Memory allocation failed");
 
             for (size_t s = 0; s < LIST_ARRAY_QUEUE_CHUNK; s++) {
-                queue_copy.head->elements[s] = copy ? copy(queue.head->elements[s]) : queue.head->elements[s];
+                (*current_copy)->elements[s] = copy ? copy(current_queue->elements[s]) : current_queue->elements[s];
             }
             copied_size += LIST_ARRAY_QUEUE_CHUNK;
 
+            current_copy = &((*current_copy)->next);
             current_queue = current_queue->next;
         }
-
-        (*current_copy) = queue_copy.tail = QUEUE_ALLOC(sizeof(struct queue_list_array));
-        QUEUE_ASSERT(*current_copy && "[ERROR] Memory allocation failed");
-        (*current_copy)->next = NULL; // only need to add NULL at the last node's next
+        (*current_copy) = queue_copy.tail;
 
         // calculate last node element count
         for (size_t s = 0; s < queue_copy.size - copied_size; s++) {
@@ -317,40 +326,44 @@ static inline bool is_empty_queue(const queue_s queue) {
 static inline void clear_queue(queue_s * queue, const destroy_queue_fn destroy) {
     QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL");
 
-    if (queue->head == queue->tail) { // special case when first and last element are on the same list element array
-        for (size_t s = queue->current; destroy && (s < queue->current + queue->size); s++) {
-            destroy(&(queue->head->elements[s]));
+    if (queue->current + queue->size <= LIST_ARRAY_QUEUE_CHUNK) {
+        for (size_t i = queue->current; destroy && (i < queue->current + queue->size); ++i) {
+            destroy(&(queue->tail->elements[i]));
         }
-        QUEUE_FREE(queue->head); // frees head and tail at the same time, or does nothing if both are NULL
+        QUEUE_FREE(queue->tail); // frees head and tail at the same time, or does nothing if both are NULL
     } else {
-        struct queue_list_array * list = queue->head;
+        struct queue_list_array * list = queue->tail->next;
         if (destroy) {
             size_t destroyed_size = LIST_ARRAY_QUEUE_CHUNK - queue->current;
             for (size_t s = queue->current; s < LIST_ARRAY_QUEUE_CHUNK; s++) {
-                destroy(&(queue->head->elements[s]));
+                destroy(list->elements + s);
             }
+            struct queue_list_array * temp = list;
             list = list->next;
-            QUEUE_FREE(queue->head);
+            QUEUE_FREE(temp);
 
             while (list != queue->tail) {
-                for (size_t s = 0; s < (destroyed_size += LIST_ARRAY_QUEUE_CHUNK); s++) {
+                destroyed_size += LIST_ARRAY_QUEUE_CHUNK;
+                for (size_t s = 0; s < destroyed_size; s++) {
                     destroy(&(list->elements[s]));
                 }
 
-                struct queue_list_array * temp = list;
+                temp = list;
                 list = list->next;
                 QUEUE_FREE(temp);
             }
+
             for (size_t s = 0; s < queue->size - destroyed_size; s++) {
-                destroy(&(queue->tail->elements[s]));
+                destroy(queue->tail->elements + s);
             }
             QUEUE_FREE(queue->tail);
         } else {
-            while (list != NULL) {
+            while (list != queue->tail) {
                 struct queue_list_array * temp = list;
                 list = list->next;
                 QUEUE_FREE(temp);
             }
+            free(queue->tail);
         }
     }
 
@@ -366,23 +379,26 @@ static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate
     QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter pointer is NULL.");
     QUEUE_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL");
 
-    if (queue->head == queue->tail) { // if head and tail point to the same memory (including NULL)
+    if (queue->current + queue->size <= LIST_ARRAY_QUEUE_CHUNK) { // if head and tail point to the same memory (including NULL)
         for (size_t i = queue->current; i < queue->current + queue->size; ++i) { // won't run if size is 0
-            operate(queue->head->elements + i, args);
+            operate(queue->tail->elements + i, args);
         }
     } else { // else queue is made up of more than one list node
+        struct queue_list_array * current = queue->tail->next;
+
         for (size_t i = queue->current; i < LIST_ARRAY_QUEUE_CHUNK; ++i) { // operate on head node
-            operate(queue->head->elements + i, args);
+            operate(current->elements + i, args);
         }
         size_t iterated_size = LIST_ARRAY_QUEUE_CHUNK - queue->current;
-        struct queue_list_array * current = queue->head->next;
-        while (current->next) { // operate on all nodes between head and tail node (excluding tail)
+
+        while (current->next != queue->tail) { // operate on all nodes between head and tail node (excluding tail)
             for (size_t i = 0; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
                 operate(current->elements + i, args);
             }
             iterated_size += LIST_ARRAY_QUEUE_CHUNK;
             current = current->next;
         }
+
         for (size_t i = 0; i < queue->size - iterated_size; ++i) { // operate on tail node
             operate(queue->tail->elements + i, args);
         }
