@@ -824,6 +824,120 @@ TEST ILQ_50(void) {
     PASS();
 }
 
+/// Tests if 3 * ('LIST_ARRAY_QUEUE_CHUNK' - 1) copied int element
+TEST ILQ_51(void) {
+    queue_s test = create_queue();
+    for (int i = 0; i < 3 * (LIST_ARRAY_QUEUE_CHUNK - 1); ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
+    }
+
+    queue_s copy = copy_queue(test, NULL);
+    for (int i = 0; i < 3 * (LIST_ARRAY_QUEUE_CHUNK - 1); ++i) {
+        ASSERT_EQm("[ILQ-TEST] Test queue is not equal to copy.", dequeue(&test).sub_one, dequeue(&copy).sub_one);
+    }
+
+    destroy_queue(&test, NULL);
+    destroy_queue(&copy, NULL);
+    PASS();
+}
+
+/// Tests if 3 * ('LIST_ARRAY_QUEUE_CHUNK') copied int element
+TEST ILQ_52(void) {
+    queue_s test = create_queue();
+    for (int i = 0; i < 3 * LIST_ARRAY_QUEUE_CHUNK; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
+    }
+
+    queue_s copy = copy_queue(test, NULL);
+    for (int i = 0; i < 3 * LIST_ARRAY_QUEUE_CHUNK; ++i) {
+        ASSERT_EQm("[ILQ-TEST] Test queue is not equal to copy.", dequeue(&test).sub_one, dequeue(&copy).sub_one);
+    }
+
+    destroy_queue(&test, NULL);
+    destroy_queue(&copy, NULL);
+    PASS();
+}
+
+/// Tests if 3 * ('LIST_ARRAY_QUEUE_CHUNK' + 1) copied int element
+TEST ILQ_53(void) {
+    queue_s test = create_queue();
+    for (int i = 0; i < 3 * (LIST_ARRAY_QUEUE_CHUNK + 1); ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
+    }
+
+    queue_s copy = copy_queue(test, NULL);
+    for (int i = 0; i < 3 * (LIST_ARRAY_QUEUE_CHUNK + 1); ++i) {
+        ASSERT_EQm("[ILQ-TEST] Test queue is not equal to copy.", dequeue(&test).sub_one, dequeue(&copy).sub_one);
+    }
+
+    destroy_queue(&test, NULL);
+    destroy_queue(&copy, NULL);
+    PASS();
+}
+
+/// Test if 'LIST_ARRAY_QUEUE_CHUNK' - 1 copied string element
+TEST ILQ_54(void) {
+    queue_s test = create_queue();
+    for (int i = 0; i < 3 * (LIST_ARRAY_QUEUE_CHUNK - 1); ++i) {
+        enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
+
+    queue_s copy = copy_queue(test, copy_element);
+    for (int i = 0; i < 3 * (LIST_ARRAY_QUEUE_CHUNK - 1); ++i) {
+        QUEUE_DATA_TYPE elemen_test = dequeue(&test);
+        QUEUE_DATA_TYPE element_copy = dequeue(&copy);
+        ASSERT_STRN_EQm("[ILQ-TEST] Test queue string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
+        destroy_element(&elemen_test);
+        destroy_element(&element_copy);
+    }
+
+    destroy_queue(&test, destroy_element);
+    destroy_queue(&copy, destroy_element);
+    PASS();
+}
+
+/// Test if 'LIST_ARRAY_QUEUE_CHUNK' copied string element
+TEST ILQ_55(void) {
+    queue_s test = create_queue();
+    for (int i = 0; i < 3 * LIST_ARRAY_QUEUE_CHUNK; ++i) {
+        enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
+
+    queue_s copy = copy_queue(test, copy_element);
+    for (int i = 0; i < 3 * LIST_ARRAY_QUEUE_CHUNK; ++i) {
+        QUEUE_DATA_TYPE elemen_test = dequeue(&test);
+        QUEUE_DATA_TYPE element_copy = dequeue(&copy);
+        ASSERT_STRN_EQm("[ILQ-TEST] Test queue string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
+        destroy_element(&elemen_test);
+        destroy_element(&element_copy);
+    }
+
+    destroy_queue(&test, destroy_element);
+    destroy_queue(&copy, destroy_element);
+    PASS();
+}
+
+/// Test if 'LIST_ARRAY_QUEUE_CHUNK' + 1 copied string element
+TEST ILQ_56(void) {
+    queue_s test = create_queue();
+    for (int i = 0; i < 3 * (LIST_ARRAY_QUEUE_CHUNK + 1); ++i) {
+        enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
+
+    queue_s copy = copy_queue(test, copy_element);
+    for (int i = 0; i < 3 * (LIST_ARRAY_QUEUE_CHUNK + 1); ++i) {
+        QUEUE_DATA_TYPE elemen_test = dequeue(&test);
+        QUEUE_DATA_TYPE element_copy = dequeue(&copy);
+        ASSERT_STRN_EQm("[ILQ-TEST] Test queue string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
+        destroy_element(&elemen_test);
+        destroy_element(&element_copy);
+    }
+
+    destroy_queue(&test, destroy_element);
+    destroy_queue(&copy, destroy_element);
+    PASS();
+}
+
 SUITE (infinite_list_queue_test) {
     RUN_TEST(ILQ_01); RUN_TEST(ILQ_02); RUN_TEST(ILQ_03); RUN_TEST(ILQ_04);
     RUN_TEST(ILQ_05); RUN_TEST(ILQ_06); RUN_TEST(ILQ_07); RUN_TEST(ILQ_08);
@@ -837,4 +951,6 @@ SUITE (infinite_list_queue_test) {
     RUN_TEST(ILQ_37); RUN_TEST(ILQ_38); RUN_TEST(ILQ_39); RUN_TEST(ILQ_40);
     RUN_TEST(ILQ_41); RUN_TEST(ILQ_42); RUN_TEST(ILQ_43); RUN_TEST(ILQ_44);
     RUN_TEST(ILQ_45); RUN_TEST(ILQ_46); RUN_TEST(ILQ_47); RUN_TEST(ILQ_48);
+    RUN_TEST(ILQ_49); RUN_TEST(ILQ_50); RUN_TEST(ILQ_51); RUN_TEST(ILQ_52);
+    RUN_TEST(ILQ_53); RUN_TEST(ILQ_54); RUN_TEST(ILQ_55); RUN_TEST(ILQ_56);
 }
