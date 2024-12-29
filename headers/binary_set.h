@@ -165,12 +165,6 @@ static inline void destroy_binary_set(binary_set_s * set, const destroy_binary_s
 }
 
 static inline bool contains_binary_set(const binary_set_s set, const BINARY_SET_DATA_TYPE element) {
-    if (set.compare) { // uses buildin binary search implmentation if compare function is specified
-        return bsearch(&element, set.elements, set.size, sizeof(BINARY_SET_DATA_TYPE), set.compare) != NULL;
-    }
-    // else custom binary search is used as memcmp takes three arguments as input
-    // (bsearch requires a 2 argument compare function). IF ONLY NESTED FUNCTION WERE PART OF THE C STANDARD.
-
     BINARY_SET_DATA_TYPE * base = set.elements;
     for (size_t limit = set.size; limit != 0; limit >>= 1) {
         BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
