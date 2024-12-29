@@ -31,11 +31,7 @@ TEST IRBS_02(void) {
     }
 
     binary_set_s united = union_binary_set(set_one, set_two, NULL);
-    for (size_t i = 0; i < united.size; ++i) {
-        printf("%d ", united.elements[i].sub_one);
-    }
     for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK - 1) * 3; ++i) {
-        printf("%d ", united.elements[i].sub_one);
         ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(united, (BINARY_SET_DATA_TYPE) { .sub_one = i, }));
     }
 

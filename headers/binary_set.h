@@ -168,6 +168,7 @@ static inline bool contains_binary_set(const binary_set_s set, const BINARY_SET_
     BINARY_SET_DATA_TYPE * base = set.elements;
     for (size_t limit = set.size; limit != 0; limit >>= 1) {
         BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
+        printf("%d ", current_element->sub_one);
         const int cmp = set.compare ? set.compare(&element, current_element) : memcmp(&element, current_element, sizeof(BINARY_SET_DATA_TYPE));
         if (cmp == 0) {
             return true;
@@ -177,6 +178,7 @@ static inline bool contains_binary_set(const binary_set_s set, const BINARY_SET_
             limit--;
         }
     }
+    puts("\n");
 
     return false;
 }
