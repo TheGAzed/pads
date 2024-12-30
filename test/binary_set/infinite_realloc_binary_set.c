@@ -59,7 +59,9 @@ TEST IRBS_03(void) {
 
     binary_set_s united = union_binary_set(set_one, set_two, NULL);
     for (int i = 0; i < REALLOC_BINARY_SET_CHUNK * 3; ++i) {
-        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(united, (BINARY_SET_DATA_TYPE) { .sub_one = i, }));
+        BINARY_SET_DATA_TYPE element = { 0 };
+        element.sub_one = i;
+        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(united, element));
     }
 
     destroy_binary_set(&united, NULL);
@@ -84,7 +86,9 @@ TEST IRBS_04(void) {
 
     binary_set_s united = union_binary_set(set_one, set_two, NULL);
     for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK + 1) * 3; ++i) {
-        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(united, (BINARY_SET_DATA_TYPE) { .sub_one = i, }));
+        BINARY_SET_DATA_TYPE element = { 0 };
+        element.sub_one = i;
+        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(united, element));
     }
 
     destroy_binary_set(&united, NULL);
@@ -109,7 +113,9 @@ TEST IRBS_05(void) {
 
     binary_set_s intersected = intersect_binary_set(set_one, set_two, NULL);
     for (int i = REALLOC_BINARY_SET_CHUNK - 1; i < (REALLOC_BINARY_SET_CHUNK - 1) * 2; ++i) {
-        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(intersected, (BINARY_SET_DATA_TYPE) { .sub_one = i, }));
+        BINARY_SET_DATA_TYPE element = { 0 };
+        element.sub_one = i;
+        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(intersected, element));
     }
 
     destroy_binary_set(&intersected, NULL);
@@ -134,7 +140,9 @@ TEST IRBS_06(void) {
 
     binary_set_s intersected = intersect_binary_set(set_one, set_two, NULL);
     for (int i = REALLOC_BINARY_SET_CHUNK; i < (REALLOC_BINARY_SET_CHUNK) * 2; ++i) {
-        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(intersected, (BINARY_SET_DATA_TYPE) { .sub_one = i, }));
+        BINARY_SET_DATA_TYPE element = { 0 };
+        element.sub_one = i;
+        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(intersected, element));
     }
 
     destroy_binary_set(&intersected, NULL);
@@ -159,7 +167,9 @@ TEST IRBS_07(void) {
 
     binary_set_s intersected = intersect_binary_set(set_one, set_two, NULL);
     for (int i = REALLOC_BINARY_SET_CHUNK + 1; i < (REALLOC_BINARY_SET_CHUNK + 1) * 2; ++i) {
-        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(intersected, (BINARY_SET_DATA_TYPE) { .sub_one = i, }));
+        BINARY_SET_DATA_TYPE element = { 0 };
+        element.sub_one = i;
+        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(intersected, element));
     }
 
     destroy_binary_set(&intersected, NULL);
@@ -184,7 +194,9 @@ TEST IRBS_08(void) {
 
     binary_set_s subtract = subtract_binary_set(set_one, set_two, NULL);
     for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK - 1); ++i) {
-        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(subtract, (BINARY_SET_DATA_TYPE) { .sub_one = i, }));
+        BINARY_SET_DATA_TYPE element = { 0 };
+        element.sub_one = i;
+        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(subtract, element));
     }
 
     destroy_binary_set(&subtract, NULL);
@@ -209,7 +221,9 @@ TEST IRBS_09(void) {
 
     binary_set_s subtract = subtract_binary_set(set_one, set_two, NULL);
     for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
-        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(subtract, (BINARY_SET_DATA_TYPE) { .sub_one = i, }));
+        BINARY_SET_DATA_TYPE element = { 0 };
+        element.sub_one = i;
+        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(subtract, element));
     }
 
     destroy_binary_set(&subtract, NULL);
@@ -234,7 +248,9 @@ TEST IRBS_10(void) {
 
     binary_set_s subtract = subtract_binary_set(set_one, set_two, NULL);
     for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK + 1); ++i) {
-        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(subtract, (BINARY_SET_DATA_TYPE) { .sub_one = i, }));
+        BINARY_SET_DATA_TYPE element = { 0 };
+        element.sub_one = i;
+        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(subtract, element));
     }
 
     destroy_binary_set(&subtract, NULL);
@@ -259,7 +275,9 @@ TEST IRBS_11(void) {
 
     binary_set_s subtract = subtract_binary_set(set_two, set_one, NULL);
     for (int i = (REALLOC_BINARY_SET_CHUNK - 1) * 2; i < (REALLOC_BINARY_SET_CHUNK - 1) * 3; ++i) {
-        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(subtract, (BINARY_SET_DATA_TYPE) { .sub_one = i, }));
+        BINARY_SET_DATA_TYPE element = { 0 };
+        element.sub_one = i;
+        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(subtract, element));
     }
 
     destroy_binary_set(&subtract, NULL);
@@ -284,7 +302,9 @@ TEST IRBS_12(void) {
 
     binary_set_s subtract = subtract_binary_set(set_two, set_one, NULL);
     for (int i = REALLOC_BINARY_SET_CHUNK * 2; i < REALLOC_BINARY_SET_CHUNK * 3; ++i) {
-        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(subtract, (BINARY_SET_DATA_TYPE) { .sub_one = i, }));
+        BINARY_SET_DATA_TYPE element = { 0 };
+        element.sub_one = i;
+        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(subtract, element));
     }
 
     destroy_binary_set(&subtract, NULL);
@@ -309,7 +329,9 @@ TEST IRBS_13(void) {
 
     binary_set_s subtract = subtract_binary_set(set_two, set_one, NULL);
     for (int i = (REALLOC_BINARY_SET_CHUNK + 1) * 2; i < (REALLOC_BINARY_SET_CHUNK + 1) * 3; ++i) {
-        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(subtract, (BINARY_SET_DATA_TYPE) { .sub_one = i, }));
+        BINARY_SET_DATA_TYPE element = { 0 };
+        element.sub_one = i;
+        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(subtract, element));
     }
 
     destroy_binary_set(&subtract, NULL);
@@ -334,10 +356,14 @@ TEST IRBS_14(void) {
 
     binary_set_s exclude = exclude_binary_set(set_one, set_two, NULL);
     for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK - 1); ++i) {
-        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(exclude, (BINARY_SET_DATA_TYPE) { .sub_one = i, }));
+        BINARY_SET_DATA_TYPE element = { 0 };
+        element.sub_one = i;
+        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(exclude, element));
     }
     for (int i = (REALLOC_BINARY_SET_CHUNK - 1) * 2; i < (REALLOC_BINARY_SET_CHUNK - 1) * 3; ++i) {
-        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(exclude, (BINARY_SET_DATA_TYPE) { .sub_one = i, }));
+        BINARY_SET_DATA_TYPE element = { 0 };
+        element.sub_one = i;
+        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(exclude, element));
     }
 
     destroy_binary_set(&exclude, NULL);
@@ -362,10 +388,14 @@ TEST IRBS_15(void) {
 
     binary_set_s exclude = exclude_binary_set(set_one, set_two, NULL);
     for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
-        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(exclude, (BINARY_SET_DATA_TYPE) { .sub_one = i, }));
+        BINARY_SET_DATA_TYPE element = { 0 };
+        element.sub_one = i;
+        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(exclude, element));
     }
     for (int i = REALLOC_BINARY_SET_CHUNK * 2; i < REALLOC_BINARY_SET_CHUNK * 3; ++i) {
-        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(exclude, (BINARY_SET_DATA_TYPE) { .sub_one = i, }));
+        BINARY_SET_DATA_TYPE element = { 0 };
+        element.sub_one = i;
+        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(exclude, element));
     }
 
     destroy_binary_set(&exclude, NULL);
@@ -390,10 +420,14 @@ TEST IRBS_16(void) {
 
     binary_set_s exclude = exclude_binary_set(set_one, set_two, NULL);
     for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK + 1); ++i) {
-        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(exclude, (BINARY_SET_DATA_TYPE) { .sub_one = i, }));
+        BINARY_SET_DATA_TYPE element = { 0 };
+        element.sub_one = i;
+        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(exclude, element));
     }
     for (int i = (REALLOC_BINARY_SET_CHUNK + 1) * 2; i < (REALLOC_BINARY_SET_CHUNK + 1) * 3; ++i) {
-        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(exclude, (BINARY_SET_DATA_TYPE) { .sub_one = i, }));
+        BINARY_SET_DATA_TYPE element = { 0 };
+        element.sub_one = i;
+        ASSERTm("[IRBS-ERROR] expected set to contain i", contains_binary_set(exclude, element));
     }
 
     destroy_binary_set(&exclude, NULL);
