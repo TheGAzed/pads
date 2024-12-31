@@ -334,6 +334,7 @@ TEST IADL_22(void) {
         insert_at_double_list(&test, i, (DOUBLE_LIST_DATA_TYPE) { .sub_one = i });
     }
 
+    // github actions windows test wonmt pass if it isn't written like this, idk why
     const size_t half = test.size / 2;
     const DOUBLE_LIST_DATA_TYPE element = remove_at_double_list(&test, half);
     ASSERT_EQm("[IADL-ERROR] Expected middle element to be list size divided by 2", half, element.sub_one);
@@ -378,7 +379,10 @@ TEST IADL_25(void) {
         insert_at_double_list(&test, i, (DOUBLE_LIST_DATA_TYPE) { .sub_one = i });
     }
 
-    ASSERT_EQm("[IADL-ERROR] Expected middle element to be list size divided by 2", (test.size / 2) - 1, remove_at_double_list(&test, (test.size / 2) - 1).sub_one);
+    // github actions windows test wonmt pass if it isn't written like this, idk why
+    const size_t half = (test.size / 2) - 1;
+    const DOUBLE_LIST_DATA_TYPE element = remove_at_double_list(&test, half);
+    ASSERT_EQm("[IADL-ERROR] Expected middle element to be list size divided by 2", half, element.sub_one);
 
     destroy_double_list(&test, NULL);
 
@@ -420,7 +424,10 @@ TEST IADL_28(void) {
         insert_at_double_list(&test, i, (DOUBLE_LIST_DATA_TYPE) { .sub_one = i });
     }
 
-    ASSERT_EQm("[IADL-ERROR] Expected middle element to be list size divided by 2", (test.size / 2) + 1, remove_at_double_list(&test, (test.size / 2) + 1).sub_one);
+    // github actions windows test wonmt pass if it isn't written like this, idk why
+    const size_t half = (test.size / 2) + 1;
+    const DOUBLE_LIST_DATA_TYPE element = remove_at_double_list(&test, half);
+    ASSERT_EQm("[IADL-ERROR] Expected middle element to be list size divided by 2", half, element.sub_one);
 
     destroy_double_list(&test, NULL);
 
