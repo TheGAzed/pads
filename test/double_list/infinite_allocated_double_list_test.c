@@ -334,10 +334,7 @@ TEST IADL_22(void) {
         insert_at_double_list(&test, i, (DOUBLE_LIST_DATA_TYPE) { .sub_one = i });
     }
 
-    printf("%zu == ", test.size / 2);
-    DOUBLE_LIST_DATA_TYPE element = remove_at_double_list(&test, test.size / 2);
-    printf("%d ", element.sub_one);
-    ASSERT_EQm("[IADL-ERROR] Expected middle element to be list size divided by 2", (int)(test.size / 2), element.sub_one);
+    ASSERT_EQm("[IADL-ERROR] Expected middle element to be list size divided by 2", test.size / 2, (size_t)remove_at_double_list(&test, test.size / 2).sub_one);
 
     destroy_double_list(&test, NULL);
 
