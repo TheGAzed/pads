@@ -101,11 +101,11 @@
 #endif
 
 /// Function pointer that creates a deep element copy.
-typedef STACK_DATA_TYPE (*copy_stack_fn)    (const STACK_DATA_TYPE);
+typedef STACK_DATA_TYPE (* copy_stack_fn)    (const STACK_DATA_TYPE);
 /// Function pointer that destroys a deep element.
-typedef void            (*destroy_stack_fn) (STACK_DATA_TYPE *);
-/// Function pointer that changes an element pointer using void pointer arguments if needed.
-typedef void            (*operate_stack_fn) (STACK_DATA_TYPE *, void *);
+typedef void            (* destroy_stack_fn) (STACK_DATA_TYPE *);
+/// Function pointer that changes an element pointer using void pointer arguments if needed. Returns true if operation should continue.
+typedef bool            (* operate_stack_fn) (STACK_DATA_TYPE * restrict, void * restrict);
 
 #if   STACK_MODE == INFINITE_LIST_STACK
 
@@ -144,7 +144,6 @@ static inline stack_s create_stack(void) {
 /// @param destroy Function pointer that destroys/frees an element reference.
 static inline void destroy_stack(stack_s * stack, const destroy_stack_fn destroy) {
     STACK_ASSERT(stack && "[ERROR] Stack pointer is NULL");
-    STACK_ASSERT(((stack->head && stack->size) || (!stack->head && !stack->size)) && "[ERROR] Invalid stack state.");
 
     struct stack_list_array * list = stack->head; // list pointer to head elements array
     const size_t mod_size = stack->size % LIST_ARRAY_STACK_CHUNK; // check if first elements array is full or partially filled
@@ -174,7 +173,6 @@ static inline void destroy_stack(stack_s * stack, const destroy_stack_fn destroy
 /// @param stack Readonly stack structure to check.
 /// @return true if is full, false otherwise
 static inline bool is_full_stack(const stack_s stack) {
-    STACK_ASSERT(((stack.head && stack.size) || (!stack.head && !stack.size)) && "[ERROR] Invalid stack state.");
     return !(~stack.size); // checks if stack's size will overflow
 }
 
@@ -184,7 +182,6 @@ static inline bool is_full_stack(const stack_s stack) {
 static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
     STACK_ASSERT(stack.size && "[ERROR] Can't peek empty stack");
     STACK_ASSERT(stack.head && "[ERROR] Stack head is NULL");
-    STACK_ASSERT(((stack.head && stack.size) || (!stack.head && !stack.size)) && "[ERROR] Invalid stack state.");
 
     return stack.head->elements[(stack.size - 1) % LIST_ARRAY_STACK_CHUNK]; // returns top element at head elements array
 }
@@ -195,7 +192,6 @@ static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
 static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
     STACK_ASSERT(stack && "[ERROR] Stack pointer is NULL");
     STACK_ASSERT((~stack->size) && "[ERROR] Stack size will overflow.");
-    STACK_ASSERT(((stack->head && stack->size) || (!stack->head && !stack->size)) && "[ERROR] Invalid stack state.");
 
     const size_t next_index = stack->size % LIST_ARRAY_STACK_CHUNK; // index where the next element will be pushed
     if (next_index == 0) { // if head list array is full (is divisible) adds new list element to head
@@ -219,7 +215,6 @@ static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
 static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
     STACK_ASSERT(stack && "[ERROR] Stack pointer parameter is NULL");
     STACK_ASSERT(stack->size && "[ERROR] Can't pop empty stack");
-    STACK_ASSERT(((stack->head && stack->size) || (!stack->head && !stack->size)) && "[ERROR] Invalid stack state.");
 
     const size_t current_index = (--stack->size) % LIST_ARRAY_STACK_CHUNK; // decrementing size gets top element
     STACK_DATA_TYPE element = { 0 }; // get the top element
@@ -239,7 +234,6 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
 /// @param copy Function pointer that returns a copy of an element.
 /// @return New stack copy with copied elements.
 static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) {
-    STACK_ASSERT(((stack.head && stack.size) || (!stack.head && !stack.size)) && "[ERROR] Invalid stack state.");
     stack_s stack_copy = stack; // copy everything to new stack copy
 
     struct stack_list_array const * current_stack = stack.head;
@@ -281,8 +275,6 @@ static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) 
 /// @param stack Stack structure.
 /// @return true if stack size is zero, false otherwise
 static inline bool is_empty_stack(const stack_s stack) {
-    STACK_ASSERT(((stack.head && stack.size) || (!stack.head && !stack.size)) && "[ERROR] Invalid stack state.");
-
     return !(stack.size);
 }
 
@@ -291,7 +283,6 @@ static inline bool is_empty_stack(const stack_s stack) {
 /// @param destroy Function pointer to destroy an element in stack.
 static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) {
     STACK_ASSERT(stack && "[ERROR] Stack pointer is NULL");
-    STACK_ASSERT(((stack->head && stack->size) || (!stack->head && !stack->size)) && "[ERROR] Invalid stack state.");
 
     struct stack_list_array * list = stack->head; // list pointer to head elements array
     const size_t mod_size = stack->size % LIST_ARRAY_STACK_CHUNK; // check if first elements array is full or partially filled
@@ -319,24 +310,28 @@ static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) 
 
 /// @brief For each function that does an operation on element reference specified by args.
 /// @param stack Stack structure pointer.
-/// @param operate Function pointer that takes an element pointer and 'args' as parameters
+/// @param operate Function pointer that takes an element pointer and 'args' as parameters and returns true if
+/// loop should continue after operation, false if break
 /// @param args Arguments for operation function pointer.
-static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args) {
+static inline void foreach_stack(stack_s * restrict stack, const operate_stack_fn operate, void * restrict args) {
     STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
     STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL");
-    STACK_ASSERT(((stack->head && stack->size) || (!stack->head && !stack->size)) && "[ERROR] Invalid stack state.");
 
     struct stack_list_array * current = stack->head;
     const size_t chunk_size = stack->size % LIST_ARRAY_STACK_CHUNK;
     if (chunk_size) {
         for (size_t i = 0; i < chunk_size; ++i) {
-            operate(current->elements + i, args);
+            if (!operate(current->elements + i, args)) {
+                break;
+            }
         }
         current = current->next;
     }
     while (current) {
         for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
-            operate(current->elements + i, args);
+            if (!operate(current->elements + i, args)) {
+                break;
+            }
         }
         current = current->next;
     }
@@ -372,7 +367,6 @@ static inline stack_s create_stack(const size_t max) {
 static inline void destroy_stack(stack_s * stack, const destroy_stack_fn destroy) {
     STACK_ASSERT(stack && "[ERROR] Stack pointer is NULL");
     STACK_ASSERT(stack->elements && "[ERROR] Stack's element array can't be NULL.");
-    STACK_ASSERT(stack->max && "[ERROR] Stack's max can't be zero.");
 
     for(size_t s = 0; destroy && (s < stack->size); s++) {
         destroy(&(stack->elements[s]));
@@ -387,7 +381,6 @@ static inline void destroy_stack(stack_s * stack, const destroy_stack_fn destroy
 /// @return true if stack size reached maximum or overflows after incrementing it, false otherwise
 static inline bool is_full_stack(const stack_s stack) {
     STACK_ASSERT(stack.elements && "[ERROR] Stack's element array can't be NULL.");
-    STACK_ASSERT(stack.max && "[ERROR] Stack's max can't be zero.");
 
     return !(stack.size < stack.max && ~stack.size);
 }
@@ -397,7 +390,6 @@ static inline bool is_full_stack(const stack_s stack) {
 /// @return The top element of the stack as defined by 'STACK_DATA_TYPE' macro.
 static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
     STACK_ASSERT(stack.elements && "[ERROR] Stack's element array can't be NULL.");
-    STACK_ASSERT(stack.max && "[ERROR] Stack's max can't be zero.");
     STACK_ASSERT(stack.size && "[ERROR] Can't peep empty stack");
 
     return stack.elements[stack.size - 1];
@@ -409,9 +401,8 @@ static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
 static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
     STACK_ASSERT(stack && "[ERROR] Stack pointer is NULL");
     STACK_ASSERT(stack->elements && "[ERROR] Stack's element array can't be NULL.");
-    STACK_ASSERT(stack->max && "[ERROR] Stack's max can't be zero.");
     STACK_ASSERT((stack->size < stack->max) && "[ERROR] Stack reached maximum size");
-    STACK_ASSERT((stack->size + 1) && "[ERROR] Stack's '.size' will overflow");
+    STACK_ASSERT(~(stack->size) && "[ERROR] Stack's '.size' will overflow");
 
     memcpy(stack->elements + (stack->size++), &element, sizeof(STACK_DATA_TYPE));
 }
@@ -421,7 +412,6 @@ static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
 /// @return The top element of the stack as defined by 'STACK_DATA_TYPE' macro.
 static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
     STACK_ASSERT(stack->elements && "[ERROR] Stack's element array can't be NULL.");
-    STACK_ASSERT(stack->max && "[ERROR] Stack's max can't be zero.");
     STACK_ASSERT(stack && "[ERROR] 'stack' pointer is empty");
     STACK_ASSERT(stack->size && "[ERROR] Can't pop empty stack");
 
@@ -436,7 +426,6 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
 /// @return A copy of the specified 'stack' parameter.
 static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) {
     STACK_ASSERT(stack.elements && "[ERROR] Stack's element array can't be NULL.");
-    STACK_ASSERT(stack.max && "[ERROR] Stack's max can't be zero.");
 
     stack_s stack_copy = stack;
     stack_copy.elements = STACK_ALLOC(stack.max * sizeof(STACK_DATA_TYPE));
@@ -458,7 +447,6 @@ static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) 
 /// @return true if stack size is zero, false otherwise
 static inline bool is_empty_stack(const stack_s stack) {
     STACK_ASSERT(stack.elements && "[ERROR] Stack's element array can't be NULL.");
-    STACK_ASSERT(stack.max && "[ERROR] Stack's max can't be zero.");
 
     return (stack.size == 0);
 }
@@ -469,7 +457,6 @@ static inline bool is_empty_stack(const stack_s stack) {
 static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) {
     STACK_ASSERT(stack && "[ERROR] Stack pointer is NULL");
     STACK_ASSERT(stack->elements && "[ERROR] Stack's element array can't be NULL.");
-    STACK_ASSERT(stack->max && "[ERROR] Stack's max can't be zero.");
 
     for(size_t s = 0; destroy && (s < stack->size); s++) {
         destroy(&(stack->elements[s]));
@@ -480,14 +467,17 @@ static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) 
 
 /// @brief For each function that does an operation on element reference specified by args.
 /// @param stack Stack structure pointer.
-/// @param operate Non NULL function pointer that takes an element pointer and 'args' as parameters.
+/// @param operate Function pointer that takes an element pointer and 'args' as parameters and returns true if
+/// loop should continue, false if break
 /// @param args Arguments for operation function pointer.
-static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args) {
+static inline void foreach_stack(stack_s * restrict stack, const operate_stack_fn operate, void * restrict args) {
     STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
     STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL");
 
     for (size_t i = 0; i < stack->size; ++i) {
-        operate(stack->elements + i, args);
+        if (!operate(stack->elements + i, args)) {
+            break;
+        }
     }
 }
 
@@ -515,7 +505,6 @@ static inline stack_s create_stack(void) {
 /// @param destroy Function pointer that destroys/frees an element reference.
 static inline void destroy_stack(stack_s * stack, const destroy_stack_fn destroy) {
     STACK_ASSERT(stack && "[ERROR] Stack pointer is NULL");
-    STACK_ASSERT(((stack->elements && stack->size) || (!stack->elements && !stack->size)) && "[ERROR] Invalid stack state.");
 
     for(size_t s = 0; destroy && (s < stack->size); s++) {
         destroy(&(stack->elements[s]));
@@ -530,8 +519,6 @@ static inline void destroy_stack(stack_s * stack, const destroy_stack_fn destroy
 /// @param stack Stack structure.
 /// @return true if stack size overflows after incrementing it, false otherwise
 static inline bool is_full_stack(const stack_s stack) {
-    STACK_ASSERT(((stack.elements && stack.size) || (!stack.elements && !stack.size)) && "[ERROR] Invalid stack state.");
-
     return !(~stack.size);
 }
 
@@ -539,7 +526,6 @@ static inline bool is_full_stack(const stack_s stack) {
 /// @param stack Stack structure.
 /// @return The top element of the stack as defined by 'STACK_DATA_TYPE' macro.
 static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
-    STACK_ASSERT(((stack.elements && stack.size) || (!stack.elements && !stack.size)) && "[ERROR] Invalid stack state.");
     STACK_ASSERT(stack.size && "[ERROR] Can't peek empty stack");
     STACK_ASSERT(stack.elements && "[ERROR] Stack's '.elements' is NULL");
 
@@ -551,7 +537,6 @@ static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
 /// @param element Element to push to top of stack array.
 static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
     STACK_ASSERT(stack && "[ERROR] Stack pointer is NULL");
-    STACK_ASSERT(((stack->elements && stack->size) || (!stack->elements && !stack->size)) && "[ERROR] Invalid stack state.");
     STACK_ASSERT((stack->size + 1) && "[ERROR] Stack's '.size' will overflow");
 
     // first expand memory if necessary and then add element
@@ -567,7 +552,6 @@ static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
 /// @return The top element of the stack as defined by 'STACK_DATA_TYPE' macro.
 static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
     STACK_ASSERT(stack && "[ERROR] 'stack' pointer is empty");
-    STACK_ASSERT(((stack->elements && stack->size) || (!stack->elements && !stack->size)) && "[ERROR] Invalid stack state.");
     STACK_ASSERT(stack->elements && "[ERROR] Can't pop from NULL array.");
     STACK_ASSERT(stack->size && "[ERROR] Can't pop empty stack");
 
@@ -591,7 +575,6 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
 /// @param copy
 /// @return A copy of the specified 'stack' parameter.
 static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) {
-    STACK_ASSERT(((stack.elements && stack.size) || (!stack.elements && !stack.size)) && "[ERROR] Invalid stack state.");
     if (!stack.size) return (stack_s) { 0 };
 
     const size_t copy_size = stack.size - (stack.size % REALLOC_STACK_CHUNK) + REALLOC_STACK_CHUNK;
@@ -615,8 +598,6 @@ static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) 
 /// @param stack Stack structure.
 /// @return true if stack size is zero, false otherwise
 static inline bool is_empty_stack(const stack_s stack) {
-    STACK_ASSERT(((stack.elements && stack.size) || (!stack.elements && !stack.size)) && "[ERROR] Invalid stack state.");
-
     return stack.size == 0;
 }
 
@@ -625,7 +606,6 @@ static inline bool is_empty_stack(const stack_s stack) {
 /// @param destroy Function pointer to destroy an element in stack.
 static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) {
     STACK_ASSERT(stack && "[ERROR] Stack pointer is NULL");
-    STACK_ASSERT(((stack->elements && stack->size) || (!stack->elements && !stack->size)) && "[ERROR] Invalid stack state.");
 
     for(size_t s = 0; destroy && (s < stack->size); s++) {
         destroy(&(stack->elements[s]));
@@ -636,15 +616,17 @@ static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) 
 
 /// @brief For each function that does an operation on element reference specified by args.
 /// @param stack Stack structure pointer.
-/// @param operate Function pointer that takes an element pointer and 'args' as parameters
+/// @param operate Function pointer that takes an element pointer and 'args' as parameters and returns true if
+/// loop should continue after operation, false if break
 /// @param args Arguments for operation function pointer.
-static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args) {
+static inline void foreach_stack(stack_s * restrict stack, const operate_stack_fn operate, void * restrict args) {
     STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
-    STACK_ASSERT(((stack->elements && stack->size) || (!stack->elements && !stack->size)) && "[ERROR] Invalid stack state.");
     STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL");
 
     for (size_t i = 0; i < stack->size; ++i) {
-        operate(stack->elements + i, args);
+        if (!operate(stack->elements + i, args)) {
+            break;
+        }
     }
 }
 
@@ -706,7 +688,7 @@ static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
 static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
     STACK_ASSERT(stack && "[ERROR] Stack pointer is NULL");
     STACK_ASSERT((stack->size < PREPROCESSOR_STACK_SIZE) && "[ERROR] Stack reached maximum size");
-    STACK_ASSERT((stack->size + 1) && "[ERROR] Stack's '.size' will overflow");
+    STACK_ASSERT(~(stack->size) && "[ERROR] Stack's '.size' will overflow");
     // treat size as next index, add element and increment size
     memcpy(stack->elements + (stack->size++), &element, sizeof(STACK_DATA_TYPE));
 }
@@ -763,14 +745,17 @@ static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) 
 
 /// @brief For each function that does an operation on element reference specified by args.
 /// @param stack Stack structure pointer.
-/// @param operate Function pointer that takes an element pointer and 'args' as parameters
+/// @param operate Function pointer that takes an element pointer and 'args' as parameters and returns true if
+/// loop should continue after operation, false if break
 /// @param args Arguments for operation function pointer.
-static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args) {
+static inline void foreach_stack(stack_s * restrict stack, const operate_stack_fn operate, void * restrict args) {
     STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
     STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL");
 
     for (size_t i = 0; i < stack->size; ++i) {
-        operate(stack->elements + i, args);
+        if (!operate(stack->elements + i, args)) {
+            break;
+        }
     }
 }
 

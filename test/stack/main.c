@@ -9,13 +9,15 @@ STACK_DATA_TYPE copy_element(const STACK_DATA_TYPE element) {
     return (STACK_DATA_TYPE) { .sub_two = strdup(element.sub_two), };
 }
 
-void operation_int(STACK_DATA_TYPE * element, void * args) {
+bool operation_int(STACK_DATA_TYPE * element, void * args) {
     element->sub_one += *((int *)(args));
+    return true;
 }
 
-void operation_string(STACK_DATA_TYPE * element, void * args) {
+bool operation_string(STACK_DATA_TYPE * element, void * args) {
     free(element->sub_two);
     element->sub_two = strdup(args);
+    return true;
 }
 
 GREATEST_MAIN_DEFS();
