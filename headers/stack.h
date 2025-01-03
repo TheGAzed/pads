@@ -1,6 +1,10 @@
 #ifndef STACK_H
 #define STACK_H
 
+#include <stdlib.h>  // imports size_t and malloc
+#include <stdbool.h> // imports bool
+#include <string.h>  // imports memcpy
+
 #ifdef STACK_LICENCE
 
 #error \
@@ -71,10 +75,6 @@
 
 #endif
 
-#include <stdlib.h>  // imports size_t and malloc
-#include <stdbool.h> // imports bool for conditional stack functions (is_[state]_stack())
-#include <string.h>  // imports memcpy
-
 #ifndef STACK_ASSERT
 
 #include <assert.h>  // imports assert for debugging
@@ -105,7 +105,7 @@ typedef STACK_DATA_TYPE (* copy_stack_fn)    (const STACK_DATA_TYPE);
 /// Function pointer that destroys a deep element.
 typedef void            (* destroy_stack_fn) (STACK_DATA_TYPE *);
 /// Function pointer that changes an element pointer using void pointer arguments if needed. Returns true if operation should continue.
-typedef bool            (* operate_stack_fn) (STACK_DATA_TYPE * restrict, void * restrict);
+typedef bool            (* operate_stack_fn) (STACK_DATA_TYPE *, void *);
 
 #if   STACK_MODE == INFINITE_LIST_STACK
 
@@ -313,7 +313,7 @@ static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) 
 /// @param operate Function pointer that takes an element pointer and 'args' as parameters and returns true if
 /// loop should continue after operation, false if break
 /// @param args Arguments for operation function pointer.
-static inline void foreach_stack(stack_s * restrict stack, const operate_stack_fn operate, void * restrict args) {
+static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args) {
     STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
     STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL");
 
@@ -321,17 +321,13 @@ static inline void foreach_stack(stack_s * restrict stack, const operate_stack_f
     const size_t chunk_size = stack->size % LIST_ARRAY_STACK_CHUNK;
     if (chunk_size) {
         for (size_t i = 0; i < chunk_size; ++i) {
-            if (!operate(current->elements + i, args)) {
-                break;
-            }
+            if (!operate(current->elements + i, args)) return;
         }
         current = current->next;
     }
     while (current) {
         for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
-            if (!operate(current->elements + i, args)) {
-                break;
-            }
+            if (!operate(current->elements + i, args)) return;
         }
         current = current->next;
     }
@@ -470,14 +466,12 @@ static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) 
 /// @param operate Function pointer that takes an element pointer and 'args' as parameters and returns true if
 /// loop should continue, false if break
 /// @param args Arguments for operation function pointer.
-static inline void foreach_stack(stack_s * restrict stack, const operate_stack_fn operate, void * restrict args) {
+static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args) {
     STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
     STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL");
 
     for (size_t i = 0; i < stack->size; ++i) {
-        if (!operate(stack->elements + i, args)) {
-            break;
-        }
+        if (!operate(stack->elements + i, args)) return;
     }
 }
 
@@ -619,14 +613,12 @@ static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) 
 /// @param operate Function pointer that takes an element pointer and 'args' as parameters and returns true if
 /// loop should continue after operation, false if break
 /// @param args Arguments for operation function pointer.
-static inline void foreach_stack(stack_s * restrict stack, const operate_stack_fn operate, void * restrict args) {
+static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args) {
     STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
     STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL");
 
     for (size_t i = 0; i < stack->size; ++i) {
-        if (!operate(stack->elements + i, args)) {
-            break;
-        }
+        if (!operate(stack->elements + i, args)) return;
     }
 }
 
@@ -748,14 +740,12 @@ static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) 
 /// @param operate Function pointer that takes an element pointer and 'args' as parameters and returns true if
 /// loop should continue after operation, false if break
 /// @param args Arguments for operation function pointer.
-static inline void foreach_stack(stack_s * restrict stack, const operate_stack_fn operate, void * restrict args) {
+static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args) {
     STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
     STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL");
 
     for (size_t i = 0; i < stack->size; ++i) {
-        if (!operate(stack->elements + i, args)) {
-            break;
-        }
+        if (!operate(stack->elements + i, args)) return;
     }
 }
 

@@ -123,9 +123,10 @@
 
 #endif
 
-typedef BINARY_SET_DATA_TYPE (*copy_binary_set_fn)    (const BINARY_SET_DATA_TYPE); // copies and returns set element
-typedef void                 (*destroy_binary_set_fn) (BINARY_SET_DATA_TYPE *);     // destroys and sets to zero set element
-typedef int                  (*compare_binary_set_fn) (const void *, const void *); // compares two set elements like strcmp or memcmp
+typedef BINARY_SET_DATA_TYPE (* copy_binary_set_fn)    (const BINARY_SET_DATA_TYPE);     // copies and returns set element
+typedef void                 (* destroy_binary_set_fn) (BINARY_SET_DATA_TYPE *);         // destroys and sets to zero set element
+typedef int                  (* compare_binary_set_fn) (const void *, const void *);     // compares two set elements like strcmp or memcmp
+typedef bool                 (* operate_binary_set_fn) (BINARY_SET_DATA_TYPE *, void *); // compares two set elements like strcmp or memcmp
 
 #if BINARY_SET_MODE == INFINITE_REALLOC_BINARY_SET
 
@@ -563,6 +564,12 @@ static inline bool is_empty_binary_set(const binary_set_s set) {
 
 static inline bool is_full_binary_set(const binary_set_s set) {
     return !(~(set.size));
+}
+
+static inline void foreach_binary_set(binary_set_s * set, const operate_binary_set_fn operate, void * args) {
+    for (size_t i = 0; i < set->size; ++i) {
+        if (!operate(set->elements + i, args)) return;
+    }
 }
 
 #elif BINARY_SET_MODE == FINITE_ALLOCATED_BINARY_SET
@@ -1031,6 +1038,12 @@ static inline bool is_full_binary_set(const binary_set_s set) {
     return !(set.size < set.max && ~set.size);
 }
 
+static inline void foreach_binary_set(binary_set_s * set, const operate_binary_set_fn operate, void * args) {
+    for (size_t i = 0; i < set->size; ++i) {
+        if (!operate(set->elements + i, args)) return;
+    }
+}
+
 #elif BINARY_SET_MODE == FINITE_PRERPOCESSOR_BINARY_SET
 
 #ifndef PREPROCESSOR_BINARY_SET_SIZE
@@ -1451,6 +1464,12 @@ static inline bool is_empty_binary_set(const binary_set_s set) {
 
 static inline bool is_full_binary_set(const binary_set_s set) {
     return !(set.size < PREPROCESSOR_BINARY_SET_SIZE && ~set.size);
+}
+
+static inline void foreach_binary_set(binary_set_s * set, const operate_binary_set_fn operate, void * args) {
+    for (size_t i = 0; i < set->size; ++i) {
+        if (!operate(set->elements + i, args)) return;
+    }
 }
 
 #endif

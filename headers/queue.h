@@ -1,6 +1,10 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
+#include <stdlib.h>  // imports size_t and malloc
+#include <stdbool.h> // imports bool
+#include <string.h>  // imports memcpy
+
 #ifdef QUEUE_LICENCE
 
 #error \
@@ -71,10 +75,6 @@
 
 #endif
 
-#include <stdlib.h>  // imports size_t and malloc
-#include <stdbool.h> // imports bool for conditional queue functions (is_[state]_queue())
-#include <string.h>  // imports memcpy
-
 #ifndef QUEUE_ASSERT
 
 #include <assert.h>  // imports assert for debugging
@@ -105,7 +105,7 @@ typedef QUEUE_DATA_TYPE (*copy_queue_fn)    (const QUEUE_DATA_TYPE);
 /// Function pointer that destroys a deep element.
 typedef void            (*destroy_queue_fn) (QUEUE_DATA_TYPE *);
 /// Function pointer that changes an element pointer using void pointer arguments if needed.
-typedef void            (*operate_queue_fn) (QUEUE_DATA_TYPE *, void *);
+typedef bool            (*operate_queue_fn) (QUEUE_DATA_TYPE *, void *);
 
 #if   QUEUE_MODE == INFINITE_LIST_QUEUE
 
@@ -381,26 +381,26 @@ static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate
 
     if (queue->current + queue->size <= LIST_ARRAY_QUEUE_CHUNK) { // if head and tail point to the same memory (including NULL)
         for (size_t i = queue->current; i < queue->current + queue->size; ++i) { // won't run if size is 0
-            operate(queue->tail->elements + i, args);
+            if (!operate(queue->tail->elements + i, args)) return;
         }
     } else { // else queue is made up of more than one list node
         struct queue_list_array * current = queue->tail->next;
 
         for (size_t i = queue->current; i < LIST_ARRAY_QUEUE_CHUNK; ++i) { // operate on head node
-            operate(current->elements + i, args);
+            if (!operate(current->elements + i, args)) return;
         }
         size_t iterated_size = LIST_ARRAY_QUEUE_CHUNK - queue->current;
 
         while (current->next != queue->tail) { // operate on all nodes between head and tail node (excluding tail)
             for (size_t i = 0; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
-                operate(current->elements + i, args);
+                if (!operate(queue->tail->elements + i, args)) return;
             }
             iterated_size += LIST_ARRAY_QUEUE_CHUNK;
             current = current->next;
         }
 
         for (size_t i = 0; i < queue->size - iterated_size; ++i) { // operate on tail node
-            operate(queue->tail->elements + i, args);
+            if (!operate(queue->tail->elements + i, args)) return;
         }
     }
 }
@@ -562,14 +562,14 @@ static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate
     const size_t right_size = queue->max - queue->current;
     if (queue->size > right_size) { // if queue elements circle around
         for (size_t i = queue->current; i < queue->max; ++i) { // operates on elements right of current index
-            operate(&(queue->elements[i]), args);
+            if (!operate(queue->elements + i, args)) return;
         }
         for (size_t i = 0; i < queue->size - right_size; i++) {// operates on elements left of current index
-            operate(&(queue->elements[i]), args);
+            if (!operate(queue->elements + i, args)) return;
         }
     } else { // else elements are continuous in array (they don't circle around)
         for (size_t i = queue->current; i < queue->current + queue->size; ++i) {
-            operate(&(queue->elements[i]), args);
+            if (!operate(queue->elements + i, args)) return;
         }
     }
 }
@@ -730,7 +730,7 @@ static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate
     QUEUE_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
 
     for (size_t i = queue->current; i < queue->current + queue->size; ++i) {
-        operate(&(queue->elements[i]), args);
+        if (!operate(queue->elements + i, args)) return;
     }
 }
 
@@ -905,14 +905,14 @@ static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate
     const size_t right_size = PREPROCESSOR_QUEUE_SIZE - queue->current;
     if (queue->size > right_size) { // if queue elements circle around
         for (size_t i = queue->current; i < PREPROCESSOR_QUEUE_SIZE; ++i) { // operates on elements right of current index
-            operate(&(queue->elements[i]), args);
+            if (!operate(queue->elements + i, args)) return;
         }
         for (size_t i = 0; i < queue->size - right_size; i++) {// operates on elements left of current index
-            operate(&(queue->elements[i]), args);
+            if (!operate(queue->elements + i, args)) return;
         }
     } else { // else elements are continuous in array (they don't circle around)
         for (size_t i = queue->current; i < queue->current + queue->size; ++i) {
-            operate(&(queue->elements[i]), args);
+            if (!operate(queue->elements + i, args)) return;
         }
     }
 }

@@ -2,6 +2,7 @@
 #define DOUBLE_LIST_TEST_H
 
 #include <greatest.h>
+#include <stdbool.h>
 
 typedef union type_dst {
     int    sub_one;
@@ -14,8 +15,8 @@ typedef union type_dst {
 void destroy_element(DOUBLE_LIST_DATA_TYPE * element);
 DOUBLE_LIST_DATA_TYPE copy_element(const DOUBLE_LIST_DATA_TYPE element);
 
-void operation_int(DOUBLE_LIST_DATA_TYPE * element, void * args);
-void operation_string(DOUBLE_LIST_DATA_TYPE * element, void * args);
+bool operation_int(DOUBLE_LIST_DATA_TYPE * element, void * args);
+bool operation_string(DOUBLE_LIST_DATA_TYPE * element, void * args);
 
 SUITE_EXTERN(infinite_allocated_double_list_test);
 SUITE_EXTERN(finite_allocated_double_list_test);

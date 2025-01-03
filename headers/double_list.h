@@ -1,6 +1,10 @@
 #ifndef DOUBLE_LIST_H
 #define DOUBLE_LIST_H
 
+#include <stdlib.h>  // imports size_t and malloc
+#include <stdbool.h> // imports bool
+#include <string.h>  // imports memcpy
+
 // list mode macros in octal to prevent future overlap with other data structure modes
 #define INFINITE_ALLOCATED_DOUBLE_LIST  0x11
 #define FINITE_ALLOCATED_DOUBLE_LIST    0x12
@@ -41,10 +45,6 @@
 
 #endif
 
-#include <stdlib.h>  // imports size_t and malloc
-#include <stdbool.h> // imports bool for conditional queue functions (is_[state]_queue())
-#include <string.h>  // imports memcpy
-
 #ifndef DOUBLE_LIST_ASSERT
 
 #include <assert.h>  // imports assert for debugging
@@ -64,10 +64,16 @@
 
 #endif
 
+#ifndef DOUBLE_LIST_FREE
+
+#define DOUBLE_LIST_FREE free
+
+#endif
+
 typedef DOUBLE_LIST_DATA_TYPE (*copy_double_list_fn)    (const DOUBLE_LIST_DATA_TYPE);
 typedef void                  (*destroy_double_list_fn) (DOUBLE_LIST_DATA_TYPE *);
 typedef int                   (*compare_double_list_fn) (const void *, const void *);
-typedef void                  (*operate_double_list_fn) (DOUBLE_LIST_DATA_TYPE *, void *);
+typedef bool                  (*operate_double_list_fn) (DOUBLE_LIST_DATA_TYPE *, void *);
 typedef void                  (*sort_double_list_fn)    (void * array, size_t number, size_t size, compare_double_list_fn);
 
 #if   DOUBLE_LIST_MODE == INFINITE_ALLOCATED_DOUBLE_LIST
@@ -98,7 +104,7 @@ static inline void destroy_double_list(double_list_s * list, const destroy_doubl
 
         struct double_list_node * temp = current;
         current = current->next;
-        free(temp);
+        DOUBLE_LIST_FREE(temp);
     }
 
     *list = (double_list_s) { 0 };
@@ -155,7 +161,7 @@ static inline DOUBLE_LIST_DATA_TYPE remove_element_double_list(double_list_s * l
             struct double_list_node * temp = *current;
             (*current)->next->prev = (*current)->prev;
             *current = (--list->size) ? (*current)->next : NULL;
-            free(temp);
+            DOUBLE_LIST_FREE(temp);
 
             return found;
         }
@@ -191,7 +197,7 @@ static inline DOUBLE_LIST_DATA_TYPE remove_at_double_list(double_list_s * list, 
     DOUBLE_LIST_DATA_TYPE found = temp->element;
     temp->prev->next = temp->next;
     temp->next->prev = temp->prev;
-    free(temp);
+    DOUBLE_LIST_FREE(temp);
 
     list->size--;
 
@@ -261,20 +267,6 @@ static inline double_list_s splice_double_list(double_list_s * restrict destinat
     *destination = *source = (double_list_s) { 0 };
 
     return list;
-}
-
-static inline bool contains_double_list(const double_list_s list, DOUBLE_LIST_DATA_TYPE element, const compare_double_list_fn compare) {
-    struct double_list_node const * current = list.head;
-    for (size_t i = 0; i < list.size; ++i) {
-        const int cmp = compare ? compare(&(current->element), &element) : memcmp(&(current->element), &element, sizeof(DOUBLE_LIST_DATA_TYPE));
-        if (cmp == 0) {
-            return true;
-        }
-
-        current = current->next;
-    }
-
-    return false;
 }
 
 static inline double_list_s split_double_list(double_list_s * list, const size_t index, const size_t size) {
@@ -400,7 +392,7 @@ static inline void sort_double_list(double_list_s const * list, const sort_doubl
         current->element = elements_array[i];
         current = current->next;
     }
-    free(elements_array);
+    DOUBLE_LIST_FREE(elements_array);
 }
 
 static inline void foreach_double_list(double_list_s * list, const operate_double_list_fn operate, void * args) {
@@ -409,7 +401,8 @@ static inline void foreach_double_list(double_list_s * list, const operate_doubl
 
     struct double_list_node * current = list->head;
     for (size_t i = 0; i < list->size; ++i) {
-        operate(&current->element, args);
+        if (!operate(&current->element, args)) return;
+
         current = current->next;
     }
 }
@@ -452,7 +445,7 @@ static inline void destroy_double_list(double_list_s * list, const destroy_doubl
         current = list->node[NEXT_IDX][current];
     }
 
-    free(list->elements); free(list->node[NEXT_IDX]); free(list->node[PREV_IDX]);
+    DOUBLE_LIST_FREE(list->elements); DOUBLE_LIST_FREE(list->node[NEXT_IDX]); DOUBLE_LIST_FREE(list->node[PREV_IDX]);
 
     *list = (double_list_s) { 0 };
 }
@@ -620,9 +613,9 @@ static inline double_list_s splice_double_list(double_list_s * restrict destinat
     memcpy(destination->node[NEXT_IDX] + destination->size, source->node[NEXT_IDX], sizeof(size_t) * source->size);
     memcpy(destination->node[PREV_IDX] + destination->size, source->node[PREV_IDX], sizeof(size_t) * source->size);
 
-    free(source->elements);
-    free(source->node[NEXT_IDX]);
-    free(source->node[PREV_IDX]);
+    DOUBLE_LIST_FREE(source->elements);
+    DOUBLE_LIST_FREE(source->node[NEXT_IDX]);
+    DOUBLE_LIST_FREE(source->node[PREV_IDX]);
 
     double_list_s list = {
         .size = destination->size + source->size, .head = index ? destination->head : source->head, .max = max,
@@ -633,29 +626,6 @@ static inline double_list_s splice_double_list(double_list_s * restrict destinat
     *destination = *source = (double_list_s) { 0 };
 
     return list;
-}
-
-static inline bool contains_double_list(const double_list_s list, DOUBLE_LIST_DATA_TYPE element, const compare_double_list_fn compare) {
-    size_t current = list.head;
-    if (compare) {
-        for (size_t i = 0; i < list.size; ++i) {
-            if (compare(&(list.elements[current]), &element) == 0) {
-                return true;
-            }
-
-            current = list.node[NEXT_IDX][current];
-        }
-    } else {
-        for (size_t i = 0; i < list.size; ++i) {
-            if (memcmp(&(list.elements[current]), &element, sizeof(DOUBLE_LIST_DATA_TYPE)) == 0) {
-                return true;
-            }
-
-            current = list.node[NEXT_IDX][current];
-        }
-    }
-
-    return false;
 }
 
 static inline double_list_s split_double_list(double_list_s * list, const size_t index, const size_t size, const size_t max) {
@@ -806,7 +776,8 @@ static inline void foreach_double_list(double_list_s * list, const operate_doubl
 
     size_t current = list->head;
     for (size_t i = 0; i < list->size; ++i) {
-        operate(&(list->elements[current]), args);
+        if (!operate(&(list->elements[current]), args)) return;
+
         current = list->node[NEXT_IDX][current];
     }
 }
@@ -846,9 +817,9 @@ static inline void destroy_double_list(double_list_s * list, const destroy_doubl
         current = list->node[NEXT_IDX][current];
     }
 
-    free(list->elements);
+    DOUBLE_LIST_FREE(list->elements);
     for (size_t i = 0; i < NODE_COUNT; ++i) {
-        free(list->node[i]);
+        DOUBLE_LIST_FREE(list->node[i]);
     }
 
     *list = (double_list_s) { 0 };
@@ -1036,9 +1007,9 @@ static inline double_list_s splice_double_list(double_list_s * restrict destinat
     memcpy(destination->node[NEXT_IDX] + destination->size, source->node[NEXT_IDX], sizeof(size_t) * source->size);
     memcpy(destination->node[PREV_IDX] + destination->size, source->node[PREV_IDX], sizeof(size_t) * source->size);
 
-    free(source->elements);
-    free(source->node[NEXT_IDX]);
-    free(source->node[PREV_IDX]);
+    DOUBLE_LIST_FREE(source->elements);
+    DOUBLE_LIST_FREE(source->node[NEXT_IDX]);
+    DOUBLE_LIST_FREE(source->node[PREV_IDX]);
 
     double_list_s list = {
         .head = index ? destination->head : source->head, .elements = destination->elements, .size = new_size,
@@ -1048,29 +1019,6 @@ static inline double_list_s splice_double_list(double_list_s * restrict destinat
     *destination = *source = (double_list_s) { 0 };
 
     return list;
-}
-
-static inline bool contains_double_list(const double_list_s list, DOUBLE_LIST_DATA_TYPE element, const compare_double_list_fn compare) {
-    size_t current = list.head;
-    if (compare) {
-        for (size_t i = 0; i < list.size; ++i) {
-            if (compare(&(list.elements[current]), &element) == 0) {
-                return true;
-            }
-
-            current = list.node[NEXT_IDX][current];
-        }
-    } else {
-        for (size_t i = 0; i < list.size; ++i) {
-            if (memcmp(&(list.elements[current]), &element, sizeof(DOUBLE_LIST_DATA_TYPE)) == 0) {
-                return true;
-            }
-
-            current = list.node[NEXT_IDX][current];
-        }
-    }
-
-    return false;
 }
 
 static inline double_list_s split_double_list(double_list_s * list, const size_t index, const size_t size) {
@@ -1114,9 +1062,9 @@ static inline double_list_s split_double_list(double_list_s * list, const size_t
 
             current = list->node[NEXT_IDX][current];
         } else {
-            free(list->elements);
-            free(list->node[PREV_IDX]);
-            free(list->node[NEXT_IDX]);
+            DOUBLE_LIST_FREE(list->elements);
+            DOUBLE_LIST_FREE(list->node[PREV_IDX]);
+            DOUBLE_LIST_FREE(list->node[NEXT_IDX]);
             list->elements = (DOUBLE_LIST_DATA_TYPE *) (list->node[PREV_IDX] = list->node[NEXT_IDX] = NULL);
         }
     }
@@ -1234,7 +1182,8 @@ static inline void foreach_double_list(double_list_s * list, const operate_doubl
 
     size_t current = list->head;
     for (size_t i = 0; i < list->size; ++i) {
-        operate(&(list->elements[current]), args);
+        if (!operate(&(list->elements[current]), args)) return;
+
         current = list->node[NEXT_IDX][current];
     }
 }
@@ -1441,29 +1390,6 @@ static inline double_list_s splice_double_list(double_list_s * restrict destinat
     return list;
 }
 
-static inline bool contains_double_list(const double_list_s list, DOUBLE_LIST_DATA_TYPE element, const compare_double_list_fn compare) {
-    size_t current = list.head;
-    if (compare) {
-        for (size_t i = 0; i < list.size; ++i) {
-            if (compare(&(list.elements[current]), &element) == 0) {
-                return true;
-            }
-
-            current = list.node[NEXT_IDX][current];
-        }
-    } else {
-        for (size_t i = 0; i < list.size; ++i) {
-            if (memcmp(&(list.elements[current]), &element, sizeof(DOUBLE_LIST_DATA_TYPE)) == 0) {
-                return true;
-            }
-
-            current = list.node[NEXT_IDX][current];
-        }
-    }
-
-    return false;
-}
-
 static inline double_list_s split_double_list(double_list_s * list, const size_t index, const size_t size) {
     DOUBLE_LIST_ASSERT(list && "[ERROR] List pointer is NULL");
     DOUBLE_LIST_ASSERT(index < list->size && "[ERROR] Can only split at index less than list size.");
@@ -1594,7 +1520,7 @@ static inline void foreach_double_list(double_list_s * list, const operate_doubl
 
     size_t current = list->head;
     for (size_t i = 0; i < list->size; ++i) {
-        operate(&(list->elements[current]), args);
+        if (!operate(&(list->elements[current]), args)) return;
         current = list->node[NEXT_IDX][current];
     }
 }
