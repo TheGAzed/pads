@@ -4,6 +4,30 @@
 <h1 align="center">
   PADS
 </h1>
-<p align="center">
-  Preprocessor abstracted data structure headers.
-</p>
+
+PADS, short for Preprocessor Abstracted Data Structures, is a personal project that aims to recreate popular data structures for the C programming language. The project includes single header libraries for each structure that use the preprocessor for data type abstraction.
+
+PADS data structures are each divided into at least three modes with support for:
+
+- Infinitely expandable structure via allocated memory
+- Finite structure of allocated size
+- Finite preprocessor size structure of predefined size
+
+## **List of Data Structures:**
+
+### **Available:**
+
+- [STACK](https://github.com/TheGAzed/pads/blob/main/headers/stack.h)
+- [QUEUE](https://github.com/TheGAzed/pads/blob/main/headers/queue.h)
+
+### **In Progress:**
+
+- [BINARY SET](https://github.com/TheGAzed/pads/blob/main/headers/binary_set.h)
+- [DOUBLE LINKED LIST](https://github.com/TheGAzed/pads/blob/main/headers/double_list.h)
+- [SINGLE LINKED LIST](https://github.com/TheGAzed/pads/blob/main/headers/single_list.h)
+
+### **Planned:**
+
+- N-ARRY TREE
+- GRAPH
+- DIGRAPH
