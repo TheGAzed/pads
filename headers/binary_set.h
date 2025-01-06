@@ -1,6 +1,10 @@
 #ifndef BINARY_SET_H
 #define BINARY_SET_H
 
+#include <stdlib.h>  // imports size_t and malloc
+#include <stdbool.h> // imports bool
+#include <string.h>  // imports memcpy
+
 // SOURCE AND LICENCE OF BINARY SEARCH IMPLEMENTATION: https://github.com/gcc-mirror/gcc/blob/master/libiberty/bsearch.c
 /*
  * Copyright (c) 1990 Regents of the University of California.
@@ -82,7 +86,7 @@
 
 #endif
 
-#define IS_INFINITE_BINARY_SET ((bool)(BINARY_SET_MODE & 0x1))
+#define IS_INFINITE_BINARY_SET (BINARY_SET_MODE & 0x1)
 
 // Check to make sure a valid list mode is selected.
 #if (BINARY_SET_MODE != INFINITE_REALLOC_BINARY_SET) && (BINARY_SET_MODE != FINITE_ALLOCATED_BINARY_SET)    && \
@@ -99,10 +103,6 @@
 #define BINARY_SET_DATA_TYPE void*
 
 #endif
-
-#include <stdlib.h>  // imports size_t and malloc
-#include <stdbool.h> // imports bool
-#include <string.h>  // imports memcpy
 
 #ifndef BINARY_SET_ASSERT
 
@@ -133,6 +133,10 @@ typedef bool                 (* operate_binary_set_fn) (BINARY_SET_DATA_TYPE *, 
 #ifndef REALLOC_BINARY_SET_CHUNK
 
 #define REALLOC_BINARY_SET_CHUNK (1 << 10)
+
+#elif REALLOC_BINARY_SET_CHUNK <= 0
+
+#error 'REALLOC_BINARY_SET_CHUNK' cannot be less than or equal to 0
 
 #endif
 
@@ -165,6 +169,10 @@ static inline void destroy_binary_set(binary_set_s * set, const destroy_binary_s
     *set = (binary_set_s) { 0 };
 }
 
+/// @brief Checks if set contains the specified element.
+/// @param set set structure to check.
+/// @param element element to check if contained in set.
+/// @return true if element is contained in set, false if not.
 static inline bool contains_binary_set(const binary_set_s set, const BINARY_SET_DATA_TYPE element) {
     if (set.compare) { // uses buildin binary search implmentation if compare function is specified
         return bsearch(&element, set.elements, set.size, sizeof(BINARY_SET_DATA_TYPE), set.compare) != NULL;
@@ -188,6 +196,9 @@ static inline bool contains_binary_set(const binary_set_s set, const BINARY_SET_
     return false;
 }
 
+/// @brief Adds specified element to the set.
+/// @param set Set structure pointer to add element into.
+/// @param element element to add into set. If element is contained in set the function terminates with error.
 static inline void add_binary_set(binary_set_s * set, const BINARY_SET_DATA_TYPE element) {
     BINARY_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL");
 
@@ -201,7 +212,7 @@ static inline void add_binary_set(binary_set_s * set, const BINARY_SET_DATA_TYPE
         BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
         const int cmp = set->compare ? set->compare(&element, current_element) : memcmp(&element, current_element, sizeof(BINARY_SET_DATA_TYPE));
         if (cmp == 0) {
-            BINARY_SET_ASSERT(set->elements && "[ERROR] Set already contains element.");
+            BINARY_SET_ASSERT(false && "[ERROR] Set already contains element.");
             exit(EXIT_FAILURE);
         }
         if (cmp > 0) {
@@ -215,6 +226,10 @@ static inline void add_binary_set(binary_set_s * set, const BINARY_SET_DATA_TYPE
     set->size++;
 }
 
+/// @brief Remove specified element from set.
+/// @param set Set structure pointer to remove element from.
+/// @param element Element to remove from set. If element is not contained in set the function terminates with an error.
+/// @return Removed element.
 static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const BINARY_SET_DATA_TYPE element) {
     BINARY_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL");
     BINARY_SET_ASSERT(set->size && "[ERROR] Can't remove from empty set.");
@@ -245,6 +260,11 @@ static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const B
     exit(EXIT_FAILURE);
 }
 
+/// @brief creates and returns a union of two sets whose elements are copied into the new set.
+/// @param set_one First set structure to union.
+/// @param set_two Second set structure to union.
+/// @param copy Function pointer that creates a copy for elements in union or NULL, if shallow copy should be created.
+/// @return New union of set_one and set_two.
 static inline binary_set_s union_binary_set(const binary_set_s set_one, const binary_set_s set_two, const copy_binary_set_fn copy) {
     BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't union sets with different compare functions.");
 
@@ -290,6 +310,11 @@ static inline binary_set_s union_binary_set(const binary_set_s set_one, const bi
     return set;
 }
 
+/// @brief creates and returns an intersect of two sets whose elements are copied into the new set.
+/// @param set_one First set structure to intersect.
+/// @param set_two Second set structure to intersect.
+/// @param copy Function pointer that creates a copy for elements in intersect or NULL, if shallow copy should be created.
+/// @return New intersect of set_one and set_two.
 static inline binary_set_s intersect_binary_set(const binary_set_s set_one, const binary_set_s set_two, const copy_binary_set_fn copy) {
     BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't intersect sets with different compare functions.");
 
@@ -323,6 +348,11 @@ static inline binary_set_s intersect_binary_set(const binary_set_s set_one, cons
     return set;
 }
 
+/// @brief creates and returns a subtract of two sets whose elements are copied into the new set.
+/// @param set_one First set structure that gets subtracted.
+/// @param set_two Second set structure that subtracts.
+/// @param copy Function pointer that creates a copy for elements in subtract or NULL, if shallow copy should be created.
+/// @return New subtract of set_one and set_two.
 static inline binary_set_s subtract_binary_set(const binary_set_s set_one, const binary_set_s set_two, const copy_binary_set_fn copy) {
     BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't subtract sets with different compare functions.");
 
@@ -361,6 +391,11 @@ static inline binary_set_s subtract_binary_set(const binary_set_s set_one, const
     return set;
 }
 
+/// @brief creates and returns an exclude (symmetric difference) of two sets whose elements are copied into the new set.
+/// @param set_one First set structure to exclude (symmetric difference).
+/// @param set_two Second set structure to exclude (symmetric difference).
+/// @param copy Function pointer that creates a copy for elements in exclude (symmetric difference) or NULL, if shallow copy should be created.
+/// @return New exclude (symmetric difference) of set_one and set_two.
 static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const binary_set_s set_two, const copy_binary_set_fn copy) {
     BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't exclude sets with different compare functions.");
 
@@ -612,6 +647,10 @@ static inline void destroy_binary_set(binary_set_s * set, const destroy_binary_s
     *set = (binary_set_s) { 0 };
 }
 
+/// @brief Checks if set contains the specified element.
+/// @param set set structure to check.
+/// @param element element to check if contained in set.
+/// @return true if element is contained in set, false if not.
 static inline bool contains_binary_set(const binary_set_s set, const BINARY_SET_DATA_TYPE element) {
     BINARY_SET_ASSERT(set.max && "[ERROR] Set's max size can't be zero");
     BINARY_SET_ASSERT(set.elements && "[ERROR] Set's elements pointer is NULL.");
@@ -636,6 +675,9 @@ static inline bool contains_binary_set(const binary_set_s set, const BINARY_SET_
     return false;
 }
 
+/// @brief Adds specified element to the set.
+/// @param set Set structure pointer to add element into.
+/// @param element element to add into set. If element is contained in set function terminates with error.
 static inline void add_binary_set(binary_set_s * set, const BINARY_SET_DATA_TYPE element) {
     BINARY_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL.");
     BINARY_SET_ASSERT(set->max && "[ERROR] Set's max size can't be zero");
@@ -647,7 +689,7 @@ static inline void add_binary_set(binary_set_s * set, const BINARY_SET_DATA_TYPE
         BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
         const int cmp = set->compare ? set->compare(&element, current_element) : memcmp(&element, current_element, sizeof(BINARY_SET_DATA_TYPE));
         if (cmp == 0) {
-            BINARY_SET_ASSERT(set->elements && "[ERROR] Set already contains element.");
+            BINARY_SET_ASSERT(false && "[ERROR] Set already contains element.");
             exit(EXIT_FAILURE);
         }
         if (cmp > 0) {
@@ -661,6 +703,10 @@ static inline void add_binary_set(binary_set_s * set, const BINARY_SET_DATA_TYPE
     set->size++;
 }
 
+/// @brief Remove specified element from set.
+/// @param set Set structure pointer to remove element from.
+/// @param element Element to remove from set. If element is not contained in set the function terminates with an error.
+/// @return Removed element.
 static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const BINARY_SET_DATA_TYPE element) {
     BINARY_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL.");
     BINARY_SET_ASSERT(set->max && "[ERROR] Set's max size can't be zero");
@@ -687,6 +733,12 @@ static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const B
     exit(EXIT_FAILURE);
 }
 
+/// @brief creates and returns a union of two sets whose elements are copied into the new set.
+/// @param set_one First set structure to union.
+/// @param set_two Second set structure to union.
+/// @param max Maximum size of new set.
+/// @param copy Function pointer that creates a copy for elements in union or NULL, if shallow copy should be created.
+/// @return New union of set_one and set_two.
 static inline binary_set_s union_binary_set(const binary_set_s set_one, const binary_set_s set_two, const size_t max, const copy_binary_set_fn copy) {
     BINARY_SET_ASSERT(max && "[ERROR] 'max' parameter can't be zero");
     BINARY_SET_ASSERT(set_one.max && "[ERROR] set_one's max size can't be zero");
@@ -733,6 +785,12 @@ static inline binary_set_s union_binary_set(const binary_set_s set_one, const bi
     return set;
 }
 
+/// @brief creates and returns an intersect of two sets whose elements are copied into the new set.
+/// @param set_one First set structure to intersect.
+/// @param set_two Second set structure to intersect.
+/// @param max Maximum size of new set.
+/// @param copy Function pointer that creates a copy for elements in intersect or NULL, if shallow copy should be created.
+/// @return New intersect of set_one and set_two.
 static inline binary_set_s intersect_binary_set(const binary_set_s set_one, const binary_set_s set_two, const size_t max, const copy_binary_set_fn copy) {
     BINARY_SET_ASSERT(max && "[ERROR] 'max' parameter can't be zero");
     BINARY_SET_ASSERT(set_one.max && "[ERROR] set_one's max size can't be zero");
@@ -771,6 +829,13 @@ static inline binary_set_s intersect_binary_set(const binary_set_s set_one, cons
     return set;
 }
 
+
+/// @brief creates and returns a subtract of two sets whose elements are copied into the new set.
+/// @param set_one First set structure that gets subtracted.
+/// @param set_two Second set structure that subtracts.
+/// @param max Maximum size of new set.
+/// @param copy Function pointer that creates a copy for elements in subtract or NULL, if shallow copy should be created.
+/// @return New subtract of set_one and set_two.
 static inline binary_set_s subtract_binary_set(const binary_set_s set_one, const binary_set_s set_two, const size_t max, const copy_binary_set_fn copy) {
     BINARY_SET_ASSERT(max && "[ERROR] 'max' parameter can't be zero");
     BINARY_SET_ASSERT(set_one.max && "[ERROR] set_one's max size can't be zero");
@@ -813,6 +878,12 @@ static inline binary_set_s subtract_binary_set(const binary_set_s set_one, const
     return set;
 }
 
+/// @brief creates and returns an exclude (symmetric difference) of two sets whose elements are copied into the new set.
+/// @param set_one First set structure to exclude (symmetric difference).
+/// @param set_two Second set structure to exclude (symmetric difference).
+/// @param max Maximum size of new set.
+/// @param copy Function pointer that creates a copy for elements in exclude (symmetric difference) or NULL, if shallow copy should be created.
+/// @return New exclude (symmetric difference) of set_one and set_two.
 static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const binary_set_s set_two, const size_t max, const copy_binary_set_fn copy) {
     BINARY_SET_ASSERT(max && "[ERROR] 'max' parameter can't be zero");
     BINARY_SET_ASSERT(set_one.max && "[ERROR] set_one's max size can't be zero");
@@ -1086,6 +1157,10 @@ static inline void destroy_binary_set(binary_set_s * set, const destroy_binary_s
     set->size = 0;
 }
 
+/// @brief Checks if set contains the specified element.
+/// @param set set structure to check.
+/// @param element element to check if contained in set.
+/// @return true if element is contained in set, false if not.
 static inline bool contains_binary_set(const binary_set_s set, const BINARY_SET_DATA_TYPE element) {
     if (set.compare) {
         return (bool) bsearch(&element, set.elements, set.size, sizeof(BINARY_SET_DATA_TYPE), set.compare);
@@ -1109,6 +1184,9 @@ static inline bool contains_binary_set(const binary_set_s set, const BINARY_SET_
     return false;
 }
 
+/// @brief Adds specified element to the set.
+/// @param set Set structure pointer to add element into.
+/// @param element element to add into set. If element is contained in set function terminates with error.
 static inline void add_binary_set(binary_set_s * set, const BINARY_SET_DATA_TYPE element) {
     BINARY_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL.");
     BINARY_SET_ASSERT(set->size <= PREPROCESSOR_BINARY_SET_SIZE && "[ERROR] Set is full.");
@@ -1118,7 +1196,7 @@ static inline void add_binary_set(binary_set_s * set, const BINARY_SET_DATA_TYPE
         BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
         const int cmp = set->compare ? set->compare(&element, current_element) : memcmp(&element, current_element, sizeof(BINARY_SET_DATA_TYPE));
         if (cmp == 0) {
-            BINARY_SET_ASSERT(set->elements && "[ERROR] Set already contains element.");
+            BINARY_SET_ASSERT(false && "[ERROR] Set already contains element.");
             exit(EXIT_FAILURE);
         }
         if (cmp > 0) {
@@ -1132,6 +1210,10 @@ static inline void add_binary_set(binary_set_s * set, const BINARY_SET_DATA_TYPE
     set->size++;
 }
 
+/// @brief Remove specified element from set.
+/// @param set Set structure pointer to remove element from.
+/// @param element Element to remove from set. If element is not contained in set the function terminates with an error.
+/// @return Removed element.
 static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const BINARY_SET_DATA_TYPE element) {
     BINARY_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL.");
     BINARY_SET_ASSERT(set->size && "[ERROR] Can't remove from empty set.");
@@ -1156,6 +1238,11 @@ static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const B
     exit(EXIT_FAILURE);
 }
 
+/// @brief creates and returns a union of two sets whose elements are copied into the new set.
+/// @param set_one First set structure to union.
+/// @param set_two Second set structure to union.
+/// @param copy Function pointer that creates a copy for elements in union or NULL, if shallow copy should be created.
+/// @return New union of set_one and set_two.
 static inline binary_set_s union_binary_set(const binary_set_s set_one, const binary_set_s set_two, const copy_binary_set_fn copy) {
     BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't union sets with different compare functions.");
 
@@ -1192,6 +1279,11 @@ static inline binary_set_s union_binary_set(const binary_set_s set_one, const bi
     return set;
 }
 
+/// @brief creates and returns an intersect of two sets whose elements are copied into the new set.
+/// @param set_one First set structure to intersect.
+/// @param set_two Second set structure to intersect.
+/// @param copy Function pointer that creates a copy for elements in intersect or NULL, if shallow copy should be created.
+/// @return New intersect of set_one and set_two.
 static inline binary_set_s intersect_binary_set(const binary_set_s set_one, const binary_set_s set_two, const copy_binary_set_fn copy) {
     BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't intersect sets with different compare functions.");
 
@@ -1223,6 +1315,11 @@ static inline binary_set_s intersect_binary_set(const binary_set_s set_one, cons
     return set;
 }
 
+/// @brief creates and returns a subtract of two sets whose elements are copied into the new set.
+/// @param set_one First set structure that gets subtracted.
+/// @param set_two Second set structure that subtracts.
+/// @param copy Function pointer that creates a copy for elements in subtract or NULL, if shallow copy should be created.
+/// @return New subtract of set_one and set_two.
 static inline binary_set_s subtract_binary_set(const binary_set_s set_one, const binary_set_s set_two, const copy_binary_set_fn copy) {
     BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't subtract sets with different compare functions.");
 
@@ -1258,6 +1355,11 @@ static inline binary_set_s subtract_binary_set(const binary_set_s set_one, const
     return set;
 }
 
+/// @brief creates and returns an exclude (symmetric difference) of two sets whose elements are copied into the new set.
+/// @param set_one First set structure to exclude (symmetric difference).
+/// @param set_two Second set structure to exclude (symmetric difference).
+/// @param copy Function pointer that creates a copy for elements in exclude (symmetric difference) or NULL, if shallow copy should be created.
+/// @return New exclude (symmetric difference) of set_one and set_two.
 static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const binary_set_s set_two, const copy_binary_set_fn copy) {
     BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't exclude sets with different compare functions.");
 

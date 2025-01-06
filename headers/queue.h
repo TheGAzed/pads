@@ -57,7 +57,7 @@
 
 #endif
 
-#define IS_INFINITE_QUEUE ((bool)(QUEUE_MODE & 0x01))
+#define IS_INFINITE_QUEUE (QUEUE_MODE & 0x01)
 
 // Check to make sure a valid queue mode is selected.
 #if (QUEUE_MODE != INFINITE_LIST_QUEUE)    && (QUEUE_MODE != FINITE_ALLOCATED_QUEUE) && \
@@ -115,9 +115,9 @@ typedef bool            (*operate_queue_fn) (QUEUE_DATA_TYPE *, void *);
 
 #define LIST_ARRAY_QUEUE_CHUNK (1 << 10)
 
-#elif LIST_ARRAY_QUEUE_CHUNK == 0
+#elif LIST_ARRAY_QUEUE_CHUNK <= 0
 
-#error 'LIST_ARRAY_QUEUE_CHUNK' cannot be zero.
+#error 'LIST_ARRAY_QUEUE_CHUNK' cannot be less than or equal to 0.
 
 #endif
 
@@ -580,6 +580,10 @@ static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate
 
 #define REALLOC_QUEUE_CHUNK (1 << 10)
 
+#elif REALLOC_QUEUE_CHUNK <= 0
+
+#error 'REALLOC_QUEUE_CHUNK' cannot be less than or equal to 0
+
 #endif
 
 typedef struct queue {
@@ -746,6 +750,7 @@ static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate
 
 #endif
 
+/// queue data structure
 typedef struct queue {
     size_t size, current;                              // size and current index of queue
     QUEUE_DATA_TYPE elements[PREPROCESSOR_QUEUE_SIZE]; // elements array

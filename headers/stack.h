@@ -57,7 +57,7 @@
 
 #endif
 
-#define IS_INFINITE_STACK ((bool)(STACK_MODE & 0x1))
+#define IS_INFINITE_STACK (STACK_MODE & 0x1)
 
 // Check to make sure a valid stack mode is selected.
 #if (STACK_MODE != INFINITE_LIST_STACK)    && (STACK_MODE != FINITE_ALLOCATED_STACK) && \
