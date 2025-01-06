@@ -23,10 +23,10 @@ PADS data structures are each divided into at least three modes with support for
 ### **In Progress:**
 
 - [BINARY SET](https://github.com/TheGAzed/pads/blob/main/headers/binary_set.h)
-- [LINKED LIST](https://github.com/TheGAzed/pads/blob/main/headers/double_list.h)
+- [LIST](https://github.com/TheGAzed/pads/blob/main/headers/list.h)
 
 ### **Planned:**
 
-- N-ARRY TREE
+- NARY TREE
 - GRAPH
 - DIGRAPH
