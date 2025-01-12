@@ -662,6 +662,325 @@ TEST IADL_42(void) {
     PASS();
 }
 
+TEST IADL_43(void) {
+    list_s test_one = create_list();
+    list_s test_two = create_list();
+
+    for (int i = 0; i < (MAXIMUM_INFINITE_LIST - 1) / 2; ++i) {
+        insert_at_list(&test_one, test_one.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+    for (int i = (MAXIMUM_INFINITE_LIST - 1) / 2; i < MAXIMUM_INFINITE_LIST - 1; ++i) {
+        insert_at_list(&test_two, test_two.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    list_s test = splice_list(&test_one, &test_two, test_one.size);
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST - 1; ++i) {
+        ASSERT_EQm("[IADL-ERROR] Expected ith element to be i", i, get_list(test, i).sub_one);
+    }
+
+    destroy_list(&test_one, NULL);
+    destroy_list(&test_two, NULL);
+    destroy_list(&test, NULL);
+
+    PASS();
+}
+
+TEST IADL_44(void) {
+    list_s test_one = create_list();
+    list_s test_two = create_list();
+
+    for (int i = 0; i < (MAXIMUM_INFINITE_LIST) / 2; ++i) {
+        insert_at_list(&test_one, test_one.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+    for (int i = (MAXIMUM_INFINITE_LIST) / 2; i < MAXIMUM_INFINITE_LIST; ++i) {
+        insert_at_list(&test_two, test_two.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    list_s test = splice_list(&test_one, &test_two, test_one.size);
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST; ++i) {
+        ASSERT_EQm("[IADL-ERROR] Expected ith element to be i", i, get_list(test, i).sub_one);
+    }
+
+    destroy_list(&test_one, NULL);
+    destroy_list(&test_two, NULL);
+    destroy_list(&test, NULL);
+
+    PASS();
+}
+
+TEST IADL_45(void) {
+    list_s test_one = create_list();
+    list_s test_two = create_list();
+
+    for (int i = 0; i < (MAXIMUM_INFINITE_LIST + 1) / 2; ++i) {
+        insert_at_list(&test_one, test_one.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+    for (int i = (MAXIMUM_INFINITE_LIST + 1) / 2; i < MAXIMUM_INFINITE_LIST + 1; ++i) {
+        insert_at_list(&test_two, test_two.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    list_s test = splice_list(&test_one, &test_two, test_one.size);
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST + 1; ++i) {
+        ASSERT_EQm("[IADL-ERROR] Expected ith element to be i", i, get_list(test, i).sub_one);
+    }
+
+    destroy_list(&test_one, NULL);
+    destroy_list(&test_two, NULL);
+    destroy_list(&test, NULL);
+
+    PASS();
+}
+
+TEST IADL_46(void) {
+    list_s test_one = create_list();
+    list_s test_two = create_list();
+
+    for (int i = 0; i < (MAXIMUM_INFINITE_LIST - 1) / 2; ++i) {
+        insert_at_list(&test_one, test_one.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+    for (int i = (MAXIMUM_INFINITE_LIST - 1) / 2; i < MAXIMUM_INFINITE_LIST - 1; ++i) {
+        insert_at_list(&test_two, test_two.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    list_s test = splice_list(&test_two, &test_one, 0);
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST - 1; ++i) {
+        ASSERT_EQm("[IADL-ERROR] Expected ith element to be i", i, get_list(test, i).sub_one);
+    }
+
+    destroy_list(&test_one, NULL);
+    destroy_list(&test_two, NULL);
+    destroy_list(&test, NULL);
+
+    PASS();
+}
+
+TEST IADL_47(void) {
+    list_s test_one = create_list();
+    list_s test_two = create_list();
+
+    for (int i = 0; i < (MAXIMUM_INFINITE_LIST) / 2; ++i) {
+        insert_at_list(&test_one, test_one.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+    for (int i = (MAXIMUM_INFINITE_LIST) / 2; i < MAXIMUM_INFINITE_LIST; ++i) {
+        insert_at_list(&test_two, test_two.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    list_s test = splice_list(&test_two, &test_one, 0);
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST; ++i) {
+        ASSERT_EQm("[IADL-ERROR] Expected ith element to be i", i, get_list(test, i).sub_one);
+    }
+
+    destroy_list(&test_one, NULL);
+    destroy_list(&test_two, NULL);
+    destroy_list(&test, NULL);
+
+    PASS();
+}
+
+TEST IADL_48(void) {
+    list_s test_one = create_list();
+    list_s test_two = create_list();
+
+    for (int i = 0; i < (MAXIMUM_INFINITE_LIST + 1) / 2; ++i) {
+        insert_at_list(&test_one, test_one.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+    for (int i = (MAXIMUM_INFINITE_LIST + 1) / 2; i < MAXIMUM_INFINITE_LIST + 1; ++i) {
+        insert_at_list(&test_two, test_two.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    list_s test = splice_list(&test_two, &test_one, 0);
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST + 1; ++i) {
+        ASSERT_EQm("[IADL-ERROR] Expected ith element to be i", i, get_list(test, i).sub_one);
+    }
+
+    destroy_list(&test_one, NULL);
+    destroy_list(&test_two, NULL);
+    destroy_list(&test, NULL);
+
+    PASS();
+}
+
+TEST IADL_49(void) {
+    list_s test_one   = create_list();
+    list_s test_two   = create_list();
+    list_s test_three = create_list();
+
+    for (int i = 0; i < (MAXIMUM_INFINITE_LIST - 1) / 3; ++i) {
+        insert_at_list(&test_one, test_one.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+    for (int i = (MAXIMUM_INFINITE_LIST - 1) / 3; i < ((MAXIMUM_INFINITE_LIST - 1) / 3) * 2; ++i) {
+        insert_at_list(&test_two, test_two.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+    for (int i = ((MAXIMUM_INFINITE_LIST - 1) / 3) * 2; i < MAXIMUM_INFINITE_LIST - 1; ++i) {
+        insert_at_list(&test_three, test_three.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    list_s temp = splice_list(&test_one, &test_three, test_one.size);
+    list_s test = splice_list(&temp, &test_two, (MAXIMUM_INFINITE_LIST - 1) / 3);
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST - 1; ++i) {
+        ASSERT_EQm("[IADL-ERROR] Expected ith element to be i", i, get_list(test, i).sub_one);
+    }
+
+    destroy_list(&test_one, NULL);
+    destroy_list(&test_two, NULL);
+    destroy_list(&test_three, NULL);
+
+    destroy_list(&temp, NULL);
+    destroy_list(&test, NULL);
+
+    PASS();
+}
+
+TEST IADL_50(void) {
+    list_s test_one   = create_list();
+    list_s test_two   = create_list();
+    list_s test_three = create_list();
+
+    for (int i = 0; i < (MAXIMUM_INFINITE_LIST) / 3; ++i) {
+        insert_at_list(&test_one, test_one.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+    for (int i = (MAXIMUM_INFINITE_LIST) / 3; i < ((MAXIMUM_INFINITE_LIST) / 3) * 2; ++i) {
+        insert_at_list(&test_two, test_two.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+    for (int i = ((MAXIMUM_INFINITE_LIST) / 3) * 2; i < MAXIMUM_INFINITE_LIST; ++i) {
+        insert_at_list(&test_three, test_three.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    list_s temp = splice_list(&test_one, &test_three, test_one.size);
+    list_s test = splice_list(&temp, &test_two, (MAXIMUM_INFINITE_LIST) / 3);
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST; ++i) {
+        ASSERT_EQm("[IADL-ERROR] Expected ith element to be i", i, get_list(test, i).sub_one);
+    }
+
+    destroy_list(&test_one, NULL);
+    destroy_list(&test_two, NULL);
+    destroy_list(&test_three, NULL);
+
+    destroy_list(&temp, NULL);
+    destroy_list(&test, NULL);
+
+    PASS();
+}
+
+TEST IADL_51(void) {
+    list_s test_one   = create_list();
+    list_s test_two   = create_list();
+    list_s test_three = create_list();
+
+    for (int i = 0; i < (MAXIMUM_INFINITE_LIST + 1) / 3; ++i) {
+        insert_at_list(&test_one, test_one.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+    for (int i = (MAXIMUM_INFINITE_LIST + 1) / 3; i < ((MAXIMUM_INFINITE_LIST + 1) / 3) * 2; ++i) {
+        insert_at_list(&test_two, test_two.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+    for (int i = ((MAXIMUM_INFINITE_LIST + 1) / 3) * 2; i < MAXIMUM_INFINITE_LIST + 1; ++i) {
+        insert_at_list(&test_three, test_three.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    list_s temp = splice_list(&test_one, &test_three, test_one.size);
+    list_s test = splice_list(&temp, &test_two, (MAXIMUM_INFINITE_LIST + 1) / 3);
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST + 1; ++i) {
+        ASSERT_EQm("[IADL-ERROR] Expected ith element to be i", i, get_list(test, i).sub_one);
+    }
+
+    destroy_list(&test_one, NULL);
+    destroy_list(&test_two, NULL);
+    destroy_list(&test_three, NULL);
+
+    destroy_list(&temp, NULL);
+    destroy_list(&test, NULL);
+
+    PASS();
+}
+
+TEST IADL_52(void) {
+    list_s test_one = create_list();
+    list_s test_two = create_list();
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST - 1; ++i) {
+        insert_at_list(&test_one, test_one.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    list_s test = splice_list(&test_one, &test_two, test_one.size);
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST - 1; ++i) {
+        ASSERT_EQm("[IADL-ERROR] Expected ith element to be i.", i, get_list(test, i).sub_one);
+    }
+
+    destroy_list(&test_one, NULL);
+    destroy_list(&test_two, NULL);
+    destroy_list(&test, NULL);
+
+    PASS();
+}
+
+TEST IADL_53(void) {
+    list_s test_one = create_list();
+    list_s test_two = create_list();
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST - 1; ++i) {
+        insert_at_list(&test_one, test_one.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    list_s test = splice_list(&test_one, &test_two, 0);
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST - 1; ++i) {
+        ASSERT_EQm("[IADL-ERROR] Expected ith element to be i.", i, get_list(test, i).sub_one);
+    }
+
+    destroy_list(&test_one, NULL);
+    destroy_list(&test_two, NULL);
+    destroy_list(&test, NULL);
+
+    PASS();
+}
+
+TEST IADL_54(void) {
+    list_s test_one = create_list();
+    list_s test_two = create_list();
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST - 1; ++i) {
+        insert_at_list(&test_one, test_one.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    list_s test = splice_list(&test_one, &test_two, test_one.size / 2);
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST - 1; ++i) {
+        ASSERT_EQm("[IADL-ERROR] Expected ith element to be i.", i, get_list(test, i).sub_one);
+    }
+
+    destroy_list(&test_one, NULL);
+    destroy_list(&test_two, NULL);
+    destroy_list(&test, NULL);
+
+    PASS();
+}
+
+TEST IADL_55(void) {
+    list_s test_one = create_list();
+    list_s test_two = create_list();
+
+    list_s test = splice_list(&test_one, &test_two, 0);
+
+    ASSERT_EQm("[IADL-ERROR] Expected test head to be NULL.", NULL, test.head);
+    ASSERT_EQm("[IADL-ERROR] Expected test size to be 0.", 0, test.size);
+
+    destroy_list(&test_one, NULL);
+    destroy_list(&test_two, NULL);
+    destroy_list(&test, NULL);
+
+    PASS();
+}
+
 SUITE (infinite_allocated_list_test) {
     RUN_TEST(IADL_01); RUN_TEST(IADL_02); RUN_TEST(IADL_03); RUN_TEST(IADL_04);
     RUN_TEST(IADL_05); RUN_TEST(IADL_06); RUN_TEST(IADL_07); RUN_TEST(IADL_08);
@@ -673,5 +992,8 @@ SUITE (infinite_allocated_list_test) {
     RUN_TEST(IADL_29); RUN_TEST(IADL_30); RUN_TEST(IADL_31); RUN_TEST(IADL_32);
     RUN_TEST(IADL_33); RUN_TEST(IADL_34); RUN_TEST(IADL_35); RUN_TEST(IADL_36);
     RUN_TEST(IADL_37); RUN_TEST(IADL_38); RUN_TEST(IADL_39); RUN_TEST(IADL_40);
-    RUN_TEST(IADL_41); RUN_TEST(IADL_42);
+    RUN_TEST(IADL_41); RUN_TEST(IADL_42); RUN_TEST(IADL_43); RUN_TEST(IADL_44);
+    RUN_TEST(IADL_45); RUN_TEST(IADL_46); RUN_TEST(IADL_47); RUN_TEST(IADL_48);
+    RUN_TEST(IADL_49); RUN_TEST(IADL_50); RUN_TEST(IADL_51); RUN_TEST(IADL_52);
+    RUN_TEST(IADL_53); RUN_TEST(IADL_54); RUN_TEST(IADL_55);
 }

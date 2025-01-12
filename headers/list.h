@@ -285,14 +285,23 @@ static inline list_s splice_list(list_s * restrict list_one, list_s * restrict l
     }
 
     if (current && list_two->head) {
-        current->prev->next = list_two->head;
-        list_two->head->prev = current->prev;
+        struct list_node * first_one = current;
+        struct list_node * last_one  = current->prev;
 
-        list_two->head->prev->next = current;
-        current->prev = list_two->head->prev;
+        struct list_node * first_two = list_two->head;
+        struct list_node * last_two  = list_two->head->prev;
+
+        last_one->next = first_two;
+        first_two->prev = last_one;
+
+        last_two->next = first_one;
+        first_one->prev = last_two;
     }
 
-    list_s list = { .size = list_one->size + list_two->size, .head = index ? list_one->head : list_two->head, };
+    const list_s list = {
+        .size = list_one->size + list_two->size,
+        .head = (index || list_two->head == NULL) ? list_one->head : list_two->head,
+    };
 
     *list_one = *list_two = (list_s) { 0 };
 
@@ -611,11 +620,17 @@ static inline list_s splice_list(list_s * restrict list_one, list_s * restrict l
     }
 
     if (list_one->size && list_two->size) {
-        list_one->node[NEXT_IDX][list_one->node[PREV_IDX][current]] = list_two->head;
-        list_two->node[PREV_IDX][list_two->head] = list_one->node[PREV_IDX][current];
+        const size_t first_one = current;
+        const size_t last_one  = list_one->node[PREV_IDX][current];
 
-        list_two->node[NEXT_IDX][list_two->node[PREV_IDX][list_two->head]] = current;
-        list_one->node[PREV_IDX][current] = list_two->node[PREV_IDX][list_two->head];
+        const size_t first_two = list_two->head;
+        const size_t last_two  = list_two->node[PREV_IDX][list_two->head];
+
+        list_one->node[NEXT_IDX][last_one] = first_two;
+        list_two->node[PREV_IDX][first_two] = last_one;
+
+        list_two->node[NEXT_IDX][last_two] = first_one;
+        list_one->node[PREV_IDX][first_one] = last_two;
     }
 
     memcpy(list_one->elements + list_one->size, list_two->elements, sizeof(LIST_DATA_TYPE) * list_two->size);
@@ -626,8 +641,8 @@ static inline list_s splice_list(list_s * restrict list_one, list_s * restrict l
     LIST_FREE(list_two->node[NEXT_IDX]);
     LIST_FREE(list_two->node[PREV_IDX]);
 
-    list_s list = {
-        .size = list_one->size + list_two->size, .head = index ? list_one->head : list_two->head, .max = max,
+    const list_s list = {
+        .size = list_one->size + list_two->size, .head = (index || !list_two->head) ? list_one->head : list_two->head, .max = max,
         .node[NEXT_IDX] = list_one->node[NEXT_IDX], .node[PREV_IDX] = list_one->node[PREV_IDX],
         .elements = list_one->elements,
     };
@@ -978,11 +993,17 @@ static inline list_s splice_list(list_s * restrict list_one, list_s * restrict l
     }
 
     if (list_one->size && list_two->size) {
-        list_one->node[NEXT_IDX][list_one->node[PREV_IDX][current]] = list_two->head;
-        list_two->node[PREV_IDX][list_two->head] = list_one->node[PREV_IDX][current];
+        const size_t first_one = current;
+        const size_t last_one  = list_one->node[PREV_IDX][current];
 
-        list_two->node[NEXT_IDX][list_two->node[PREV_IDX][list_two->head]] = current;
-        list_one->node[PREV_IDX][current] = list_two->node[PREV_IDX][list_two->head];
+        const size_t first_two = list_two->head;
+        const size_t last_two  = list_two->node[PREV_IDX][list_two->head];
+
+        list_one->node[NEXT_IDX][last_one] = first_two;
+        list_two->node[PREV_IDX][first_two] = last_one;
+
+        list_two->node[NEXT_IDX][last_two] = first_one;
+        list_one->node[PREV_IDX][first_one] = last_two;
     }
 
     memcpy(list_one->elements + list_one->size, list_two->elements, sizeof(LIST_DATA_TYPE) * list_two->size);
@@ -993,8 +1014,8 @@ static inline list_s splice_list(list_s * restrict list_one, list_s * restrict l
     LIST_FREE(list_two->node[NEXT_IDX]);
     LIST_FREE(list_two->node[PREV_IDX]);
 
-    list_s list = {
-        .head = index ? list_one->head : list_two->head, .elements = list_one->elements, .size = new_size,
+    const list_s list = {
+        .head = (index || !list_two->head) ? list_one->head : list_two->head, .elements = list_one->elements, .size = new_size,
         .node[NEXT_IDX] = list_one->node[NEXT_IDX], .node[PREV_IDX] = list_one->node[PREV_IDX],
     };
 
@@ -1325,14 +1346,20 @@ static inline list_s splice_list(list_s * restrict list_one, list_s * restrict l
     }
 
     if (list_one->size && list_two->size) {
-        list_one->node[NEXT_IDX][list_one->node[PREV_IDX][current]] = list_two->head;
-        list_two->node[PREV_IDX][list_two->head] = list_one->node[PREV_IDX][current];
+        const size_t first_one = current;
+        const size_t last_one  = list_one->node[PREV_IDX][current];
 
-        list_two->node[NEXT_IDX][list_two->node[PREV_IDX][list_two->head]] = current;
-        list_one->node[PREV_IDX][current] = list_two->node[PREV_IDX][list_two->head];
+        const size_t first_two = list_two->head;
+        const size_t last_two  = list_two->node[PREV_IDX][list_two->head];
+
+        list_one->node[NEXT_IDX][last_one] = first_two;
+        list_two->node[PREV_IDX][first_two] = last_one;
+
+        list_two->node[NEXT_IDX][last_two] = first_one;
+        list_one->node[PREV_IDX][first_one] = last_two;
     }
 
-    list_s list = { .head = index ? list_one->head : list_two->head, .size = list_one->size + list_two->size, };
+    list_s list = { .head = (index || !list_two->head) ? list_one->head : list_two->head, .size = list_one->size + list_two->size, };
     memcpy(list.elements, list_one->elements, sizeof(LIST_DATA_TYPE) * list_one->size);
     memcpy(list.node[NEXT_IDX], list_one->node[NEXT_IDX], sizeof(size_t) * list_one->size);
     memcpy(list.node[PREV_IDX], list_one->node[PREV_IDX], sizeof(size_t) * list_one->size);
