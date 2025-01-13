@@ -300,7 +300,7 @@ static inline list_s splice_list(list_s * restrict list_one, list_s * restrict l
 
     const list_s list = {
         .size = list_one->size + list_two->size,
-        .head = (index || list_two->head == NULL) ? list_one->head : list_two->head,
+        .head = (index || !list_two->size) ? list_one->head : list_two->head,
     };
 
     *list_one = *list_two = (list_s) { 0 };
@@ -310,8 +310,12 @@ static inline list_s splice_list(list_s * restrict list_one, list_s * restrict l
 
 static inline list_s split_list(list_s * list, const size_t index, const size_t size) {
     LIST_ASSERT(list && "[ERROR] List pointer is NULL");
-    LIST_ASSERT(size && "[ERROR] Can't split size zero.");
+    LIST_ASSERT(index < list->size && "[ERROR] Can only split at index less than list size.");
     LIST_ASSERT(size <= list->size && "[ERROR] Size parameter bigger than list size.");
+
+    if (!size) {
+        return (list_s) { 0 };
+    }
 
     struct list_node * index_node = list->head;
     if (index <= (list->size >> 1)) {
@@ -324,18 +328,29 @@ static inline list_s split_list(list_s * list, const size_t index, const size_t 
     if (size <= (list->size >> 1)) {
         for (size_t i = 0; i < size - 1; ++i) { size_node = size_node->next; }
     } else {
-        for (size_t i = 0; i < list->size - size - 1; ++i) { size_node = size_node->prev; }
+        for (size_t i = 0; i < list->size - size + 1; ++i) { size_node = size_node->prev; }
+    }
+
+    if (!index || ((index + size) >= list->size)) {
+        list->head = size_node->next;
     }
 
     list->size -= size;
-    if (!index || ((index + size) > list->size)) list->head = size_node->next;
-    if (!list->size) list->head = NULL;
+    if (!list->size) {
+        list->head = NULL;
+    }
 
-    index_node->prev->next = size_node->next;
-    size_node->next->prev = index_node->prev;
+    struct list_node * first_list = size_node->next;
+    struct list_node * last_list  = index_node->prev;
 
-    index_node->prev = size_node;
-    size_node->next = index_node;
+    struct list_node * first_split = index_node;
+    struct list_node * last_split  = size_node;
+
+    first_list->prev = last_list;
+    last_list->next = first_list;
+
+    first_split->prev = last_split;
+    last_split->next = first_split;
 
     return (list_s) { .head = index_node, .size = size };
 }
@@ -360,7 +375,7 @@ static inline LIST_DATA_TYPE get_list(const list_s list, const size_t index) {
 }
 
 static inline bool is_empty_list(const list_s list) {
-    return list.size == 0;
+    return (list.size == 0);
 }
 
 static inline bool is_full_list(const list_s list) {
@@ -416,7 +431,7 @@ static inline void sort_list(list_s const * list, const sort_list_fn sort, const
     LIST_FREE(elements_array);
 }
 
-static inline void foreach_list(list_s * list, const operate_list_fn operate, void * args) {
+static inline void foreach_list(const list_s * list, const operate_list_fn operate, void * args) {
     LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
     LIST_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
 
@@ -425,6 +440,18 @@ static inline void foreach_list(list_s * list, const operate_list_fn operate, vo
         if (!operate(&current->element, args)) return;
 
         current = current->next;
+    }
+}
+
+static inline void foreach_reverse_list(const list_s * list, const operate_list_fn operate, void * args) {
+    LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
+    LIST_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
+
+    struct list_node * current = list->head;
+    for (size_t i = 0; i < list->size; ++i) {
+        current = current->prev;
+
+        if (!operate(&current->element, args)) return;
     }
 }
 
@@ -642,7 +669,7 @@ static inline list_s splice_list(list_s * restrict list_one, list_s * restrict l
     LIST_FREE(list_two->node[PREV_IDX]);
 
     const list_s list = {
-        .size = list_one->size + list_two->size, .head = (index || !list_two->head) ? list_one->head : list_two->head, .max = max,
+        .size = list_one->size + list_two->size, .head = (index || !list_two->size) ? list_one->head : list_two->head, .max = max,
         .node[NEXT_IDX] = list_one->node[NEXT_IDX], .node[PREV_IDX] = list_one->node[PREV_IDX],
         .elements = list_one->elements,
     };
@@ -721,7 +748,7 @@ static inline LIST_DATA_TYPE get_list(const list_s list, const size_t index) {
 }
 
 static inline bool is_empty_list(const list_s list) {
-    return list.size == 0;
+    return (list.size == 0);
 }
 
 static inline bool is_full_list(const list_s list) {
@@ -772,7 +799,7 @@ static inline void sort_list(list_s * list, const sort_list_fn sort, const compa
     }
 }
 
-static inline void foreach_list(list_s * list, const operate_list_fn operate, void * args) {
+static inline void foreach_list(const list_s * list, const operate_list_fn operate, void * args) {
     LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
     LIST_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
 
@@ -781,6 +808,18 @@ static inline void foreach_list(list_s * list, const operate_list_fn operate, vo
         if (!operate(&(list->elements[current]), args)) return;
 
         current = list->node[NEXT_IDX][current];
+    }
+}
+
+static inline void foreach_reverse_list(const list_s * list, const operate_list_fn operate, void * args) {
+    LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
+    LIST_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
+
+    size_t current = list->head;
+    for (size_t i = 0; i < list->size; ++i) {
+        current = list->node[PREV_IDX][current];
+
+        if (!operate(list->elements + current, args)) return;
     }
 }
 
@@ -1015,7 +1054,7 @@ static inline list_s splice_list(list_s * restrict list_one, list_s * restrict l
     LIST_FREE(list_two->node[PREV_IDX]);
 
     const list_s list = {
-        .head = (index || !list_two->head) ? list_one->head : list_two->head, .elements = list_one->elements, .size = new_size,
+        .head = (index || !list_two->size) ? list_one->head : list_two->head, .elements = list_one->elements, .size = new_size,
         .node[NEXT_IDX] = list_one->node[NEXT_IDX], .node[PREV_IDX] = list_one->node[PREV_IDX],
     };
 
@@ -1029,7 +1068,9 @@ static inline list_s split_list(list_s * list, const size_t index, const size_t 
     LIST_ASSERT(index < list->size && "[ERROR] Can only split at index less than list size.");
     LIST_ASSERT(size <= list->size && "[ERROR] Size parameter bigger than list size.");
 
-    if (!size) { return (list_s) { 0 }; }
+    if (!size) {
+        return (list_s) { 0 };
+    }
 
     const size_t split_chunk = size - (size % REALLOC_LIST_CHUNK) + REALLOC_LIST_CHUNK;
     list_s const split_list = {
@@ -1099,7 +1140,7 @@ static inline LIST_DATA_TYPE get_list(const list_s list, const size_t index) {
 }
 
 static inline bool is_empty_list(const list_s list) {
-    return list.size == 0;
+    return (list.size == 0);
 }
 
 static inline bool is_full_list(const list_s list) {
@@ -1153,7 +1194,7 @@ static inline void sort_list(list_s * list, const sort_list_fn sort, const compa
     }
 }
 
-static inline void foreach_list(list_s * list, const operate_list_fn operate, void * args) {
+static inline void foreach_list(const list_s * list, const operate_list_fn operate, void * args) {
     LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
     LIST_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
 
@@ -1162,6 +1203,18 @@ static inline void foreach_list(list_s * list, const operate_list_fn operate, vo
         if (!operate(&(list->elements[current]), args)) return;
 
         current = list->node[NEXT_IDX][current];
+    }
+}
+
+static inline void foreach_reverse_list(const list_s * list, const operate_list_fn operate, void * args) {
+    LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
+    LIST_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
+
+    size_t current = list->head;
+    for (size_t i = 0; i < list->size; ++i) {
+        current = list->node[PREV_IDX][current];
+
+        if (!operate(list->elements + current, args)) return;
     }
 }
 
@@ -1359,7 +1412,7 @@ static inline list_s splice_list(list_s * restrict list_one, list_s * restrict l
         list_one->node[PREV_IDX][first_one] = last_two;
     }
 
-    list_s list = { .head = (index || !list_two->head) ? list_one->head : list_two->head, .size = list_one->size + list_two->size, };
+    list_s list = { .head = (index || !list_two->size) ? list_one->head : list_two->head, .size = list_one->size + list_two->size, };
     memcpy(list.elements, list_one->elements, sizeof(LIST_DATA_TYPE) * list_one->size);
     memcpy(list.node[NEXT_IDX], list_one->node[NEXT_IDX], sizeof(size_t) * list_one->size);
     memcpy(list.node[PREV_IDX], list_one->node[PREV_IDX], sizeof(size_t) * list_one->size);
@@ -1434,7 +1487,7 @@ static inline LIST_DATA_TYPE get_list(const list_s list, const size_t index) {
 }
 
 static inline bool is_empty_list(const list_s list) {
-    return list.size == 0;
+    return (list.size == 0);
 }
 
 static inline bool is_full_list(const list_s list) {
@@ -1484,6 +1537,18 @@ static inline void foreach_list(list_s * list, const operate_list_fn operate, vo
     for (size_t i = 0; i < list->size; ++i) {
         if (!operate(&(list->elements[current]), args)) return;
         current = list->node[NEXT_IDX][current];
+    }
+}
+
+static inline void foreach_reverse_list(list_s * list, const operate_list_fn operate, void * args) {
+    LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
+    LIST_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
+
+    size_t current = list->head;
+    for (size_t i = 0; i < list->size; ++i) {
+        current = list->node[PREV_IDX][current];
+
+        if (!operate(list->elements + current, args)) return;
     }
 }
 
