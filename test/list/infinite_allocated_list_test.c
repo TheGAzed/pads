@@ -1060,7 +1060,7 @@ TEST IADL_62(void) {
         insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
     }
 
-    list_s test_split = split_list(&test, 0, (MAXIMUM_INFINITE_LIST - 1) / 2);
+    list_s test_split = split_list(&test, 0, test.size / 2);
 
     for (int i = 0; i < test_split.size; ++i) {
         ASSERT_EQm("[IADL-ERROR] Expected ith element to be i.", i, get_list(test_split, i).sub_one);
@@ -1082,7 +1082,7 @@ TEST IADL_63(void) {
         insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
     }
 
-    list_s test_split = split_list(&test, (MAXIMUM_INFINITE_LIST - 1) / 2, test.size - ((MAXIMUM_INFINITE_LIST - 1) / 2));
+    list_s test_split = split_list(&test, test.size / 2, test.size - (test.size / 2));
 
     for (int i = 0; i < test_split.size; ++i) {
         ASSERT_EQm("[IADL-ERROR] Expected ith element to be i.", i + ((MAXIMUM_INFINITE_LIST - 1) / 2), get_list(test_split, i).sub_one);
@@ -1104,7 +1104,7 @@ TEST IADL_64(void) {
         insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
     }
 
-    list_s test_split = split_list(&test, (MAXIMUM_INFINITE_LIST - 1) / 3, (MAXIMUM_INFINITE_LIST - 1) / 3);
+    list_s test_split = split_list(&test, test.size / 3, test.size / 3);
 
     for (int i = 0; i < test_split.size; ++i) {
         ASSERT_EQm("[IADL-ERROR] Expected ith element to be i.", i + ((MAXIMUM_INFINITE_LIST - 1) / 3), get_list(test_split, i).sub_one);
@@ -1123,7 +1123,7 @@ TEST IADL_65(void) {
         insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
     }
 
-    list_s test_split = split_list(&test, 0, (MAXIMUM_INFINITE_LIST) / 2);
+    list_s test_split = split_list(&test, 0, test.size / 2);
 
     for (int i = 0; i < test_split.size; ++i) {
         ASSERT_EQm("[IADL-ERROR] Expected ith element to be i.", i, get_list(test_split, i).sub_one);
@@ -1145,7 +1145,7 @@ TEST IADL_66(void) {
         insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
     }
 
-    list_s test_split = split_list(&test, (MAXIMUM_INFINITE_LIST) / 2, test.size - ((MAXIMUM_INFINITE_LIST) / 2));
+    list_s test_split = split_list(&test, test.size / 2, test.size - (test.size / 2));
 
     for (int i = 0; i < test_split.size; ++i) {
         ASSERT_EQm("[IADL-ERROR] Expected ith element to be i.", i + ((MAXIMUM_INFINITE_LIST) / 2), get_list(test_split, i).sub_one);
@@ -1167,7 +1167,7 @@ TEST IADL_67(void) {
         insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
     }
 
-    list_s test_split = split_list(&test, (MAXIMUM_INFINITE_LIST) / 3, (MAXIMUM_INFINITE_LIST) / 3);
+    list_s test_split = split_list(&test, test.size / 3, test.size / 3);
 
     for (int i = 0; i < test_split.size; ++i) {
         ASSERT_EQm("[IADL-ERROR] Expected ith element to be i.", i + ((MAXIMUM_INFINITE_LIST) / 3), get_list(test_split, i).sub_one);
@@ -1186,7 +1186,7 @@ TEST IADL_68(void) {
         insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
     }
 
-    list_s test_split = split_list(&test, 0, (MAXIMUM_INFINITE_LIST + 1) / 2);
+    list_s test_split = split_list(&test, 0, test.size / 2);
 
     for (int i = 0; i < test_split.size; ++i) {
         ASSERT_EQm("[IADL-ERROR] Expected ith element to be i.", i, get_list(test_split, i).sub_one);
@@ -1208,7 +1208,7 @@ TEST IADL_69(void) {
         insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
     }
 
-    list_s test_split = split_list(&test, (MAXIMUM_INFINITE_LIST + 1) / 2, test.size - ((MAXIMUM_INFINITE_LIST + 1) / 2));
+    list_s test_split = split_list(&test, test.size / 2, test.size - (test.size / 2));
 
     for (int i = 0; i < test_split.size; ++i) {
         ASSERT_EQm("[IADL-ERROR] Expected ith element to be i.", i + ((MAXIMUM_INFINITE_LIST + 1) / 2), get_list(test_split, i).sub_one);
@@ -1230,10 +1230,136 @@ TEST IADL_70(void) {
         insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
     }
 
-    list_s test_split = split_list(&test, (MAXIMUM_INFINITE_LIST + 1) / 3, (MAXIMUM_INFINITE_LIST + 1) / 3);
+    list_s test_split = split_list(&test, test.size / 3, test.size / 3);
 
     for (int i = 0; i < test_split.size; ++i) {
         ASSERT_EQm("[IADL-ERROR] Expected ith element to be i.", i + ((MAXIMUM_INFINITE_LIST + 1) / 3), get_list(test_split, i).sub_one);
+    }
+
+    destroy_list(&test, NULL);
+    destroy_list(&test_split, NULL);
+
+    PASS();
+}
+
+TEST IADL_71(void) {
+    list_s test = create_list();
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST - 1; ++i) {
+        insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    list_s test_split = split_list(&test, 1, test.size);
+
+    for (int i = 0; i < test_split.size - 1; ++i) {
+        ASSERT_EQm("[IADL-ERROR] Expected ith element to be i.", i + 1, get_list(test_split, i).sub_one);
+    }
+
+    ASSERT_EQm("[IADL-ERROR] Expected last element to be first added.", 0, get_list(test_split, test_split.size - 1).sub_one);
+
+    destroy_list(&test, NULL);
+    destroy_list(&test_split, NULL);
+
+    PASS();
+}
+
+TEST IADL_72(void) {
+    list_s test = create_list();
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST - 1; ++i) {
+        insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    list_s test_split = split_list(&test, test.size - 1, test.size);
+
+    ASSERT_EQm("[IADL-ERROR] Expected first element to be last added.", MAXIMUM_INFINITE_LIST - 2, get_list(test_split, 0).sub_one);
+
+    for (int i = 1; i < test_split.size; ++i) {
+        ASSERT_EQm("[IADL-ERROR] Expected ith element to be i.", i - 1, get_list(test_split, i).sub_one);
+    }
+
+    destroy_list(&test, NULL);
+    destroy_list(&test_split, NULL);
+
+    PASS();
+}
+
+TEST IADL_73(void) {
+    list_s test = create_list();
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST; ++i) {
+        insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    list_s test_split = split_list(&test, 1, test.size);
+
+    for (int i = 0; i < test_split.size - 1; ++i) {
+        ASSERT_EQm("[IADL-ERROR] Expected ith element to be i.", i + 1, get_list(test_split, i).sub_one);
+    }
+
+    ASSERT_EQm("[IADL-ERROR] Expected last element to be first added.", 0, get_list(test_split, test_split.size - 1).sub_one);
+
+    destroy_list(&test, NULL);
+    destroy_list(&test_split, NULL);
+
+    PASS();
+}
+
+TEST IADL_74(void) {
+    list_s test = create_list();
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST; ++i) {
+        insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    list_s test_split = split_list(&test, test.size - 1, test.size);
+
+    ASSERT_EQm("[IADL-ERROR] Expected first element to be last added.", MAXIMUM_INFINITE_LIST - 1, get_list(test_split, 0).sub_one);
+
+    for (int i = 1; i < test_split.size; ++i) {
+        ASSERT_EQm("[IADL-ERROR] Expected ith element to be i.", i - 1, get_list(test_split, i).sub_one);
+    }
+
+    destroy_list(&test, NULL);
+    destroy_list(&test_split, NULL);
+
+    PASS();
+}
+
+TEST IADL_75(void) {
+    list_s test = create_list();
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST + 1; ++i) {
+        insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    list_s test_split = split_list(&test, 1, test.size);
+
+    for (int i = 0; i < test_split.size - 1; ++i) {
+        ASSERT_EQm("[IADL-ERROR] Expected ith element to be i.", i + 1, get_list(test_split, i).sub_one);
+    }
+
+    ASSERT_EQm("[IADL-ERROR] Expected last element to be first added.", 0, get_list(test_split, test_split.size - 1).sub_one);
+
+    destroy_list(&test, NULL);
+    destroy_list(&test_split, NULL);
+
+    PASS();
+}
+
+TEST IADL_76(void) {
+    list_s test = create_list();
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST + 1; ++i) {
+        insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    list_s test_split = split_list(&test, test.size - 1, test.size);
+
+    ASSERT_EQm("[IADL-ERROR] Expected first element to be last added.", MAXIMUM_INFINITE_LIST, get_list(test_split, 0).sub_one);
+
+    for (int i = 1; i < test_split.size; ++i) {
+        ASSERT_EQm("[IADL-ERROR] Expected ith element to be i.", i - 1, get_list(test_split, i).sub_one);
     }
 
     destroy_list(&test, NULL);
@@ -1260,5 +1386,6 @@ SUITE (infinite_allocated_list_test) {
     RUN_TEST(IADL_57); RUN_TEST(IADL_58); RUN_TEST(IADL_59); RUN_TEST(IADL_60);
     RUN_TEST(IADL_61); RUN_TEST(IADL_62); RUN_TEST(IADL_63); RUN_TEST(IADL_64);
     RUN_TEST(IADL_65); RUN_TEST(IADL_66); RUN_TEST(IADL_67); RUN_TEST(IADL_68);
-    RUN_TEST(IADL_69); RUN_TEST(IADL_70);
+    RUN_TEST(IADL_69); RUN_TEST(IADL_70); RUN_TEST(IADL_71); RUN_TEST(IADL_72);
+    RUN_TEST(IADL_73); RUN_TEST(IADL_74); RUN_TEST(IADL_75); RUN_TEST(IADL_76);
 }
