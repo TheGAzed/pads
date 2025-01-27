@@ -3,7 +3,6 @@
 !resources/
 !external/
 !source/
-!test/
 !github/
 
 !.gitignore
