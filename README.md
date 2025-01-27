@@ -17,13 +17,13 @@ PADS data structures are each divided into at least three modes with support for
 
 ### **Available:**
 
-- [STACK](https://github.com/TheGAzed/pads/blob/main/headers/stack.h)
-- [QUEUE](https://github.com/TheGAzed/pads/blob/main/headers/queue.h)
+- [STACK](https://github.com/TheGAzed/pads/blob/main/source/stack)
+- [QUEUE](https://github.com/TheGAzed/pads/blob/main/source/queue)
 
 ### **In Progress:**
 
-- [BINARY SET](https://github.com/TheGAzed/pads/blob/main/headers/binary_set.h)
-- [LIST](https://github.com/TheGAzed/pads/blob/main/headers/list.h)
+- [BINARY SET](https://github.com/TheGAzed/pads/blob/main/source/binary_set)
+- [LIST](https://github.com/TheGAzed/pads/blob/main/source/list)
 
 ### **Planned:**
 
