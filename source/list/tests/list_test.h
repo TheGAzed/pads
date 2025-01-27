@@ -15,6 +15,9 @@ typedef union type_dst {
 void destroy_element(LIST_DATA_TYPE * element);
 LIST_DATA_TYPE copy_element(const LIST_DATA_TYPE element);
 
+int compare_int(const void * a, const void * b);
+int compare_string(const void * a, const void * b);
+
 bool operation_int(LIST_DATA_TYPE * element, void * args);
 bool operation_string(LIST_DATA_TYPE * element, void * args);
 

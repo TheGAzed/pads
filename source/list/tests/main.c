@@ -9,6 +9,14 @@ LIST_DATA_TYPE copy_element(const LIST_DATA_TYPE element) {
     return (LIST_DATA_TYPE) { .sub_two = strdup(element.sub_two), };
 }
 
+int compare_int(const void * a, const void * b) {
+    return ((LIST_DATA_TYPE *)a)->sub_one - ((LIST_DATA_TYPE *)b)->sub_one;
+}
+
+int compare_string(const void * a, const void * b) {
+    return strcmp(((LIST_DATA_TYPE *)a)->sub_two, ((LIST_DATA_TYPE *)b)->sub_two);
+}
+
 bool operation_int(LIST_DATA_TYPE * element, void * args) {
     element->sub_one += *((int *)(args));
 

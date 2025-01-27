@@ -104,7 +104,7 @@ typedef LIST_DATA_TYPE (*copy_list_fn)    (const LIST_DATA_TYPE);
 typedef void           (*destroy_list_fn) (LIST_DATA_TYPE *);
 typedef int            (*compare_list_fn) (const void *, const void *);
 typedef bool           (*operate_list_fn) (LIST_DATA_TYPE *, void *);
-typedef void           (*sort_list_fn)    (void * array, size_t number, size_t size, compare_list_fn);
+typedef void           (*sort_list_fn)    (void *, size_t, size_t, compare_list_fn);
 
 #if   LIST_MODE == INFINITE_ALLOCATED_LIST
 
@@ -410,7 +410,6 @@ static inline list_s copy_list(const list_s list, const copy_list_fn copy) {
 static inline void sort_list(list_s const * list, const sort_list_fn sort, const compare_list_fn compare) {
     LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL");
     LIST_ASSERT(sort && "[ERROR] 'sort' parameter pointer is NULL");
-    LIST_ASSERT(compare && "[ERROR] 'compare' parameter pointer is NULL");
 
     LIST_DATA_TYPE * elements_array = LIST_ALLOC(sizeof(LIST_DATA_TYPE) * list->size);
     LIST_ASSERT((!(list->size) || elements_array) && "[ERROR] Memory allocation failed.");
@@ -784,7 +783,6 @@ static inline list_s copy_list(const list_s list, const copy_list_fn copy) {
 static inline void sort_list(list_s * list, const sort_list_fn sort, const compare_list_fn compare) {
     LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL");
     LIST_ASSERT(sort && "[ERROR] 'sort' function pointer parameter is NULL");
-    LIST_ASSERT(compare && "[ERROR] 'compare' function pointer parameter is NULL");
 
     sort(list->elements, list->size, sizeof(LIST_DATA_TYPE), compare);
 
@@ -1179,7 +1177,6 @@ static inline list_s copy_list(const list_s list, const copy_list_fn copy) {
 static inline void sort_list(list_s * list, const sort_list_fn sort, const compare_list_fn compare) {
     LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL");
     LIST_ASSERT(sort && "[ERROR] 'sort' function pointer parameter is NULL");
-    LIST_ASSERT(compare && "[ERROR] 'compare' function pointer parameter is NULL");
 
     sort(list->elements, list->size, sizeof(LIST_DATA_TYPE), compare);
 
@@ -1515,7 +1512,6 @@ static inline list_s copy_list(const list_s list, const copy_list_fn copy) {
 static inline void sort_list(list_s * list, const sort_list_fn sort, const compare_list_fn compare) {
     LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL");
     LIST_ASSERT(sort && "[ERROR] 'sort' function pointer parameter is NULL");
-    LIST_ASSERT(compare && "[ERROR] 'compare' function pointer parameter is NULL");
 
     sort(list->elements, list->size, sizeof(LIST_DATA_TYPE), compare);
 
