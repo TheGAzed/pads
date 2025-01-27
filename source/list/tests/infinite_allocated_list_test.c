@@ -2,7 +2,7 @@
 
 #define LIST_MODE INFINITE_ALLOCATED_LIST
 #define MAXIMUM_INFINITE_LIST (1 << 4)
-#include <list.h>
+#include <list/list.h>
 
 TEST IADL_01(void) {
     list_s test = create_list();

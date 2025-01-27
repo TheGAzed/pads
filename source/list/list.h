@@ -1,9 +1,9 @@
 #ifndef LIST_H
 #define LIST_H
 
-#include <stdlib.h>  // imports size_t and malloc
+#include <stdlib.h>  // imports size_t, malloc, realloc, free
 #include <stdbool.h> // imports bool
-#include <string.h>  // imports memcpy
+#include <string.h>  // imports memcpy, memmove
 
 #ifdef LIST_LICENCE
 

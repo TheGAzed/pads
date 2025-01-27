@@ -2,7 +2,7 @@
 
 #define STACK_MODE INFINITE_LIST_STACK
 #define LIST_ARRAY_STACK_CHUNK (1 << 4)
-#include <stack.h>
+#include <stack/stack.h>
 
 /// Tests if stack is initialized correctly when creating it.
 TEST ILS_01(void) {

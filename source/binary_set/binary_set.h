@@ -162,10 +162,10 @@ static inline binary_set_s create_binary_set(const compare_binary_set_fn compare
 static inline void destroy_binary_set(binary_set_s * set, const destroy_binary_set_fn destroy) {
     BINARY_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL");
 
-    for (size_t i = 0; destroy && i < set->size; ++i) {
+    for (size_t i = 0; destroy && i < set->size; ++i) { // loop over and destroy every element if destroy is specified
         destroy(set->elements + i);
     }
-    free(set->elements);
+    free(set->elements); // free array memory that held elements
     *set = (binary_set_s) { 0 };
 }
 
@@ -241,7 +241,7 @@ static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const B
         const int comparison = set->compare ? set->compare(current_element, &element) : memcmp(current_element, &element, sizeof(BINARY_SET_DATA_TYPE));
         if (comparison == 0) {
             BINARY_SET_DATA_TYPE temp = *current_element;
-            --set->size;
+            set->size--;
             memmove(current_element, current_element + 1, (set->size - (current_element - set->elements)) * sizeof(BINARY_SET_DATA_TYPE));
 
             if ((set->size % REALLOC_BINARY_SET_CHUNK) == 0) {
@@ -260,7 +260,7 @@ static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const B
     exit(EXIT_FAILURE);
 }
 
-/// @brief creates and returns a union of two sets whose elements are copied into the new set.
+/// @brief Creates and returns a union of two sets whose elements are copied into the new set.
 /// @param set_one First set structure to union.
 /// @param set_two Second set structure to union.
 /// @param copy Function pointer that creates a copy for elements in union or NULL, if shallow copy should be created.
@@ -310,7 +310,7 @@ static inline binary_set_s union_binary_set(const binary_set_s set_one, const bi
     return set;
 }
 
-/// @brief creates and returns an intersect of two sets whose elements are copied into the new set.
+/// @brief Creates and returns an intersect of two sets whose elements are copied into the new set.
 /// @param set_one First set structure to intersect.
 /// @param set_two Second set structure to intersect.
 /// @param copy Function pointer that creates a copy for elements in intersect or NULL, if shallow copy should be created.
@@ -348,7 +348,7 @@ static inline binary_set_s intersect_binary_set(const binary_set_s set_one, cons
     return set;
 }
 
-/// @brief creates and returns a subtract of two sets whose elements are copied into the new set.
+/// @brief Creates and returns a subtract of two sets whose elements are copied into the new set.
 /// @param set_one First set structure that gets subtracted.
 /// @param set_two Second set structure that subtracts.
 /// @param copy Function pointer that creates a copy for elements in subtract or NULL, if shallow copy should be created.
@@ -391,7 +391,7 @@ static inline binary_set_s subtract_binary_set(const binary_set_s set_one, const
     return set;
 }
 
-/// @brief creates and returns an exclude (symmetric difference) of two sets whose elements are copied into the new set.
+/// @brief Creates and returns an exclude (symmetric difference) of two sets whose elements are copied into the new set.
 /// @param set_one First set structure to exclude (symmetric difference).
 /// @param set_two Second set structure to exclude (symmetric difference).
 /// @param copy Function pointer that creates a copy for elements in exclude (symmetric difference) or NULL, if shallow copy should be created.
@@ -451,15 +451,19 @@ static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const 
     return set;
 }
 
-static inline bool is_subset_binary_set(const binary_set_s set_one, const binary_set_s set_two) {
-    BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't union sets with different compare functions.");
+/// @brief Checks if
+/// @param super First set structure to exclude (symmetric difference).
+/// @param sub Second set structure to exclude (symmetric difference).
+/// @return New exclude (symmetric difference) of set_one and set_two.
+static inline bool is_subset_binary_set(const binary_set_s super, const binary_set_s sub) {
+    BINARY_SET_ASSERT(super.compare == sub.compare && "[ERROR] Can't check subset of sets with different compare functions.");
 
-    BINARY_SET_DATA_TYPE * base = set_two.elements;
-    for (size_t i = 0; i < set_one.size; ++i) { // for each element in set one
+    BINARY_SET_DATA_TYPE * base = sub.elements;
+    for (size_t i = 0; i < super.size; ++i) { // for each element in set one
         bool found_element = false;
-        for (size_t limit = set_two.size - (base - set_two.elements); limit != 0; limit >>= 1) {
+        for (size_t limit = sub.size - (base - sub.elements); limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
-            const int comparison = set_one.compare ? set_one.compare(current_element, set_one.elements + i) : memcmp(current_element, set_one.elements + i, sizeof(BINARY_SET_DATA_TYPE));
+            const int comparison = super.compare ? super.compare(current_element, super.elements + i) : memcmp(current_element, super.elements + i, sizeof(BINARY_SET_DATA_TYPE));
             if (comparison == 0) {
                 found_element = true;
                 break;
@@ -477,15 +481,15 @@ static inline bool is_subset_binary_set(const binary_set_s set_one, const binary
     return true;
 }
 
-static inline bool is_proper_subset_binary_set(const binary_set_s set_one, const binary_set_s set_two) {
-    BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't union sets with different compare functions.");
+static inline bool is_proper_subset_binary_set(const binary_set_s super, const binary_set_s sub) {
+    BINARY_SET_ASSERT(super.compare == sub.compare && "[ERROR] Can't check proper subset sets of with different compare functions.");
 
-    BINARY_SET_DATA_TYPE * base = set_two.elements;
-    for (size_t i = 0; i < set_one.size; ++i) { // for each element in set one
+    BINARY_SET_DATA_TYPE * base = sub.elements;
+    for (size_t i = 0; i < super.size; ++i) { // for each element in set one
         bool found_element = false;
-        for (size_t limit = set_two.size - (base - set_two.elements); limit != 0; limit >>= 1) {
+        for (size_t limit = sub.size - (base - sub.elements); limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
-            const int comparison = set_one.compare ? set_one.compare(current_element, set_one.elements + i) : memcmp(current_element, set_one.elements + i, sizeof(BINARY_SET_DATA_TYPE));
+            const int comparison = super.compare ? super.compare(current_element, super.elements + i) : memcmp(current_element, super.elements + i, sizeof(BINARY_SET_DATA_TYPE));
             if (comparison == 0) {
                 found_element = true;
                 break;
@@ -500,59 +504,7 @@ static inline bool is_proper_subset_binary_set(const binary_set_s set_one, const
         }
     }
 
-    return true && (set_one.size != set_two.size);
-}
-
-static inline bool is_superset_binary_set(const binary_set_s set_one, const binary_set_s set_two) {
-    BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't union sets with different compare functions.");
-
-    BINARY_SET_DATA_TYPE * base = set_one.elements;
-    for (size_t i = 0; i < set_two.size; ++i) { // for each element in set two
-        bool found_element = false;
-        for (size_t limit = set_one.size - (base - set_one.elements); limit != 0; limit >>= 1) {
-            BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
-            const int comparison = set_two.compare ? set_two.compare(current_element, set_two.elements + i) : memcmp(current_element, set_two.elements + i, sizeof(BINARY_SET_DATA_TYPE));
-            if (comparison == 0) {
-                found_element = true;
-                break;
-            }
-            if (comparison > 0) {
-                base = current_element + 1; // increment element pointer to next
-                limit--;
-            }
-        }
-        if (!found_element) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-static inline bool is_proper_superset_binary_set(const binary_set_s set_one, const binary_set_s set_two) {
-    BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't union sets with different compare functions.");
-
-    BINARY_SET_DATA_TYPE * base = set_one.elements;
-    for (size_t i = 0; i < set_two.size; ++i) { // for each element in set two
-        bool found_element = false;
-        for (size_t limit = set_one.size - (base - set_one.elements); limit != 0; limit >>= 1) {
-            BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
-            const int comparison = set_two.compare ? set_two.compare(current_element, set_two.elements + i) : memcmp(current_element, set_two.elements + i, sizeof(BINARY_SET_DATA_TYPE));
-            if (comparison == 0) {
-                found_element = true;
-                break;
-            }
-            if (comparison > 0) {
-                base = current_element + 1; // increment element pointer to next
-                limit--;
-            }
-        }
-        if (!found_element) {
-            return false;
-        }
-    }
-
-    return true && (set_one.size != set_two.size);
+    return true && (super.size != sub.size);
 }
 
 static inline bool is_disjoint_binary_set(const binary_set_s set_one, const binary_set_s set_two) {
@@ -577,9 +529,13 @@ static inline bool is_disjoint_binary_set(const binary_set_s set_one, const bina
 }
 
 static inline binary_set_s copy_binary_set(const binary_set_s set, const copy_binary_set_fn copy) {
+    if (!set.size) {
+        return (binary_set_s) { .compare = set.compare, .size = 0, .elements = NULL };
+    }
+
     const binary_set_s set_copy = {
         .compare = set.compare, .size = set.size,
-        .elements = set.size ? malloc((set.size - (set.size % REALLOC_BINARY_SET_CHUNK) + REALLOC_BINARY_SET_CHUNK) * sizeof(BINARY_SET_DATA_TYPE)) : NULL,
+        .elements = malloc((set.size - (set.size % REALLOC_BINARY_SET_CHUNK) + REALLOC_BINARY_SET_CHUNK) * sizeof(BINARY_SET_DATA_TYPE)),
     };
 
     if (copy) {
@@ -601,7 +557,7 @@ static inline bool is_full_binary_set(const binary_set_s set) {
     return !(~(set.size));
 }
 
-static inline void foreach_binary_set(binary_set_s * set, const operate_binary_set_fn operate, void * args) {
+static inline void foreach_binary_set(const binary_set_s * set, const operate_binary_set_fn operate, void * args) {
     for (size_t i = 0; i < set->size; ++i) {
         if (!operate(set->elements + i, args)) return;
     }
@@ -733,7 +689,7 @@ static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const B
     exit(EXIT_FAILURE);
 }
 
-/// @brief creates and returns a union of two sets whose elements are copied into the new set.
+/// @brief Creates and returns a union of two sets whose elements are copied into the new set.
 /// @param set_one First set structure to union.
 /// @param set_two Second set structure to union.
 /// @param max Maximum size of new set.
@@ -785,7 +741,7 @@ static inline binary_set_s union_binary_set(const binary_set_s set_one, const bi
     return set;
 }
 
-/// @brief creates and returns an intersect of two sets whose elements are copied into the new set.
+/// @brief Creates and returns an intersect of two sets whose elements are copied into the new set.
 /// @param set_one First set structure to intersect.
 /// @param set_two Second set structure to intersect.
 /// @param max Maximum size of new set.
@@ -830,7 +786,7 @@ static inline binary_set_s intersect_binary_set(const binary_set_s set_one, cons
 }
 
 
-/// @brief creates and returns a subtract of two sets whose elements are copied into the new set.
+/// @brief Creates and returns a subtract of two sets whose elements are copied into the new set.
 /// @param set_one First set structure that gets subtracted.
 /// @param set_two Second set structure that subtracts.
 /// @param max Maximum size of new set.
@@ -878,7 +834,7 @@ static inline binary_set_s subtract_binary_set(const binary_set_s set_one, const
     return set;
 }
 
-/// @brief creates and returns an exclude (symmetric difference) of two sets whose elements are copied into the new set.
+/// @brief Creates and returns an exclude (symmetric difference) of two sets whose elements are copied into the new set.
 /// @param set_one First set structure to exclude (symmetric difference).
 /// @param set_two Second set structure to exclude (symmetric difference).
 /// @param max Maximum size of new set.
@@ -935,19 +891,19 @@ static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const 
     return set;
 }
 
-static inline bool is_subset_binary_set(const binary_set_s set_one, const binary_set_s set_two) {
-    BINARY_SET_ASSERT(set_one.max && "[ERROR] set_one's max size can't be zero");
-    BINARY_SET_ASSERT(set_one.elements && "[ERROR] set_one's elements pointer is NULL.");
-    BINARY_SET_ASSERT(set_two.max && "[ERROR] set_two's max size can't be zero");
-    BINARY_SET_ASSERT(set_two.elements && "[ERROR] set_two's elements pointer is NULL.");
-    BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't check subset with different compare functions.");
+static inline bool is_subset_binary_set(const binary_set_s super, const binary_set_s sub) {
+    BINARY_SET_ASSERT(super.max && "[ERROR] super's max size can't be zero");
+    BINARY_SET_ASSERT(super.elements && "[ERROR] super's elements pointer is NULL.");
+    BINARY_SET_ASSERT(sub.max && "[ERROR] sub's max size can't be zero");
+    BINARY_SET_ASSERT(sub.elements && "[ERROR] sub's elements pointer is NULL.");
+    BINARY_SET_ASSERT(super.compare == sub.compare && "[ERROR] Can't check subset with different compare functions.");
 
-    BINARY_SET_DATA_TYPE * base = set_two.elements;
-    for (size_t i = 0; i < set_one.size; ++i) { // for each element in set one
+    BINARY_SET_DATA_TYPE * base = sub.elements;
+    for (size_t i = 0; i < super.size; ++i) { // for each element in set one
         bool found_element = false;
-        for (size_t limit = set_two.size - (base - set_two.elements); limit != 0; limit >>= 1) {
+        for (size_t limit = sub.size - (base - sub.elements); limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
-            const int comparison = set_one.compare ? set_one.compare(current_element, set_one.elements + i) : memcmp(current_element, set_one.elements + i, sizeof(BINARY_SET_DATA_TYPE));
+            const int comparison = super.compare ? super.compare(current_element, super.elements + i) : memcmp(current_element, super.elements + i, sizeof(BINARY_SET_DATA_TYPE));
             if (comparison == 0) {
                 found_element = true;
                 break;
@@ -965,19 +921,19 @@ static inline bool is_subset_binary_set(const binary_set_s set_one, const binary
     return true;
 }
 
-static inline bool is_proper_subset_binary_set(const binary_set_s set_one, const binary_set_s set_two) {
-    BINARY_SET_ASSERT(set_one.max && "[ERROR] set_one's max size can't be zero");
-    BINARY_SET_ASSERT(set_one.elements && "[ERROR] set_one's elements pointer is NULL.");
-    BINARY_SET_ASSERT(set_two.max && "[ERROR] set_two's max size can't be zero");
-    BINARY_SET_ASSERT(set_two.elements && "[ERROR] set_two's elements pointer is NULL.");
-    BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't check proper subset with different compare functions.");
+static inline bool is_proper_subset_binary_set(const binary_set_s super, const binary_set_s sub) {
+    BINARY_SET_ASSERT(super.max && "[ERROR] super's max size can't be zero");
+    BINARY_SET_ASSERT(super.elements && "[ERROR] super's elements pointer is NULL.");
+    BINARY_SET_ASSERT(sub.max && "[ERROR] sub's max size can't be zero");
+    BINARY_SET_ASSERT(sub.elements && "[ERROR] sub's elements pointer is NULL.");
+    BINARY_SET_ASSERT(super.compare == sub.compare && "[ERROR] Can't check proper subset with different compare functions.");
 
-    BINARY_SET_DATA_TYPE * base = set_two.elements;
-    for (size_t i = 0; i < set_one.size; ++i) { // for each element in set one
+    BINARY_SET_DATA_TYPE * base = sub.elements;
+    for (size_t i = 0; i < super.size; ++i) { // for each element in set one
         bool found_element = false;
-        for (size_t limit = set_two.size - (base - set_two.elements); limit != 0; limit >>= 1) {
+        for (size_t limit = sub.size - (base - sub.elements); limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
-            const int comparison = set_one.compare ? set_one.compare(current_element, set_one.elements + i) : memcmp(current_element, set_one.elements + i, sizeof(BINARY_SET_DATA_TYPE));
+            const int comparison = super.compare ? super.compare(current_element, super.elements + i) : memcmp(current_element, super.elements + i, sizeof(BINARY_SET_DATA_TYPE));
             if (comparison == 0) {
                 found_element = true;
                 break;
@@ -992,67 +948,7 @@ static inline bool is_proper_subset_binary_set(const binary_set_s set_one, const
         }
     }
 
-    return true && (set_one.size != set_two.size);
-}
-
-static inline bool is_superset_binary_set(const binary_set_s set_one, const binary_set_s set_two) {
-    BINARY_SET_ASSERT(set_one.max && "[ERROR] set_one's max size can't be zero");
-    BINARY_SET_ASSERT(set_one.elements && "[ERROR] set_one's elements pointer is NULL.");
-    BINARY_SET_ASSERT(set_two.max && "[ERROR] set_two's max size can't be zero");
-    BINARY_SET_ASSERT(set_two.elements && "[ERROR] set_two's elements pointer is NULL.");
-    BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't check superset with different compare functions.");
-
-    BINARY_SET_DATA_TYPE * base = set_one.elements;
-    for (size_t i = 0; i < set_two.size; ++i) { // for each element in set two
-        bool found_element = false;
-        for (size_t limit = set_one.size - (base - set_one.elements); limit != 0; limit >>= 1) {
-            BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
-            const int comparison = set_two.compare ? set_two.compare(current_element, set_two.elements + i) : memcmp(current_element, set_two.elements + i, sizeof(BINARY_SET_DATA_TYPE));
-            if (comparison == 0) {
-                found_element = true;
-                break;
-            }
-            if (comparison > 0) {
-                base = current_element + 1; // increment element pointer to next
-                limit--;
-            }
-        }
-        if (!found_element) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-static inline bool is_proper_superset_binary_set(const binary_set_s set_one, const binary_set_s set_two) {
-    BINARY_SET_ASSERT(set_one.max && "[ERROR] set_one's max size can't be zero");
-    BINARY_SET_ASSERT(set_one.elements && "[ERROR] set_one's elements pointer is NULL.");
-    BINARY_SET_ASSERT(set_two.max && "[ERROR] set_two's max size can't be zero");
-    BINARY_SET_ASSERT(set_two.elements && "[ERROR] set_two's elements pointer is NULL.");
-    BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't check proper superset with different compare functions.");
-
-    BINARY_SET_DATA_TYPE * base = set_one.elements;
-    for (size_t i = 0; i < set_two.size; ++i) { // for each element in set two
-        bool found_element = false;
-        for (size_t limit = set_one.size - (base - set_one.elements); limit != 0; limit >>= 1) {
-            BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
-            const int comparison = set_two.compare ? set_two.compare(current_element, set_two.elements + i) : memcmp(current_element, set_two.elements + i, sizeof(BINARY_SET_DATA_TYPE));
-            if (comparison == 0) {
-                found_element = true;
-                break;
-            }
-            if (comparison > 0) {
-                base = current_element + 1; // increment element pointer to next
-                limit--;
-            }
-        }
-        if (!found_element) {
-            return false;
-        }
-    }
-
-    return true && (set_one.size != set_two.size);
+    return true && (super.size != sub.size);
 }
 
 static inline bool is_disjoint_binary_set(const binary_set_s set_one, const binary_set_s set_two) {
@@ -1238,7 +1134,7 @@ static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const B
     exit(EXIT_FAILURE);
 }
 
-/// @brief creates and returns a union of two sets whose elements are copied into the new set.
+/// @brief Creates and returns a union of two sets whose elements are copied into the new set.
 /// @param set_one First set structure to union.
 /// @param set_two Second set structure to union.
 /// @param copy Function pointer that creates a copy for elements in union or NULL, if shallow copy should be created.
@@ -1279,7 +1175,7 @@ static inline binary_set_s union_binary_set(const binary_set_s set_one, const bi
     return set;
 }
 
-/// @brief creates and returns an intersect of two sets whose elements are copied into the new set.
+/// @brief Creates and returns an intersect of two sets whose elements are copied into the new set.
 /// @param set_one First set structure to intersect.
 /// @param set_two Second set structure to intersect.
 /// @param copy Function pointer that creates a copy for elements in intersect or NULL, if shallow copy should be created.
@@ -1315,7 +1211,7 @@ static inline binary_set_s intersect_binary_set(const binary_set_s set_one, cons
     return set;
 }
 
-/// @brief creates and returns a subtract of two sets whose elements are copied into the new set.
+/// @brief Creates and returns a subtract of two sets whose elements are copied into the new set.
 /// @param set_one First set structure that gets subtracted.
 /// @param set_two Second set structure that subtracts.
 /// @param copy Function pointer that creates a copy for elements in subtract or NULL, if shallow copy should be created.
@@ -1355,7 +1251,7 @@ static inline binary_set_s subtract_binary_set(const binary_set_s set_one, const
     return set;
 }
 
-/// @brief creates and returns an exclude (symmetric difference) of two sets whose elements are copied into the new set.
+/// @brief Creates and returns an exclude (symmetric difference) of two sets whose elements are copied into the new set.
 /// @param set_one First set structure to exclude (symmetric difference).
 /// @param set_two Second set structure to exclude (symmetric difference).
 /// @param copy Function pointer that creates a copy for elements in exclude (symmetric difference) or NULL, if shallow copy should be created.
@@ -1408,17 +1304,17 @@ static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const 
     return set;
 }
 
-static inline bool is_subset_binary_set(const binary_set_s set_one, const binary_set_s set_two) {
-    BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't check subset with different compare functions.");
+static inline bool is_subset_binary_set(const binary_set_s super, const binary_set_s sub) {
+    BINARY_SET_ASSERT(super.compare == sub.compare && "[ERROR] Can't check subset with different compare functions.");
 
-    const BINARY_SET_DATA_TYPE * decay = set_two.elements;
+    const BINARY_SET_DATA_TYPE * decay = sub.elements;
     BINARY_SET_DATA_TYPE * base = NULL;
     memcpy(&base, &decay, sizeof(BINARY_SET_DATA_TYPE *));
-    for (size_t i = 0; i < set_one.size; ++i) { // for each element in set one
+    for (size_t i = 0; i < super.size; ++i) { // for each element in set one
         bool found_element = false;
-        for (size_t limit = set_two.size - (base - set_two.elements); limit != 0; limit >>= 1) {
+        for (size_t limit = sub.size - (base - sub.elements); limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
-            const int comparison = set_one.compare ? set_one.compare(current_element, set_one.elements + i) : memcmp(current_element, set_one.elements + i, sizeof(BINARY_SET_DATA_TYPE));
+            const int comparison = super.compare ? super.compare(current_element, super.elements + i) : memcmp(current_element, super.elements + i, sizeof(BINARY_SET_DATA_TYPE));
             if (comparison == 0) {
                 found_element = true;
                 break;
@@ -1436,17 +1332,17 @@ static inline bool is_subset_binary_set(const binary_set_s set_one, const binary
     return true;
 }
 
-static inline bool is_proper_subset_binary_set(const binary_set_s set_one, const binary_set_s set_two) {
-    BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't check proper subset with different compare functions.");
+static inline bool is_proper_subset_binary_set(const binary_set_s super, const binary_set_s sub) {
+    BINARY_SET_ASSERT(super.compare == sub.compare && "[ERROR] Can't check proper subset with different compare functions.");
 
-    const BINARY_SET_DATA_TYPE * decay = set_two.elements;
+    const BINARY_SET_DATA_TYPE * decay = sub.elements;
     BINARY_SET_DATA_TYPE * base = NULL;
     memcpy(&base, &decay, sizeof(BINARY_SET_DATA_TYPE *));
-    for (size_t i = 0; i < set_one.size; ++i) { // for each element in set one
+    for (size_t i = 0; i < super.size; ++i) { // for each element in set one
         bool found_element = false;
-        for (size_t limit = set_two.size - (base - set_two.elements); limit != 0; limit >>= 1) {
+        for (size_t limit = sub.size - (base - sub.elements); limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
-            const int comparison = set_one.compare ? set_one.compare(current_element, set_one.elements + i) : memcmp(current_element, set_one.elements + i, sizeof(BINARY_SET_DATA_TYPE));
+            const int comparison = super.compare ? super.compare(current_element, super.elements + i) : memcmp(current_element, super.elements + i, sizeof(BINARY_SET_DATA_TYPE));
             if (comparison == 0) {
                 found_element = true;
                 break;
@@ -1461,63 +1357,7 @@ static inline bool is_proper_subset_binary_set(const binary_set_s set_one, const
         }
     }
 
-    return true && (set_one.size != set_two.size);
-}
-
-static inline bool is_superset_binary_set(const binary_set_s set_one, const binary_set_s set_two) {
-    BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't check superset with different compare functions.");
-
-    const BINARY_SET_DATA_TYPE * decay = set_one.elements;
-    BINARY_SET_DATA_TYPE * base = NULL;
-    memcpy(&base, &decay, sizeof(BINARY_SET_DATA_TYPE *));
-    for (size_t i = 0; i < set_two.size; ++i) { // for each element in set two
-        bool found_element = false;
-        for (size_t limit = set_one.size - (base - set_one.elements); limit != 0; limit >>= 1) {
-            BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
-            const int comparison = set_two.compare ? set_two.compare(current_element, set_two.elements + i) : memcmp(current_element, set_two.elements + i, sizeof(BINARY_SET_DATA_TYPE));
-            if (comparison == 0) {
-                found_element = true;
-                break;
-            }
-            if (comparison > 0) {
-                base = current_element + 1; // increment element pointer to next
-                limit--;
-            }
-        }
-        if (!found_element) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-static inline bool is_proper_superset_binary_set(const binary_set_s set_one, const binary_set_s set_two) {
-    BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't check proper superset with different compare functions.");
-
-    const BINARY_SET_DATA_TYPE * decay = set_one.elements;
-    BINARY_SET_DATA_TYPE * base = NULL;
-    memcpy(&base, &decay, sizeof(BINARY_SET_DATA_TYPE *));
-    for (size_t i = 0; i < set_two.size; ++i) { // for each element in set two
-        bool found_element = false;
-        for (size_t limit = set_one.size - (base - set_one.elements); limit != 0; limit >>= 1) {
-            BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
-            const int comparison = set_two.compare ? set_two.compare(current_element, set_two.elements + i) : memcmp(current_element, set_two.elements + i, sizeof(BINARY_SET_DATA_TYPE));
-            if (comparison == 0) {
-                found_element = true;
-                break;
-            }
-            if (comparison > 0) {
-                base = current_element + 1; // increment element pointer to next
-                limit--;
-            }
-        }
-        if (!found_element) {
-            return false;
-        }
-    }
-
-    return true && (set_one.size != set_two.size);
+    return true && (super.size != sub.size);
 }
 
 static inline bool is_disjoint_binary_set(const binary_set_s set_one, const binary_set_s set_two) {

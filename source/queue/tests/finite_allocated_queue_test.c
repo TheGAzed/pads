@@ -2,7 +2,7 @@
 
 #define QUEUE_MODE FINITE_ALLOCATED_QUEUE
 #define MAXIMUM_QUEUE_SIZE  (1 << 4)
-#include <queue.h>
+#include <queue/queue.h>
 
 /// Tests if queue is initialized correctly when creating it.
 TEST FAQ_01(void) {

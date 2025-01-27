@@ -2,7 +2,7 @@
 
 #define QUEUE_MODE INFINITE_LIST_QUEUE
 #define LIST_ARRAY_QUEUE_CHUNK (1 << 4)
-#include <queue.h>
+#include <queue/queue.h>
 
 /// Tests if queue is initialized correctly when creating it.
 TEST ILQ_01(void) {

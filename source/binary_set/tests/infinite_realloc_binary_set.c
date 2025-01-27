@@ -2,7 +2,7 @@
 
 #define BINARY_SET_MODE INFINITE_REALLOC_BINARY_SET
 #define REALLOC_BINARY_SET_CHUNK (1 << 4)
-#include <binary_set.h>
+#include <binary_set/binary_set.h>
 
 /// Test if set is initialized properly when created
 TEST IRBS_01(void) {

@@ -2,7 +2,7 @@
 
 !resources/
 !external/
-!headers/
+!source/
 !test/
 !github/
 

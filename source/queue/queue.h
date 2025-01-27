@@ -494,7 +494,8 @@ static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
 /// @return A copy of the specified 'queue' parameter.
 static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) {
     QUEUE_ASSERT(queue.elements && "[ERROR] 'queue' has uninitialized memory.");
-    QUEUE_ASSERT(queue.max >= queue.current && "[ERROR] Impossible queue state.");
+    QUEUE_ASSERT(queue.max > queue.current && "[ERROR] Impossible queue state.");
+    QUEUE_ASSERT(queue.max >= queue.size && "[ERROR] Impossible queue state.");
 
     const queue_s queue_copy = {
         .size = queue.size, .current = queue.current, .max = queue.max,
@@ -502,7 +503,7 @@ static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) 
     };
     QUEUE_ASSERT(queue_copy.elements && "[ERROR] Memory allocation failed");
 
-    const size_t right_size =  queue.max - queue.current;
+    const size_t right_size = queue.max - queue.current;
     if (queue.size > right_size) { // queue circles to beginning of elements array
         if (copy) {
             for (size_t s = queue.current; s < queue.max; s++) {
@@ -557,7 +558,7 @@ static inline void clear_queue(queue_s * queue, const destroy_queue_fn destroy) 
 static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate, void * args) {
     QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter pointer is NULL.");
     QUEUE_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
-    QUEUE_ASSERT(queue->max >= queue->current && "[ERROR] Impossible queue state.");
+    QUEUE_ASSERT(queue->max > queue->current && "[ERROR] Impossible queue state.");
 
     const size_t right_size = queue->max - queue->current;
     if (queue->size > right_size) { // if queue elements circle around

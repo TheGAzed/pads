@@ -2,7 +2,7 @@
 
 #define STACK_MODE INFINITE_REALLOC_STACK
 #define REALLOC_STACK_CHUNK  (1 << 3)
-#include <stack.h>
+#include <stack/stack.h>
 
 /// Tests if stack is initialized correctly when creating it.
 TEST IRS_01(void) {

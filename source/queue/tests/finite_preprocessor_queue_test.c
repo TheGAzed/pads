@@ -2,7 +2,7 @@
 
 #define QUEUE_MODE FINITE_PREPROCESSOR_QUEUE
 #define PREPROCESSOR_QUEUE_SIZE (1 << 4)
-#include <queue.h>
+#include <queue/queue.h>
 
 /// Tests if queue is initialized correctly when creating it.
 TEST FPQ_01(void) {

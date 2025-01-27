@@ -2,7 +2,7 @@
 
 #define STACK_MODE FINITE_PRERPOCESSOR_STACK
 #define PREPROCESSOR_STACK_SIZE  (1 << 4)
-#include <stack.h>
+#include <stack/stack.h>
 
 /// Tests if stack is initialized correctly when creating it.
 TEST FPS_01(void) {
