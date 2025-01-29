@@ -1796,6 +1796,226 @@ TEST IADL_100(void) {
     PASS();
 }
 
+TEST IADL_101(void) {
+    list_s test = create_list();
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST - 1; ++i) {
+        insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    const LIST_DATA_TYPE element = (LIST_DATA_TYPE) { .sub_one = 42 };
+    insert_at_list(&test, test.size, element);
+
+    ASSERT_EQm("[IADL-ERROR] Expected element to be removed.", element.sub_one, remove_first_list(&test, element, compare_int).sub_one);
+
+    destroy_list(&test, NULL);
+    PASS();
+}
+
+TEST IADL_102(void) {
+    list_s test = create_list();
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST; ++i) {
+        insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    const LIST_DATA_TYPE element = (LIST_DATA_TYPE) { .sub_one = 42 };
+    insert_at_list(&test, test.size, element);
+
+    ASSERT_EQm("[IADL-ERROR] Expected element to be removed.", element.sub_one, remove_first_list(&test, element, compare_int).sub_one);
+
+    destroy_list(&test, NULL);
+    PASS();
+}
+
+TEST IADL_103(void) {
+    list_s test = create_list();
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST + 1; ++i) {
+        insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    const LIST_DATA_TYPE element = (LIST_DATA_TYPE) { .sub_one = 42 };
+    insert_at_list(&test, test.size, element);
+
+    ASSERT_EQm("[IADL-ERROR] Expected element to be removed.", element.sub_one, remove_first_list(&test, element, compare_int).sub_one);
+
+    destroy_list(&test, NULL);
+    PASS();
+}
+
+TEST IADL_104(void) {
+    list_s test = create_list();
+
+    const LIST_DATA_TYPE element = (LIST_DATA_TYPE) { .sub_one = 42 };
+    insert_at_list(&test, test.size, element);
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST - 1; ++i) {
+        insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    ASSERT_EQm("[IADL-ERROR] Expected element to be removed.", element.sub_one, remove_first_list(&test, element, compare_int).sub_one);
+
+    destroy_list(&test, NULL);
+    PASS();
+}
+
+TEST IADL_105(void) {
+    list_s test = create_list();
+
+    const LIST_DATA_TYPE element = (LIST_DATA_TYPE) { .sub_one = 42 };
+    insert_at_list(&test, test.size, element);
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST; ++i) {
+        insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    ASSERT_EQm("[IADL-ERROR] Expected element to be removed.", element.sub_one, remove_first_list(&test, element, compare_int).sub_one);
+
+    destroy_list(&test, NULL);
+    PASS();
+}
+
+TEST IADL_106(void) {
+    list_s test = create_list();
+
+    const LIST_DATA_TYPE element = (LIST_DATA_TYPE) { .sub_one = 42 };
+    insert_at_list(&test, test.size, element);
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST + 1; ++i) {
+        insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    ASSERT_EQm("[IADL-ERROR] Expected element to be removed.", element.sub_one, remove_first_list(&test, element, compare_int).sub_one);
+
+    destroy_list(&test, NULL);
+    PASS();
+}
+
+TEST IADL_107(void) {
+    list_s test = create_list();
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST - 1; ++i) {
+        insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    const LIST_DATA_TYPE element = (LIST_DATA_TYPE) { .sub_one = 42 };
+    insert_at_list(&test, test.size, element);
+
+    ASSERT_EQm("[IADL-ERROR] Expected element to be removed.", element.sub_one, remove_last_list(&test, element, compare_int).sub_one);
+
+    destroy_list(&test, NULL);
+    PASS();
+}
+
+TEST IADL_108(void) {
+    list_s test = create_list();
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST; ++i) {
+        insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    const LIST_DATA_TYPE element = (LIST_DATA_TYPE) { .sub_one = 42 };
+    insert_at_list(&test, test.size, element);
+
+    ASSERT_EQm("[IADL-ERROR] Expected element to be removed.", element.sub_one, remove_last_list(&test, element, compare_int).sub_one);
+
+    destroy_list(&test, NULL);
+    PASS();
+}
+
+TEST IADL_109(void) {
+    list_s test = create_list();
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST + 1; ++i) {
+        insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    const LIST_DATA_TYPE element = (LIST_DATA_TYPE) { .sub_one = 42 };
+    insert_at_list(&test, test.size, element);
+
+    ASSERT_EQm("[IADL-ERROR] Expected element to be removed.", element.sub_one, remove_last_list(&test, element, compare_int).sub_one);
+
+    destroy_list(&test, NULL);
+    PASS();
+}
+
+TEST IADL_110(void) {
+    list_s test = create_list();
+
+    const LIST_DATA_TYPE element = (LIST_DATA_TYPE) { .sub_one = 42 };
+    insert_at_list(&test, test.size, element);
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST - 1; ++i) {
+        insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    ASSERT_EQm("[IADL-ERROR] Expected element to be removed.", element.sub_one, remove_last_list(&test, element, compare_int).sub_one);
+
+    destroy_list(&test, NULL);
+    PASS();
+}
+
+TEST IADL_111(void) {
+    list_s test = create_list();
+
+    const LIST_DATA_TYPE element = (LIST_DATA_TYPE) { .sub_one = 42 };
+    insert_at_list(&test, test.size, element);
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST; ++i) {
+        insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    ASSERT_EQm("[IADL-ERROR] Expected element to be removed.", element.sub_one, remove_last_list(&test, element, compare_int).sub_one);
+
+    destroy_list(&test, NULL);
+    PASS();
+}
+
+TEST IADL_112(void) {
+    list_s test = create_list();
+
+    const LIST_DATA_TYPE element = (LIST_DATA_TYPE) { .sub_one = 42 };
+    insert_at_list(&test, test.size, element);
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST + 1; ++i) {
+        insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    ASSERT_EQm("[IADL-ERROR] Expected element to be removed.", element.sub_one, remove_last_list(&test, element, compare_int).sub_one);
+
+    destroy_list(&test, NULL);
+    PASS();
+}
+
+TEST IADL_113(void) {
+    list_s test = create_list();
+
+    const LIST_DATA_TYPE element = (LIST_DATA_TYPE) { .sub_one = 42 };
+    insert_at_list(&test, test.size, element);
+
+    ASSERT_EQm("[IADL-ERROR] Expected element to be removed.", element.sub_one, remove_first_list(&test, element, compare_int).sub_one);
+    ASSERT_EQm("[IADL-ERROR] Expected test head to be NULL.", NULL, test.head);
+    ASSERT_EQm("[IADL-ERROR] Expected test size to be zero.", 0, test.size);
+
+    destroy_list(&test, NULL);
+    PASS();
+}
+
+TEST IADL_114(void) {
+    list_s test = create_list();
+
+    const LIST_DATA_TYPE element = (LIST_DATA_TYPE) { .sub_one = 42 };
+    insert_at_list(&test, test.size, element);
+
+    ASSERT_EQm("[IADL-ERROR] Expected element to be removed.", element.sub_one, remove_last_list(&test, element, compare_int).sub_one);
+    ASSERT_EQm("[IADL-ERROR] Expected test head to be NULL.", NULL, test.head);
+    ASSERT_EQm("[IADL-ERROR] Expected test size to be zero.", 0, test.size);
+
+    destroy_list(&test, NULL);
+    PASS();
+}
+
 SUITE (infinite_allocated_list_test) {
     RUN_TEST(IADL_001); RUN_TEST(IADL_002); RUN_TEST(IADL_003); RUN_TEST(IADL_004);
     RUN_TEST(IADL_005); RUN_TEST(IADL_006); RUN_TEST(IADL_007); RUN_TEST(IADL_008);
@@ -1822,4 +2042,8 @@ SUITE (infinite_allocated_list_test) {
     RUN_TEST(IADL_089); RUN_TEST(IADL_090); RUN_TEST(IADL_091); RUN_TEST(IADL_092);
     RUN_TEST(IADL_093); RUN_TEST(IADL_094); RUN_TEST(IADL_095); RUN_TEST(IADL_096);
     RUN_TEST(IADL_097); RUN_TEST(IADL_098); RUN_TEST(IADL_099); RUN_TEST(IADL_100);
+    RUN_TEST(IADL_101); RUN_TEST(IADL_102); RUN_TEST(IADL_103); RUN_TEST(IADL_104);
+    RUN_TEST(IADL_105); RUN_TEST(IADL_106); RUN_TEST(IADL_107); RUN_TEST(IADL_108);
+    RUN_TEST(IADL_109); RUN_TEST(IADL_110); RUN_TEST(IADL_111); RUN_TEST(IADL_112);
+    RUN_TEST(IADL_113); RUN_TEST(IADL_114);
 }

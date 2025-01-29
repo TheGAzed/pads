@@ -177,7 +177,7 @@ static inline void insert_at_list(list_s * list, const size_t index, const LIST_
     list->size++;
 }
 
-static inline LIST_DATA_TYPE remove_element_list(list_s * list, const LIST_DATA_TYPE element, const compare_list_fn compare) {
+static inline LIST_DATA_TYPE remove_first_list(list_s * list, const LIST_DATA_TYPE element, const compare_list_fn compare) {
     LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
     LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
     LIST_ASSERT(list->head && "[ERROR] Can't remove from empty list.");
@@ -190,12 +190,44 @@ static inline LIST_DATA_TYPE remove_element_list(list_s * list, const LIST_DATA_
 
             struct list_node * temp = *current;
             (*current)->next->prev = (*current)->prev;
-            *current = (--list->size) ? (*current)->next : NULL;
+            (*current)->prev->next = (*current)->next; // changes next pointer in previous node because current may not change it if pointing to head
+            *current = (--list->size) ? (*current)->next : NULL; // changes head pointer to next if pointing to it
             LIST_FREE(temp);
 
             return found;
         }
         current = &((*current)->next);
+    }
+
+    LIST_ASSERT(0 && "[ERROR] Element not found in list.");
+    exit(EXIT_FAILURE);
+}
+
+static inline LIST_DATA_TYPE remove_last_list(list_s * list, const LIST_DATA_TYPE element, const compare_list_fn compare) {
+    LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+    LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
+    LIST_ASSERT(list->head && "[ERROR] Can't remove from empty list.");
+
+    struct list_node * current = list->head;
+    for (size_t s = 0; s < list->size; ++s) {
+        current = current->prev;
+
+        const int comparison = compare ? compare(&(current->element), &element) : memcmp(&(current->element), &element, sizeof(LIST_DATA_TYPE));
+        if (0 != comparison) continue;
+
+        LIST_DATA_TYPE found = current->element;
+        list->size--;
+
+        current->next->prev = current->prev;
+        current->prev->next = current->next;
+
+        if (current == list->head) {
+            list->head = (list->size) ? current->next : NULL;
+        }
+
+        LIST_FREE(current);
+
+        return found;
     }
 
     LIST_ASSERT(0 && "[ERROR] Element not found in list.");
@@ -529,7 +561,7 @@ static inline void insert_at_list(list_s * list, const size_t index, const LIST_
     list->size++;
 }
 
-static inline LIST_DATA_TYPE remove_element_list(list_s * list, const LIST_DATA_TYPE element, const compare_list_fn compare) {
+static inline LIST_DATA_TYPE remove_first_list(list_s * list, const LIST_DATA_TYPE element, const compare_list_fn compare) {
     LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
     LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
 
@@ -540,18 +572,72 @@ static inline LIST_DATA_TYPE remove_element_list(list_s * list, const LIST_DATA_
     size_t current = list->head;
     for (size_t s = 0; s < list->size; ++s) {
 		const int comparison = compare ? compare(&(list->elements[current]), &element) : memcmp(&(list->elements[current]), &element, sizeof(LIST_DATA_TYPE));
-		if (comparison == 0) {
-        	list->node[NEXT_IDX][list->node[PREV_IDX][current]] = list->node[NEXT_IDX][current];
-        	list->node[PREV_IDX][list->node[NEXT_IDX][current]] = list->node[PREV_IDX][current];
+        if (0 != comparison) {
+            current = list->node[NEXT_IDX][current];
+            continue;
+        }
 
-        	LIST_DATA_TYPE found = list->elements[current];
+        if (list->head == list->size - 1) {
+            list->head = current;
+        } else if (list->head == current) {
+            list->head = (list->node[NEXT_IDX][current] == list->size - 1) ? current : list->node[NEXT_IDX][current];
+        }
 
-        	list->node[NEXT_IDX][list->node[PREV_IDX][list->size - 1]] = list->node[PREV_IDX][list->node[NEXT_IDX][list->size - 1]] = current;
-        	list->elements[current] = list->elements[--(list->size)];
+        list->node[NEXT_IDX][list->node[PREV_IDX][current]] = list->node[NEXT_IDX][current];
+        list->node[PREV_IDX][list->node[NEXT_IDX][current]] = list->node[PREV_IDX][current];
 
-        	return found;
-		}
-		current = list->node[NEXT_IDX][current];
+        LIST_DATA_TYPE found = list->elements[current];
+
+        // move element at list->size - 1 to current's position to avoid 'holes' in array.
+        list->size--;
+        list->node[NEXT_IDX][current] = list->node[NEXT_IDX][list->size];
+        list->node[PREV_IDX][current] = list->node[PREV_IDX][list->size];
+
+        list->node[NEXT_IDX][list->node[PREV_IDX][list->size]] = list->node[PREV_IDX][list->node[NEXT_IDX][list->size]] = current;
+        list->elements[current] = list->elements[list->size];
+
+        return found;
+    }
+
+    LIST_ASSERT(0 && "[ERROR] Element not found in list.");
+    exit(EXIT_FAILURE);
+}
+
+static inline LIST_DATA_TYPE remove_last_list(list_s * list, const LIST_DATA_TYPE element, const compare_list_fn compare) {
+    LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+    LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
+
+    LIST_ASSERT(list->elements && "[ERROR] No memory available.");
+    LIST_ASSERT(list->node[NEXT_IDX] && "[ERROR] No memory available.");
+    LIST_ASSERT(list->node[PREV_IDX] && "[ERROR] No memory available.");
+
+    size_t current = list->head;
+    for (size_t s = 0; s < list->size; ++s) {
+        current = list->node[PREV_IDX][current];
+
+		const int comparison = compare ? compare(&(list->elements[current]), &element) : memcmp(&(list->elements[current]), &element, sizeof(LIST_DATA_TYPE));
+        if (0 != comparison) continue;
+
+        if (list->head == list->size - 1) {
+            list->head = current;
+        } else if (list->head == current) {
+            list->head = (list->node[NEXT_IDX][current] == list->size - 1) ? current : list->node[NEXT_IDX][current];
+        }
+
+        list->node[NEXT_IDX][list->node[PREV_IDX][current]] = list->node[NEXT_IDX][current];
+        list->node[PREV_IDX][list->node[NEXT_IDX][current]] = list->node[PREV_IDX][current];
+
+        LIST_DATA_TYPE found = list->elements[current];
+
+        // move element at list->size - 1 to current's position to avoid 'holes' in array.
+        list->size--;
+        list->node[NEXT_IDX][current] = list->node[NEXT_IDX][list->size];
+        list->node[PREV_IDX][current] = list->node[PREV_IDX][list->size];
+
+        list->node[NEXT_IDX][list->node[PREV_IDX][list->size]] = list->node[PREV_IDX][list->node[NEXT_IDX][list->size]] = current;
+        list->elements[current] = list->elements[list->size];
+
+        return found;
     }
 
     LIST_ASSERT(0 && "[ERROR] Element not found in list.");
@@ -578,9 +664,12 @@ static inline LIST_DATA_TYPE remove_at_list(list_s * list, const size_t index) {
     list->node[NEXT_IDX][list->node[PREV_IDX][current]] = list->node[NEXT_IDX][current];
     list->node[PREV_IDX][list->node[NEXT_IDX][current]] = list->node[PREV_IDX][current];
 
+    // move element at list->size - 1 to current's position to avoid 'holes' in array.
     list->size--;
-    list->elements[current] = list->elements[list->size];
+    list->node[NEXT_IDX][current] = list->node[NEXT_IDX][list->size];
+    list->node[PREV_IDX][current] = list->node[PREV_IDX][list->size];
 
+    list->elements[current] = list->elements[list->size];
     list->node[PREV_IDX][list->node[NEXT_IDX][list->size]] = list->node[NEXT_IDX][list->node[PREV_IDX][list->size]] = current;
 
     return found;
@@ -896,7 +985,7 @@ static inline void insert_at_list(list_s * list, const size_t index, const LIST_
     list->size++;
 }
 
-static inline LIST_DATA_TYPE remove_element_list(list_s * list, const LIST_DATA_TYPE element, const compare_list_fn compare) {
+static inline LIST_DATA_TYPE remove_first_list(list_s * list, const LIST_DATA_TYPE element, const compare_list_fn compare) {
     LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
     LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
 
@@ -912,13 +1001,71 @@ static inline LIST_DATA_TYPE remove_element_list(list_s * list, const LIST_DATA_
             continue;
         }
 
+        if (list->head == list->size - 1) {
+            list->head = current;
+        } else if (list->head == current) {
+            list->head = (list->node[NEXT_IDX][current] == list->size - 1) ? current : list->node[NEXT_IDX][current];
+        }
+
         list->node[NEXT_IDX][list->node[PREV_IDX][current]] = list->node[NEXT_IDX][current];
         list->node[PREV_IDX][list->node[NEXT_IDX][current]] = list->node[PREV_IDX][current];
 
         LIST_DATA_TYPE found = list->elements[current];
 
-        list->node[PREV_IDX][list->node[NEXT_IDX][list->size - 1]] = list->node[NEXT_IDX][list->node[PREV_IDX][list->size - 1]] = current;
-        list->elements[current] = list->elements[--(list->size)];
+        // move element at list->size - 1 to current's position to avoid 'holes' in array.
+        list->size--;
+        list->node[NEXT_IDX][current] = list->node[NEXT_IDX][list->size];
+        list->node[PREV_IDX][current] = list->node[PREV_IDX][list->size];
+
+        list->node[NEXT_IDX][list->node[PREV_IDX][list->size]] = list->node[PREV_IDX][list->node[NEXT_IDX][list->size]] = current;
+        list->elements[current] = list->elements[list->size];
+
+        if (!(list->size % REALLOC_LIST_CHUNK)) {
+            list->elements = list->size ? LIST_REALLOC(list->elements, list->size * sizeof(LIST_DATA_TYPE)) : NULL;
+            list->node[PREV_IDX] = list->size ? LIST_REALLOC(list->node[PREV_IDX], list->size * sizeof(size_t)) : NULL;
+            list->node[NEXT_IDX] = list->size ? LIST_REALLOC(list->node[NEXT_IDX], list->size * sizeof(size_t)) : NULL;
+        }
+
+        return found;
+    }
+
+    LIST_ASSERT(0 && "[ERROR] Element not found in list.");
+    exit(EXIT_FAILURE);
+}
+
+static inline LIST_DATA_TYPE remove_last_list(list_s * list, const LIST_DATA_TYPE element, const compare_list_fn compare) {
+    LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+    LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
+
+    LIST_ASSERT(list->elements && "[ERROR] No memory available.");
+    LIST_ASSERT(list->node[PREV_IDX] && "[ERROR] No memory available.");
+    LIST_ASSERT(list->node[NEXT_IDX] && "[ERROR] No memory available.");
+
+    size_t current = list->head;
+    for (size_t s = 0; s < list->size; ++s) {
+        current = list->node[PREV_IDX][current];
+
+		const int comparison = compare ? compare(&(list->elements[current]), &element) : memcmp(&(list->elements[current]), &element, sizeof(LIST_DATA_TYPE));
+        if (0 != comparison) continue;
+
+        if (list->head == list->size - 1) {
+            list->head = current;
+        } else if (list->head == current) {
+            list->head = (list->node[NEXT_IDX][current] == list->size - 1) ? current : list->node[NEXT_IDX][current];
+        }
+
+        list->node[NEXT_IDX][list->node[PREV_IDX][current]] = list->node[NEXT_IDX][current];
+        list->node[PREV_IDX][list->node[NEXT_IDX][current]] = list->node[PREV_IDX][current];
+
+        LIST_DATA_TYPE found = list->elements[current];
+
+        // move element at list->size - 1 to current's position to avoid 'holes' in array.
+        list->size--;
+        list->node[NEXT_IDX][current] = list->node[NEXT_IDX][list->size];
+        list->node[PREV_IDX][current] = list->node[PREV_IDX][list->size];
+
+        list->node[NEXT_IDX][list->node[PREV_IDX][list->size]] = list->node[PREV_IDX][list->node[NEXT_IDX][list->size]] = current;
+        list->elements[current] = list->elements[list->size];
 
         if (!(list->size % REALLOC_LIST_CHUNK)) {
             list->elements = list->size ? LIST_REALLOC(list->elements, list->size * sizeof(LIST_DATA_TYPE)) : NULL;
@@ -952,8 +1099,13 @@ static inline LIST_DATA_TYPE remove_at_list(list_s * list, const size_t index) {
 
     LIST_DATA_TYPE found = list->elements[current];
 
-    list->node[PREV_IDX][list->node[NEXT_IDX][list->size - 1]] = list->node[NEXT_IDX][list->node[PREV_IDX][list->size - 1]] = current;
-    list->elements[current] = list->elements[--(list->size)];
+    // move element at list->size - 1 to current's position to avoid 'holes' in array.
+    list->size--;
+    list->node[NEXT_IDX][current] = list->node[NEXT_IDX][list->size];
+    list->node[PREV_IDX][current] = list->node[PREV_IDX][list->size];
+
+    list->node[NEXT_IDX][list->node[PREV_IDX][list->size]] = list->node[PREV_IDX][list->node[NEXT_IDX][list->size]] = current;
+    list->elements[current] = list->elements[list->size];
 
     if (!(list->size % REALLOC_LIST_CHUNK)) {
         if (list->size) {
@@ -1287,26 +1439,73 @@ static inline void insert_at_list(list_s * list, const size_t index, const LIST_
     list->size++;
 }
 
-static inline LIST_DATA_TYPE remove_element_list(list_s * list, const LIST_DATA_TYPE element, const compare_list_fn compare) {
+static inline LIST_DATA_TYPE remove_first_list(list_s * list, const LIST_DATA_TYPE element, const compare_list_fn compare) {
     LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
     LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
 
     size_t current = list->head;
     for (size_t s = 0; s < list->size; ++s) {
         const int comparison = compare ? compare(&(list->elements[current]), &element) : memcmp(&(list->elements[current]), &element, sizeof(LIST_DATA_TYPE));
-        if (0 == comparison) {
-        	list->node[NEXT_IDX][list->node[PREV_IDX][current]] = list->node[NEXT_IDX][current];
-        	list->node[PREV_IDX][list->node[NEXT_IDX][current]] = list->node[PREV_IDX][current];
-
-        	LIST_DATA_TYPE found = list->elements[current];
-
-        	list->size--;
-        	list->node[NEXT_IDX][list->node[PREV_IDX][list->size]] = list->node[PREV_IDX][list->node[NEXT_IDX][list->size]] = current;
-        	list->elements[current] = list->elements[list->size];
-
-        	return found;
+        if (0 != comparison) {
+            current = list->node[NEXT_IDX][current];
+            continue;
         }
-		current = list->node[NEXT_IDX][current];
+
+        if (list->head == list->size - 1) {
+            list->head = current;
+        } else if (list->head == current) {
+            list->head = (list->node[NEXT_IDX][current] == list->size - 1) ? current : list->node[NEXT_IDX][current];
+        }
+
+        list->node[NEXT_IDX][list->node[PREV_IDX][current]] = list->node[NEXT_IDX][current];
+        list->node[PREV_IDX][list->node[NEXT_IDX][current]] = list->node[PREV_IDX][current];
+
+        LIST_DATA_TYPE found = list->elements[current];
+
+        list->size--;
+        list->node[NEXT_IDX][current] = list->node[NEXT_IDX][list->size];
+        list->node[PREV_IDX][current] = list->node[PREV_IDX][list->size];
+
+        list->node[NEXT_IDX][list->node[PREV_IDX][list->size]] = list->node[PREV_IDX][list->node[NEXT_IDX][list->size]] = current;
+        list->elements[current] = list->elements[list->size];
+
+        return found;
+    }
+
+    LIST_ASSERT(false && "[ERROR] Element not found in list.");
+    exit(EXIT_FAILURE);
+}
+
+static inline LIST_DATA_TYPE remove_last_list(list_s * list, const LIST_DATA_TYPE element, const compare_list_fn compare) {
+    LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+    LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
+
+    size_t current = list->head;
+    for (size_t s = 0; s < list->size; ++s) {
+        current = list->node[PREV_IDX][current];
+
+        const int comparison = compare ? compare(&(list->elements[current]), &element) : memcmp(&(list->elements[current]), &element, sizeof(LIST_DATA_TYPE));
+        if (0 != comparison) continue;
+
+        if (list->head == list->size - 1) {
+            list->head = current;
+        } else if (list->head == current) {
+            list->head = (list->size - 1 == list->node[NEXT_IDX][current]) ? current : list->node[NEXT_IDX][current];
+        }
+
+        list->node[NEXT_IDX][list->node[PREV_IDX][current]] = list->node[NEXT_IDX][current];
+        list->node[PREV_IDX][list->node[NEXT_IDX][current]] = list->node[PREV_IDX][current];
+
+        LIST_DATA_TYPE found = list->elements[current];
+
+        list->size--;
+        list->node[NEXT_IDX][current] = list->node[NEXT_IDX][list->size];
+        list->node[PREV_IDX][current] = list->node[PREV_IDX][list->size];
+
+        list->node[NEXT_IDX][list->node[PREV_IDX][list->size]] = list->node[PREV_IDX][list->node[NEXT_IDX][list->size]] = current;
+        list->elements[current] = list->elements[list->size];
+
+        return found;
     }
 
     LIST_ASSERT(false && "[ERROR] Element not found in list.");
@@ -1335,7 +1534,10 @@ static inline LIST_DATA_TYPE remove_at_list(list_s * list, const size_t index) {
     LIST_DATA_TYPE found = list->elements[current];
 
     list->size--;
-    list->node[PREV_IDX][list->node[NEXT_IDX][list->size]] = list->node[NEXT_IDX][list->node[PREV_IDX][list->size]] = current;
+    list->node[NEXT_IDX][current] = list->node[NEXT_IDX][list->size];
+    list->node[PREV_IDX][current] = list->node[PREV_IDX][list->size];
+
+    list->node[NEXT_IDX][list->node[PREV_IDX][list->size]] = list->node[PREV_IDX][list->node[NEXT_IDX][list->size]] = current;
     list->elements[current] = list->elements[list->size];
 
     return found;
