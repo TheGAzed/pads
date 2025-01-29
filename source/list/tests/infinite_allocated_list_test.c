@@ -2016,6 +2016,75 @@ TEST IADL_114(void) {
     PASS();
 }
 
+
+TEST IADL_115(void) {
+    list_s test = create_list();
+
+    int add = 0;
+    foreach_reverse_list(&test, operation_int, &add);
+
+    destroy_list(&test, destroy_element);
+
+    PASS();
+}
+
+TEST IADL_116(void) {
+    list_s test = create_list();
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST - 1; ++i) {
+        insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    int add = 1;
+    foreach_reverse_list(&test, operation_int, &add);
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST - 1; ++i) {
+        ASSERT_EQm("[IADL-ERROR] Expected test element at index 0 to be equal to (i + add).", i + add, remove_at_list(&test, 0).sub_one);
+    }
+
+    destroy_list(&test, destroy_element);
+
+    PASS();
+}
+
+TEST IADL_117(void) {
+    list_s test = create_list();
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST; ++i) {
+        insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    int add = 1;
+    foreach_reverse_list(&test, operation_int, &add);
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST; ++i) {
+        ASSERT_EQm("[IADL-ERROR] Expected test element at index 0 to be equal to (i + add).", i + add, remove_at_list(&test, 0).sub_one);
+    }
+
+    destroy_list(&test, destroy_element);
+
+    PASS();
+}
+
+TEST IADL_118(void) {
+    list_s test = create_list();
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST + 1; ++i) {
+        insert_at_list(&test, test.size, (LIST_DATA_TYPE) { .sub_one = i });
+    }
+
+    int add = 1;
+    foreach_reverse_list(&test, operation_int, &add);
+
+    for (int i = 0; i < MAXIMUM_INFINITE_LIST + 1; ++i) {
+        ASSERT_EQm("[IADL-ERROR] Expected test element at index 0 to be equal to (i + add).", i + add, remove_at_list(&test, 0).sub_one);
+    }
+
+    destroy_list(&test, destroy_element);
+
+    PASS();
+}
+
 SUITE (infinite_allocated_list_test) {
     RUN_TEST(IADL_001); RUN_TEST(IADL_002); RUN_TEST(IADL_003); RUN_TEST(IADL_004);
     RUN_TEST(IADL_005); RUN_TEST(IADL_006); RUN_TEST(IADL_007); RUN_TEST(IADL_008);
@@ -2045,5 +2114,6 @@ SUITE (infinite_allocated_list_test) {
     RUN_TEST(IADL_101); RUN_TEST(IADL_102); RUN_TEST(IADL_103); RUN_TEST(IADL_104);
     RUN_TEST(IADL_105); RUN_TEST(IADL_106); RUN_TEST(IADL_107); RUN_TEST(IADL_108);
     RUN_TEST(IADL_109); RUN_TEST(IADL_110); RUN_TEST(IADL_111); RUN_TEST(IADL_112);
-    RUN_TEST(IADL_113); RUN_TEST(IADL_114);
+    RUN_TEST(IADL_113); RUN_TEST(IADL_114); RUN_TEST(IADL_115); RUN_TEST(IADL_116);
+    RUN_TEST(IADL_117); RUN_TEST(IADL_118);
 }
