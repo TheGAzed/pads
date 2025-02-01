@@ -249,7 +249,7 @@ static inline LIST_DATA_TYPE remove_at_list(list_s * list, const size_t index) {
 
         temp = *current;
         *current = (*current)->next;
-    } else { // no special case that head might change
+    } else { // head might change if size is one, but since the list is circular temp will point to head after loop
         temp = list->head;
         for (size_t i = 0; i < list->size - index; ++i) {
             temp = temp->prev;
@@ -273,13 +273,15 @@ static inline LIST_DATA_TYPE remove_at_list(list_s * list, const size_t index) {
 static inline void reverse_list(list_s * list) {
     LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
 
-    struct list_node * current = list->head = list->head ? list->head->prev : list->head;
+    struct list_node * current = list->head;
     for (size_t s = 0; s < list->size; ++s) {
+        list->head = current;
+
         struct list_node * temp = current->next;
         current->next = current->prev;
         current->prev = temp;
 
-        current = current->next;
+        current = current->prev;
     }
 }
 
@@ -680,13 +682,14 @@ static inline void reverse_list(list_s * list) {
 
     size_t current = list->head;
     for (size_t s = 0; s < list->size; ++s) {
+        list->head = current;
+
         const size_t temp = list->node[NEXT_IDX][current];
         list->node[NEXT_IDX][current] = list->node[PREV_IDX][current];
         list->node[PREV_IDX][current] = temp;
 
-        current = list->node[NEXT_IDX][current];
+        current = list->node[PREV_IDX][current];
     }
-    if (list->size) list->head = list->node[NEXT_IDX][list->head];
 }
 
 static inline void shift_next_list(list_s * list, const size_t shift) {
@@ -1123,13 +1126,15 @@ static inline LIST_DATA_TYPE remove_at_list(list_s * list, const size_t index) {
 static inline void reverse_list(list_s * list) {
     LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
 
-    size_t current = list->head = list->size ? list->node[PREV_IDX][list->head] : list->head;
+    size_t current = list->head;
     for (size_t s = 0; s < list->size; ++s) {
+        list->head = current;
+
         const size_t temp = list->node[NEXT_IDX][current];
         list->node[NEXT_IDX][current] = list->node[PREV_IDX][current];
         list->node[PREV_IDX][current] = temp;
 
-        current = list->node[NEXT_IDX][current];
+        current = list->node[PREV_IDX][current];
     }
 }
 
@@ -1548,13 +1553,14 @@ static inline void reverse_list(list_s * list) {
 
     size_t current = list->head;
     for (size_t s = 0; s < list->size; ++s) {
+        list->head = current;
+
         const size_t temp = list->node[NEXT_IDX][current];
         list->node[NEXT_IDX][current] = list->node[PREV_IDX][current];
         list->node[PREV_IDX][current] = temp;
 
-        current = list->node[NEXT_IDX][current];
+        current = list->node[PREV_IDX][current];
     }
-    if (list->size) list->head = list->node[NEXT_IDX][list->head];
 }
 
 static inline void shift_next_list(list_s * list, const size_t shift) {
