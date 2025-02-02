@@ -5,41 +5,38 @@
 #include <stdbool.h> // imports bool
 #include <string.h>  // imports memcpy, memmove
 
-#ifdef LIST_LICENCE
+/*
+    This is free and unencumbered software released into the public domain.
 
-#error \
-    This is free and unencumbered software released into the public domain. \
-    \
-    Anyone is free to copy, modify, publish, use, compile, sell, or         \
-    distribute this software, either in source code form or as a compiled   \
-    binary, for any purpose, commercial or non-commercial, and by any       \
-    means.                                                                  \
-    \
-    In jurisdictions that recognize copyright laws, the author or authors   \
-    of this software dedicate any and all copyright interest in the         \
-    software to the public domain. We make this dedication for the benefit  \
-    of the public at large and to the detriment of our heirs and            \
-    successors. We intend this dedication to be an overt act of             \
-    relinquishment in perpetuity of all present and future rights to this   \
-    software under copyright law.                                           \
-    \
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,         \
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF      \
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  \
-    IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR       \
-    OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,   \
-    ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR   \
-    OTHER DEALINGS IN THE SOFTWARE.                                         \
-    \
-    For more information, please refer to <https://unlicense.org>           \
+    Anyone is free to copy, modify, publish, use, compile, sell, or
+    distribute this software, either in source code form or as a compiled
+    binary, for any purpose, commercial or non-commercial, and by any
+    means.
 
-#endif
+    In jurisdictions that recognize copyright laws, the author or authors
+    of this software dedicate any and all copyright interest in the
+    software to the public domain. We make this dedication for the benefit
+    of the public at large and to the detriment of our heirs and
+    successors. We intend this dedication to be an overt act of
+    relinquishment in perpetuity of all present and future rights to this
+    software under copyright law.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+    OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+    ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+    OTHER DEALINGS IN THE SOFTWARE.
+
+    For more information, please refer to <https://unlicense.org>
+*/
 
 // list mode macros in octal to prevent future overlap with other data structure modes
-#define INFINITE_ALLOCATED_LIST  0x11
-#define FINITE_ALLOCATED_LIST    0x12
-#define INFINITE_REALLOC_LIST    0x13
-#define FINITE_PRERPOCESSOR_LIST 0x14
+#define INFINITE_ALLOCATED_LIST  0xC
+#define FINITE_ALLOCATED_LIST    0xD
+#define INFINITE_REALLOC_LIST    0xE
+#define FINITE_PRERPOCESSOR_LIST 0xF
 
 #define INFINITE_LIST INFINITE_ALLOCATED_LIST
 #define FINITE_LIST   FINITE_ALLOCATED_LIST
@@ -213,7 +210,9 @@ static inline LIST_DATA_TYPE remove_last_list(list_s * list, const LIST_DATA_TYP
         current = current->prev;
 
         const int comparison = compare ? compare(&(current->element), &element) : memcmp(&(current->element), &element, sizeof(LIST_DATA_TYPE));
-        if (0 != comparison) continue;
+        if (0 != comparison) {
+            continue;
+        }
 
         LIST_DATA_TYPE found = current->element;
         list->size--;
@@ -386,7 +385,7 @@ static inline list_s split_list(list_s * list, const size_t index, const size_t 
     first_split->prev = last_split;
     last_split->next = first_split;
 
-    return (list_s) { .head = index_node, .size = size };
+    return (list_s) { .head = first_split, .size = size };
 }
 
 static inline LIST_DATA_TYPE get_list(const list_s list, const size_t index) {
@@ -426,16 +425,14 @@ static inline list_s copy_list(const list_s list, const copy_list_fn copy) {
         LIST_ASSERT(temp && "[ERROR] Memory allocation failed");
         temp->element = copy ? copy(current_list->element) : current_list->element;
 
-        temp->prev = (*current_copy); // prev reference is stored in *current_copy
-        (*current_copy) = temp->next = temp; // (*current_copy)->next will have reference to prev list node
+        (*current_copy) = temp->prev = temp; // *current_copy and temp's prev will point to temp
+        temp->next = list_copy.head; // temp's next points to head (if *current_copy is head then temp's next points to temp)
+        // temp's prev points to list_copy.head's prev (if *current_copy is head then head/temp->prev is temp, else temp->prev is previous node)
+        temp->prev = list_copy.head->prev;
+        list_copy.head->prev = temp; // head's prev points to temp (if *current_copy is head then head/temp prev is temp, else head prev is last node)
 
         current_list = current_list->next;
         current_copy = &((*current_copy)->next);
-    }
-
-    if (current_copy != &(list_copy.head)) {
-        list_copy.head->prev = (*current_copy); // copy.head won't have prev reference to last node
-        (*current_copy)->next = list_copy.head; // *current_copy or last node won't have reference to head
     }
 
     return list_copy;
@@ -470,7 +467,9 @@ static inline void foreach_list(const list_s * list, const operate_list_fn opera
 
     struct list_node * current = list->head;
     for (size_t i = 0; i < list->size; ++i) {
-        if (!operate(&current->element, args)) return;
+        if (!operate(&current->element, args)) {
+            return;
+        }
 
         current = current->next;
     }
@@ -484,7 +483,9 @@ static inline void foreach_reverse_list(const list_s * list, const operate_list_
     for (size_t i = 0; i < list->size; ++i) {
         current = current->prev;
 
-        if (!operate(&current->element, args)) return;
+        if (!operate(&current->element, args)) {
+            return;
+        }
     }
 }
 
@@ -618,7 +619,9 @@ static inline LIST_DATA_TYPE remove_last_list(list_s * list, const LIST_DATA_TYP
         current = list->node[PREV_IDX][current];
 
 		const int comparison = compare ? compare(&(list->elements[current]), &element) : memcmp(&(list->elements[current]), &element, sizeof(LIST_DATA_TYPE));
-        if (0 != comparison) continue;
+        if (0 != comparison) {
+            continue;
+        }
 
         if (list->head == list->size - 1) {
             list->head = current;
@@ -661,6 +664,13 @@ static inline LIST_DATA_TYPE remove_at_list(list_s * list, const size_t index) {
             current = list->node[PREV_IDX][current];
         }
     }
+
+    if (list->head == list->size - 1) {
+        list->head = current;
+    } else if (list->head == current) {
+        list->head = (list->node[NEXT_IDX][current] == list->size - 1) ? current : list->node[NEXT_IDX][current];
+    }
+
     LIST_DATA_TYPE found = list->elements[current];
 
     list->node[NEXT_IDX][list->node[PREV_IDX][current]] = list->node[NEXT_IDX][current];
@@ -895,7 +905,9 @@ static inline void foreach_list(const list_s * list, const operate_list_fn opera
 
     size_t current = list->head;
     for (size_t i = 0; i < list->size; ++i) {
-        if (!operate(&(list->elements[current]), args)) return;
+        if (!operate(&(list->elements[current]), args)) {
+            return;
+        }
 
         current = list->node[NEXT_IDX][current];
     }
@@ -909,7 +921,9 @@ static inline void foreach_reverse_list(const list_s * list, const operate_list_
     for (size_t i = 0; i < list->size; ++i) {
         current = list->node[PREV_IDX][current];
 
-        if (!operate(list->elements + current, args)) return;
+        if (!operate(list->elements + current, args)) {
+            return;
+        }
     }
 }
 
@@ -1049,7 +1063,9 @@ static inline LIST_DATA_TYPE remove_last_list(list_s * list, const LIST_DATA_TYP
         current = list->node[PREV_IDX][current];
 
 		const int comparison = compare ? compare(&(list->elements[current]), &element) : memcmp(&(list->elements[current]), &element, sizeof(LIST_DATA_TYPE));
-        if (0 != comparison) continue;
+        if (0 != comparison) {
+            continue;
+        }
 
         if (list->head == list->size - 1) {
             list->head = current;
@@ -1088,13 +1104,21 @@ static inline LIST_DATA_TYPE remove_at_list(list_s * list, const size_t index) {
     LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
     LIST_ASSERT(index < list->size && "[ERROR] Index parameter greater than list size.");
 
-    size_t current = list->head, smaller_size = list->size - index, node_index = PREV_IDX;
+    size_t current = list->head;
     if (index <= (list->size >> 1)) {
-        smaller_size = index;
-        node_index = NEXT_IDX;
+        for (size_t i = 0; i < index; ++i) {
+            current = list->node[NEXT_IDX][current];
+        }
+    } else {
+        for (size_t i = 0; i < list->size - index; ++i) {
+            current = list->node[PREV_IDX][current];
+        }
     }
-    for (size_t i = 0; i < smaller_size; ++i) {
-        current = list->node[node_index][current];
+
+    if (list->head == list->size - 1) {
+        list->head = current;
+    } else if (list->head == current) {
+        list->head = (list->node[NEXT_IDX][current] == list->size - 1) ? current : list->node[NEXT_IDX][current];
     }
 
     list->node[NEXT_IDX][list->node[PREV_IDX][current]] = list->node[NEXT_IDX][current];
@@ -1354,7 +1378,9 @@ static inline void foreach_list(const list_s * list, const operate_list_fn opera
 
     size_t current = list->head;
     for (size_t i = 0; i < list->size; ++i) {
-        if (!operate(&(list->elements[current]), args)) return;
+        if (!operate(&(list->elements[current]), args)) {
+            return;
+        }
 
         current = list->node[NEXT_IDX][current];
     }
@@ -1368,7 +1394,9 @@ static inline void foreach_reverse_list(const list_s * list, const operate_list_
     for (size_t i = 0; i < list->size; ++i) {
         current = list->node[PREV_IDX][current];
 
-        if (!operate(list->elements + current, args)) return;
+        if (!operate(list->elements + current, args)) {
+            return;
+        }
     }
 }
 
@@ -1490,7 +1518,9 @@ static inline LIST_DATA_TYPE remove_last_list(list_s * list, const LIST_DATA_TYP
         current = list->node[PREV_IDX][current];
 
         const int comparison = compare ? compare(&(list->elements[current]), &element) : memcmp(&(list->elements[current]), &element, sizeof(LIST_DATA_TYPE));
-        if (0 != comparison) continue;
+        if (0 != comparison) {
+            continue;
+        }
 
         if (list->head == list->size - 1) {
             list->head = current;
@@ -1531,6 +1561,12 @@ static inline LIST_DATA_TYPE remove_at_list(list_s * list, const size_t index) {
         for (size_t i = 0; i < list->size - index; ++i) {
             current = list->node[PREV_IDX][current];
         }
+    }
+
+    if (list->head == list->size - 1) {
+        list->head = current;
+    } else if (list->head == current) {
+        list->head = (list->size - 1 == list->node[NEXT_IDX][current]) ? current : list->node[NEXT_IDX][current];
     }
 
     list->node[NEXT_IDX][list->node[PREV_IDX][current]] = list->node[NEXT_IDX][current];
@@ -1739,7 +1775,10 @@ static inline void foreach_list(list_s * list, const operate_list_fn operate, vo
 
     size_t current = list->head;
     for (size_t i = 0; i < list->size; ++i) {
-        if (!operate(&(list->elements[current]), args)) return;
+        if (!operate(&(list->elements[current]), args)) {
+            return;
+        }
+
         current = list->node[NEXT_IDX][current];
     }
 }
@@ -1752,7 +1791,9 @@ static inline void foreach_reverse_list(list_s * list, const operate_list_fn ope
     for (size_t i = 0; i < list->size; ++i) {
         current = list->node[PREV_IDX][current];
 
-        if (!operate(list->elements + current, args)) return;
+        if (!operate(list->elements + current, args)) {
+            return;
+        }
     }
 }
 
