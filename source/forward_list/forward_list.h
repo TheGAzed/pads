@@ -34,10 +34,10 @@
 
 
 // list mode macros in octal to prevent future overlap with other data structure modes
-#define INFINITE_ALLOCATED_FORWARD_LIST  0x10
-#define FINITE_ALLOCATED_FORWARD_LIST    0x11
-#define INFINITE_REALLOC_FORWARD_LIST    0x12
-#define FINITE_PRERPOCESSOR_FORWARD_LIST 0x13
+#define INFINITE_ALLOCATED_FORWARD_LIST  21
+#define FINITE_ALLOCATED_FORWARD_LIST    22
+#define INFINITE_REALLOC_FORWARD_LIST    23
+#define FINITE_PRERPOCESSOR_FORWARD_LIST 24
 
 #define INFINITE_FORWARD_LIST INFINITE_ALLOCATED_FORWARD_LIST
 #define FINITE_FORWARD_LIST   FINITE_ALLOCATED_FORWARD_LIST
@@ -253,29 +253,24 @@ static inline forward_list_s splice_forward_list(forward_list_s * restrict list_
     FORWARD_LIST_ASSERT(list_one != list_two && "[ERROR] Lists can't be the same.");
     FORWARD_LIST_ASSERT(index <= list_one->size && "[ERROR] index can't exceed list_one's size");
 
-    struct forward_list_node * previous = list_one->tail;
-    for (size_t i = 0; i < index; ++i) {
-        previous = previous->next;
+    forward_list_s list = { 0 };
+    if (list_one->tail == NULL) {
+        list = *list_two;
+    } else if (list_two->tail == NULL) {
+        list = *list_one;
+    } else {
+        struct forward_list_node * previous = list_one->tail;
+        for (size_t i = 0; i < index; ++i) {
+            previous = previous->next;
+        }
+
+        struct forward_list_node * swap = previous->next;
+        previous->next = list_two->tail->next;
+        list_two->tail->next = swap;
+
+        list.size = list_one->size + list_two->size;
+        list.tail = (index == list_one->size - 1) ? list_two->tail : list_one->tail;
     }
-
-    if (previous && list_two->tail) {
-        struct forward_list_node * current = previous->next;
-
-        struct forward_list_node * first_one = current;
-        struct forward_list_node * last_one  = previous;
-
-        struct forward_list_node * first_two = list_two->tail->next;
-        struct forward_list_node * last_two  = list_two->tail;
-
-        last_one->next = first_two;
-        last_two->next = first_one;
-    }
-
-    const forward_list_s list = {
-        .size = list_one->size + list_two->size,
-        .tail = (index != list_one->size - 1 || !list_two->size) ? list_one->tail : list_two->tail,
-    };
-
     *list_one = *list_two = (forward_list_s) { 0 };
 
     return list;
@@ -283,42 +278,36 @@ static inline forward_list_s splice_forward_list(forward_list_s * restrict list_
 
 static inline forward_list_s split_forward_list(forward_list_s * list, const size_t index, const size_t size) {
     FORWARD_LIST_ASSERT(list && "[ERROR] List pointer is NULL");
-    FORWARD_LIST_ASSERT(index < list->size && "[ERROR] Can only split at index less than list size.");
     FORWARD_LIST_ASSERT(size <= list->size && "[ERROR] Size parameter bigger than list size.");
+    FORWARD_LIST_ASSERT(index <= list->size && !(index && (index == list->size)) && "[ERROR] Can only split at index less than list size, or equal to if list size is zero.");
 
-    if (!size) {
-        return (forward_list_s) { 0 };
-    }
-
-    struct forward_list_node * index_node_previous = list->tail;
+    struct forward_list_node * prev_index_node = list->tail;
     for (size_t i = 0; i < index; ++i) {
-        index_node_previous = index_node_previous->next;
+        prev_index_node = prev_index_node->next;
+    }
+    if ((index + size) >= list->size) { // if tail node becomes part of split list new tail node will be the node previous to index/first-split node
+        list->tail = prev_index_node;
     }
 
-    struct forward_list_node * size_node = index_node_previous;
-    for (size_t i = 0; i < size; ++i) {
-        size_node = size_node->next;
-    }
+    forward_list_s split = { .size = size, .tail = NULL };
 
-    if ((index + size) >= list->size) {
-        list->tail = index_node_previous;
+    struct forward_list_node * last_added = NULL;
+    struct forward_list_node ** split_previous = &(split.tail);
+    for (size_t i = 0; i < size; ++i) { // split's tail is treated as the head node and gets changed to tail after loop finishes via last_added
+        (*split_previous) = last_added = prev_index_node->next; // previous index node's next is part of split
+        (*split_previous)->next = split.tail; // every new node added needs to point to the tail as next node
+
+        split_previous = &((*split_previous)->next);
+        prev_index_node->next = prev_index_node->next->next;
     }
+    split.tail = last_added; // makes the last node added to split list the tail, or NULL if size parameter is zero
 
     list->size -= size;
-    if (!list->size) {
+    if (!list->size) { // if list size becomes zero list tail will be NULL/empty
         list->tail = NULL;
     }
 
-    struct forward_list_node * first_list = size_node->next;
-    struct forward_list_node * last_list  = index_node_previous;
-
-    struct forward_list_node * first_split = index_node_previous->next;
-    struct forward_list_node * last_split  = size_node;
-
-    last_list->next = first_list;
-    last_split->next = first_split;
-
-    return (forward_list_s) { .tail = last_split, .size = size };
+    return split;
 }
 
 static inline FORWARD_LIST_DATA_TYPE get_forward_list(const forward_list_s list, const size_t index) {

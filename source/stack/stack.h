@@ -33,10 +33,10 @@
 */
 
 // stack mode macros in octal to prevent future overlap with other data structure modes
-#define INFINITE_LIST_STACK       0x1
-#define FINITE_ALLOCATED_STACK    0x2
-#define INFINITE_REALLOC_STACK    0x3
-#define FINITE_PRERPOCESSOR_STACK 0x4
+#define INFINITE_LIST_STACK       1
+#define FINITE_ALLOCATED_STACK    2
+#define INFINITE_REALLOC_STACK    3
+#define FINITE_PRERPOCESSOR_STACK 4
 
 #define INFINITE_STACK INFINITE_LIST_STACK
 #define FINITE_STACK   FINITE_ALLOCATED_STACK

@@ -33,10 +33,10 @@
 */
 
 // list mode macros in octal to prevent future overlap with other data structure modes
-#define INFINITE_ALLOCATED_LIST  0xC
-#define FINITE_ALLOCATED_LIST    0xD
-#define INFINITE_REALLOC_LIST    0xE
-#define FINITE_PRERPOCESSOR_LIST 0xF
+#define INFINITE_ALLOCATED_LIST  31
+#define FINITE_ALLOCATED_LIST    32
+#define INFINITE_REALLOC_LIST    33
+#define FINITE_PRERPOCESSOR_LIST 34
 
 #define INFINITE_LIST INFINITE_ALLOCATED_LIST
 #define FINITE_LIST   FINITE_ALLOCATED_LIST

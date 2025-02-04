@@ -33,10 +33,10 @@
 */
 
 // queue mode macros in octal to prevent future overlap with other data structure modes
-#define INFINITE_LIST_QUEUE       0x5
-#define FINITE_ALLOCATED_QUEUE    0x6
-#define INFINITE_REALLOC_QUEUE    0x7
-#define FINITE_PREPROCESSOR_QUEUE 0x8
+#define INFINITE_LIST_QUEUE       11
+#define FINITE_ALLOCATED_QUEUE    12
+#define INFINITE_REALLOC_QUEUE    13
+#define FINITE_PREPROCESSOR_QUEUE 14
 
 #define INFINITE_QUEUE INFINITE_LIST_QUEUE
 #define FINITE_QUEUE   FINITE_ALLOCATED_QUEUE
