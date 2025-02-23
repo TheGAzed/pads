@@ -461,7 +461,7 @@ static inline void sort_list(list_s const * list, const sort_list_fn sort, const
     LIST_FREE(elements_array);
 }
 
-static inline void foreach_list(const list_s * list, const operate_list_fn operate, void * args) {
+static inline void foreach_list(list_s * list, const operate_list_fn operate, void * args) {
     LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
     LIST_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
 
@@ -899,7 +899,7 @@ static inline void sort_list(list_s * list, const sort_list_fn sort, const compa
     }
 }
 
-static inline void foreach_list(const list_s * list, const operate_list_fn operate, void * args) {
+static inline void foreach_list(list_s * list, const operate_list_fn operate, void * args) {
     LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
     LIST_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
 
@@ -1372,7 +1372,7 @@ static inline void sort_list(list_s * list, const sort_list_fn sort, const compa
     }
 }
 
-static inline void foreach_list(const list_s * list, const operate_list_fn operate, void * args) {
+static inline void foreach_list(list_s * list, const operate_list_fn operate, void * args) {
     LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
     LIST_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
 
