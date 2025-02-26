@@ -199,13 +199,14 @@ static inline FORWARD_LIST_DATA_TYPE remove_at_forward_list(forward_list_s * lis
     FORWARD_LIST_ASSERT(index < list->size && "[ERROR] Index greater than size");
 
     struct forward_list_node * previous = list->tail;
-    for (size_t i = 0; i < index; ++i) {
+    for (size_t i = 0; i < index; ++i) { // if index is last element then dont loop since list has tail pointer
         previous = previous->next;
     }
     struct forward_list_node * current = previous->next;
 
     list->size--;
-    FORWARD_LIST_DATA_TYPE found = current->element;
+    FORWARD_LIST_DATA_TYPE found = { 0 };
+    memcpy(&found, &(current->element), sizeof(FORWARD_LIST_DATA_TYPE));
 
     previous->next = current->next;
 
@@ -237,7 +238,7 @@ static inline void reverse_forward_list(forward_list_s * list) {
     }
 }
 
-static inline void shift_next_forward_list(forward_list_s * list, const size_t shift) {
+static inline void shift_forward_list(forward_list_s * list, const size_t shift) {
     FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
 
     for (size_t s = 0; list->tail && (s < shift); ++s) {
@@ -256,16 +257,16 @@ static inline void splice_forward_list(forward_list_s * restrict destination, fo
         previous = previous->next;
     }
 
-    if (source->tail) {
+    if (previous && source->tail) {
         struct forward_list_node * swap = previous->next;
         previous->next = source->tail->next;
         source->tail->next = swap;
     }
 
-    destination->size = destination->size + source->size;
-    if (index == destination->size - 1) {
+    if (index == destination->size && source->tail) {
         destination->tail = source->tail;
     }
+    destination->size += source->size;
 
     *source = (forward_list_s) { 0 };
 }
@@ -288,11 +289,12 @@ static inline forward_list_s split_forward_list(forward_list_s * list, const siz
     struct forward_list_node * last_added = NULL;
     struct forward_list_node ** split_previous = &(split.tail);
     for (size_t i = 0; i < size; ++i) { // split's tail is treated as the head node and gets changed to tail after loop finishes via last_added
-        (*split_previous) = last_added = prev_index_node->next; // previous index node's next is part of split
+        struct forward_list_node * current = prev_index_node->next;
+        (*split_previous) = last_added = current; // previous index node's next is part of split
+        prev_index_node->next = prev_index_node->next->next; // remove current from list
         (*split_previous)->next = split.tail; // every new node added needs to point to the tail as next node
 
         split_previous = &((*split_previous)->next);
-        prev_index_node->next = prev_index_node->next->next;
     }
     split.tail = last_added; // makes the last node added to split list the tail, or NULL if size parameter is zero
 
@@ -310,7 +312,7 @@ static inline FORWARD_LIST_DATA_TYPE get_forward_list(const forward_list_s list,
     FORWARD_LIST_ASSERT(index < list.size && "[ERROR] 'index' parameter exceeds list size.");
 
     struct forward_list_node const * current = list.tail;
-    for (size_t i = 0; i <= index; ++i) {
+    for (size_t i = 0; index != list.size - 1 && i <= index; ++i) { // if index is last element then don't iterate and return tail node
         current = current->next;
     }
 
@@ -332,7 +334,7 @@ static inline forward_list_s copy_forward_list(const forward_list_s list, const 
     struct forward_list_node ** previous_copy = &(list_copy.tail);
     for (size_t i = 0; i < list.size; ++i) {
         struct forward_list_node * temp = FORWARD_LIST_ALLOC(sizeof(struct forward_list_node));
-        FORWARD_LIST_ASSERT(temp && "[ERROR] Memory allocation failed");
+        FORWARD_LIST_ASSERT(temp && "[ERROR] Memory allocation failed.");
         temp->element = copy ? copy(previous_list->element) : previous_list->element;
 
         (*previous_copy) = temp;
@@ -346,8 +348,8 @@ static inline forward_list_s copy_forward_list(const forward_list_s list, const 
 }
 
 static inline void sort_forward_list(forward_list_s const * list, const sort_forward_list_fn sort, const compare_forward_list_fn compare) {
-    FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL");
-    FORWARD_LIST_ASSERT(sort && "[ERROR] 'sort' parameter pointer is NULL");
+    FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
+    FORWARD_LIST_ASSERT(sort && "[ERROR] 'sort' parameter pointer is NULL.");
 
     FORWARD_LIST_DATA_TYPE * elements_array = FORWARD_LIST_ALLOC(sizeof(FORWARD_LIST_DATA_TYPE) * list->size);
     FORWARD_LIST_ASSERT((!(list->size) || elements_array) && "[ERROR] Memory allocation failed.");
@@ -462,8 +464,8 @@ static inline void destroy_forward_list(forward_list_s * list, const destroy_for
         previous = list->next[previous];
     }
 
-    free(list->elements);
-    free(list->next);
+    FORWARD_LIST_FREE(list->elements);
+    FORWARD_LIST_FREE(list->next);
     *list = (forward_list_s) { 0 };
 }
 
@@ -523,6 +525,10 @@ static inline FORWARD_LIST_DATA_TYPE remove_first_forward_list(forward_list_s * 
                 list->tail = previous; // if list still has elements then tail will become the previous index
             }
 
+            if (!list->size) {
+                list->empty_head = list->empty_size = list->tail = 0;
+            }
+
             return found;
         }
         previous = list->next[previous];
@@ -559,6 +565,10 @@ static inline FORWARD_LIST_DATA_TYPE remove_at_forward_list(forward_list_s * lis
         list->tail = previous; // if list still has elements then tail will become the previous index
     }
 
+    if (!list->size) {
+        list->empty_head = list->empty_size = list->tail = 0;
+    }
+
     return found;
 }
 
@@ -581,7 +591,7 @@ static inline void reverse_forward_list(forward_list_s * list) {
     }
 }
 
-static inline void shift_next_forward_list(forward_list_s * list, const size_t shift) {
+static inline void shift_forward_list(forward_list_s * list, const size_t shift) {
     FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
 
     for (size_t s = 0; list->tail && (s < shift); ++s) {
@@ -692,7 +702,7 @@ static inline FORWARD_LIST_DATA_TYPE get_forward_list(const forward_list_s list,
     FORWARD_LIST_ASSERT(index < list.size && "[ERROR] 'index' parameter exceeds list size.");
 
     size_t current = list.tail;
-    for (size_t i = 0; i <= index; ++i) {
+    for (size_t i = 0; index != list.size - 1 && i <= index; ++i) {
         current = list.next[current];
     }
 
@@ -847,8 +857,8 @@ static inline void destroy_forward_list(forward_list_s * list, const destroy_for
         previous = list->next[previous];
     }
 
-    free(list->elements);
-    free(list->next);
+    FORWARD_LIST_FREE(list->elements);
+    FORWARD_LIST_FREE(list->next);
     *list = (forward_list_s) { 0 };
 }
 
@@ -926,8 +936,8 @@ static inline FORWARD_LIST_DATA_TYPE remove_first_forward_list(forward_list_s * 
 
                 list->empty_head = list->empty_size = list->size = list->tail = 0;
 
-                free(list->elements);
-                free(list->next);
+                FORWARD_LIST_FREE(list->elements);
+                FORWARD_LIST_FREE(list->next);
 
                 list->elements = temp_elements;
                 list->next = temp_next;
@@ -984,8 +994,8 @@ static inline FORWARD_LIST_DATA_TYPE remove_at_forward_list(forward_list_s * lis
 
         list->empty_head = list->empty_size = list->size = list->tail = 0;
 
-        free(list->elements);
-        free(list->next);
+        FORWARD_LIST_FREE(list->elements);
+        FORWARD_LIST_FREE(list->next);
 
         list->elements = temp_elements;
         list->next = temp_next;
@@ -1013,7 +1023,7 @@ static inline void reverse_forward_list(forward_list_s * list) {
     }
 }
 
-static inline void shift_next_forward_list(forward_list_s * list, const size_t shift) {
+static inline void shift_forward_list(forward_list_s * list, const size_t shift) {
     FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
 
     for (size_t s = 0; list->tail && (s < shift); ++s) {
@@ -1073,8 +1083,8 @@ static inline void splice_forward_list(forward_list_s * restrict destination, fo
         destination->tail = previous_dest;
     }
 
-    free(source->elements);
-    free(source->next);
+    FORWARD_LIST_FREE(source->elements);
+    FORWARD_LIST_FREE(source->next);
     *source = (forward_list_s) { 0 };
 }
 
@@ -1119,8 +1129,8 @@ static inline forward_list_s split_forward_list(forward_list_s * list, const siz
     }
 
     if (list->size) {
-        free(list->elements);
-        free(list->next);
+        FORWARD_LIST_FREE(list->elements);
+        FORWARD_LIST_FREE(list->next);
         *list = (forward_list_s) { 0 };
     }
 
@@ -1133,7 +1143,7 @@ static inline FORWARD_LIST_DATA_TYPE get_forward_list(const forward_list_s list,
     FORWARD_LIST_ASSERT(index < list.size && "[ERROR] 'index' parameter exceeds list size.");
 
     size_t current = list.tail;
-    for (size_t i = 0; i <= index; ++i) { // equal to index to take tail into account
+    for (size_t i = 0; index != list.size - 1 && i <= index; ++i) { // equal to index to take tail into account
         current = list.next[current];
     }
 
@@ -1239,8 +1249,8 @@ static inline void clear_forward_list(forward_list_s * list, const destroy_forwa
         previous = list->next[previous];
     }
 
-    free(list->elements);
-    free(list->next);
+    FORWARD_LIST_FREE(list->elements);
+    FORWARD_LIST_FREE(list->next);
     *list = (forward_list_s) { 0 };
 }
 
@@ -1358,6 +1368,10 @@ static inline FORWARD_LIST_DATA_TYPE remove_first_forward_list(forward_list_s * 
                 list->tail = previous; // if list still has elements then tail will become the previous index
             }
 
+            if (!list->size) {
+                list->empty_head = list->empty_size = list->tail = 0;
+            }
+
             return found;
         }
         previous = list->next[previous];
@@ -1394,6 +1408,10 @@ static inline FORWARD_LIST_DATA_TYPE remove_at_forward_list(forward_list_s * lis
         list->tail = previous; // if list still has elements then tail will become the previous index
     }
 
+    if (!list->size) {
+        list->empty_head = list->empty_size = list->tail = 0;
+    }
+
     return found;
 }
 
@@ -1416,7 +1434,7 @@ static inline void reverse_forward_list(forward_list_s * list) {
     }
 }
 
-static inline void shift_next_forward_list(forward_list_s * list, const size_t shift) {
+static inline void shift_forward_list(forward_list_s * list, const size_t shift) {
     FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
 
     for (size_t s = 0; list->tail && (s < shift); ++s) {
@@ -1514,7 +1532,7 @@ static inline FORWARD_LIST_DATA_TYPE get_forward_list(const forward_list_s list,
     FORWARD_LIST_ASSERT(index < list.size && "[ERROR] 'index' parameter exceeds list size.");
 
     size_t current = list.tail;
-    for (size_t i = 0; i <= index; ++i) {
+    for (size_t i = 0; index != list.size - 1 && i <= index; ++i) {
         current = list.next[current];
     }
 
