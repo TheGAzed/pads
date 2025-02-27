@@ -371,9 +371,9 @@ static inline void sort_forward_list(forward_list_s const * list, const sort_for
 }
 
 static inline bool binary_search_forward_list(const forward_list_s list, const FORWARD_LIST_DATA_TYPE element, const compare_forward_list_fn compare) {
-    struct forward_list_node const * base = list.tail ? list.tail->next : list.tail;
+    struct forward_list_node const * base = list.tail;
     for (size_t limit = list.size; limit != 0; limit >>= 1) {
-        struct forward_list_node const * current = base; // start from next element to move from tail and to ignore compared element
+        struct forward_list_node const * current = base->next; // start from next element to move from tail and to ignore compared element
         for (size_t i = 0; i < limit >> 1; ++i) { // iterate to middle element in list
             current = current->next;
         }
@@ -384,7 +384,7 @@ static inline bool binary_search_forward_list(const forward_list_s list, const F
             return true;
         }
         if (comparison > 0) {
-            base = current->next; // increment element pointer to next
+            base = current; // increment element pointer to next
             limit--;
         }
     }
@@ -409,7 +409,7 @@ static inline void clear_forward_list(forward_list_s * list, const destroy_forwa
     *list = (forward_list_s) { 0 };
 }
 
-static inline void foreach_forward_list(forward_list_s * list, const operate_forward_list_fn operate, void * args) {
+static inline void foreach_forward_list(forward_list_s const * list, const operate_forward_list_fn operate, void * args) {
     FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
     FORWARD_LIST_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
 
@@ -772,9 +772,9 @@ static inline void sort_forward_list(forward_list_s * list, const sort_forward_l
 }
 
 static inline bool binary_search_forward_list(const forward_list_s list, const FORWARD_LIST_DATA_TYPE element, const compare_forward_list_fn compare) {
-    size_t base = list.size ? list.next[list.tail] : list.tail;
+    size_t base = list.tail;
     for (size_t limit = list.size; limit != 0; limit >>= 1) {
-        size_t current = base; // start from next element to move from tail and to ignore compared element
+        size_t current = list.next[base]; // start from next element to move from tail and to ignore compared element
         for (size_t i = 0; i < limit >> 1; ++i) { // iterate to middle element in list
             current = list.next[current];
         }
@@ -785,7 +785,7 @@ static inline bool binary_search_forward_list(const forward_list_s list, const F
             return true;
         }
         if (comparison > 0) {
-            base = list.next[current]; // increment element pointer to next
+            base = current; // increment element pointer to next
             limit--;
         }
     }
@@ -1216,9 +1216,9 @@ static inline void sort_forward_list(forward_list_s * list, const sort_forward_l
 }
 
 static inline bool binary_search_forward_list(const forward_list_s list, const FORWARD_LIST_DATA_TYPE element, const compare_forward_list_fn compare) {
-    size_t base = list.size ? list.next[list.tail] : list.tail;
+    size_t base = list.tail;
     for (size_t limit = list.size; limit != 0; limit >>= 1) {
-        size_t current = base; // start from next element to move from tail and to ignore compared element
+        size_t current = list.next[base]; // start from next element to move from tail and to ignore compared element
         for (size_t i = 0; i < limit >> 1; ++i) { // iterate to middle element in list
             current = list.next[current];
         }
@@ -1229,7 +1229,7 @@ static inline bool binary_search_forward_list(const forward_list_s list, const F
             return true;
         }
         if (comparison > 0) {
-            base = list.next[current]; // increment element pointer to next
+            base = current; // increment element pointer to next
             limit--;
         }
     }
@@ -1596,9 +1596,9 @@ static inline void sort_forward_list(forward_list_s * list, const sort_forward_l
 }
 
 static inline bool binary_search_forward_list(const forward_list_s list, const FORWARD_LIST_DATA_TYPE element, const compare_forward_list_fn compare) {
-    size_t base = list.size ? list.next[list.tail] : list.tail;
+    size_t base = list.tail;
     for (size_t limit = list.size; limit != 0; limit >>= 1) {
-        size_t current = base; // start from next element to move from tail and to ignore compared element
+        size_t current = list.next[base]; // start from next element to move from tail and to ignore compared element
         for (size_t i = 0; i < limit >> 1; ++i) { // iterate to middle element in list
             current = list.next[current];
         }
@@ -1609,7 +1609,7 @@ static inline bool binary_search_forward_list(const forward_list_s list, const F
             return true;
         }
         if (comparison > 0) {
-            base = list.next[current]; // increment element pointer to next
+            base = current; // increment element pointer to next
             limit--;
         }
     }
