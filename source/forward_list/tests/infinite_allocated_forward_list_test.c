@@ -1406,6 +1406,436 @@ TEST IAFL_GET_04(void) {
     PASS();
 }
 
+TEST IAFL_IS_EMPTY_01(void) {
+    forward_list_s test = create_forward_list();
+
+    ASSERTm("[IAFL-ERROR] Expected list to be empty.", is_empty_forward_list(test));
+
+    destroy_forward_list(&test, NULL);
+
+    PASS();
+}
+
+TEST IAFL_IS_EMPTY_02(void) {
+    forward_list_s test = create_forward_list();
+
+    insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = 42, });
+
+    ASSERT_FALSEm("[IAFL-ERROR] Expected list to not be empty.", is_empty_forward_list(test));
+
+    destroy_forward_list(&test, NULL);
+
+    PASS();
+}
+
+TEST IAFL_IS_EMPTY_03(void) {
+    forward_list_s test = create_forward_list();
+
+    const size_t count = MAXIMUM_INFINITE_FORWARD_LIST - 1;
+    for (size_t i = 0; i < count; ++i) {
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    ASSERT_FALSEm("[IAFL-ERROR] Expected list to not be empty.", is_empty_forward_list(test));
+
+    destroy_forward_list(&test, NULL);
+
+    PASS();
+}
+
+TEST IAFL_IS_EMPTY_04(void) {
+    forward_list_s test = create_forward_list();
+
+    const size_t count = MAXIMUM_INFINITE_FORWARD_LIST;
+    for (size_t i = 0; i < count; ++i) {
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    ASSERT_FALSEm("[IAFL-ERROR] Expected list to not be empty.", is_empty_forward_list(test));
+
+    destroy_forward_list(&test, NULL);
+
+    PASS();
+}
+
+TEST IAFL_IS_EMPTY_05(void) {
+    forward_list_s test = create_forward_list();
+
+    const size_t count = MAXIMUM_INFINITE_FORWARD_LIST + 1;
+    for (size_t i = 0; i < count; ++i) {
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    ASSERT_FALSEm("[IAFL-ERROR] Expected list to not be empty.", is_empty_forward_list(test));
+
+    destroy_forward_list(&test, NULL);
+
+    PASS();
+}
+
+TEST IAFL_COPY_01(void) {
+    forward_list_s test = create_forward_list();
+    forward_list_s copy = copy_forward_list(test, NULL);
+
+    ASSERT_EQm("[IAFL-ERROR] Expected copy size to be test size.", test.size, copy.size);
+    ASSERT_EQm("[IAFL-ERROR] Expected copy tail to be NULL.", NULL, copy.tail);
+
+    destroy_forward_list(&test, NULL);
+    destroy_forward_list(&copy, NULL);
+
+    PASS();
+}
+
+TEST IAFL_COPY_02(void) {
+    forward_list_s test = create_forward_list();
+
+    insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = 42, });
+
+    forward_list_s copy = copy_forward_list(test, NULL);
+
+    ASSERT_EQm("[IAFL-ERROR] Expected copy size to be test size.", test.size, copy.size);
+    ASSERT_NEQm("[IAFL-ERROR] Expected copy tail to not be NULL.", NULL, copy.tail);
+
+    const FORWARD_LIST_DATA_TYPE test_element = get_forward_list(test, 0);
+    const FORWARD_LIST_DATA_TYPE copy_element = get_forward_list(copy, 0);
+    ASSERT_EQm("[IAFL-ERROR] Expected copy element to be same as test element.", test_element.sub_one, copy_element.sub_one);
+
+    destroy_forward_list(&test, NULL);
+    destroy_forward_list(&copy, NULL);
+
+    PASS();
+}
+
+TEST IAFL_COPY_03(void) {
+    forward_list_s test = create_forward_list();
+
+    const size_t count = MAXIMUM_INFINITE_FORWARD_LIST - 1;
+    for (size_t i = 0; i < count; ++i) {
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    forward_list_s copy = copy_forward_list(test, NULL);
+
+    ASSERT_EQm("[IAFL-ERROR] Expected copy size to be test size.", test.size, copy.size);
+    ASSERT_NEQm("[IAFL-ERROR] Expected copy tail to not be NULL.", NULL, copy.tail);
+
+    for (size_t i = 0; i < count; ++i) {
+        const FORWARD_LIST_DATA_TYPE test_element = get_forward_list(test, i);
+        const FORWARD_LIST_DATA_TYPE copy_element = get_forward_list(copy, i);
+        ASSERT_EQm("[IAFL-ERROR] Expected copy element to be same as test element.", test_element.sub_one, copy_element.sub_one);
+    }
+
+    destroy_forward_list(&test, NULL);
+    destroy_forward_list(&copy, NULL);
+
+    PASS();
+}
+
+TEST IAFL_COPY_04(void) {
+    forward_list_s test = create_forward_list();
+
+    const size_t count = MAXIMUM_INFINITE_FORWARD_LIST;
+    for (size_t i = 0; i < count; ++i) {
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    forward_list_s copy = copy_forward_list(test, NULL);
+
+    ASSERT_EQm("[IAFL-ERROR] Expected copy size to be test size.", test.size, copy.size);
+    ASSERT_NEQm("[IAFL-ERROR] Expected copy tail to not be NULL.", NULL, copy.tail);
+
+    for (size_t i = 0; i < count; ++i) {
+        const FORWARD_LIST_DATA_TYPE test_element = get_forward_list(test, i);
+        const FORWARD_LIST_DATA_TYPE copy_element = get_forward_list(copy, i);
+        ASSERT_EQm("[IAFL-ERROR] Expected copy element to be same as test element.", test_element.sub_one, copy_element.sub_one);
+    }
+
+    destroy_forward_list(&test, NULL);
+    destroy_forward_list(&copy, NULL);
+
+    PASS();
+}
+
+TEST IAFL_COPY_05(void) {
+    forward_list_s test = create_forward_list();
+
+    const size_t count = MAXIMUM_INFINITE_FORWARD_LIST + 1;
+    for (size_t i = 0; i < count; ++i) {
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    forward_list_s copy = copy_forward_list(test, NULL);
+
+    ASSERT_EQm("[IAFL-ERROR] Expected copy size to be test size.", test.size, copy.size);
+    ASSERT_NEQm("[IAFL-ERROR] Expected copy tail to not be NULL.", NULL, copy.tail);
+
+    for (size_t i = 0; i < count; ++i) {
+        const FORWARD_LIST_DATA_TYPE test_element = get_forward_list(test, i);
+        const FORWARD_LIST_DATA_TYPE copy_element = get_forward_list(copy, i);
+        ASSERT_EQm("[IAFL-ERROR] Expected copy element to be same as test element.", test_element.sub_one, copy_element.sub_one);
+    }
+
+    destroy_forward_list(&test, NULL);
+    destroy_forward_list(&copy, NULL);
+
+    PASS();
+}
+
+TEST IAFL_SORT_01(void) {
+    forward_list_s test = create_forward_list();
+
+    sort_forward_list(&test, sort_int);
+
+    destroy_forward_list(&test, NULL);
+    PASS();
+}
+
+TEST IAFL_SORT_02(void) {
+    forward_list_s test = create_forward_list();
+
+    insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = 42, });
+
+    sort_forward_list(&test, sort_int);
+
+    const FORWARD_LIST_DATA_TYPE element = get_forward_list(test, 0);
+    ASSERT_EQm("[IAFL-ERROR] Expected copy element to be same as test element.", 42, element.sub_one);
+
+    destroy_forward_list(&test, NULL);
+    PASS();
+}
+
+TEST IAFL_SORT_03(void) {
+    forward_list_s test = create_forward_list();
+
+    const size_t count = MAXIMUM_INFINITE_FORWARD_LIST - 1;
+    for (size_t i = 0; i < (count / 2); ++i) {
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = count - i - 1, });
+    }
+    if (count & 0X01) {
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = (count / 2), });
+    }
+
+    sort_forward_list(&test, sort_int);
+
+    for (int i = 0; i < count; ++i) {
+        const FORWARD_LIST_DATA_TYPE element = get_forward_list(test, i);
+        ASSERT_EQm("[IAFL-ERROR] Expected copy element to be same as test element.", i, element.sub_one);
+    }
+
+    destroy_forward_list(&test, NULL);
+    PASS();
+}
+
+TEST IAFL_SORT_04(void) {
+    forward_list_s test = create_forward_list();
+
+    const size_t count = MAXIMUM_INFINITE_FORWARD_LIST;
+    for (size_t i = 0; i < (count / 2); ++i) {
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = count - i - 1, });
+    }
+    if (count & 0X01) {
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = (count / 2), });
+    }
+
+    sort_forward_list(&test, sort_int);
+
+    for (int i = 0; i < count; ++i) {
+        const FORWARD_LIST_DATA_TYPE element = get_forward_list(test, i);
+        ASSERT_EQm("[IAFL-ERROR] Expected copy element to be same as test element.", i, element.sub_one);
+    }
+
+    destroy_forward_list(&test, NULL);
+    PASS();
+}
+
+TEST IAFL_SORT_05(void) {
+    forward_list_s test = create_forward_list();
+
+    const size_t count = MAXIMUM_INFINITE_FORWARD_LIST + 1;
+    for (size_t i = 0; i < (count / 2); ++i) {
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = count - i - 1, });
+    }
+    if (count & 0X01) {
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = (count / 2), });
+    }
+
+    sort_forward_list(&test, sort_int);
+
+    for (int i = 0; i < count; ++i) {
+        const FORWARD_LIST_DATA_TYPE element = get_forward_list(test, i);
+        ASSERT_EQm("[IAFL-ERROR] Expected copy element to be same as test element.", i, element.sub_one);
+    }
+
+    destroy_forward_list(&test, NULL);
+    PASS();
+}
+
+TEST IAFL_BINARY_SEARCH_01(void) {
+    forward_list_s test = create_forward_list();
+
+    ASSERT_FALSEm("[IAFL-ERROR] Expected search to be false.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = 42, }, NULL));
+
+    destroy_forward_list(&test, NULL);
+    PASS();
+}
+
+TEST IAFL_BINARY_SEARCH_02(void) {
+    forward_list_s test = create_forward_list();
+    insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = 42, });
+
+    ASSERTm("[IAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = 42, }, NULL));
+
+    destroy_forward_list(&test, NULL);
+    PASS();
+}
+
+TEST IAFL_BINARY_SEARCH_03(void) {
+    forward_list_s test = create_forward_list();
+
+    const size_t count = MAXIMUM_INFINITE_FORWARD_LIST - 1;
+    for (size_t i = 0; i < count; ++i) {
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    sort_forward_list(&test, sort_int);
+
+    ASSERTm("[IAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = 0, }, compare_int));
+
+    destroy_forward_list(&test, NULL);
+    PASS();
+}
+
+TEST IAFL_BINARY_SEARCH_04(void) {
+    forward_list_s test = create_forward_list();
+
+    const size_t count = MAXIMUM_INFINITE_FORWARD_LIST;
+    for (size_t i = 0; i < count; ++i) {
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    sort_forward_list(&test, sort_int);
+
+    ASSERTm("[IAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = 0, }, compare_int));
+
+    destroy_forward_list(&test, NULL);
+    PASS();
+}
+
+TEST IAFL_BINARY_SEARCH_05(void) {
+    forward_list_s test = create_forward_list();
+
+    const size_t count = MAXIMUM_INFINITE_FORWARD_LIST + 1;
+    for (size_t i = 0; i < count; ++i) {
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    sort_forward_list(&test, sort_int);
+
+    ASSERTm("[IAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = 0, }, compare_int));
+
+    destroy_forward_list(&test, NULL);
+    PASS();
+}
+
+TEST IAFL_BINARY_SEARCH_06(void) {
+    forward_list_s test = create_forward_list();
+
+    const size_t count = MAXIMUM_INFINITE_FORWARD_LIST - 1;
+    for (size_t i = 0; i < count; ++i) {
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    sort_forward_list(&test, sort_int);
+
+    ASSERTm("[IAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = count - 1, }, compare_int));
+
+    destroy_forward_list(&test, NULL);
+    PASS();
+}
+
+TEST IAFL_BINARY_SEARCH_07(void) {
+    forward_list_s test = create_forward_list();
+
+    const size_t count = MAXIMUM_INFINITE_FORWARD_LIST;
+    for (size_t i = 0; i < count; ++i) {
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    sort_forward_list(&test, sort_int);
+
+    ASSERTm("[IAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = count - 1, }, compare_int));
+
+    destroy_forward_list(&test, NULL);
+    PASS();
+}
+
+TEST IAFL_BINARY_SEARCH_08(void) {
+    forward_list_s test = create_forward_list();
+
+    const size_t count = MAXIMUM_INFINITE_FORWARD_LIST + 1;
+    for (size_t i = 0; i < count; ++i) {
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    sort_forward_list(&test, sort_int);
+
+    ASSERTm("[IAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = count - 1, }, compare_int));
+
+    destroy_forward_list(&test, NULL);
+    PASS();
+}
+
+TEST IAFL_BINARY_SEARCH_09(void) {
+    forward_list_s test = create_forward_list();
+
+    const size_t count = MAXIMUM_INFINITE_FORWARD_LIST - 1;
+    for (size_t i = 0; i < count; ++i) {
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    sort_forward_list(&test, sort_int);
+
+    ASSERTm("[IAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = count / 2, }, compare_int));
+
+    destroy_forward_list(&test, NULL);
+    PASS();
+}
+
+TEST IAFL_BINARY_SEARCH_10(void) {
+    forward_list_s test = create_forward_list();
+
+    const size_t count = MAXIMUM_INFINITE_FORWARD_LIST;
+    for (size_t i = 0; i < count; ++i) {
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    sort_forward_list(&test, sort_int);
+
+    ASSERTm("[IAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = count / 2, }, compare_int));
+
+    destroy_forward_list(&test, NULL);
+    PASS();
+}
+
+TEST IAFL_BINARY_SEARCH_11(void) {
+    forward_list_s test = create_forward_list();
+
+    const size_t count = MAXIMUM_INFINITE_FORWARD_LIST + 1;
+    for (size_t i = 0; i < count; ++i) {
+        insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    sort_forward_list(&test, sort_int);
+
+    ASSERTm("[IAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = count / 2, }, compare_int));
+
+    destroy_forward_list(&test, NULL);
+    PASS();
+}
+
 SUITE (infinite_allocated_forward_list_test) {
     // create test
     RUN_TEST(IAFL_CREATE_01); RUN_TEST(IAFL_CREATE_02); RUN_TEST(IAFL_CREATE_03); RUN_TEST(IAFL_CREATE_04);
@@ -1436,4 +1866,17 @@ SUITE (infinite_allocated_forward_list_test) {
     RUN_TEST(IAFL_SPLIT_13); RUN_TEST(IAFL_SPLIT_14);
     // get test
     RUN_TEST(IAFL_GET_01); RUN_TEST(IAFL_GET_02); RUN_TEST(IAFL_GET_03); RUN_TEST(IAFL_GET_04);
+    // is empty test
+    RUN_TEST(IAFL_IS_EMPTY_01); RUN_TEST(IAFL_IS_EMPTY_02); RUN_TEST(IAFL_IS_EMPTY_03); RUN_TEST(IAFL_IS_EMPTY_04);
+    RUN_TEST(IAFL_IS_EMPTY_05);
+    // copy test
+    RUN_TEST(IAFL_COPY_01); RUN_TEST(IAFL_COPY_02); RUN_TEST(IAFL_COPY_03); RUN_TEST(IAFL_COPY_04);
+    RUN_TEST(IAFL_COPY_05);
+    // sort test
+    RUN_TEST(IAFL_SORT_01); RUN_TEST(IAFL_SORT_02); RUN_TEST(IAFL_SORT_03); RUN_TEST(IAFL_SORT_04);
+    RUN_TEST(IAFL_SORT_05);
+    // binary search test
+    RUN_TEST(IAFL_BINARY_SEARCH_01); RUN_TEST(IAFL_BINARY_SEARCH_02); RUN_TEST(IAFL_BINARY_SEARCH_03); RUN_TEST(IAFL_BINARY_SEARCH_04);
+    RUN_TEST(IAFL_BINARY_SEARCH_05); RUN_TEST(IAFL_BINARY_SEARCH_06); RUN_TEST(IAFL_BINARY_SEARCH_07); RUN_TEST(IAFL_BINARY_SEARCH_08);
+    RUN_TEST(IAFL_BINARY_SEARCH_09); RUN_TEST(IAFL_BINARY_SEARCH_10); RUN_TEST(IAFL_BINARY_SEARCH_11);
 }

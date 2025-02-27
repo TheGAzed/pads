@@ -18,6 +18,9 @@ FORWARD_LIST_DATA_TYPE copy_element(const FORWARD_LIST_DATA_TYPE element);
 int compare_int(const void * a, const void * b);
 int compare_string(const void * a, const void * b);
 
+void sort_int(FORWARD_LIST_DATA_TYPE * elements, const size_t size);
+void sort_string(FORWARD_LIST_DATA_TYPE * elements, const size_t size);
+
 bool operation_int(FORWARD_LIST_DATA_TYPE * element, void * args);
 bool operation_string(FORWARD_LIST_DATA_TYPE * element, void * args);
 

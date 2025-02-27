@@ -9,8 +9,8 @@ PADS, short for Preprocessor Abstracted Data Structures, is a personal project t
 
 PADS data structures are each divided into at least three modes with support for:
 
-- Infinitely expandable structure via allocated memory
-- Finite structure of allocated size
+- Infinitely expandable structure via memory allocation
+- Finite structure of variable size
 - Finite preprocessor size structure of predefined size
 
 ## **List of Data Structures:**
@@ -24,9 +24,10 @@ PADS data structures are each divided into at least three modes with support for
 
 - [BINARY SET](https://github.com/TheGAzed/pads/blob/main/source/binary_set)
 - [LIST](https://github.com/TheGAzed/pads/blob/main/source/list)
+- [FORWARD LIST](https://github.com/TheGAzed/pads/blob/main/source/forward_list)
 
 ### **Planned:**
 
-- NARY TREE
+- TREE
 - GRAPH
 - DIGRAPH

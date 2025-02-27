@@ -102,7 +102,7 @@ typedef FORWARD_LIST_DATA_TYPE (*copy_forward_list_fn)    (const FORWARD_LIST_DA
 typedef void                   (*destroy_forward_list_fn) (FORWARD_LIST_DATA_TYPE *);
 typedef int                    (*compare_forward_list_fn) (const void *, const void *);
 typedef bool                   (*operate_forward_list_fn) (FORWARD_LIST_DATA_TYPE *, void *);
-typedef void                   (*sort_forward_list_fn)    (void *, size_t, size_t, compare_forward_list_fn);
+typedef void                   (*sort_forward_list_fn)    (FORWARD_LIST_DATA_TYPE *, const size_t);
 
 #if   FORWARD_LIST_MODE == INFINITE_ALLOCATED_FORWARD_LIST
 
@@ -347,7 +347,7 @@ static inline forward_list_s copy_forward_list(const forward_list_s list, const 
     return list_copy;
 }
 
-static inline void sort_forward_list(forward_list_s const * list, const sort_forward_list_fn sort, const compare_forward_list_fn compare) {
+static inline void sort_forward_list(forward_list_s const * list, const sort_forward_list_fn sort) {
     FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
     FORWARD_LIST_ASSERT(sort && "[ERROR] 'sort' parameter pointer is NULL.");
 
@@ -360,7 +360,7 @@ static inline void sort_forward_list(forward_list_s const * list, const sort_for
         previous = previous->next;
     }
 
-    sort(elements_array, list->size, sizeof(FORWARD_LIST_DATA_TYPE), compare);
+    sort(elements_array, list->size);
 
     previous = list->tail;
     for (size_t i = 0; i < list->size; ++i) {
@@ -371,21 +371,21 @@ static inline void sort_forward_list(forward_list_s const * list, const sort_for
 }
 
 static inline bool binary_search_forward_list(const forward_list_s list, const FORWARD_LIST_DATA_TYPE element, const compare_forward_list_fn compare) {
-    size_t index = list.size;
-    struct forward_list_node const * base = list.tail;
-    while (index > 0) {
-        index >>= 1;
-        struct forward_list_node const * current = base->next; // start from next element to move from tail and to ignore compared element
-        for (size_t i = 0; i < index; ++i) { // iterate to middle element in list
+    struct forward_list_node const * base = list.tail ? list.tail->next : list.tail;
+    for (size_t limit = list.size; limit != 0; limit >>= 1) {
+        struct forward_list_node const * current = base; // start from next element to move from tail and to ignore compared element
+        for (size_t i = 0; i < limit >> 1; ++i) { // iterate to middle element in list
             current = current->next;
         }
 
-        const int comparison = compare ? compare(&(current->element), &element) : memcmp(&(current->element), &element, sizeof(FORWARD_LIST_DATA_TYPE));
-        if (0 == comparison) {
+        const int comparison = compare ? compare(&element, &(current->element)) : memcmp(&element, &(current->element), sizeof(FORWARD_LIST_DATA_TYPE));
+
+        if (comparison == 0) {
             return true;
         }
-        if (0 < comparison) { // if element is on the right size change base to current (search through right half)
-            base = current;
+        if (comparison > 0) {
+            base = current->next; // increment element pointer to next
+            limit--;
         }
     }
 
@@ -738,7 +738,7 @@ static inline forward_list_s copy_forward_list(const forward_list_s list, const 
     return list_copy;
 }
 
-static inline void sort_forward_list(forward_list_s * list, const sort_forward_list_fn sort, const compare_forward_list_fn compare) {
+static inline void sort_forward_list(forward_list_s * list, const sort_forward_list_fn sort) {
     FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL");
     FORWARD_LIST_ASSERT(sort && "[ERROR] 'sort' parameter pointer is NULL");
 
@@ -762,7 +762,7 @@ static inline void sort_forward_list(forward_list_s * list, const sort_forward_l
     }
     list->empty_size = 0;
 
-    sort(list->elements, list->size, sizeof(FORWARD_LIST_DATA_TYPE), compare);
+    sort(list->elements, list->size);
 
     list->tail = list->size ? list->size - 1 : 0;
     for (size_t i = 1; list->size && i <= list->size; ++i) {
@@ -772,21 +772,21 @@ static inline void sort_forward_list(forward_list_s * list, const sort_forward_l
 }
 
 static inline bool binary_search_forward_list(const forward_list_s list, const FORWARD_LIST_DATA_TYPE element, const compare_forward_list_fn compare) {
-    size_t index = list.size;
-    size_t base = list.tail;
-    while (index > 0) {
-        index >>= 1;
-        size_t current = list.next[base]; // start from next element to move from tail and to ignore compared element
-        for (size_t i = 0; i < index; ++i) { // iterate to middle element in list
-            current = list.next[base];
+    size_t base = list.size ? list.next[list.tail] : list.tail;
+    for (size_t limit = list.size; limit != 0; limit >>= 1) {
+        size_t current = base; // start from next element to move from tail and to ignore compared element
+        for (size_t i = 0; i < limit >> 1; ++i) { // iterate to middle element in list
+            current = list.next[current];
         }
 
-        const int comparison = compare ? compare(list.elements + current, &element) : memcmp(list.elements + current, &element, sizeof(FORWARD_LIST_DATA_TYPE));
-        if (0 == comparison) {
+        const int comparison = compare ? compare(&element, list.elements + current) : memcmp(&element, list.elements + current, sizeof(FORWARD_LIST_DATA_TYPE));
+
+        if (comparison == 0) {
             return true;
         }
-        if (0 < comparison) { // if element is on the right size change base to current (search through right half)
-            base = current;
+        if (comparison > 0) {
+            base = list.next[current]; // increment element pointer to next
+            limit--;
         }
     }
 
@@ -1182,7 +1182,7 @@ static inline forward_list_s copy_forward_list(const forward_list_s list, const 
     return list_copy;
 }
 
-static inline void sort_forward_list(forward_list_s * list, const sort_forward_list_fn sort, const compare_forward_list_fn compare) {
+static inline void sort_forward_list(forward_list_s * list, const sort_forward_list_fn sort) {
     FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL");
     FORWARD_LIST_ASSERT(sort && "[ERROR] 'sort' parameter pointer is NULL");
 
@@ -1206,7 +1206,7 @@ static inline void sort_forward_list(forward_list_s * list, const sort_forward_l
     }
     list->empty_size = 0;
 
-    sort(list->elements, list->size, sizeof(FORWARD_LIST_DATA_TYPE), compare);
+    sort(list->elements, list->size);
 
     list->tail = list->size ? list->size - 1 : 0;
     for (size_t i = 1; list->size && i <= list->size; ++i) {
@@ -1216,21 +1216,21 @@ static inline void sort_forward_list(forward_list_s * list, const sort_forward_l
 }
 
 static inline bool binary_search_forward_list(const forward_list_s list, const FORWARD_LIST_DATA_TYPE element, const compare_forward_list_fn compare) {
-    size_t index = list.size;
-    size_t base = list.tail;
-    while (index > 0) {
-        index >>= 1;
-        size_t current = list.next[base]; // start from next element to move from tail and to ignore compared element
-        for (size_t i = 0; i < index; ++i) { // iterate to middle element in list
-            current = list.next[base];
+    size_t base = list.size ? list.next[list.tail] : list.tail;
+    for (size_t limit = list.size; limit != 0; limit >>= 1) {
+        size_t current = base; // start from next element to move from tail and to ignore compared element
+        for (size_t i = 0; i < limit >> 1; ++i) { // iterate to middle element in list
+            current = list.next[current];
         }
 
-        const int comparison = compare ? compare(list.elements + current, &element) : memcmp(list.elements + current, &element, sizeof(FORWARD_LIST_DATA_TYPE));
-        if (0 == comparison) {
+        const int comparison = compare ? compare(&element, list.elements + current) : memcmp(&element, list.elements + current, sizeof(FORWARD_LIST_DATA_TYPE));
+
+        if (comparison == 0) {
             return true;
         }
-        if (0 < comparison) { // if element is on the right size change base to current (search through right half)
-            base = current;
+        if (comparison > 0) {
+            base = list.next[current]; // increment element pointer to next
+            limit--;
         }
     }
 
@@ -1562,7 +1562,7 @@ static inline forward_list_s copy_forward_list(const forward_list_s list, const 
     return list_copy;
 }
 
-static inline void sort_forward_list(forward_list_s * list, const sort_forward_list_fn sort, const compare_forward_list_fn compare) {
+static inline void sort_forward_list(forward_list_s * list, const sort_forward_list_fn sort) {
     FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL");
     FORWARD_LIST_ASSERT(sort && "[ERROR] 'sort' parameter pointer is NULL");
 
@@ -1586,7 +1586,7 @@ static inline void sort_forward_list(forward_list_s * list, const sort_forward_l
     }
     list->empty_size = 0;
 
-    sort(list->elements, list->size, sizeof(FORWARD_LIST_DATA_TYPE), compare);
+    sort(list->elements, list->size);
 
     list->tail = list->size ? list->size - 1 : 0;
     for (size_t i = 1; list->size && i <= list->size; ++i) {
@@ -1596,21 +1596,21 @@ static inline void sort_forward_list(forward_list_s * list, const sort_forward_l
 }
 
 static inline bool binary_search_forward_list(const forward_list_s list, const FORWARD_LIST_DATA_TYPE element, const compare_forward_list_fn compare) {
-    size_t index = list.size;
-    size_t base = list.tail;
-    while (index > 0) {
-        index >>= 1;
-        size_t current = list.next[base]; // start from next element to move from tail and to ignore compared element
-        for (size_t i = 0; i < index; ++i) { // iterate to middle element in list
-            current = list.next[base];
+    size_t base = list.size ? list.next[list.tail] : list.tail;
+    for (size_t limit = list.size; limit != 0; limit >>= 1) {
+        size_t current = base; // start from next element to move from tail and to ignore compared element
+        for (size_t i = 0; i < limit >> 1; ++i) { // iterate to middle element in list
+            current = list.next[current];
         }
 
-        const int comparison = compare ? compare(list.elements + current, &element) : memcmp(list.elements + current, &element, sizeof(FORWARD_LIST_DATA_TYPE));
-        if (0 == comparison) {
+        const int comparison = compare ? compare(&element, list.elements + current) : memcmp(&element, list.elements + current, sizeof(FORWARD_LIST_DATA_TYPE));
+
+        if (comparison == 0) {
             return true;
         }
-        if (0 < comparison) { // if element is on the right size change base to current (search through right half)
-            base = current;
+        if (comparison > 0) {
+            base = list.next[current]; // increment element pointer to next
+            limit--;
         }
     }
 

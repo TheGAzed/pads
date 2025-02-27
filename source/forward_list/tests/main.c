@@ -17,6 +17,14 @@ int compare_string(const void * a, const void * b) {
     return strcmp(((FORWARD_LIST_DATA_TYPE *)a)->sub_two, ((FORWARD_LIST_DATA_TYPE *)b)->sub_two);
 }
 
+void sort_int(FORWARD_LIST_DATA_TYPE * elements, const size_t size) {
+    qsort(elements, size, sizeof(FORWARD_LIST_DATA_TYPE), compare_int);
+}
+
+void sort_string(FORWARD_LIST_DATA_TYPE * elements, const size_t size) {
+    qsort(elements, size, sizeof(FORWARD_LIST_DATA_TYPE), compare_string);
+}
+
 bool operation_int(FORWARD_LIST_DATA_TYPE * element, void * args) {
     element->sub_one += *((int *)(args));
 
