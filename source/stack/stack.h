@@ -310,7 +310,7 @@ static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) 
 /// @param operate Function pointer that takes an element pointer and 'args' as parameters and returns true if
 /// loop should continue after operation, false if break
 /// @param args Arguments for operation function pointer.
-static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args) {
+static inline void foreach_stack(stack_s const * stack, const operate_stack_fn operate, void * args) {
     STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
     STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL");
 
@@ -463,7 +463,7 @@ static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) 
 /// @param operate Function pointer that takes an element pointer and 'args' as parameters and returns true if
 /// loop should continue, false if break
 /// @param args Arguments for operation function pointer.
-static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args) {
+static inline void foreach_stack(stack_s const * stack, const operate_stack_fn operate, void * args) {
     STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
     STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL");
 
@@ -610,7 +610,7 @@ static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) 
 /// @param operate Function pointer that takes an element pointer and 'args' as parameters and returns true if
 /// loop should continue after operation, false if break
 /// @param args Arguments for operation function pointer.
-static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args) {
+static inline void foreach_stack(stack_s const * stack, const operate_stack_fn operate, void * args) {
     STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL");
     STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL");
 

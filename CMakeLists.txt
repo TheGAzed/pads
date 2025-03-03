@@ -6,7 +6,7 @@ project(PADS
         LANGUAGES C
 )
 
-set(CMAKE_CXX_FLAGS "-std=c17 -Wall -Wextra -Wpedantic")
+set(CMAKE_CXX_FLAGS "-std=c11 -Wall -Wextra -Werror -pedantic -Wconversion")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -pg")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 

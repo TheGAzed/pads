@@ -372,7 +372,7 @@ static inline void clear_queue(queue_s * queue, const destroy_queue_fn destroy) 
 /// @param queue Queue structure pointer.
 /// @param operate Function pointer taht operates on single element pointer using 'args' as arguments.
 /// @param args Arguments for 'operates' funtion pointer.
-static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate, void * args) {
+static inline void foreach_queue(queue_s const * queue, const operate_queue_fn operate, void * args) {
     QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter pointer is NULL.");
     QUEUE_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL");
 
@@ -552,7 +552,7 @@ static inline void clear_queue(queue_s * queue, const destroy_queue_fn destroy) 
 /// @param queue Queue structure pointer.
 /// @param operate Function pointer taht operates on single element pointer using 'args' as arguments.
 /// @param args Arguments for 'operates' funtion pointer.
-static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate, void * args) {
+static inline void foreach_queue(queue_s const * queue, const operate_queue_fn operate, void * args) {
     QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter pointer is NULL.");
     QUEUE_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
     QUEUE_ASSERT(queue->max > queue->current && "[ERROR] Impossible queue state.");
@@ -727,7 +727,7 @@ static inline void clear_queue(queue_s * queue, const destroy_queue_fn destroy) 
 /// @param queue Queue structure pointer.
 /// @param operate Function pointer taht operates on single element pointer using 'args' as arguments.
 /// @param args Arguments for 'operates' funtion pointer.
-static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate, void * args) {
+static inline void foreach_queue(queue_s const * queue, const operate_queue_fn operate, void * args) {
     QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter pointer is NULL.");
     QUEUE_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
 

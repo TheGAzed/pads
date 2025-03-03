@@ -15,11 +15,11 @@ typedef union type_dst {
 void destroy_element(FORWARD_LIST_DATA_TYPE * element);
 FORWARD_LIST_DATA_TYPE copy_element(const FORWARD_LIST_DATA_TYPE element);
 
-int compare_int(const void * a, const void * b);
-int compare_string(const void * a, const void * b);
+int compare_int(const FORWARD_LIST_DATA_TYPE a, const FORWARD_LIST_DATA_TYPE b);
+int compare_string(const FORWARD_LIST_DATA_TYPE a, const FORWARD_LIST_DATA_TYPE b);
 
-void sort_int(FORWARD_LIST_DATA_TYPE * elements, const size_t size);
-void sort_string(FORWARD_LIST_DATA_TYPE * elements, const size_t size);
+void sort_int(FORWARD_LIST_DATA_TYPE * elements, const size_t size, void * args);
+void sort_string(FORWARD_LIST_DATA_TYPE * elements, const size_t size, void * args);
 
 bool operation_int(FORWARD_LIST_DATA_TYPE * element, void * args);
 bool operation_string(FORWARD_LIST_DATA_TYPE * element, void * args);

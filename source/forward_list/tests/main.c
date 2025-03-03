@@ -9,20 +9,28 @@ FORWARD_LIST_DATA_TYPE copy_element(const FORWARD_LIST_DATA_TYPE element) {
     return (FORWARD_LIST_DATA_TYPE) { .sub_two = strdup(element.sub_two), };
 }
 
-int compare_int(const void * a, const void * b) {
-    return ((FORWARD_LIST_DATA_TYPE *)a)->sub_one - ((FORWARD_LIST_DATA_TYPE *)b)->sub_one;
+int cmpint(const void * a, const void * b) {
+    return ((FORWARD_LIST_DATA_TYPE*)a)->sub_one - ((FORWARD_LIST_DATA_TYPE*)b)->sub_one;
 }
 
-int compare_string(const void * a, const void * b) {
-    return strcmp(((FORWARD_LIST_DATA_TYPE *)a)->sub_two, ((FORWARD_LIST_DATA_TYPE *)b)->sub_two);
+int cmpstr(const void * a, const void * b) {
+    return strcmp(((FORWARD_LIST_DATA_TYPE*)a)->sub_two, ((FORWARD_LIST_DATA_TYPE*)b)->sub_two);
 }
 
-void sort_int(FORWARD_LIST_DATA_TYPE * elements, const size_t size) {
-    qsort(elements, size, sizeof(FORWARD_LIST_DATA_TYPE), compare_int);
+int compare_int(const FORWARD_LIST_DATA_TYPE a, const FORWARD_LIST_DATA_TYPE b) {
+    return a.sub_one - b.sub_one;
 }
 
-void sort_string(FORWARD_LIST_DATA_TYPE * elements, const size_t size) {
-    qsort(elements, size, sizeof(FORWARD_LIST_DATA_TYPE), compare_string);
+int compare_string(const FORWARD_LIST_DATA_TYPE a, const FORWARD_LIST_DATA_TYPE b) {
+    return strcmp(a.sub_two, b.sub_two);
+}
+
+void sort_int(FORWARD_LIST_DATA_TYPE * elements, const size_t size, void * args) {
+    qsort(elements, size, sizeof(FORWARD_LIST_DATA_TYPE), cmpint);
+}
+
+void sort_string(FORWARD_LIST_DATA_TYPE * elements, const size_t size, void * args) {
+    qsort(elements, size, sizeof(FORWARD_LIST_DATA_TYPE), cmpstr);
 }
 
 bool operation_int(FORWARD_LIST_DATA_TYPE * element, void * args) {

@@ -19,12 +19,12 @@ PADS data structures are each divided into at least three modes with support for
 
 - [STACK](https://github.com/TheGAzed/pads/blob/main/source/stack)
 - [QUEUE](https://github.com/TheGAzed/pads/blob/main/source/queue)
+- [FORWARD LIST](https://github.com/TheGAzed/pads/blob/main/source/forward_list)
 
 ### **In Progress:**
 
 - [BINARY SET](https://github.com/TheGAzed/pads/blob/main/source/binary_set)
 - [LIST](https://github.com/TheGAzed/pads/blob/main/source/list)
-- [FORWARD LIST](https://github.com/TheGAzed/pads/blob/main/source/forward_list)
 
 ### **Planned:**
 
