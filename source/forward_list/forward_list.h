@@ -131,7 +131,7 @@ typedef struct forward_list {
 /// @brief Creates an empty forward list of zero size.
 /// @return Forward list structure.
 static inline forward_list_s create_forward_list(void) {
-    return (forward_list_s) { 0 };
+    return (forward_list_s) { 0 }; // sets forward list to zero
 }
 
 /// @brief Destroys the forward list and sets size to zero. The destroyed list should not be used after calling this
@@ -142,18 +142,18 @@ static inline forward_list_s create_forward_list(void) {
 static inline void destroy_forward_list(forward_list_s * list, const destroy_forward_list_fn destroy) {
     FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
 
-    struct forward_list_node * previous = list->tail;
-    for (size_t s = 0; s < list->size; ++s) {
-        if (destroy) {
+    struct forward_list_node * previous = list->tail; // previous pointer since order does not matter in deletion
+    for (size_t s = 0; s < list->size; ++s) { // iterates for each element
+        if (destroy) { // if destroy function pointer is specified then destroys element
             destroy(&(previous->element));
         }
 
-        struct forward_list_node * temp = previous;
-        previous = previous->next;
-        FORWARD_LIST_FREE(temp);
+        struct forward_list_node * temp = previous; // temporary node pointer to not lose it while freeing
+        previous = previous->next; // go to next node
+        FORWARD_LIST_FREE(temp); // frees temporary node
     }
 
-    *list = (forward_list_s) { 0 };
+    *list = (forward_list_s) { 0 }; // sets destroyed list to zero
 }
 
 /// @brief Inserts an element to any place in the list. Forward list allows appending to the end without
@@ -166,22 +166,24 @@ static inline void insert_at_forward_list(forward_list_s * list, const size_t in
     FORWARD_LIST_ASSERT(index <= list->size && "[ERROR] Index bigger than size");
     FORWARD_LIST_ASSERT(~list->size && "[ERROR] List size will overflow.");
 
+    // creates node and copies element parameter into the node element
     struct forward_list_node * temp = FORWARD_LIST_ALLOC(sizeof(struct forward_list_node));
     FORWARD_LIST_ASSERT(temp && "[ERROR] Memory allocation failed.");
     memcpy(&(temp->element), &element, sizeof(FORWARD_LIST_DATA_TYPE));
 
-    if (list->tail == NULL) {
+    if (list->tail == NULL) { // if list is empty
+        // push element to tail and make it circular (if list has size one then head element is also its tail)
         list->tail = temp->next = temp;
-    } else if (index == list->size) {
-        temp->next = list->tail->next;
-        list->tail = list->tail->next = temp;
-    } else {
-        struct forward_list_node * previous = list->tail;
-        for (size_t i = 0; i < index; ++i) {
+    } else if (index == list->size) { // else if index is equal to size then append to end of list (list size is equal to index to append last element)
+        temp->next = list->tail->next; // temporary node's next pointer points to tail's next node (i. e. list's head)
+        list->tail = list->tail->next = temp; // change tail's next node to temp and make temp node the new tail
+    } else { // else node is between first and last node
+        struct forward_list_node * previous = list->tail; // get tail node since we need the node at the position previous to index node
+        for (size_t i = 0; i < index; ++i) { // iterates to node previous to node at index
             previous = previous->next;
         }
-        temp->next = previous->next;
-        previous->next = temp;
+        temp->next = previous->next; // temp points to previous' next pointer (i. e. to node at index position)
+        previous->next = temp; // previous' next pointer is assigned temp (so no pointer to pointer needed)
     }
 
     list->size++;
@@ -197,28 +199,29 @@ static inline FORWARD_LIST_DATA_TYPE remove_first_forward_list(forward_list_s * 
     FORWARD_LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
     FORWARD_LIST_ASSERT(list->tail && "[ERROR] Can't remove from empty list.");
 
-    struct forward_list_node * previous = list->tail;
+    struct forward_list_node * previous = list->tail; // pointer to previous
     for (size_t s = 0; s < list->size; ++s) {
-        struct forward_list_node * current = previous->next;
-
+        struct forward_list_node * current = previous->next; // since we need to start at nodes next to tail we check current node instead of previous
+        // compares element parameter to current node's element, if compare function not is specified (is NULL) then memcmp is used
         const int comparison = compare ? compare(current->element, element) : memcmp(&(current->element), &element, sizeof(FORWARD_LIST_DATA_TYPE));
-        if (0 == comparison) {
+        if (0 == comparison) { // if elements are the 'same' based on comparison, i. e. comparison is zero
+            // copy removed element from node as temporary to return and not lose it
             list->size--;
             FORWARD_LIST_DATA_TYPE found = current->element;
 
             if (current == list->tail) { // if current is the last element
                 list->tail = (list->size) ? previous : NULL; // if list still has elements then tail will become the previous pointer else NULL
             }
-            previous->next = current->next;
+            previous->next = current->next; // remove pointer to current in list by changing previous' next pointer to current's next
             FORWARD_LIST_FREE(current);
 
-            return found;
+            return found; // returns first removed found element
         }
-        previous = previous->next;
+        previous = previous->next; // go to next previous node
     }
 
-    FORWARD_LIST_ASSERT(0 && "[ERROR] Element not found in list.");
-    exit(EXIT_FAILURE);
+    FORWARD_LIST_ASSERT(0 && "[ERROR] Element not found in list."); // if element is not found in list then that is an error
+    exit(EXIT_FAILURE); // and exit failure is returned, since the function returns the removed element, element can contain allocated memory
 }
 
 /// @brief Removes element at index in forward list.
@@ -231,19 +234,18 @@ static inline FORWARD_LIST_DATA_TYPE remove_at_forward_list(forward_list_s * lis
     FORWARD_LIST_ASSERT(list->tail && "[ERROR] Can't remove from empty list.");
     FORWARD_LIST_ASSERT(index < list->size && "[ERROR] Index greater than size");
 
-    struct forward_list_node * previous = list->tail;
-    for (size_t i = 0; i < index; ++i) { // if index is last element then dont loop since list has tail pointer
+    struct forward_list_node * previous = list->tail; // previous is used in order to make removals easier
+    for (size_t i = 0; i < index; ++i) { // iterate until node previous to node at index is reached
         previous = previous->next;
     }
-    struct forward_list_node * current = previous->next;
+    struct forward_list_node * current = previous->next; // save current node pointer
 
     list->size--;
-    FORWARD_LIST_DATA_TYPE found = { 0 };
-    memcpy(&found, &(current->element), sizeof(FORWARD_LIST_DATA_TYPE));
+    FORWARD_LIST_DATA_TYPE found = current->element;
 
-    previous->next = current->next;
+    previous->next = current->next; // remove pointer to current in list by changing previous' next pointer to current's next
 
-    FORWARD_LIST_FREE(current);
+    FORWARD_LIST_FREE(current); // free current pointer
 
     if (index == list->size) { // if last element is removed
         list->tail = (list->size) ? previous : NULL; // if list is not empty tail/last node becomes previous, else NULL
@@ -257,19 +259,19 @@ static inline FORWARD_LIST_DATA_TYPE remove_at_forward_list(forward_list_s * lis
 static inline void reverse_forward_list(forward_list_s * list) {
     FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
 
-    if (list->tail == NULL) {
+    if (list->tail == NULL) { // we must first check if list in not empty/tail is not NULL
         return;
     }
 
-    struct forward_list_node * current = list->tail;
-    struct forward_list_node * current_next = current->next;
-    struct forward_list_node * current_next_next = current_next->next;
-    list->tail = current_next;
+    struct forward_list_node * previous = list->tail;
+    struct forward_list_node * current = previous->next;
+    struct forward_list_node * next = current->next;
+    list->tail = current; // since head changes to tail, tail also changes to head
     for (size_t i = 0; i < list->size; ++i) {
-        current_next->next = current;
-        current = current_next;
-        current_next = current_next_next;
-        current_next_next = current_next_next->next;
+        current->next = previous;
+        previous = current;
+        current = next;
+        next = next->next;
     }
 }
 
@@ -280,7 +282,7 @@ static inline void shift_forward_list(forward_list_s * list, const size_t shift)
     FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
 
     for (size_t s = 0; list->size && (s < shift); ++s) {
-        list->tail = list->tail->next;
+        list->tail = list->tail->next; // changes tail to next/head node
     }
 }
 
@@ -295,22 +297,22 @@ static inline void splice_forward_list(forward_list_s * restrict destination, fo
     FORWARD_LIST_ASSERT(index <= destination->size && "[ERROR] index can't exceed list_one's size");
 
     struct forward_list_node * previous = destination->tail;
-    for (size_t i = 0; index != destination->size - 1 && i < index; ++i) {
+    for (size_t i = 0; index != destination->size && i < index; ++i) { // iterate to node previous to index node or not if index is to the node after last
         previous = previous->next;
     }
 
-    if (previous && source->tail) {
-        struct forward_list_node * swap = previous->next;
-        previous->next = source->tail->next;
-        source->tail->next = swap;
+    if (previous && source->tail) { // if previous points to memory/is not NULL and source tail also points to memory/is not NULL
+        struct forward_list_node * swap = previous->next; // store previous' next node in swap
+        previous->next = source->tail->next; // change previous' next pointer to source's head
+        source->tail->next = swap; // change source tail's next pointer to swap or saved previous' next node
     }
-
+    // if index points to location after last destination node (concatenation) and source points to memory (avoids adding NULL pointer since function allows splicing empty source list)
     if (index == destination->size && source->tail) {
         destination->tail = source->tail;
     }
-    destination->size += source->size;
+    destination->size += source->size; // increment destination's size by source
 
-    *source = (forward_list_s) { 0 };
+    *source = (forward_list_s) { 0 }; // destroy only source list (since nodes and elements became part of destionation)
 }
 
 /// @brief Splits list and returns new list with specified elements. Since forward list is circular the new list can
@@ -324,29 +326,29 @@ static inline forward_list_s split_forward_list(forward_list_s * list, const siz
     FORWARD_LIST_ASSERT(size <= list->size && "[ERROR] Size parameter bigger than list size.");
     FORWARD_LIST_ASSERT(index <= list->size && !(index && (index == list->size)) && "[ERROR] Can only split at index less than list size, or equal to if list size is zero.");
 
-    struct forward_list_node * prev_index_node = list->tail;
-    for (size_t i = 0; i < index; ++i) {
-        prev_index_node = prev_index_node->next;
+    struct forward_list_node * list_previous = list->tail;
+    for (size_t i = 0; i < index; ++i) { // iterate to node previous to node at index
+        list_previous = list_previous->next;
     }
     if ((index + size) >= list->size) { // if tail node becomes part of split list new tail node will be the node previous to index/first-split node
-        list->tail = prev_index_node;
+        list->tail = list_previous;
     }
 
-    forward_list_s split = { .size = size, .tail = NULL };
+    forward_list_s split = { .size = size, .tail = NULL }; // create new split list to return
 
-    struct forward_list_node * last_added = NULL;
+    struct forward_list_node * last_added = NULL; // save last added node outside loop to change split list's tail into, since loop treats tail as head
     struct forward_list_node ** split_previous = &(split.tail);
     for (size_t i = 0; i < size; ++i) { // split's tail is treated as the head node and gets changed to tail after loop finishes via last_added
-        struct forward_list_node * current = prev_index_node->next;
+        struct forward_list_node * current = list_previous->next;
         (*split_previous) = last_added = current; // previous index node's next is part of split
-        prev_index_node->next = prev_index_node->next->next; // remove current from list
+        list_previous->next = list_previous->next->next; // remove current from list
         (*split_previous)->next = split.tail; // every new node added needs to point to the tail as next node
 
         split_previous = &((*split_previous)->next);
     }
     split.tail = last_added; // makes the last node added to split list the tail, or NULL if size parameter is zero
 
-    list->size -= size;
+    list->size -= size; // shorten parameter list by split size
     if (!list->size) { // if list size becomes zero list tail will be NULL/empty
         list->tail = NULL;
     }
@@ -382,6 +384,7 @@ static inline bool is_empty_forward_list(const forward_list_s list) {
 /// @param list Forward list structure.
 /// @return true if list is full, 'false' otherwise.
 static inline bool is_full_forward_list(const forward_list_s list) {
+    // if size has all bits set to 1 it is considered full, therefore switching bits will make them all zero and negating it makes function return true only if full
     return !(~list.size);
 }
 
@@ -393,17 +396,18 @@ static inline forward_list_s copy_forward_list(const forward_list_s list, const 
     forward_list_s list_copy = { .tail = NULL, .size = list.size };
 
     struct forward_list_node const * previous_list = list.tail;
-    struct forward_list_node ** previous_copy = &(list_copy.tail);
+    struct forward_list_node ** previous_copy = &(list_copy.tail); // double pointer since this also works on copying forward list
     for (size_t i = 0; i < list.size; ++i) {
-        struct forward_list_node * temp = FORWARD_LIST_ALLOC(sizeof(struct forward_list_node));
-        FORWARD_LIST_ASSERT(temp && "[ERROR] Memory allocation failed.");
-        temp->element = copy ? copy(previous_list->element) : previous_list->element;
+        // create new node and copy element from source list based on copy function pointer parameter
+        struct forward_list_node * node = FORWARD_LIST_ALLOC(sizeof(struct forward_list_node));
+        FORWARD_LIST_ASSERT(node && "[ERROR] Memory allocation failed.");
+        node->element = copy ? copy(previous_list->element) : previous_list->element; // if copy is specified call it, else just assign it to variable
 
-        (*previous_copy) = temp;
-        temp->next = list_copy.tail;
+        (*previous_copy) = node; // change previous copy's node pointer to node
+        node->next = list_copy.tail; // make node's next pointer point to list copy's tail
 
-        previous_list = previous_list->next;
-        previous_copy = &((*previous_copy)->next);
+        previous_list = previous_list->next; // go to next list node
+        previous_copy = &((*previous_copy)->next); // go to next copy list's pointer to node
     }
 
     return list_copy;
@@ -415,6 +419,7 @@ static inline forward_list_s copy_forward_list(const forward_list_s list, const 
 static inline void clear_forward_list(forward_list_s * list, const destroy_forward_list_fn destroy) {
     FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
 
+    // in this case clearing is the same as destroying the list
     struct forward_list_node * previous = list->tail;
     for (size_t s = 0; s < list->size; ++s) {
         if (destroy) {
@@ -439,23 +444,24 @@ static inline void all_forward_list(forward_list_s const * list, const manage_fo
     FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
     FORWARD_LIST_ASSERT(manage && "[ERROR] 'operate' parameter pointer is NULL.");
 
+    // create continuos array to store lis elements
     FORWARD_LIST_DATA_TYPE * elements_array = FORWARD_LIST_ALLOC(sizeof(FORWARD_LIST_DATA_TYPE) * list->size);
     FORWARD_LIST_ASSERT((!(list->size) || elements_array) && "[ERROR] Memory allocation failed.");
 
     struct forward_list_node * previous = list->tail;
     for (size_t i = 0; i < list->size; ++i) {
+        previous = previous->next; // go to next node to add elements from head instead of from tail
         elements_array[i] = previous->element;
-        previous = previous->next;
     }
 
-    manage(elements_array, list->size, args);
+    manage(elements_array, list->size, args); // manage function that takes an array as argument, its size and argument void pointer
 
     previous = list->tail;
-    for (size_t i = 0; i < list->size; ++i) {
+    for (size_t i = 0; i < list->size; ++i) { // loop to re-add new list element's ordering
         previous = previous->next;
         previous->element = elements_array[i];
     }
-    FORWARD_LIST_FREE(elements_array);
+    FORWARD_LIST_FREE(elements_array); // free elements array
 }
 
 /// @brief Performs a binary search on sorted forward list.
@@ -466,9 +472,10 @@ static inline void all_forward_list(forward_list_s const * list, const manage_fo
 /// @return 'true' if element was found, 'false' otherwise.
 /// @note The list must be sorted based on 'compare' function pointer. 'all_forward_list' can be used to sort the list.
 static inline bool binary_search_forward_list(const forward_list_s list, const FORWARD_LIST_DATA_TYPE element, const compare_forward_list_fn compare) {
-    struct forward_list_node const * base = list.tail;
+    // this implementation is based on similar array based binary search algorithm: https://github.com/gcc-mirror/gcc/blob/master/libiberty/bsearch.c
+    struct forward_list_node const * base = list.tail; // base starting from list tail
     for (size_t limit = list.size; limit != 0; limit >>= 1) {
-        struct forward_list_node const * current = base->next; // start from next element to move from tail and to ignore compared element
+        struct forward_list_node const * current = base->next; // start from next element to move from tail and to ignore alread compared elements
         for (size_t i = 0; i < limit >> 1; ++i) { // iterate to middle element in list
             current = current->next;
         }
@@ -480,7 +487,7 @@ static inline bool binary_search_forward_list(const forward_list_s list, const F
         }
         if (comparison > 0) {
             base = current; // increment element pointer to next
-            limit--;
+            limit--; // decrement limit to avoid 'out of bounds' access (if we ignore circularity)
         }
     }
 
@@ -497,9 +504,9 @@ static inline void foreach_forward_list(forward_list_s const * list, const opera
 
     struct forward_list_node * previous = list->tail;
     for (size_t i = 0; i < list->size; ++i) {
-        previous = previous->next;
+        previous = previous->next; // make sure to start from list's head
 
-        if (!operate(&previous->element, args)) {
+        if (!operate(&previous->element, args)) { // if operate returns false thene stop loop
             return;
         }
     }
@@ -730,7 +737,7 @@ static inline void splice_forward_list(forward_list_s * restrict destination, fo
     FORWARD_LIST_ASSERT(destination->next && "[ERROR] Memory allocation failed.");
 
     size_t previous_dest = destination->tail;
-    for (size_t i = 0; size_dest && index != size_dest && i < index; ++i) {
+    for (size_t i = 0; index != size_dest && i < index; ++i) {
         previous_dest = destination->next[previous_dest];
     }
 
@@ -1711,7 +1718,7 @@ static inline void splice_forward_list(forward_list_s * restrict destination, fo
     const size_t size_dest = destination->size;
 
     size_t previous_dest = destination->tail;
-    for (size_t i = 0; size_dest && index != size_dest && i < index; ++i) {
+    for (size_t i = 0; index != size_dest && i < index; ++i) {
         previous_dest = destination->next[previous_dest];
     }
 
