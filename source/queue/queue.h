@@ -265,7 +265,7 @@ static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
 static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) {
     queue_s queue_copy = { .size = queue.size, .tail = NULL, .current = queue.current };
 
-    if (queue.current + queue.size <= LIST_ARRAY_QUEUE_CHUNK) {
+    if (queue.size <= LIST_ARRAY_QUEUE_CHUNK - queue.current) {
         queue_copy.tail = QUEUE_ALLOC(sizeof(struct queue_list_array));
         QUEUE_ASSERT(queue_copy.tail && "[ERROR] Memory allocation failed");
         queue_copy.tail->next = queue_copy.tail;

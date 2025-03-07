@@ -1396,7 +1396,7 @@ TEST FAFL_COPY_08(void) {
 TEST FAFL_SORT_01(void) {
     forward_list_s test = create_forward_list(MAXIMUM_FORWARD_LIST_SIZE);
 
-    all_forward_list(&test, sort_int, NULL);
+    forevery_forward_list(&test, sort_int, NULL);
 
     destroy_forward_list(&test, NULL);
     PASS();
@@ -1407,7 +1407,7 @@ TEST FAFL_SORT_02(void) {
 
     insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = 42, });
 
-    all_forward_list(&test, sort_int, NULL);
+    forevery_forward_list(&test, sort_int, NULL);
 
     const FORWARD_LIST_DATA_TYPE element = get_forward_list(test, 0);
     ASSERT_EQm("[FAFL-ERROR] Expected copy element to be same as test element.", 42, element.sub_one);
@@ -1428,7 +1428,7 @@ TEST FAFL_SORT_03(void) {
         insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = (count / 2), });
     }
 
-    all_forward_list(&test, sort_int, NULL);
+    forevery_forward_list(&test, sort_int, NULL);
 
     for (int i = 0; i < count; ++i) {
         const FORWARD_LIST_DATA_TYPE element = get_forward_list(test, i);
@@ -1451,7 +1451,7 @@ TEST FAFL_SORT_04(void) {
         insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = (count / 2), });
     }
 
-    all_forward_list(&test, sort_int, NULL);
+    forevery_forward_list(&test, sort_int, NULL);
 
     for (int i = 0; i < count; ++i) {
         const FORWARD_LIST_DATA_TYPE element = get_forward_list(test, i);
@@ -1489,7 +1489,7 @@ TEST FAFL_BINARY_SEARCH_03(void) {
         insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    all_forward_list(&test, sort_int, NULL);
+    forevery_forward_list(&test, sort_int, NULL);
 
     ASSERTm("[FAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = 0, }, compare_int));
 
@@ -1505,7 +1505,7 @@ TEST FAFL_BINARY_SEARCH_04(void) {
         insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    all_forward_list(&test, sort_int, NULL);
+    forevery_forward_list(&test, sort_int, NULL);
 
     ASSERTm("[FAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = 0, }, compare_int));
 
@@ -1521,7 +1521,7 @@ TEST FAFL_BINARY_SEARCH_05(void) {
         insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    all_forward_list(&test, sort_int, NULL);
+    forevery_forward_list(&test, sort_int, NULL);
 
     ASSERTm("[FAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = count - 1, }, compare_int));
 
@@ -1537,7 +1537,7 @@ TEST FAFL_BINARY_SEARCH_06(void) {
         insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    all_forward_list(&test, sort_int, NULL);
+    forevery_forward_list(&test, sort_int, NULL);
 
     ASSERTm("[FAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = count - 1, }, compare_int));
 
@@ -1553,7 +1553,7 @@ TEST FAFL_BINARY_SEARCH_07(void) {
         insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    all_forward_list(&test, sort_int, NULL);
+    forevery_forward_list(&test, sort_int, NULL);
 
     ASSERTm("[FAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = count / 2, }, compare_int));
 
@@ -1569,7 +1569,7 @@ TEST FAFL_BINARY_SEARCH_08(void) {
         insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    all_forward_list(&test, sort_int, NULL);
+    forevery_forward_list(&test, sort_int, NULL);
 
     ASSERTm("[FAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = count / 2, }, compare_int));
 
@@ -1585,7 +1585,7 @@ TEST FAFL_BINARY_SEARCH_09(void) {
         insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    all_forward_list(&test, sort_int, NULL);
+    forevery_forward_list(&test, sort_int, NULL);
 
     ASSERT_FALSEm("[FAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = count, }, compare_int));
 
@@ -1601,7 +1601,7 @@ TEST FAFL_BINARY_SEARCH_10(void) {
         insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    all_forward_list(&test, sort_int, NULL);
+    forevery_forward_list(&test, sort_int, NULL);
 
     ASSERT_FALSEm("[FAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = count, }, compare_int));
 
@@ -1617,7 +1617,7 @@ TEST FAFL_BINARY_SEARCH_11(void) {
         insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    all_forward_list(&test, sort_int, NULL);
+    forevery_forward_list(&test, sort_int, NULL);
 
     ASSERT_FALSEm("[FAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = 0, }, compare_int));
 
@@ -1633,7 +1633,7 @@ TEST FAFL_BINARY_SEARCH_12(void) {
         insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    all_forward_list(&test, sort_int, NULL);
+    forevery_forward_list(&test, sort_int, NULL);
 
     ASSERT_FALSEm("[FAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = 0, }, compare_int));
 
@@ -1649,7 +1649,7 @@ TEST FAFL_BINARY_SEARCH_13(void) {
         insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    all_forward_list(&test, sort_int, NULL);
+    forevery_forward_list(&test, sort_int, NULL);
 
     for (int i = 0; i < count; ++i) {
         ASSERTm("[FAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, }, compare_int));
@@ -1667,7 +1667,7 @@ TEST FAFL_BINARY_SEARCH_14(void) {
         insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    all_forward_list(&test, sort_int, NULL);
+    forevery_forward_list(&test, sort_int, NULL);
 
     for (int i = 0; i < count; ++i) {
         ASSERTm("[FAFL-ERROR] Expected search to be true.", binary_search_forward_list(test, (FORWARD_LIST_DATA_TYPE) { .sub_one = i, }, compare_int));

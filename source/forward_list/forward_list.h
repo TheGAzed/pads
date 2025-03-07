@@ -451,8 +451,8 @@ static inline void clear_forward_list(forward_list_s * list, const destroy_forwa
 /// @param manage Function pointer to manage the array of elements based on element count/size and specified args.
 /// @param args Void pointer arguments for 'manage' function.
 /// @note If 'manage' does not change the order of elements then the original element ordering WILL remain.
-/// This may not apply for other forward list 'all_forward_list' implementations and a note will reflect that.
-static inline void all_forward_list(forward_list_s const * list, const manage_forward_list_fn manage, void * args) {
+/// This may not apply for other forward list 'forevery_forward_list' implementations and a note will reflect that.
+static inline void forevery_forward_list(forward_list_s const * list, const manage_forward_list_fn manage, void * args) {
     FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
     FORWARD_LIST_ASSERT(manage && "[ERROR] 'operate' parameter pointer is NULL.");
 
@@ -482,9 +482,9 @@ static inline void all_forward_list(forward_list_s const * list, const manage_fo
 /// @param compare Function pointer to compare elements in list. Zero if they're the same, negative if less than,
 /// positive if greater than.
 /// @return 'true' if element was found, 'false' otherwise.
-/// @note The list must be sorted based on 'compare' function pointer. 'all_forward_list' can be used to sort the list.
+/// @note The list must be sorted based on 'compare' function pointer. 'forevery_forward_list' can be used to sort the list.
 static inline bool binary_search_forward_list(const forward_list_s list, const FORWARD_LIST_DATA_TYPE element, const compare_forward_list_fn compare) {
-    // this implementation is based on similar array based binary search algorithm:
+    // this implementation is based on a similar array based binary search algorithm:
     // https://github.com/gcc-mirror/gcc/blob/master/libiberty/bsearch.c
     struct forward_list_node const * base = list.tail; // base starting from list tail
     for (size_t limit = list.size; limit != 0; limit >>= 1) {
@@ -520,7 +520,7 @@ static inline void foreach_forward_list(forward_list_s const * list, const opera
     for (size_t i = 0; i < list->size; ++i) {
         previous = previous->next; // make sure to start from list's head
 
-        if (!operate(&previous->element, args)) { // if operate returns false thene stop loop
+        if (!operate(&previous->element, args)) { // if operate returns false then stop loop
             return;
         }
     }
@@ -927,9 +927,9 @@ static inline void clear_forward_list(forward_list_s * list, const destroy_forwa
 /// @param manage Function pointer to manage the array of elements based on element count/size and specified args.
 /// @param args Void pointer arguments for 'manage' function.
 /// @note If 'manage' does not change the order of elements then the original element ordering may NOT remain
-/// (it may change if there are holes in the list). This may not apply for other forward list 'all_forward_list'
+/// (it may change if there are holes in the list). This may not apply for other forward list 'forevery_forward_list'
 /// implementations and a note will reflect that.
-static inline void all_forward_list(forward_list_s * list, const manage_forward_list_fn manage, void * args) {
+static inline void forevery_forward_list(forward_list_s * list, const manage_forward_list_fn manage, void * args) {
     FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
     FORWARD_LIST_ASSERT(manage && "[ERROR] 'operate' parameter pointer is NULL.");
 
@@ -969,7 +969,7 @@ static inline void all_forward_list(forward_list_s * list, const manage_forward_
 /// @param compare Function pointer to compare elements in list. Zero if they're the same, negative if 'less than',
 /// positive if 'greater than'.
 /// @return 'true' if element was found, 'false' otherwise.
-/// @note The list must be sorted based on 'compare' function pointer. 'all_forward_list' can be used to sort the list.
+/// @note The list must be sorted based on 'compare' function pointer. 'forevery_forward_list' can be used to sort the list.
 static inline bool binary_search_forward_list(const forward_list_s list, const FORWARD_LIST_DATA_TYPE element, const compare_forward_list_fn compare) {
     size_t base = list.tail;
     for (size_t limit = list.size; limit != 0; limit >>= 1) {
@@ -1455,9 +1455,9 @@ static inline void clear_forward_list(forward_list_s * list, const destroy_forwa
 /// @param manage Function pointer to manage the array of elements based on element count/size and specified args.
 /// @param args Void pointer arguments for 'manage' function.
 /// @note If 'manage' does not change the order of elements then the original element ordering may NOT remain
-/// (it may change if there are holes in the list). This may not apply for other forward list 'all_forward_list'
+/// (it may change if there are holes in the list). This may not apply for other forward list 'forevery_forward_list'
 /// implementations and a note will reflect that.
-static inline void all_forward_list(forward_list_s * list, const manage_forward_list_fn manage, void * args) {
+static inline void forevery_forward_list(forward_list_s * list, const manage_forward_list_fn manage, void * args) {
     FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
     FORWARD_LIST_ASSERT(manage && "[ERROR] 'operate' parameter pointer is NULL.");
 
@@ -1497,7 +1497,7 @@ static inline void all_forward_list(forward_list_s * list, const manage_forward_
 /// @param compare Function pointer to compare elements in list. Zero if they're the same, negative if 'less than',
 /// positive if 'greater than'.
 /// @return 'true' if element was found, 'false' otherwise.
-/// @note The list must be sorted based on 'compare' function pointer. 'all_forward_list' can be used to sort the list.
+/// @note The list must be sorted based on 'compare' function pointer. 'forevery_forward_list' can be used to sort the list.
 static inline bool binary_search_forward_list(const forward_list_s list, const FORWARD_LIST_DATA_TYPE element, const compare_forward_list_fn compare) {
     size_t base = list.tail;
     for (size_t limit = list.size; limit != 0; limit >>= 1) {
@@ -1906,9 +1906,9 @@ static inline void clear_forward_list(forward_list_s * list, const destroy_forwa
 /// @param manage Function pointer to manage the array of elements based on element count/size and specified args.
 /// @param args Void pointer arguments for 'manage' function.
 /// @note If 'manage' does not change the order of elements then the original element ordering may NOT remain
-/// (it may change if there are holes in the list). This may not apply for other forward list 'all_forward_list'
+/// (it may change if there are holes in the list). This may not apply for other forward list 'forevery_forward_list'
 /// implementations and a note will reflect that.
-static inline void all_forward_list(forward_list_s * list, const manage_forward_list_fn manage, void * args) {
+static inline void forevery_forward_list(forward_list_s * list, const manage_forward_list_fn manage, void * args) {
     FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
     FORWARD_LIST_ASSERT(manage && "[ERROR] 'operate' parameter pointer is NULL.");
 
@@ -1948,7 +1948,7 @@ static inline void all_forward_list(forward_list_s * list, const manage_forward_
 /// @param compare Function pointer to compare elements in list. Zero if they're the same, negative if 'less than',
 /// positive if 'greater than'.
 /// @return 'true' if element was found, 'false' otherwise.
-/// @note The list must be sorted based on 'compare' function pointer. 'all_forward_list' can be used to sort the list.
+/// @note The list must be sorted based on 'compare' function pointer. 'forevery_forward_list' can be used to sort the list.
 static inline bool binary_search_forward_list(const forward_list_s list, const FORWARD_LIST_DATA_TYPE element, const compare_forward_list_fn compare) {
     size_t base = list.tail;
     for (size_t limit = list.size; limit != 0; limit >>= 1) {
