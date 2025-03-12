@@ -25,6 +25,7 @@ PADS data structures are each divided into at least three modes with support for
 
 - [BINARY SET](https://github.com/TheGAzed/pads/blob/main/source/binary_set)
 - [LIST](https://github.com/TheGAzed/pads/blob/main/source/list)
+- [STRAIGHT LIST](https://github.com/TheGAzed/pads/blob/main/source/straight_list)
 
 ### **Planned:**
 

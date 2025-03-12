@@ -1836,7 +1836,7 @@ TEST IAFL_COPY_10(void) {
     PASS();
 }
 
-TEST IAFL_SORT_01(void) {
+TEST IAFL_FOREVERY_01(void) {
     forward_list_s test = create_forward_list();
 
     forevery_forward_list(&test, sort_int, NULL);
@@ -1845,7 +1845,7 @@ TEST IAFL_SORT_01(void) {
     PASS();
 }
 
-TEST IAFL_SORT_02(void) {
+TEST IAFL_FOREVERY_02(void) {
     forward_list_s test = create_forward_list();
 
     insert_at_forward_list(&test, test.size, (FORWARD_LIST_DATA_TYPE) { .sub_one = 42, });
@@ -1859,7 +1859,7 @@ TEST IAFL_SORT_02(void) {
     PASS();
 }
 
-TEST IAFL_SORT_03(void) {
+TEST IAFL_FOREVERY_03(void) {
     forward_list_s test = create_forward_list();
 
     const size_t count = MAXIMUM_INFINITE_FORWARD_LIST - 1;
@@ -1882,7 +1882,7 @@ TEST IAFL_SORT_03(void) {
     PASS();
 }
 
-TEST IAFL_SORT_04(void) {
+TEST IAFL_FOREVERY_04(void) {
     forward_list_s test = create_forward_list();
 
     const size_t count = MAXIMUM_INFINITE_FORWARD_LIST;
@@ -1905,7 +1905,7 @@ TEST IAFL_SORT_04(void) {
     PASS();
 }
 
-TEST IAFL_SORT_05(void) {
+TEST IAFL_FOREVERY_05(void) {
     forward_list_s test = create_forward_list();
 
     const size_t count = MAXIMUM_INFINITE_FORWARD_LIST + 1;
@@ -2424,9 +2424,9 @@ SUITE (infinite_allocated_forward_list_test) {
     RUN_TEST(IAFL_COPY_01); RUN_TEST(IAFL_COPY_02); RUN_TEST(IAFL_COPY_03); RUN_TEST(IAFL_COPY_04);
     RUN_TEST(IAFL_COPY_05); RUN_TEST(IAFL_COPY_06); RUN_TEST(IAFL_COPY_07); RUN_TEST(IAFL_COPY_08);
     RUN_TEST(IAFL_COPY_09); RUN_TEST(IAFL_COPY_10);
-    // sort test
-    RUN_TEST(IAFL_SORT_01); RUN_TEST(IAFL_SORT_02); RUN_TEST(IAFL_SORT_03); RUN_TEST(IAFL_SORT_04);
-    RUN_TEST(IAFL_SORT_05);
+    // forevery test
+    RUN_TEST(IAFL_FOREVERY_01); RUN_TEST(IAFL_FOREVERY_02); RUN_TEST(IAFL_FOREVERY_03); RUN_TEST(IAFL_FOREVERY_04);
+    RUN_TEST(IAFL_FOREVERY_05);
     // binary search test
     RUN_TEST(IAFL_BINARY_SEARCH_01); RUN_TEST(IAFL_BINARY_SEARCH_02); RUN_TEST(IAFL_BINARY_SEARCH_03); RUN_TEST(IAFL_BINARY_SEARCH_04);
     RUN_TEST(IAFL_BINARY_SEARCH_05); RUN_TEST(IAFL_BINARY_SEARCH_06); RUN_TEST(IAFL_BINARY_SEARCH_07); RUN_TEST(IAFL_BINARY_SEARCH_08);

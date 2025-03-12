@@ -42,7 +42,7 @@
 #define FINITE_STRAIGHT_LIST   FINITE_ALLOCATED_STRAIGHT_LIST
 
 //#define STRAIGHT_LIST_MODE INFINITE_ALLOCATED_STRAIGHT_LIST
-#define STRAIGHT_LIST_MODE FINITE_ALLOCATED_STRAIGHT_LIST
+//#define STRAIGHT_LIST_MODE FINITE_ALLOCATED_STRAIGHT_LIST
 //#define STRAIGHT_LIST_MODE INFINITE_REALLOC_STRAIGHT_LIST
 //#define STRAIGHT_LIST_MODE FINITE_PRERPOCESSOR_STRAIGHT_LIST
 // List mode that can be set to INFINITE_ALLOCATED_STRAIGHT_LIST, FINITE_ALLOCATED_STRAIGHT_LIST, INFINITE_REALLOC_STRAIGHT_LIST or
@@ -112,9 +112,12 @@ typedef bool                    (*operate_straight_list_fn) (STRAIGHT_LIST_DATA_
 /// @brief Function pointer to manage an array of straight list elements based on generic arguments.
 typedef void                    (*manage_straight_list_fn)  (STRAIGHT_LIST_DATA_TYPE *, const size_t, void *);
 
-#endif //STRAIGHT_LIST_H
-
 #if   STRAIGHT_LIST_MODE == INFINITE_ALLOCATED_STRAIGHT_LIST
+
+// many functions use Linus Torvalds' Tastes in code for linked lists from his TED Talk
+// at https://www.youtube.com/watch?v=o8NPllzkFhE&t=858s (yeah, this comment only applies to this straight list mode)
+// I think this idea is also mentioned in the book Pointers on C by Kenneth A. Reek
+// (this book also inspired me to created PADS)
 
 /// @brief Straight list node with element and pointer to next node.
 struct straight_list_node {
@@ -146,7 +149,7 @@ static inline void destroy_straight_list(straight_list_s * list, const destroy_s
         if (destroy) { // if destroy function pointer is specified then destroys element
             destroy(&(list->head->element));
         }
-
+        // free current head node
         struct straight_list_node * temp = list->head->next;
         STRAIGHT_LIST_FREE(list->head);
         list->head = temp;
@@ -164,7 +167,7 @@ static inline void insert_at_straight_list(straight_list_s * list, const size_t 
     STRAIGHT_LIST_ASSERT(~list->size && "[ERROR] List size will overflow.");
 
     struct straight_list_node ** current = &(list->head);
-    for (size_t i = 0; i < index; ++i) {
+    for (size_t i = 0; i < index; ++i) { // iterate until pointer index node is reached
         current = &((*current)->next);
     }
 
@@ -173,8 +176,9 @@ static inline void insert_at_straight_list(straight_list_s * list, const size_t 
     STRAIGHT_LIST_ASSERT(node && "[ERROR] Memory allocation failed.");
     memcpy(&(node->element), &element, sizeof(STRAIGHT_LIST_DATA_TYPE));
 
-    node->next = (*current); // make node's next pointer point to current
-    (*current) = node; // change pointer to node to temp
+    node->next = (*current); // make new node's next pointer point to current
+    (*current) = node; // change pointer to current node to new node
+    list->size++;
 }
 
 /// @brief Removes first element in straight list based on element parameter comparison.
@@ -188,7 +192,7 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_first_straight_list(straight_list_s
     STRAIGHT_LIST_ASSERT(list->head && "[ERROR] Can't remove from empty list.");
 
     struct straight_list_node ** current = &(list->head);
-    for (size_t i = 0; i < list->size; ++i) {
+    while ((*current)) {
         const int comparison = compare ? compare((*current)->element, element) : memcmp(&((*current)->element), &element, sizeof(STRAIGHT_LIST_DATA_TYPE));
 
         if (0 == comparison) {
@@ -205,7 +209,7 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_first_straight_list(straight_list_s
     }
 
     STRAIGHT_LIST_ASSERT(0 && "[ERROR] Element not found in list."); // if element is not found in list then that is an error
-    // and exit failure is returned, since the function returns the removed element, element can contain allocated memory
+    // and exit failure is returned. Since the function returns the removed element that can contain allocated memory an element must be returned
     exit(EXIT_FAILURE);
 }
 
@@ -267,12 +271,14 @@ static inline void splice_straight_list(straight_list_s * restrict destination, 
     }
 
     struct straight_list_node ** last_source = &(source->head);
-    while (*last_source) { // iterate while pointer to node dereferenced is not NULL to get poionter to last source node
+    while ((*last_source)) { // iterate while pointer to node dereferenced is not NULL to get pointer to last source node
         last_source = &((*last_source)->next);
     }
 
-    (*last_source) = destination->head; // change last source node pointer to destination's head
+    (*last_source) = (*current_dest); // change last source node pointer to destination's current
     (*current_dest) = source->head; // change destination's index node pointer to source's head
+
+    destination->size += source->size;
 
     (*source) = (straight_list_s) { 0 }; // set source list to zero (i. e. destroy it)
 }
@@ -305,6 +311,8 @@ static inline straight_list_s split_straight_list(straight_list_s * list, const 
     }
 
     (*current) = last; // set previous' next node to last list's node (if size parameter is 0 then nothing changes)
+
+    list->size -= size;
 
     return split;
 }
@@ -590,7 +598,6 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_first_straight_list(straight_list_s
     exit(EXIT_FAILURE);
 }
 
-
 /// @brief Removes element at index in straight list.
 /// @param list Pointer to straight list structure.
 /// @param index Zero based index to remove element at.
@@ -692,8 +699,6 @@ static inline void splice_straight_list(straight_list_s * restrict destination, 
         last_source = source->next + (*last_source);
     }
 
-    (*last_source) = destination->head; // change last source node pointer to destination's head
-
     STRAIGHT_LIST_FREE(source->elements);
     STRAIGHT_LIST_FREE(source->next);
     (*source) = (straight_list_s) { 0 }; // set source list to zero (i. e. destroy it)
@@ -769,7 +774,7 @@ static inline bool is_empty_straight_list(const straight_list_s list) {
 static inline bool is_full_straight_list(const straight_list_s list) {
     // if size has all bits set to 1 it is considered full, therefore switching bits will make them all zero
     // and negating it makes function return true only if full
-    return !(~list.size);
+    return !(list.size < list.max && ~list.size);
 }
 
 /// @brief Creates a deep or shallow copy of a list based on copy function pointer.
@@ -781,6 +786,8 @@ static inline straight_list_s copy_straight_list(const straight_list_s list, con
         .next = STRAIGHT_LIST_ALLOC(list.max * sizeof(size_t)), .head = 0, .size = list.size,
         .elements = STRAIGHT_LIST_ALLOC(list.max * sizeof(STRAIGHT_LIST_DATA_TYPE)), .empty_head = 0, .empty_size = 0,
     };
+    STRAIGHT_LIST_ASSERT(list_copy.elements && "[ERROR] Memory allocation failed.");
+    STRAIGHT_LIST_ASSERT(list_copy.next && "[ERROR] Memory allocation failed.");
 
     size_t current_list = list.head;
     // double pointer since this also works on copying straight list
@@ -905,5 +912,915 @@ static inline void foreach_straight_list(straight_list_s const * list, const ope
 }
 
 #elif STRAIGHT_LIST_MODE == INFINITE_REALLOC_STRAIGHT_LIST
-#elif STRAIGHT_LIST_MODE == FINITE_PRERPOCESSOR_STRAIGHT_LIST
+
+#ifndef REALLOC_STRAIGHT_LIST_CHUNK
+
+/// @brief Chunk size to expand/shrink elements array.
+#define REALLOC_STRAIGHT_LIST_CHUNK (1 << 10)
+
+#elif REALLOC_STRAIGHT_LIST_CHUNK <= 0
+
+#error 'REALLOC_STRAIGHT_LIST_CHUNK' cannot be zero
+
 #endif
+
+/// @note The FINITE_ALLOCATED_STRAIGHT_LIST is a list that uses two stack implementations, a linked list based
+/// 'empty stack' for empty elements that make up holes in the straight_list elements' array and an array based
+/// 'load stack' with holes. When adding an element the linked list first check if it can pop from the 'empty stack'
+/// to fill in the holes, when there are no holes (meaning 'empty stack' is empty) the straight list pushes the element
+/// to the top of the array based 'loaded stack'
+/// @brief The straight list is a linked list.
+typedef struct straight_list {
+    size_t size, empty_size, head, empty_head;
+    STRAIGHT_LIST_DATA_TYPE * elements;
+    size_t * next;
+} straight_list_s;
+
+/// @brief Creates an empty straight list of zero size.
+/// @return Straight list structure.
+static inline straight_list_s create_straight_list(void) {
+    return (straight_list_s) { 0 }; // sets straight list to zero
+}
+
+/// @brief Destroys the straight list and sets size to zero. The destroyed list should not be used after calling this
+/// function, else create a new list.
+/// @param list Pointer to straight list structure.
+/// @param destroy Function pointer to destroy/free each element in straight list. Can be NULL if element mustn't be
+/// destroyed.
+static inline void destroy_straight_list(straight_list_s * list, const destroy_straight_list_fn destroy) {
+    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+
+    size_t current = list->head; // pointer to tail since ordering does not matter while destroying list
+    for (size_t s = 0; destroy && s < list->size; ++s) { // check if destroy function is specified to destroy elements
+        destroy(list->elements + current);
+        current = list->next[current];
+    }
+
+    STRAIGHT_LIST_FREE(list->elements); // free elements array
+    STRAIGHT_LIST_FREE(list->next); // free next index array
+    *list = (straight_list_s) { 0 }; // set everything to zero
+}
+
+/// @brief Inserts an element to any place in the list.
+/// @param list Pointer to straight list structure.
+/// @param index Zero based index to insert element at.
+/// @param element Element to insert into list.
+static inline void insert_at_straight_list(straight_list_s * list, const size_t index, const STRAIGHT_LIST_DATA_TYPE element) {
+    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+    STRAIGHT_LIST_ASSERT(index <= list->size && "[ERROR] Index bigger than size");
+    STRAIGHT_LIST_ASSERT(~list->size && "[ERROR] List size will overflow.");
+
+    if (!(list->size % REALLOC_STRAIGHT_LIST_CHUNK)) {
+        list->elements = STRAIGHT_LIST_REALLOC(list->elements, sizeof(STRAIGHT_LIST_DATA_TYPE) * (list->size + REALLOC_STRAIGHT_LIST_CHUNK));
+        list->next = STRAIGHT_LIST_REALLOC(list->next, sizeof(size_t) * (list->size + REALLOC_STRAIGHT_LIST_CHUNK));
+    }
+
+    size_t * current = &(list->head);
+    for (size_t i = 0; i < index; ++i) {
+        current = list->next + (*current);
+    }
+
+    size_t push = list->size;
+    if (list->empty_size) {
+        push = list->empty_head;
+        list->empty_head = list->next[list->empty_head];
+        list->empty_size--;
+    }
+    memcpy(list->elements + push, &element, sizeof(STRAIGHT_LIST_DATA_TYPE));
+    list->next[push] = (*current);
+    (*current) = push;
+
+    list->size++;
+}
+
+/// @brief Removes first element in straight list based on element parameter comparison.
+/// @param list Pointer to straight list structure.
+/// @param element Element to remove from list.
+/// @param compare Function pointer that compares element parameter to elements in list.
+/// @return Removed element from list.
+static inline STRAIGHT_LIST_DATA_TYPE remove_first_straight_list(straight_list_s * list, const STRAIGHT_LIST_DATA_TYPE element, const compare_straight_list_fn compare) {
+    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+    STRAIGHT_LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
+    STRAIGHT_LIST_ASSERT(list->head && "[ERROR] Can't remove from empty list.");
+
+    size_t * current = &(list->head);
+    for (size_t s = 0; s < list->size; ++s) {
+        const int comparison = compare ? compare(list->elements[(*current)], element) : memcmp(list->elements + (*current), &element, sizeof(STRAIGHT_LIST_DATA_TYPE));
+
+        if (0 != comparison) { // early continue in order to remove one needless nesting level
+            current = list->next + (*current);
+            continue;
+        }
+
+        list->size--;
+        STRAIGHT_LIST_DATA_TYPE found = list->elements[(*current)];
+
+        if (list->next[(*current)] != list->size) { // push empty index to 'empty stack'
+            list->next[(*current)] = list->empty_head;
+            list->empty_head = (*current);
+            list->empty_size++;
+        }
+
+        (*current) = list->next[(*current)];
+
+        if (0 == (list->size % REALLOC_STRAIGHT_LIST_CHUNK)) { // turn list into continuous array and reduce size via realloc
+            straight_list_s temp_list = {
+                .elements = STRAIGHT_LIST_ALLOC(sizeof(STRAIGHT_LIST_DATA_TYPE) * list->size), .size = list->size, .head = 0,
+                .next = STRAIGHT_LIST_ALLOC(sizeof(size_t) * list->size), .empty_head = 0, .empty_size = 0,
+            };
+            STRAIGHT_LIST_ASSERT((!(list->size) || temp_list.elements) && "[ERROR] Memory allocation failed.");
+            STRAIGHT_LIST_ASSERT((!(list->size) || temp_list.next) && "[ERROR] Memory allocation failed.");
+
+            size_t * temp_current  = &(temp_list.head);
+            size_t realloc_index = list->head;
+            for (size_t i = 0; i < list->size; ++i) {
+                temp_list.elements[i] = list->elements[realloc_index];
+                (*temp_current) = i;
+
+                temp_current = temp_list.next + (*temp_current);
+                realloc_index = list->next[realloc_index];
+            }
+
+            STRAIGHT_LIST_FREE(list->elements);
+            STRAIGHT_LIST_FREE(list->next);
+
+            if (!list->size) {
+                STRAIGHT_LIST_FREE(temp_list.elements);
+                STRAIGHT_LIST_FREE(temp_list.next);
+                temp_list.elements = NULL;
+                temp_list.next = NULL;
+            }
+
+            (*list) = temp_list;
+        }
+
+        return found;
+    }
+
+    STRAIGHT_LIST_ASSERT(0 && "[ERROR] Element not found in list."); // if element is not found in list then that is an error
+    // and exit failure is returned, since the function returns the removed element, element can contain allocated memory
+    exit(EXIT_FAILURE);
+}
+
+/// @brief Removes element at index in straight list.
+/// @param list Pointer to straight list structure.
+/// @param index Zero based index to remove element at.
+/// @return Removed element from list.
+static inline STRAIGHT_LIST_DATA_TYPE remove_at_straight_list(straight_list_s * list, const size_t index) {
+    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+    STRAIGHT_LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
+    STRAIGHT_LIST_ASSERT(list->head && "[ERROR] Can't remove from empty list.");
+    STRAIGHT_LIST_ASSERT(index < list->size && "[ERROR] Index greater than size");
+
+    size_t * current = &(list->head);
+    for (size_t i = 0; i < index; ++i) {
+        current = list->next + (*current);
+    }
+
+    list->size--;
+    STRAIGHT_LIST_DATA_TYPE found = list->elements[(*current)];
+
+    if (list->next[(*current)] != list->size) { // push empty index to 'empty stack'
+        list->next[(*current)] = list->empty_head;
+        list->empty_head = (*current);
+        list->empty_size++;
+    }
+
+    (*current) = list->next[(*current)];
+
+    if (0 == (list->size % REALLOC_STRAIGHT_LIST_CHUNK)) { // turn list into continuous array and reduce size via realloc
+        straight_list_s temp_list = {
+            .elements = STRAIGHT_LIST_ALLOC(sizeof(STRAIGHT_LIST_DATA_TYPE) * list->size), .size = list->size, .head = 0,
+            .next = STRAIGHT_LIST_ALLOC(sizeof(size_t) * list->size), .empty_head = 0, .empty_size = 0,
+        };
+        STRAIGHT_LIST_ASSERT((!(list->size) || temp_list.elements) && "[ERROR] Memory allocation failed.");
+        STRAIGHT_LIST_ASSERT((!(list->size) || temp_list.next) && "[ERROR] Memory allocation failed.");
+
+        size_t * temp_current  = &(temp_list.head);
+        size_t realloc_index = list->head;
+        for (size_t i = 0; i < list->size; ++i) {
+            temp_list.elements[i] = list->elements[realloc_index];
+            (*temp_current) = i;
+
+            temp_current = temp_list.next + (*temp_current);
+            realloc_index = list->next[realloc_index];
+        }
+
+        STRAIGHT_LIST_FREE(list->elements);
+        STRAIGHT_LIST_FREE(list->next);
+
+        if (!list->size) {
+            STRAIGHT_LIST_FREE(temp_list.elements);
+            STRAIGHT_LIST_FREE(temp_list.next);
+            temp_list.elements = NULL;
+            temp_list.next = NULL;
+        }
+
+        (*list) = temp_list;
+    }
+
+    return found;
+}
+
+/// @brief Reverses straight list.
+/// @param list Pointer to straight list structure.
+static inline void reverse_straight_list(straight_list_s * list) {
+    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+
+    size_t previous = 0;
+    size_t current = list->head;
+    for (size_t i = 0; i < list->size; ++i) {
+        const size_t next = list->next[current];
+        list->next[current] = previous;
+        previous = current;
+        current = next;
+    }
+    list->head = previous;
+}
+
+/// @brief Splices/joins/merges two lists together while destroying source list.
+/// @param destination Pointer to straight list structure to splice into.
+/// @param source Pointer to straight list structure to splice from. If source is zero destination list does not change.
+/// @param index Index at destination list to splice source list into.
+static inline void splice_straight_list(straight_list_s * restrict destination, straight_list_s * restrict source, const size_t index) {
+    STRAIGHT_LIST_ASSERT(destination && "[ERROR] 'list_one' parameter pointer is NULL.");
+    STRAIGHT_LIST_ASSERT(source && "[ERROR] 'list_two' parameter pointer is NULL.");
+    STRAIGHT_LIST_ASSERT(destination != source && "[ERROR] Lists can't be the same.");
+    STRAIGHT_LIST_ASSERT(index <= destination->size && "[ERROR] index can't exceed list_one's size");
+
+    size_t * current_dest = &(destination->head);
+    for (size_t i = 0; i < index; ++i) { // iterate to pointer to node at index position
+        current_dest = destination->next + (*current_dest);
+    }
+
+    size_t * last_source = &(source->head);
+    while (source->size && destination->empty_size) {
+        memcpy(destination->elements + destination->empty_head, source->elements + (*last_source), sizeof(STRAIGHT_LIST_DATA_TYPE));
+        destination->size++;
+
+        const size_t temp = destination->empty_head;
+        destination->empty_head = destination->next[destination->empty_head];
+
+        destination->next[temp] = (*current_dest);
+        (*current_dest) = temp;
+
+        destination->empty_size--;
+
+        source->size--;
+        current_dest = destination->next + (*current_dest);
+        last_source = source->next + (*last_source);
+    }
+
+    while (source->size) {
+        const size_t temp = (*current_dest); // if realloc is performed we may loose the pointer to destinations's current index
+        (*current_dest) = destination->size; // before reallocation may happen we change the index at current destination's pointer
+
+        if (!(destination->size % REALLOC_STRAIGHT_LIST_CHUNK)) {
+            destination->elements = STRAIGHT_LIST_REALLOC(destination->elements, sizeof(STRAIGHT_LIST_DATA_TYPE) * (destination->size + REALLOC_STRAIGHT_LIST_CHUNK));
+            STRAIGHT_LIST_ASSERT(destination->elements && "[ERROR] Memory allocation failed");
+            destination->next = STRAIGHT_LIST_REALLOC(destination->next, sizeof(size_t) * (destination->size + REALLOC_STRAIGHT_LIST_CHUNK));
+            STRAIGHT_LIST_ASSERT(destination->next && "[ERROR] Memory allocation failed");
+        }
+
+        memcpy(destination->elements + destination->size, source->elements + (*last_source), sizeof(STRAIGHT_LIST_DATA_TYPE));
+        destination->next[destination->size] = temp;
+        destination->size++;
+
+        source->size--;
+        current_dest = destination->next + (*current_dest);
+        last_source = source->next + (*last_source);
+    }
+
+    STRAIGHT_LIST_FREE(source->elements);
+    STRAIGHT_LIST_FREE(source->next);
+    (*source) = (straight_list_s) { 0 }; // set source list to zero (i. e. destroy it)
+}
+
+/// @brief Splits list and returns new list with specified elements.
+/// @param list Pointer to straight list structure.
+/// @param index Zero based index to start split from.
+/// @param size Size to remove list by. If size is zero an empty list is returned.
+/// @return New split list.
+static inline straight_list_s split_straight_list(straight_list_s * list, const size_t index, const size_t size) {
+    STRAIGHT_LIST_ASSERT(list && "[ERROR] List pointer is NULL");
+    STRAIGHT_LIST_ASSERT(size <= list->size && "[ERROR] Size parameter bigger than list size.");
+    STRAIGHT_LIST_ASSERT(index < list->size && "[ERROR] Can only split at index less than list size");
+    STRAIGHT_LIST_ASSERT(index + size <= list->size && "[ERROR] Can't split at index and size beyond list's size");
+
+    straight_list_s split = { 0 };
+
+    size_t * current = &(list->head);
+    for (size_t i = 0; i < index; ++i) { // iterate to pointer to node at index
+        current = list->next + (*current);
+    }
+
+    size_t last = (*current); // create pointer to node to point to node after split's last note
+    size_t * current_split = &(split.head); // create pointer to node to add nodes to split list
+    for (size_t i = 0; i < size; ++i) {
+        (*current_split) = i; // set split's pointer-to node to last
+
+        if (!(split.size % REALLOC_STRAIGHT_LIST_CHUNK)) {
+            split.elements = STRAIGHT_LIST_REALLOC(split.elements, sizeof(STRAIGHT_LIST_DATA_TYPE) * (split.size + REALLOC_STRAIGHT_LIST_CHUNK));
+            STRAIGHT_LIST_ASSERT(split.elements && "[ERROR] Memory allocation failed");
+            split.next = STRAIGHT_LIST_REALLOC(split.next, sizeof(size_t) * (split.size + REALLOC_STRAIGHT_LIST_CHUNK));
+            STRAIGHT_LIST_ASSERT(split.next && "[ERROR] Memory allocation failed");
+        }
+        split.size++;
+
+        split.elements[i] = list->elements[last];
+
+        last = list->next[last]; // increment last's pointer to node to next pointer to node
+        current_split = split.next + (*current_split); // increment split's pointer to node to next pointer to node
+    }
+
+    (*current) = last; // set previous' next node to last list's node (if size parameter is 0 then nothing changes)
+
+    return split;
+}
+
+/// @brief Gets element at index.
+/// @param list Straight list structure.
+/// @param index Zero based index of element in list.
+/// @return Element at index in list.
+static inline STRAIGHT_LIST_DATA_TYPE get_straight_list(const straight_list_s list, const size_t index) {
+    STRAIGHT_LIST_ASSERT(list.head && "[ERROR] Can't get element from empty list.");
+    STRAIGHT_LIST_ASSERT(list.size && "[ERROR] Can't get element from empty list.");
+    STRAIGHT_LIST_ASSERT(index < list.size && "[ERROR] 'index' parameter exceeds list size.");
+
+    size_t current = list.head;
+    for (size_t i = 0; i < index; ++i) {
+        current = list.next[current];
+    }
+
+    return list.elements[current];
+}
+
+/// @brief Checks if list is empty.
+/// @param list Straight list structure.
+/// @return 'true' if list is empty, 'false' otherwise.
+static inline bool is_empty_straight_list(const straight_list_s list) {
+    return (list.size == 0);
+}
+
+/// @brief Checks if list is full.
+/// @param list Straight list structure.
+/// @return true if list is full, 'false' otherwise.
+static inline bool is_full_straight_list(const straight_list_s list) {
+    // if size has all bits set to 1 it is considered full, therefore switching bits will make them all zero
+    // and negating it makes function return true only if full
+    return !(~list.size);
+}
+
+/// @brief Creates a deep or shallow copy of a list based on copy function pointer.
+/// @param list Straight list structure.
+/// @param copy Function pointer to create a copy of an element. Can be NULL if copying by assignment operator.
+/// @return Returns a copy of a list.
+static inline straight_list_s copy_straight_list(const straight_list_s list, const copy_straight_list_fn copy) {
+    straight_list_s replica = { 0 };
+
+    size_t current_list = list.head;
+    // double pointer since this also works on copying straight list
+    size_t * current_copy = &(replica.head);
+    for (size_t i = 0; i < list.size; ++i) {
+        (*current_copy) = i; // set head and indexes at list copy's next array to proper index
+
+        if (!(replica.size % REALLOC_STRAIGHT_LIST_CHUNK)) {
+            replica.elements = STRAIGHT_LIST_REALLOC(replica.elements, sizeof(STRAIGHT_LIST_DATA_TYPE) * (replica.size + REALLOC_STRAIGHT_LIST_CHUNK));
+            STRAIGHT_LIST_ASSERT(replica.elements && "[ERROR] Memory allocation failed");
+            replica.next = STRAIGHT_LIST_REALLOC(replica.next, sizeof(size_t) * (replica.size + REALLOC_STRAIGHT_LIST_CHUNK));
+            STRAIGHT_LIST_ASSERT(replica.next && "[ERROR] Memory allocation failed");
+        }
+        replica.size++;
+
+        // set element copy to list copy at index i to automatically remove holes from copy
+        replica.elements[i] = copy ? copy(list.elements[current_list]) : list.elements[current_list];
+
+        current_list = list.next[current_list]; // go to next list node
+        current_copy = replica.next + (*current_copy); // go to next copy list's pointer to node
+    }
+
+    return replica;
+}
+
+/// @brief Clears the list of elements.  Similar to 'destroy_straight_list', but the list can continue to be used normally.
+/// @param list Forward list structure.
+/// @param destroy Function pointer to destroy/free each element in straight list.
+static inline void clear_straight_list(straight_list_s * list, const destroy_straight_list_fn destroy) {
+    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+
+    size_t current = list->head; // pointer to tail since ordering does not matter while destroying list
+    for (size_t s = 0; destroy && s < list->size; ++s) { // check if destroy function is specified to destroy elements
+        destroy(list->elements + current);
+        current = list->next[current];
+    }
+
+    // set cleared list's empty stack and head to zero and keep allocated memory
+    list->empty_head = list->empty_size = list->head = 0;
+}
+
+/// @brief Creates a continuous array of list elements to manage using function pointer.
+/// @param list Pointer to straight list structure.
+/// @param manage Function pointer to manage the array of elements based on element count/size and specified args.
+/// @param args Void pointer arguments for 'manage' function.
+/// @note If 'manage' does not change the order of elements then the original element ordering may NOT remain
+/// (it may change if there are holes in the list). This may not apply for other forward list 'forevery_forward_list'
+/// implementations and a note will reflect that.
+static inline void forevery_straight_list(straight_list_s * list, const manage_straight_list_fn manage, void * args) {
+    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
+    STRAIGHT_LIST_ASSERT(manage && "[ERROR] 'operate' parameter pointer is NULL.");
+
+    size_t empty_index = list->empty_head;
+    size_t stack_size = list->size + list->empty_size;
+    while (list->empty_size) { // removes holes at the expense of breaking the list
+        stack_size--;
+
+        if (empty_index > stack_size) {
+            empty_index = list->next[empty_index];
+        }
+
+        STRAIGHT_LIST_DATA_TYPE element = list->elements[empty_index];
+        list->elements[empty_index] = list->elements[stack_size];
+        list->elements[stack_size] = element;
+
+        const size_t index = list->next[empty_index];
+        list->next[empty_index] = list->next[stack_size];
+        list->next[stack_size] = empty_index;
+        empty_index = index;
+
+        list->empty_size--;
+    }
+
+    manage(list->elements, list->size, args);
+
+    size_t * current = (&list->head);
+    for (size_t i = 0; i < list->size; ++i) {
+        (*current) = i;
+        current = list->next + (*current);
+    }
+}
+
+/// @brief Performs a binary search on sorted straight list.
+/// @param list Straight list structure.
+/// @param element Element to search in list.
+/// @param compare Function pointer to compare elements in list. Zero if they're the same, negative if less than,
+/// positive if greater than.
+/// @return 'true' if element was found, 'false' otherwise.
+/// @note The list must be sorted based on 'compare' function pointer. 'forevery_straight_list' can be used to sort the list.
+static inline bool binary_search_straight_list(const straight_list_s list, const STRAIGHT_LIST_DATA_TYPE element, const compare_straight_list_fn compare) {
+    // this implementation is based on a similar array based binary search algorithm:
+    // https://github.com/gcc-mirror/gcc/blob/master/libiberty/bsearch.c
+    size_t base = list.head; // base starting from list tail
+    for (size_t limit = list.size; limit != 0; limit >>= 1) {
+        // start from next element to move from tail and to ignore alread compared elements
+        size_t current = base;
+        for (size_t i = 0; i < limit >> 1; ++i) { // iterate to middle element in list
+            current = list.next[current];
+        }
+
+        const int comparison = compare ? compare(element, list.elements[current]) : memcmp(&element, list.elements + current, sizeof(STRAIGHT_LIST_DATA_TYPE));
+
+        if (0 == comparison) {
+            return true;
+        }
+        if (0 < comparison) {
+            base = list.next[current]; // increment element pointer to next
+            limit--; // decrement limit to avoid 'out of bounds' access (if we ignore circularity)
+        }
+    }
+
+    return false;
+}
+
+/// @brief Iterates through straight list elements without changing list ordering.
+/// @param list Pointer to straight list structure.
+/// @param operate Function pointer to operate on every single element pointer while using arguments.
+/// @param args Arguments for 'operate' function pointer.
+static inline void foreach_straight_list(straight_list_s const * list, const operate_straight_list_fn operate, void * args) {
+    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
+    STRAIGHT_LIST_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
+
+    size_t current = list->head;
+    for (size_t i = 0; i < list->size; ++i) {
+        if (!operate(list->elements + current, args)) { // if operate returns false then stop loop
+            return;
+        }
+
+        current = list->next[current];
+    }
+}
+
+#elif STRAIGHT_LIST_MODE == FINITE_PRERPOCESSOR_STRAIGHT_LIST
+
+#ifndef PREPROCESSOR_FORWARD_LIST_SIZE
+
+#define PREPROCESSOR_FORWARD_LIST_SIZE (1 << 10)
+
+#elif PREPROCESSOR_FORWARD_LIST_SIZE <= 0
+
+#error 'PREPROCESSOR_FORWARD_LIST_SIZE' cannot be zero
+
+#endif
+
+/// @note The FINITE_ALLOCATED_STRAIGHT_LIST is a list that uses two stack implementations, a linked list based
+/// 'empty stack' for empty elements that make up holes in the straight_list elements' array and an array based
+/// 'load stack' with holes. When adding an element the linked list first check if it can pop from the 'empty stack'
+/// to fill in the holes, when there are no holes (meaning 'empty stack' is empty) the straight list pushes the element
+/// to the top of the array based 'loaded stack'
+/// @brief The straight list is a linked list.
+typedef struct straight_list {
+    size_t size, empty_size, head, empty_head;
+    STRAIGHT_LIST_DATA_TYPE elements[PREPROCESSOR_FORWARD_LIST_SIZE];
+    size_t next[PREPROCESSOR_FORWARD_LIST_SIZE];
+} straight_list_s;
+
+/// @brief Creates an empty straight list of zero size.
+/// @return Straight list structure.
+static inline straight_list_s create_straight_list(void) {
+    const straight_list_s list = { .empty_head = 0, .empty_size = 0, .head = 0, .size = 0, };
+    return list;
+}
+
+/// @brief Destroys the straight list and sets size to zero. The destroyed list should not be used after calling this
+/// function, else create a new list.
+/// @param list Pointer to straight list structure.
+/// @param destroy Function pointer to destroy/free each element in straight list. Can be NULL if element mustn't be
+/// destroyed.
+static inline void destroy_straight_list(straight_list_s * list, const destroy_straight_list_fn destroy) {
+    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+
+    size_t current = list->head; // pointer to tail since ordering does not matter while destroying list
+    for (size_t s = 0; destroy && s < list->size; ++s) { // check if destroy function is specified to destroy elements
+        destroy(list->elements + current);
+        current = list->next[current];
+    }
+
+    list->empty_head = list->empty_size = list->head = list->size = 0;
+}
+
+/// @brief Inserts an element to any place in the list.
+/// @param list Pointer to straight list structure.
+/// @param index Zero based index to insert element at.
+/// @param element Element to insert into list.
+static inline void insert_at_straight_list(straight_list_s * list, const size_t index, const STRAIGHT_LIST_DATA_TYPE element) {
+    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+    STRAIGHT_LIST_ASSERT(list->size < PREPROCESSOR_FORWARD_LIST_SIZE && "[ERROR] List reached maximum size.");
+    STRAIGHT_LIST_ASSERT(index <= list->size && "[ERROR] Index bigger than size");
+    STRAIGHT_LIST_ASSERT(~list->size && "[ERROR] List size will overflow.");
+
+    size_t * current = &(list->head);
+    for (size_t i = 0; i < index; ++i) {
+        current = list->next + (*current);
+    }
+
+    size_t push = list->size;
+    if (list->empty_size) {
+        push = list->empty_head;
+        list->empty_head = list->next[list->empty_head];
+        list->empty_size--;
+    }
+    memcpy(list->elements + push, &element, sizeof(STRAIGHT_LIST_DATA_TYPE));
+    list->next[push] = (*current);
+    (*current) = push;
+
+    list->size++;
+}
+
+/// @brief Removes first element in straight list based on element parameter comparison.
+/// @param list Pointer to straight list structure.
+/// @param element Element to remove from list.
+/// @param compare Function pointer that compares element parameter to elements in list.
+/// @return Removed element from list.
+static inline STRAIGHT_LIST_DATA_TYPE remove_first_straight_list(straight_list_s * list, const STRAIGHT_LIST_DATA_TYPE element, const compare_straight_list_fn compare) {
+    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+    STRAIGHT_LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
+    STRAIGHT_LIST_ASSERT(list->head && "[ERROR] Can't remove from empty list.");
+
+    size_t * current = &(list->head);
+    for (size_t i = 0; i < list->size; ++i) {
+        const int comparison = compare ? compare(list->elements[(*current)], element) : memcmp(list->elements + (*current), &element, sizeof(STRAIGHT_LIST_DATA_TYPE));
+
+        if (0 != comparison) { // early continue in order to remove one needless nesting level
+            current = list->next + (*current);
+            continue;
+        }
+
+        list->size--;
+        STRAIGHT_LIST_DATA_TYPE found = list->elements[(*current)];
+
+        if (list->next[(*current)] != list->size) { // push empty index to 'empty stack'
+            list->next[(*current)] = list->empty_head;
+            list->empty_head = (*current);
+            list->empty_size++;
+        }
+
+        (*current) = list->next[(*current)];
+
+        if (!list->size) { // if list is empty set empty stack elements to zero
+            list->empty_head = list->empty_size = 0;
+        }
+
+        return found;
+    }
+
+    STRAIGHT_LIST_ASSERT(0 && "[ERROR] Element not found in list."); // if element is not found in list then that is an error
+    // and exit failure is returned, since the function returns the removed element, element can contain allocated memory
+    exit(EXIT_FAILURE);
+}
+
+/// @brief Removes element at index in straight list.
+/// @param list Pointer to straight list structure.
+/// @param index Zero based index to remove element at.
+/// @return Removed element from list.
+static inline STRAIGHT_LIST_DATA_TYPE remove_at_straight_list(straight_list_s * list, const size_t index) {
+    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+    STRAIGHT_LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
+    STRAIGHT_LIST_ASSERT(list->head && "[ERROR] Can't remove from empty list.");
+    STRAIGHT_LIST_ASSERT(index < list->size && "[ERROR] Index greater than size");
+
+    size_t * current = &(list->head);
+    for (size_t i = 0; i < index; ++i) {
+        current = list->next + (*current);
+    }
+
+    list->size--;
+    STRAIGHT_LIST_DATA_TYPE found = list->elements[(*current)];
+
+    if (list->next[(*current)] != list->size) { // push empty index to 'empty stack'
+        list->next[(*current)] = list->empty_head;
+        list->empty_head = (*current);
+        list->empty_size++;
+    }
+
+    (*current) = list->next[(*current)];
+
+    if (!list->size) { // if list is empty set empty stack elements to zero
+        list->empty_head = list->empty_size = 0;
+    }
+
+    return found;
+}
+
+/// @brief Reverses straight list.
+/// @param list Pointer to straight list structure.
+static inline void reverse_straight_list(straight_list_s * list) {
+    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+
+    size_t previous = 0;
+    size_t current = list->head;
+    for (size_t i = 0; i < list->size; ++i) {
+        const size_t next = list->next[current];
+        list->next[current] = previous;
+        previous = current;
+        current = next;
+    }
+    list->head = previous;
+}
+
+/// @brief Splices/joins/merges two lists together while destroying source list.
+/// @param destination Pointer to straight list structure to splice into.
+/// @param source Pointer to straight list structure to splice from. If source is zero destination list does not change.
+/// @param index Index at destination list to splice source list into.
+static inline void splice_straight_list(straight_list_s * restrict destination, straight_list_s * restrict source, const size_t index) {
+    STRAIGHT_LIST_ASSERT(destination && "[ERROR] 'list_one' parameter pointer is NULL.");
+    STRAIGHT_LIST_ASSERT(source && "[ERROR] 'list_two' parameter pointer is NULL.");
+    STRAIGHT_LIST_ASSERT(destination != source && "[ERROR] Lists can't be the same.");
+    STRAIGHT_LIST_ASSERT(destination->size + source->size <= PREPROCESSOR_FORWARD_LIST_SIZE && "[ERROR] Combined lists' sizes exceed max size of new list.");
+    STRAIGHT_LIST_ASSERT(index <= destination->size && "[ERROR] index can't exceed list_one's size");
+
+    size_t * current_dest = &(destination->head);
+    for (size_t i = 0; i < index; ++i) { // iterate to pointer to node at index position
+        current_dest = destination->next + (*current_dest);
+    }
+
+    size_t * last_source = &(source->head);
+    while (source->size && destination->empty_size) {
+        memcpy(destination->elements + destination->empty_head, source->elements + (*last_source), sizeof(STRAIGHT_LIST_DATA_TYPE));
+        destination->size++;
+
+        const size_t temp = destination->empty_head;
+        destination->empty_head = destination->next[destination->empty_head];
+
+        destination->next[temp] = (*current_dest);
+        (*current_dest) = temp;
+
+        destination->empty_size--;
+
+        source->size--;
+        current_dest = destination->next + (*current_dest);
+        last_source = source->next + (*last_source);
+    }
+
+    while (source->size) {
+        memcpy(destination->elements + destination->size, source->elements + (*last_source), sizeof(STRAIGHT_LIST_DATA_TYPE));
+        destination->next[destination->size] = (*current_dest);
+        (*current_dest) = destination->size;
+        destination->size++;
+
+        source->size--;
+        current_dest = destination->next + (*current_dest);
+        last_source = source->next + (*last_source);
+    }
+
+    STRAIGHT_LIST_FREE(source->elements);
+    STRAIGHT_LIST_FREE(source->next);
+    (*source) = (straight_list_s) { 0 }; // set source list to zero (i. e. destroy it)
+}
+
+/// @brief Splits list and returns new list with specified elements.
+/// @param list Pointer to straight list structure.
+/// @param index Zero based index to start split from.
+/// @param size Size to remove list by. If size is zero an empty list is returned.
+/// @return New split list.
+static inline straight_list_s split_straight_list(straight_list_s * list, const size_t index, const size_t size) {
+    STRAIGHT_LIST_ASSERT(list && "[ERROR] List pointer is NULL");
+    STRAIGHT_LIST_ASSERT(size <= list->size && "[ERROR] Size parameter bigger than list size.");
+    STRAIGHT_LIST_ASSERT(index < list->size && "[ERROR] Can only split at index less than list size");
+    STRAIGHT_LIST_ASSERT(index + size <= list->size && "[ERROR] Can't split at index and size beyond list's size");
+
+    straight_list_s split = { .empty_head = 0, .empty_size = 0, .size = size, .head = 0, };
+
+    size_t * current = &(list->head);
+    for (size_t i = 0; i < index; ++i) { // iterate to pointer to node at index
+        current = list->next + (*current);
+    }
+
+    size_t last = (*current); // create pointer to node to point to node after split's last note
+    size_t * current_split = &(split.head); // create pointer to node to add nodes to split list
+    for (size_t i = 0; i < size; ++i) {
+        split.elements[i] = list->elements[last];
+        (*current_split) = i; // set split's pointer-to node to last
+
+        last = list->next[last]; // increment last's pointer to node to next pointer to node
+        current_split = split.next + (*current_split); // increment split's pointer to node to next pointer to node
+    }
+
+    (*current) = last; // set previous' next node to last list's node (if size parameter is 0 then nothing changes)
+
+    return split;
+}
+
+/// @brief Gets element at index.
+/// @param list Straight list structure.
+/// @param index Zero based index of element in list.
+/// @return Element at index in list.
+static inline STRAIGHT_LIST_DATA_TYPE get_straight_list(const straight_list_s list, const size_t index) {
+    STRAIGHT_LIST_ASSERT(list.head && "[ERROR] Can't get element from empty list.");
+    STRAIGHT_LIST_ASSERT(list.size && "[ERROR] Can't get element from empty list.");
+    STRAIGHT_LIST_ASSERT(index < list.size && "[ERROR] 'index' parameter exceeds list size.");
+
+    size_t current = list.head;
+    for (size_t i = 0; i < index; ++i) {
+        current = list.next[current];
+    }
+
+    return list.elements[current];
+}
+
+/// @brief Checks if list is empty.
+/// @param list Straight list structure.
+/// @return 'true' if list is empty, 'false' otherwise.
+static inline bool is_empty_straight_list(const straight_list_s list) {
+    return (list.size == 0);
+}
+
+/// @brief Checks if list is full.
+/// @param list Straight list structure.
+/// @return true if list is full, 'false' otherwise.
+static inline bool is_full_straight_list(const straight_list_s list) {
+    // if size has all bits set to 1 it is considered full, therefore switching bits will make them all zero
+    // and negating it makes function return true only if full
+    return !(list.size < PREPROCESSOR_FORWARD_LIST_SIZE && ~list.size);
+}
+
+/// @brief Creates a deep or shallow copy of a list based on copy function pointer.
+/// @param list Straight list structure.
+/// @param copy Function pointer to create a copy of an element. Can be NULL if copying by assignment operator.
+/// @return Returns a copy of a list.
+static inline straight_list_s copy_straight_list(const straight_list_s list, const copy_straight_list_fn copy) {
+    straight_list_s replice = {.head = 0, .size = list.size, .empty_head = 0, .empty_size = 0, };
+
+    size_t current_list = list.head;
+    // double pointer since this also works on copying straight list
+    size_t * current_copy = &(replice.head);
+    for (size_t i = 0; i < list.size; ++i) {
+        // set element copy to list copy at index i to automatically remove holes from copy
+        replice.elements[i] = copy ? copy(list.elements[current_list]) : list.elements[current_list];
+        (*current_copy) = i; // set head and indexes at list copy's next array to proper index
+
+        current_list = list.next[current_list]; // go to next list node
+        current_copy = replice.next + (*current_copy); // go to next copy list's pointer to node
+    }
+
+    return replice;
+}
+
+/// @brief Clears the list of elements.  Similar to 'destroy_straight_list', but the list can continue to be used normally.
+/// @param list Forward list structure.
+/// @param destroy Function pointer to destroy/free each element in straight list.
+static inline void clear_straight_list(straight_list_s * list, const destroy_straight_list_fn destroy) {
+    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+
+    size_t current = list->head; // pointer to tail since ordering does not matter while destroying list
+    for (size_t s = 0; destroy && s < list->size; ++s) { // check if destroy function is specified to destroy elements
+        destroy(list->elements + current);
+        current = list->next[current];
+    }
+
+    // set cleared list's empty stack and head to zero and keep allocated memory
+    list->empty_head = list->empty_size = list->head = 0;
+}
+
+/// @brief Creates a continuous array of list elements to manage using function pointer.
+/// @param list Pointer to straight list structure.
+/// @param manage Function pointer to manage the array of elements based on element count/size and specified args.
+/// @param args Void pointer arguments for 'manage' function.
+/// @note If 'manage' does not change the order of elements then the original element ordering may NOT remain
+/// (it may change if there are holes in the list). This may not apply for other forward list 'forevery_forward_list'
+/// implementations and a note will reflect that.
+static inline void forevery_straight_list(straight_list_s * list, const manage_straight_list_fn manage, void * args) {
+    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
+    STRAIGHT_LIST_ASSERT(manage && "[ERROR] 'operate' parameter pointer is NULL.");
+
+    size_t empty_index = list->empty_head;
+    size_t stack_size = list->size + list->empty_size;
+    while (list->empty_size) { // removes holes at the expense of breaking the list
+        stack_size--;
+
+        if (empty_index > stack_size) {
+            empty_index = list->next[empty_index];
+        }
+
+        STRAIGHT_LIST_DATA_TYPE element = list->elements[empty_index];
+        list->elements[empty_index] = list->elements[stack_size];
+        list->elements[stack_size] = element;
+
+        const size_t index = list->next[empty_index];
+        list->next[empty_index] = list->next[stack_size];
+        list->next[stack_size] = empty_index;
+        empty_index = index;
+
+        list->empty_size--;
+    }
+
+    manage(list->elements, list->size, args);
+
+    size_t * current = (&list->head);
+    for (size_t i = 0; i < list->size; ++i) {
+        (*current) = i;
+        current = list->next + (*current);
+    }
+}
+
+/// @brief Performs a binary search on sorted straight list.
+/// @param list Straight list structure.
+/// @param element Element to search in list.
+/// @param compare Function pointer to compare elements in list. Zero if they're the same, negative if less than,
+/// positive if greater than.
+/// @return 'true' if element was found, 'false' otherwise.
+/// @note The list must be sorted based on 'compare' function pointer. 'forevery_straight_list' can be used to sort the list.
+static inline bool binary_search_straight_list(const straight_list_s list, const STRAIGHT_LIST_DATA_TYPE element, const compare_straight_list_fn compare) {
+    // this implementation is based on a similar array based binary search algorithm:
+    // https://github.com/gcc-mirror/gcc/blob/master/libiberty/bsearch.c
+    size_t base = list.head; // base starting from list tail
+    for (size_t limit = list.size; limit != 0; limit >>= 1) {
+        // start from next element to move from tail and to ignore alread compared elements
+        size_t current = base;
+        for (size_t i = 0; i < limit >> 1; ++i) { // iterate to middle element in list
+            current = list.next[current];
+        }
+
+        const int comparison = compare ? compare(element, list.elements[current]) : memcmp(&element, list.elements + current, sizeof(STRAIGHT_LIST_DATA_TYPE));
+
+        if (0 == comparison) {
+            return true;
+        }
+        if (0 < comparison) {
+            base = list.next[current]; // increment element pointer to next
+            limit--; // decrement limit to avoid 'out of bounds' access (if we ignore circularity)
+        }
+    }
+
+    return false;
+}
+
+/// @brief Iterates through straight list elements without changing list ordering.
+/// @param list Pointer to straight list structure.
+/// @param operate Function pointer to operate on every single element pointer while using arguments.
+/// @param args Arguments for 'operate' function pointer.
+static inline void foreach_straight_list(straight_list_s * list, const operate_straight_list_fn operate, void * args) {
+    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
+    STRAIGHT_LIST_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
+
+    size_t current = list->head;
+    for (size_t i = 0; i < list->size; ++i) {
+        if (!operate(list->elements + current, args)) { // if operate returns false then stop loop
+            return;
+        }
+
+        current = list->next[current];
+    }
+}
+
+#endif
+
+#endif // STRAIGHT_LIST_H

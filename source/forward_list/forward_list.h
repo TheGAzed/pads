@@ -888,7 +888,7 @@ static inline bool is_full_forward_list(const forward_list_s list) {
 /// @param copy Function pointer to create a copy of an element. Can be NULL if copying by assignment operator.
 /// @return Returns a copy of a list.
 static inline forward_list_s copy_forward_list(const forward_list_s list, const copy_forward_list_fn copy) {
-    const forward_list_s list_copy = {
+    forward_list_s list_copy = {
         .elements = FORWARD_LIST_ALLOC(list.max * sizeof(FORWARD_LIST_DATA_TYPE)), .empty_head = 0, .empty_size = 0,
         .next     = FORWARD_LIST_ALLOC(list.max * sizeof(size_t)), .max = list.max, .size = list.size, .tail = 0,
     };
@@ -896,13 +896,15 @@ static inline forward_list_s copy_forward_list(const forward_list_s list, const 
     FORWARD_LIST_ASSERT(list_copy.next && "[ERROR] Memory allocation failed.");
 
     size_t previous = list.tail;
-    for (size_t i = 1; list.size && i <= list.size; ++i) {
-        previous = list.next[previous];
+    size_t * current_copy = &(list_copy.tail);
+    for (size_t i = 0; i < list.size; ++i) {
+        (*current_copy) = i;
+        list_copy.elements[i] = copy ? copy(list.elements[previous]) : list.elements[previous];
 
-        const size_t mod = i % list.size;
-        list_copy.elements[mod] = copy ? copy(list.elements[previous]) : list.elements[previous];
-        list_copy.next[i - 1] = mod;
+        current_copy = list_copy.next + i; // since current_copy pointer may change due to realloc
+        previous = list.next[previous];
     }
+    (*current_copy) = 0;
 
     return list_copy;
 }
@@ -1136,25 +1138,33 @@ static inline FORWARD_LIST_DATA_TYPE remove_first_forward_list(forward_list_s * 
             }
 
             if (0 == (list->size % REALLOC_FORWARD_LIST_CHUNK)) { // turn list into continuous array and reduce size via realloc
-                FORWARD_LIST_DATA_TYPE * temp_elements = list->size ? FORWARD_LIST_ALLOC(sizeof(FORWARD_LIST_DATA_TYPE) * list->size) : NULL;
-                size_t * temp_next = list->size ? FORWARD_LIST_ALLOC(sizeof(size_t) * list->size) : NULL;
+                forward_list_s temp_list = {
+                    .elements = FORWARD_LIST_ALLOC(sizeof(FORWARD_LIST_DATA_TYPE) * list->size), .size = list->size, .tail = 0,
+                    .next = FORWARD_LIST_ALLOC(sizeof(size_t) * list->size), .empty_head = 0, .empty_size = 0,
+                };
+                FORWARD_LIST_ASSERT((!(list->size) || temp_list.elements) && "[ERROR] Memory allocation failed.");
+                FORWARD_LIST_ASSERT((!(list->size) || temp_list.next) && "[ERROR] Memory allocation failed.");
 
                 size_t realloc_index = list->tail;
-                for (size_t i = 0; list->size && i < list->size; ++i) {
-                    temp_elements[i] = list->elements[realloc_index];
-                    temp_next[i] = i + 1;
-                    temp_next[list->size - 1] = 0;
+                for (size_t i = 0; i < list->size; ++i) {
+                    temp_list.elements[i] = list->elements[realloc_index];
+                    temp_list.next[i] = i + 1;
+                    temp_list.next[list->size - 1] = 0;
 
                     realloc_index = list->next[realloc_index];
                 }
 
-                list->empty_head = list->empty_size = list->size = list->tail = 0;
-
                 FORWARD_LIST_FREE(list->elements);
                 FORWARD_LIST_FREE(list->next);
 
-                list->elements = temp_elements;
-                list->next = temp_next;
+                if (!list->size) {
+                    FORWARD_LIST_FREE(temp_list.elements);
+                    FORWARD_LIST_FREE(temp_list.next);
+                    temp_list.elements = NULL;
+                    temp_list.next = NULL;
+                }
+
+                (*list) = temp_list;
             }
 
             return found;
@@ -1203,25 +1213,33 @@ static inline FORWARD_LIST_DATA_TYPE remove_at_forward_list(forward_list_s * lis
     }
 
     if (0 == (list->size % REALLOC_FORWARD_LIST_CHUNK)) { // turn list into continuous array and reduce size via realloc
-        FORWARD_LIST_DATA_TYPE * temp_elements = list->size ? FORWARD_LIST_ALLOC(sizeof(FORWARD_LIST_DATA_TYPE) * list->size) : NULL;
-        size_t * temp_next = list->size ? FORWARD_LIST_ALLOC(sizeof(size_t) * list->size) : NULL;
+        forward_list_s temp_list = {
+            .elements = FORWARD_LIST_ALLOC(sizeof(FORWARD_LIST_DATA_TYPE) * list->size), .size = list->size, .tail = 0,
+            .next = FORWARD_LIST_ALLOC(sizeof(size_t) * list->size), .empty_head = 0, .empty_size = 0,
+        };
+        FORWARD_LIST_ASSERT((!(list->size) || temp_list.elements) && "[ERROR] Memory allocation failed.");
+        FORWARD_LIST_ASSERT((!(list->size) || temp_list.next) && "[ERROR] Memory allocation failed.");
 
         size_t realloc_index = list->tail;
-        for (size_t i = 0; list->size && i < list->size; ++i) {
-            temp_elements[i] = list->elements[realloc_index];
-            temp_next[i] = i + 1;
-            temp_next[list->size - 1] = 0;
+        for (size_t i = 0; i < list->size; ++i) {
+            temp_list.elements[i] = list->elements[realloc_index];
+            temp_list.next[i] = i + 1;
+            temp_list.next[list->size - 1] = 0;
 
             realloc_index = list->next[realloc_index];
         }
 
-        list->empty_head = list->empty_size = list->size = list->tail = 0;
-
         FORWARD_LIST_FREE(list->elements);
         FORWARD_LIST_FREE(list->next);
 
-        list->elements = temp_elements;
-        list->next = temp_next;
+        if (!list->size) {
+            FORWARD_LIST_FREE(temp_list.elements);
+            FORWARD_LIST_FREE(temp_list.next);
+            temp_list.elements = NULL;
+            temp_list.next = NULL;
+        }
+
+        (*list) = temp_list;
     }
 
     return found;
@@ -1329,7 +1347,8 @@ static inline forward_list_s split_forward_list(forward_list_s * list, const siz
     FORWARD_LIST_ASSERT(size <= list->size && "[ERROR] Size parameter bigger than list size.");
     FORWARD_LIST_ASSERT(index <= list->size && !(index && (index == list->size)) && "[ERROR] Can only split at index less than list size, or equal to if list size is zero.");
 
-    forward_list_s split = { .size = size, .elements = NULL, .empty_head = 0, .empty_size = 0, .next = NULL, .tail = 0, };
+    forward_list_s split = { 0 };
+    split.size = size;
 
     if (size) {
         const size_t capacity = size - (size % REALLOC_FORWARD_LIST_CHUNK) + REALLOC_FORWARD_LIST_CHUNK;
@@ -1364,11 +1383,29 @@ static inline forward_list_s split_forward_list(forward_list_s * list, const siz
     }
     list->size -= size;
 
-    if (!list->size) {
-        FORWARD_LIST_FREE(list->elements);
-        FORWARD_LIST_FREE(list->next);
-        *list = (forward_list_s) { 0 };
+    forward_list_s temp = { 0 };
+    size_t * current_temp = &(temp.tail);
+    previous = list->tail;
+    for (size_t i = 0; i < list->size; ++i) {
+        (*current_temp) = i;
+
+        if (0 == (temp.size % REALLOC_FORWARD_LIST_CHUNK)) {
+            temp.elements = FORWARD_LIST_REALLOC(temp.elements, sizeof(FORWARD_LIST_DATA_TYPE) * (temp.size + REALLOC_FORWARD_LIST_CHUNK));
+            temp.next = FORWARD_LIST_REALLOC(temp.next, sizeof(size_t) * (temp.size + REALLOC_FORWARD_LIST_CHUNK));
+        }
+        temp.size++;
+
+        temp.elements[i] = list->elements[previous];
+
+        current_temp = temp.next + i; // since current_copy pointer may change due to realloc
+        previous = list->next[previous];
     }
+    (*current_temp) = 0;
+
+    FORWARD_LIST_FREE(list->elements);
+    FORWARD_LIST_FREE(list->next);
+
+    *list = temp;
 
     return split;
 }
@@ -1411,24 +1448,24 @@ static inline bool is_full_forward_list(const forward_list_s list) {
 /// @return Returns a copy of a list.
 static inline forward_list_s copy_forward_list(const forward_list_s list, const copy_forward_list_fn copy) {
     forward_list_s list_copy = { 0 };
-    list_copy.size = list.size;
-    if (list.size) {
-        const size_t capacity = list.size - (list.size % REALLOC_FORWARD_LIST_CHUNK) + REALLOC_FORWARD_LIST_CHUNK;
-        list_copy.elements = FORWARD_LIST_ALLOC(sizeof(FORWARD_LIST_DATA_TYPE) * capacity);
-        list_copy.next = FORWARD_LIST_ALLOC(sizeof(size_t) * capacity);
-
-        FORWARD_LIST_ASSERT(list_copy.elements && "[ERROR] Memory allocation failed.");
-        FORWARD_LIST_ASSERT(list_copy.next && "[ERROR] Memory allocation failed.");
-    }
 
     size_t previous = list.tail;
-    for (size_t i = 1; list.size && i <= list.size; ++i) {
-        previous = list.next[previous];
+    size_t * current_copy = &(list_copy.tail);
+    for (size_t i = 0; i < list.size; ++i) {
+        (*current_copy) = i;
 
-        const size_t mod = i % list.size;
-        list_copy.elements[mod] = copy ? copy(list.elements[previous]) : list.elements[previous];
-        list_copy.next[i - 1] = mod;
+        if (0 == (list_copy.size % REALLOC_FORWARD_LIST_CHUNK)) {
+            list_copy.elements = FORWARD_LIST_REALLOC(list_copy.elements, sizeof(FORWARD_LIST_DATA_TYPE) * (list_copy.size + REALLOC_FORWARD_LIST_CHUNK));
+            list_copy.next = FORWARD_LIST_REALLOC(list_copy.next, sizeof(size_t) * (list_copy.size + REALLOC_FORWARD_LIST_CHUNK));
+        }
+        list_copy.size++;
+
+        list_copy.elements[i] = copy ? copy(list.elements[previous]) : list.elements[previous];
+
+        current_copy = list_copy.next + i; // since current_copy pointer may change due to realloc
+        previous = list.next[previous];
     }
+    (*current_copy) = 0;
 
     return list_copy;
 }
@@ -1875,13 +1912,15 @@ static inline forward_list_s copy_forward_list(const forward_list_s list, const 
     forward_list_s list_copy = { .empty_head = 0, .empty_size = 0, .size = list.size, .tail = 0, };
 
     size_t previous = list.tail;
-    for (size_t i = 1; list.size && i <= list.size; ++i) {
-        previous = list.next[previous];
+    size_t * current_copy = &(list_copy.tail);
+    for (size_t i = 0; i < list.size; ++i) {
+        (*current_copy) = i;
+        list_copy.elements[i] = copy ? copy(list.elements[previous]) : list.elements[previous];
 
-        const size_t mod = i % list.size;
-        list_copy.elements[mod] = copy ? copy(list.elements[previous]) : list.elements[previous];
-        list_copy.next[i - 1] = mod;
+        current_copy = list_copy.next + i; // since current_copy pointer may change due to realloc
+        previous = list.next[previous];
     }
+    (*current_copy) = 0;
 
     return list_copy;
 }
