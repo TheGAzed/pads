@@ -54,8 +54,6 @@
 
 #endif
 
-#define IS_INFINITE_STRAIGHT_LIST (STRAIGHT_LIST_MODE & 0x01)
-
 // Check to make sure a valid list mode is selected.
 #if (STRAIGHT_LIST_MODE != INFINITE_ALLOCATED_STRAIGHT_LIST) && (STRAIGHT_LIST_MODE != FINITE_ALLOCATED_STRAIGHT_LIST)    && \
 (STRAIGHT_LIST_MODE != INFINITE_REALLOC_STRAIGHT_LIST)   && (STRAIGHT_LIST_MODE != FINITE_PRERPOCESSOR_STRAIGHT_LIST)
@@ -66,7 +64,7 @@
 
 #ifndef STRAIGHT_LIST_DATA_TYPE
 
-/// @brief Element datatype macro that can be changed  via '#define STRAIGHT_LIST_DATA_TYPE [datatype]'.
+/// @brief Element datatype macro that can be changed via '#define STRAIGHT_LIST_DATA_TYPE [datatype]'.
 #define STRAIGHT_LIST_DATA_TYPE void*
 
 #endif
@@ -114,7 +112,7 @@ typedef void                    (*manage_straight_list_fn)  (STRAIGHT_LIST_DATA_
 
 #if   STRAIGHT_LIST_MODE == INFINITE_ALLOCATED_STRAIGHT_LIST
 
-// many functions use Linus Torvalds' Tastes in code for linked lists from his TED Talk
+// Many functions use Linus Torvalds' Tastes in code for linked lists from his TED Talk
 // at https://www.youtube.com/watch?v=o8NPllzkFhE&t=858s (yeah, this comment only applies to this straight list mode)
 // I think this idea is also mentioned in the book Pointers on C by Kenneth A. Reek
 // (this book also inspired me to created PADS)
@@ -362,13 +360,11 @@ static inline straight_list_s copy_straight_list(const straight_list_s list, con
     struct straight_list_node ** current_copy = &(list_copy.head);
     for (size_t i = 0; i < list.size; ++i) {
         // create new node and copy element from source list based on copy function pointer parameter
-        struct straight_list_node * node = STRAIGHT_LIST_ALLOC(sizeof(struct straight_list_node));
-        STRAIGHT_LIST_ASSERT(node && "[ERROR] Memory allocation failed.");
+        (*current_copy) = STRAIGHT_LIST_ALLOC(sizeof(struct straight_list_node));
+        STRAIGHT_LIST_ASSERT((*current_copy) && "[ERROR] Memory allocation failed.");
         // if copy is specified call it, else just assign it to variable
-        node->element = copy ? copy(current_list->element) : current_list->element;
-        node->next = NULL;
-
-        (*current_copy) = node; // change previous copy's node pointer to node
+        (*current_copy)->element = copy ? copy(current_list->element) : current_list->element;
+        (*current_copy)->next = NULL;
 
         current_list = current_list->next; // go to next list node
         current_copy = &((*current_copy)->next); // go to next copy list's pointer to node
@@ -399,8 +395,6 @@ static inline void clear_straight_list(straight_list_s * list, const destroy_str
 /// @param list Pointer to straight list structure.
 /// @param manage Function pointer to manage the array of elements based on element count/size and specified args.
 /// @param args Void pointer arguments for 'manage' function.
-/// @note If 'manage' does not change the order of elements then the original element ordering WILL remain.
-/// This may not apply for other straight list 'forevery_straight_list' implementations and a note will reflect that.
 static inline void forevery_straight_list(straight_list_s const * list, const manage_straight_list_fn manage, void * args) {
     STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
     STRAIGHT_LIST_ASSERT(manage && "[ERROR] 'operate' parameter pointer is NULL.");
@@ -525,7 +519,7 @@ static inline void destroy_straight_list(straight_list_s * list, const destroy_s
 
     STRAIGHT_LIST_FREE(list->elements); // free elements array
     STRAIGHT_LIST_FREE(list->next); // free next index array
-    *list = (straight_list_s) { 0 }; // set everything to zero
+    (*list) = (straight_list_s) { 0 }; // set everything in list to zero
 }
 
 /// @brief Inserts an element to any place in the list.
@@ -539,21 +533,21 @@ static inline void insert_at_straight_list(straight_list_s * list, const size_t 
     STRAIGHT_LIST_ASSERT(~list->size && "[ERROR] List size will overflow.");
 
     size_t * current = &(list->head);
-    for (size_t i = 0; i < index; ++i) {
+    for (size_t i = 0; i < index; ++i) { // iterate to current index node pointer
         current = list->next + (*current);
     }
 
-    size_t push = list->size;
-    if (list->empty_size) {
-        push = list->empty_head;
-        list->empty_head = list->next[list->empty_head];
-        list->empty_size--;
+    size_t push = list->size; // if empty stack has no empty node indexes then push node at list size like an array stack
+    if (list->empty_size) { // if stack with empty nodes has nodes, then pop empty node index to push as new node
+        push = list->empty_head; // get empty node index to set push to if there are empty nodes
+        list->empty_head = list->next[list->empty_head]; // set empty head to new nod eindex
+        list->empty_size--; // decrement empty size
     }
     memcpy(list->elements + push, &element, sizeof(STRAIGHT_LIST_DATA_TYPE));
-    list->next[push] = (*current);
-    (*current) = push;
+    list->next[push] = (*current); // set push's next index to current index
+    (*current) = push; // set node which points to current index value, previous' next, to push index
 
-    list->size++;
+    list->size++; // increment list size
 }
 
 /// @brief Removes first element in straight list based on element parameter comparison.
@@ -564,7 +558,8 @@ static inline void insert_at_straight_list(straight_list_s * list, const size_t 
 static inline STRAIGHT_LIST_DATA_TYPE remove_first_straight_list(straight_list_s * list, const STRAIGHT_LIST_DATA_TYPE element, const compare_straight_list_fn compare) {
     STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
     STRAIGHT_LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
-    STRAIGHT_LIST_ASSERT(list->head && "[ERROR] Can't remove from empty list.");
+    STRAIGHT_LIST_ASSERT(list->elements && "[ERROR] Can't remove from empty list.");
+    STRAIGHT_LIST_ASSERT(list->next && "[ERROR] Can't remove from empty list.");
 
     size_t * current = &(list->head);
     for (size_t i = 0; i < list->size; ++i) {
@@ -578,11 +573,10 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_first_straight_list(straight_list_s
         list->size--;
         STRAIGHT_LIST_DATA_TYPE found = list->elements[(*current)];
 
-        if (list->next[(*current)] != list->size) { // push empty index to 'empty stack'
-            list->next[(*current)] = list->empty_head;
-            list->empty_head = (*current);
-            list->empty_size++;
-        }
+        // push empty index to 'empty stack'
+        list->next[(*current)] = list->empty_head;
+        list->empty_head = (*current);
+        list->empty_size++;
 
         (*current) = list->next[(*current)];
 
@@ -605,7 +599,8 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_first_straight_list(straight_list_s
 static inline STRAIGHT_LIST_DATA_TYPE remove_at_straight_list(straight_list_s * list, const size_t index) {
     STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
     STRAIGHT_LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
-    STRAIGHT_LIST_ASSERT(list->head && "[ERROR] Can't remove from empty list.");
+    STRAIGHT_LIST_ASSERT(list->elements && "[ERROR] Can't remove from empty list.");
+    STRAIGHT_LIST_ASSERT(list->next && "[ERROR] Can't remove from empty list.");
     STRAIGHT_LIST_ASSERT(index < list->size && "[ERROR] Index greater than size");
 
     size_t * current = &(list->head);
@@ -616,11 +611,10 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_at_straight_list(straight_list_s * 
     list->size--;
     STRAIGHT_LIST_DATA_TYPE found = list->elements[(*current)];
 
-    if (list->next[(*current)] != list->size) { // push empty index to 'empty stack'
-        list->next[(*current)] = list->empty_head;
-        list->empty_head = (*current);
-        list->empty_size++;
-    }
+    // push empty index to 'empty stack'
+    list->next[(*current)] = list->empty_head;
+    list->empty_head = (*current);
+    list->empty_size++;
 
     (*current) = list->next[(*current)];
 
@@ -671,36 +665,37 @@ static inline void splice_straight_list(straight_list_s * restrict destination, 
     }
 
     size_t * last_source = &(source->head);
-    while (source->size && destination->empty_size) {
+    while (source->size && destination->empty_size) { // while destination has empty node indexes push to them
         memcpy(destination->elements + destination->empty_head, source->elements + (*last_source), sizeof(STRAIGHT_LIST_DATA_TYPE));
+        // increment destiantion's size and decrement source's size
         destination->size++;
-
-        const size_t temp = destination->empty_head;
-        destination->empty_head = destination->next[destination->empty_head];
-
-        destination->next[temp] = (*current_dest);
-        (*current_dest) = temp;
-
-        destination->empty_size--;
-
         source->size--;
+
+        const size_t temp = destination->empty_head; // save empty head index as tempt to not lose it
+        destination->empty_head = destination->next[destination->empty_head]; // set empty head to next empty index
+        destination->empty_size--; // decrement empty stack's size
+
+        destination->next[temp] = (*current_dest); // set temp's next index to index at current pointer
+        (*current_dest) = temp; // set index at current pointer, previous' next index, to temp
+
         current_dest = destination->next + (*current_dest);
         last_source = source->next + (*last_source);
     }
 
-    while (source->size) {
+    while (source->size) { // while source still has elements after pushing to destination's empty indexes
         memcpy(destination->elements + destination->size, source->elements + (*last_source), sizeof(STRAIGHT_LIST_DATA_TYPE));
         destination->next[destination->size] = (*current_dest);
         (*current_dest) = destination->size;
+        // increment destiantion's size and decrement source's size
         destination->size++;
-
         source->size--;
+
         current_dest = destination->next + (*current_dest);
         last_source = source->next + (*last_source);
     }
 
-    STRAIGHT_LIST_FREE(source->elements);
-    STRAIGHT_LIST_FREE(source->next);
+    STRAIGHT_LIST_FREE(source->elements); // free elements' array
+    STRAIGHT_LIST_FREE(source->next); // free next's index array
     (*source) = (straight_list_s) { 0 }; // set source list to zero (i. e. destroy it)
 }
 
@@ -708,7 +703,7 @@ static inline void splice_straight_list(straight_list_s * restrict destination, 
 /// @param list Pointer to straight list structure.
 /// @param index Zero based index to start split from.
 /// @param size Size to remove list by. If size is zero an empty list is returned.
-/// @param max Maximum positive nonzero size of returned split list.
+/// @param max Maximum positive nonzero size of newly returned split list.
 /// @return New split list.
 static inline straight_list_s split_straight_list(straight_list_s * list, const size_t index, const size_t size, const size_t max) {
     STRAIGHT_LIST_ASSERT(max && "[ERROR] maximum size can't be zero.");
@@ -735,11 +730,18 @@ static inline straight_list_s split_straight_list(straight_list_s * list, const 
         split.elements[i] = list->elements[last];
         (*current_split) = i; // set split's pointer-to node to last
 
+        // push empty index to 'empty stack'
+        list->next[last] = list->empty_head;
+        list->empty_head = last;
+        list->empty_size++;
+
         last = list->next[last]; // increment last's pointer to node to next pointer to node
         current_split = split.next + (*current_split); // increment split's pointer to node to next pointer to node
     }
 
     (*current) = last; // set previous' next node to last list's node (if size parameter is 0 then nothing changes)
+
+    list->size -= size;
 
     return split;
 }
@@ -749,7 +751,8 @@ static inline straight_list_s split_straight_list(straight_list_s * list, const 
 /// @param index Zero based index of element in list.
 /// @return Element at index in list.
 static inline STRAIGHT_LIST_DATA_TYPE get_straight_list(const straight_list_s list, const size_t index) {
-    STRAIGHT_LIST_ASSERT(list.head && "[ERROR] Can't get element from empty list.");
+    STRAIGHT_LIST_ASSERT(list.elements && "[ERROR] Can't get element from empty list.");
+    STRAIGHT_LIST_ASSERT(list.next && "[ERROR] Can't get element from empty list.");
     STRAIGHT_LIST_ASSERT(list.size && "[ERROR] Can't get element from empty list.");
     STRAIGHT_LIST_ASSERT(index < list.size && "[ERROR] 'index' parameter exceeds list size.");
 
@@ -817,7 +820,7 @@ static inline void clear_straight_list(straight_list_s * list, const destroy_str
     }
 
     // set cleared list's empty stack and head to zero and keep allocated memory
-    list->empty_head = list->empty_size = list->head = 0;
+    list->size = list->empty_head = list->empty_size = list->head = 0;
 }
 
 /// @brief Creates a continuous array of list elements to manage using function pointer.
@@ -855,7 +858,7 @@ static inline void forevery_straight_list(straight_list_s * list, const manage_s
     manage(list->elements, list->size, args);
 
     size_t * current = (&list->head);
-    for (size_t i = 0; i < list->size; ++i) {
+    for (size_t i = 0; i < list->size; ++i) { // set changed array's indexes
         (*current) = i;
         current = list->next + (*current);
     }
@@ -879,7 +882,7 @@ static inline bool binary_search_straight_list(const straight_list_s list, const
             current = list.next[current];
         }
 
-        const int comparison = compare ? compare(element, list.elements + current) : memcmp(&element, list.elements + current, sizeof(STRAIGHT_LIST_DATA_TYPE));
+        const int comparison = compare ? compare(element, list.elements[current]) : memcmp(&element, list.elements + current, sizeof(STRAIGHT_LIST_DATA_TYPE));
 
         if (0 == comparison) {
             return true;
@@ -1001,7 +1004,8 @@ static inline void insert_at_straight_list(straight_list_s * list, const size_t 
 static inline STRAIGHT_LIST_DATA_TYPE remove_first_straight_list(straight_list_s * list, const STRAIGHT_LIST_DATA_TYPE element, const compare_straight_list_fn compare) {
     STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
     STRAIGHT_LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
-    STRAIGHT_LIST_ASSERT(list->head && "[ERROR] Can't remove from empty list.");
+    STRAIGHT_LIST_ASSERT(list->elements && "[ERROR] Can't remove from empty list.");
+    STRAIGHT_LIST_ASSERT(list->next && "[ERROR] Can't remove from empty list.");
 
     size_t * current = &(list->head);
     for (size_t s = 0; s < list->size; ++s) {
@@ -1015,43 +1019,40 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_first_straight_list(straight_list_s
         list->size--;
         STRAIGHT_LIST_DATA_TYPE found = list->elements[(*current)];
 
-        if (list->next[(*current)] != list->size) { // push empty index to 'empty stack'
-            list->next[(*current)] = list->empty_head;
-            list->empty_head = (*current);
-            list->empty_size++;
-        }
+        // push empty index to 'empty stack'
+        list->next[(*current)] = list->empty_head;
+        list->empty_head = (*current);
+        list->empty_size++;
 
         (*current) = list->next[(*current)];
+        // when list size needs to shrink then creates a new list without holes and changes list parameter to it
+        if (0 == (list->size % REALLOC_STRAIGHT_LIST_CHUNK)) {
+            straight_list_s replica = { 0 };
 
-        if (0 == (list->size % REALLOC_STRAIGHT_LIST_CHUNK)) { // turn list into continuous array and reduce size via realloc
-            straight_list_s temp_list = {
-                .elements = STRAIGHT_LIST_ALLOC(sizeof(STRAIGHT_LIST_DATA_TYPE) * list->size), .size = list->size, .head = 0,
-                .next = STRAIGHT_LIST_ALLOC(sizeof(size_t) * list->size), .empty_head = 0, .empty_size = 0,
-            };
-            STRAIGHT_LIST_ASSERT((!(list->size) || temp_list.elements) && "[ERROR] Memory allocation failed.");
-            STRAIGHT_LIST_ASSERT((!(list->size) || temp_list.next) && "[ERROR] Memory allocation failed.");
-
-            size_t * temp_current  = &(temp_list.head);
-            size_t realloc_index = list->head;
+            size_t current_list = list->head;
+            // double pointer since this also works on copying straight list
+            size_t * current_copy = &(replica.head);
             for (size_t i = 0; i < list->size; ++i) {
-                temp_list.elements[i] = list->elements[realloc_index];
-                (*temp_current) = i;
+                (*current_copy) = i; // set head and indexes at list copy's next array to proper index
 
-                temp_current = temp_list.next + (*temp_current);
-                realloc_index = list->next[realloc_index];
+                if (!(replica.size % REALLOC_STRAIGHT_LIST_CHUNK)) {
+                    replica.elements = STRAIGHT_LIST_REALLOC(replica.elements, sizeof(STRAIGHT_LIST_DATA_TYPE) * (replica.size + REALLOC_STRAIGHT_LIST_CHUNK));
+                    STRAIGHT_LIST_ASSERT(replica.elements && "[ERROR] Memory allocation failed");
+                    replica.next = STRAIGHT_LIST_REALLOC(replica.next, sizeof(size_t) * (replica.size + REALLOC_STRAIGHT_LIST_CHUNK));
+                    STRAIGHT_LIST_ASSERT(replica.next && "[ERROR] Memory allocation failed");
+                }
+                replica.size++;
+
+                // set element copy to list copy at index i to automatically remove holes from copy
+                replica.elements[i] = list->elements[current_list];
+
+                current_list = list->next[current_list]; // go to next list node
+                current_copy = replica.next + (*current_copy); // go to next copy list's pointer to node
             }
 
-            STRAIGHT_LIST_FREE(list->elements);
-            STRAIGHT_LIST_FREE(list->next);
-
-            if (!list->size) {
-                STRAIGHT_LIST_FREE(temp_list.elements);
-                STRAIGHT_LIST_FREE(temp_list.next);
-                temp_list.elements = NULL;
-                temp_list.next = NULL;
-            }
-
-            (*list) = temp_list;
+            free(list->elements);
+            free(list->next);
+            (*list) = replica;
         }
 
         return found;
@@ -1069,7 +1070,8 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_first_straight_list(straight_list_s
 static inline STRAIGHT_LIST_DATA_TYPE remove_at_straight_list(straight_list_s * list, const size_t index) {
     STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
     STRAIGHT_LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
-    STRAIGHT_LIST_ASSERT(list->head && "[ERROR] Can't remove from empty list.");
+    STRAIGHT_LIST_ASSERT(list->elements && "[ERROR] Can't remove from empty list.");
+    STRAIGHT_LIST_ASSERT(list->next && "[ERROR] Can't remove from empty list.");
     STRAIGHT_LIST_ASSERT(index < list->size && "[ERROR] Index greater than size");
 
     size_t * current = &(list->head);
@@ -1080,43 +1082,40 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_at_straight_list(straight_list_s * 
     list->size--;
     STRAIGHT_LIST_DATA_TYPE found = list->elements[(*current)];
 
-    if (list->next[(*current)] != list->size) { // push empty index to 'empty stack'
-        list->next[(*current)] = list->empty_head;
-        list->empty_head = (*current);
-        list->empty_size++;
-    }
+    // push empty index to 'empty stack'
+    list->next[(*current)] = list->empty_head;
+    list->empty_head = (*current);
+    list->empty_size++;
 
     (*current) = list->next[(*current)];
+    // when list size needs to shrink then creates a new list without holes and changes list parameter to it
+    if (0 == (list->size % REALLOC_STRAIGHT_LIST_CHUNK)) {
+        straight_list_s replica = { 0 };
 
-    if (0 == (list->size % REALLOC_STRAIGHT_LIST_CHUNK)) { // turn list into continuous array and reduce size via realloc
-        straight_list_s temp_list = {
-            .elements = STRAIGHT_LIST_ALLOC(sizeof(STRAIGHT_LIST_DATA_TYPE) * list->size), .size = list->size, .head = 0,
-            .next = STRAIGHT_LIST_ALLOC(sizeof(size_t) * list->size), .empty_head = 0, .empty_size = 0,
-        };
-        STRAIGHT_LIST_ASSERT((!(list->size) || temp_list.elements) && "[ERROR] Memory allocation failed.");
-        STRAIGHT_LIST_ASSERT((!(list->size) || temp_list.next) && "[ERROR] Memory allocation failed.");
-
-        size_t * temp_current  = &(temp_list.head);
-        size_t realloc_index = list->head;
+        size_t current_list = list->head;
+        // double pointer since this also works on copying straight list
+        size_t * current_copy = &(replica.head);
         for (size_t i = 0; i < list->size; ++i) {
-            temp_list.elements[i] = list->elements[realloc_index];
-            (*temp_current) = i;
+            (*current_copy) = i; // set head and indexes at list copy's next array to proper index
 
-            temp_current = temp_list.next + (*temp_current);
-            realloc_index = list->next[realloc_index];
+            if (!(replica.size % REALLOC_STRAIGHT_LIST_CHUNK)) {
+                replica.elements = STRAIGHT_LIST_REALLOC(replica.elements, sizeof(STRAIGHT_LIST_DATA_TYPE) * (replica.size + REALLOC_STRAIGHT_LIST_CHUNK));
+                STRAIGHT_LIST_ASSERT(replica.elements && "[ERROR] Memory allocation failed");
+                replica.next = STRAIGHT_LIST_REALLOC(replica.next, sizeof(size_t) * (replica.size + REALLOC_STRAIGHT_LIST_CHUNK));
+                STRAIGHT_LIST_ASSERT(replica.next && "[ERROR] Memory allocation failed");
+            }
+            replica.size++;
+
+            // set element copy to list copy at index i to automatically remove holes from copy
+            replica.elements[i] = list->elements[current_list];
+
+            current_list = list->next[current_list]; // go to next list node
+            current_copy = replica.next + (*current_copy); // go to next copy list's pointer to node
         }
 
-        STRAIGHT_LIST_FREE(list->elements);
-        STRAIGHT_LIST_FREE(list->next);
-
-        if (!list->size) {
-            STRAIGHT_LIST_FREE(temp_list.elements);
-            STRAIGHT_LIST_FREE(temp_list.next);
-            temp_list.elements = NULL;
-            temp_list.next = NULL;
-        }
-
-        (*list) = temp_list;
+        free(list->elements);
+        free(list->next);
+        (*list) = replica;
     }
 
     return found;
@@ -1154,9 +1153,10 @@ static inline void splice_straight_list(straight_list_s * restrict destination, 
     }
 
     size_t * last_source = &(source->head);
-    while (source->size && destination->empty_size) {
+    while (source->size && destination->empty_size) { // while destination has empty node indexes and source has elements left
         memcpy(destination->elements + destination->empty_head, source->elements + (*last_source), sizeof(STRAIGHT_LIST_DATA_TYPE));
         destination->size++;
+        source->size--;
 
         const size_t temp = destination->empty_head;
         destination->empty_head = destination->next[destination->empty_head];
@@ -1166,7 +1166,6 @@ static inline void splice_straight_list(straight_list_s * restrict destination, 
 
         destination->empty_size--;
 
-        source->size--;
         current_dest = destination->next + (*current_dest);
         last_source = source->next + (*last_source);
     }
@@ -1187,7 +1186,7 @@ static inline void splice_straight_list(straight_list_s * restrict destination, 
         destination->size++;
 
         source->size--;
-        current_dest = destination->next + (*current_dest);
+        current_dest = destination->next + destination->size - 1;
         last_source = source->next + (*last_source);
     }
 
@@ -1214,7 +1213,6 @@ static inline straight_list_s split_straight_list(straight_list_s * list, const 
         current = list->next + (*current);
     }
 
-    size_t last = (*current); // create pointer to node to point to node after split's last note
     size_t * current_split = &(split.head); // create pointer to node to add nodes to split list
     for (size_t i = 0; i < size; ++i) {
         (*current_split) = i; // set split's pointer-to node to last
@@ -1227,13 +1225,44 @@ static inline straight_list_s split_straight_list(straight_list_s * list, const 
         }
         split.size++;
 
-        split.elements[i] = list->elements[last];
+        const size_t temp = (*current);
+        split.elements[i] = list->elements[(*current)];
+        (*current) = list->next[(*current)];
+        // push empty index to 'empty stack'
+        list->next[temp] = list->empty_head;
+        list->empty_head = temp;
+        list->empty_size++;
 
-        last = list->next[last]; // increment last's pointer to node to next pointer to node
-        current_split = split.next + (*current_split); // increment split's pointer to node to next pointer to node
+        current_split = split.next + i; // increment split's pointer to node to next pointer to node
     }
 
-    (*current) = last; // set previous' next node to last list's node (if size parameter is 0 then nothing changes)
+    const size_t previous_capacity = list->size - (list->size % REALLOC_STRAIGHT_LIST_CHUNK);
+    list->size -= size;
+
+    if (list->size > previous_capacity) { // if list's size does not fit into a smaller capacity just return split list
+        return split;
+    } // else shrink parameter list to fit it into smaller capacity, also remove holes
+    // create new copy to get rid of holes and when size shrinks below previous capacity
+    straight_list_s replica = { 0 };
+    size_t new_current = list->head;
+    for (size_t i = 0; i < list->size; ++i) {
+        if (!(replica.size % REALLOC_STRAIGHT_LIST_CHUNK)) {
+            replica.elements = STRAIGHT_LIST_REALLOC(replica.elements, sizeof(STRAIGHT_LIST_DATA_TYPE) * (replica.size + REALLOC_STRAIGHT_LIST_CHUNK));
+            STRAIGHT_LIST_ASSERT(replica.elements && "[ERROR] Memory allocation failed");
+            replica.next = STRAIGHT_LIST_REALLOC(replica.next, sizeof(size_t) * (replica.size + REALLOC_STRAIGHT_LIST_CHUNK));
+            STRAIGHT_LIST_ASSERT(replica.next && "[ERROR] Memory allocation failed");
+        }
+        replica.size++;
+
+        replica.elements[i] = list->elements[new_current];
+        replica.next[i] = i + 1;
+
+        new_current = list->next[new_current];
+    }
+
+    STRAIGHT_LIST_FREE(list->elements);
+    STRAIGHT_LIST_FREE(list->next);
+    (*list) = replica;
 
     return split;
 }
@@ -1243,7 +1272,8 @@ static inline straight_list_s split_straight_list(straight_list_s * list, const 
 /// @param index Zero based index of element in list.
 /// @return Element at index in list.
 static inline STRAIGHT_LIST_DATA_TYPE get_straight_list(const straight_list_s list, const size_t index) {
-    STRAIGHT_LIST_ASSERT(list.head && "[ERROR] Can't get element from empty list.");
+    STRAIGHT_LIST_ASSERT(list.elements && "[ERROR] Can't get element from empty list.");
+    STRAIGHT_LIST_ASSERT(list.next && "[ERROR] Can't get element from empty list.");
     STRAIGHT_LIST_ASSERT(list.size && "[ERROR] Can't get element from empty list.");
     STRAIGHT_LIST_ASSERT(index < list.size && "[ERROR] 'index' parameter exceeds list size.");
 
@@ -1296,7 +1326,7 @@ static inline straight_list_s copy_straight_list(const straight_list_s list, con
         replica.elements[i] = copy ? copy(list.elements[current_list]) : list.elements[current_list];
 
         current_list = list.next[current_list]; // go to next list node
-        current_copy = replica.next + (*current_copy); // go to next copy list's pointer to node
+        current_copy = replica.next + i; // go to next copy list's pointer to node
     }
 
     return replica;
@@ -1313,9 +1343,14 @@ static inline void clear_straight_list(straight_list_s * list, const destroy_str
         destroy(list->elements + current);
         current = list->next[current];
     }
+    STRAIGHT_LIST_FREE(list->elements);
+    STRAIGHT_LIST_FREE(list->next);
+
+    list->elements = NULL;
+    list->next = NULL;
 
     // set cleared list's empty stack and head to zero and keep allocated memory
-    list->empty_head = list->empty_size = list->head = 0;
+    list->size = list->empty_head = list->empty_size = list->head = 0;
 }
 
 /// @brief Creates a continuous array of list elements to manage using function pointer.
@@ -1493,7 +1528,6 @@ static inline void insert_at_straight_list(straight_list_s * list, const size_t 
 static inline STRAIGHT_LIST_DATA_TYPE remove_first_straight_list(straight_list_s * list, const STRAIGHT_LIST_DATA_TYPE element, const compare_straight_list_fn compare) {
     STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
     STRAIGHT_LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
-    STRAIGHT_LIST_ASSERT(list->head && "[ERROR] Can't remove from empty list.");
 
     size_t * current = &(list->head);
     for (size_t i = 0; i < list->size; ++i) {
@@ -1507,11 +1541,10 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_first_straight_list(straight_list_s
         list->size--;
         STRAIGHT_LIST_DATA_TYPE found = list->elements[(*current)];
 
-        if (list->next[(*current)] != list->size) { // push empty index to 'empty stack'
-            list->next[(*current)] = list->empty_head;
-            list->empty_head = (*current);
-            list->empty_size++;
-        }
+        // push empty index to 'empty stack'
+        list->next[(*current)] = list->empty_head;
+        list->empty_head = (*current);
+        list->empty_size++;
 
         (*current) = list->next[(*current)];
 
@@ -1534,7 +1567,6 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_first_straight_list(straight_list_s
 static inline STRAIGHT_LIST_DATA_TYPE remove_at_straight_list(straight_list_s * list, const size_t index) {
     STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
     STRAIGHT_LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
-    STRAIGHT_LIST_ASSERT(list->head && "[ERROR] Can't remove from empty list.");
     STRAIGHT_LIST_ASSERT(index < list->size && "[ERROR] Index greater than size");
 
     size_t * current = &(list->head);
@@ -1545,11 +1577,10 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_at_straight_list(straight_list_s * 
     list->size--;
     STRAIGHT_LIST_DATA_TYPE found = list->elements[(*current)];
 
-    if (list->next[(*current)] != list->size) { // push empty index to 'empty stack'
-        list->next[(*current)] = list->empty_head;
-        list->empty_head = (*current);
-        list->empty_size++;
-    }
+    // push empty index to 'empty stack'
+    list->next[(*current)] = list->empty_head;
+    list->empty_head = (*current);
+    list->empty_size++;
 
     (*current) = list->next[(*current)];
 
@@ -1650,11 +1681,18 @@ static inline straight_list_s split_straight_list(straight_list_s * list, const 
         split.elements[i] = list->elements[last];
         (*current_split) = i; // set split's pointer-to node to last
 
+        // push empty index to 'empty stack'
+        list->next[last] = list->empty_head;
+        list->empty_head = last;
+        list->empty_size++;
+
         last = list->next[last]; // increment last's pointer to node to next pointer to node
         current_split = split.next + (*current_split); // increment split's pointer to node to next pointer to node
     }
 
     (*current) = last; // set previous' next node to last list's node (if size parameter is 0 then nothing changes)
+
+    list->size -= size;
 
     return split;
 }
@@ -1664,7 +1702,6 @@ static inline straight_list_s split_straight_list(straight_list_s * list, const 
 /// @param index Zero based index of element in list.
 /// @return Element at index in list.
 static inline STRAIGHT_LIST_DATA_TYPE get_straight_list(const straight_list_s list, const size_t index) {
-    STRAIGHT_LIST_ASSERT(list.head && "[ERROR] Can't get element from empty list.");
     STRAIGHT_LIST_ASSERT(list.size && "[ERROR] Can't get element from empty list.");
     STRAIGHT_LIST_ASSERT(index < list.size && "[ERROR] 'index' parameter exceeds list size.");
 

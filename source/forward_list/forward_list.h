@@ -54,8 +54,6 @@
 
 #endif
 
-#define IS_INFINITE_FORWARD_LIST (FORWARD_LIST_MODE & 0x01)
-
 // Check to make sure a valid list mode is selected.
 #if (FORWARD_LIST_MODE != INFINITE_ALLOCATED_FORWARD_LIST) && (FORWARD_LIST_MODE != FINITE_ALLOCATED_FORWARD_LIST)    && \
 (FORWARD_LIST_MODE != INFINITE_REALLOC_FORWARD_LIST)   && (FORWARD_LIST_MODE != FINITE_PRERPOCESSOR_FORWARD_LIST)
@@ -643,11 +641,10 @@ static inline FORWARD_LIST_DATA_TYPE remove_first_forward_list(forward_list_s * 
 
         list->next[previous] = list->next[current];
 
-        if (list->next[current] != list->size) { // push empty index to 'empty stack'
-            list->next[current] = list->empty_head;
-            list->empty_head = current;
-            list->empty_size++;
-        }
+        // push empty index to 'empty stack'
+        list->next[current] = list->empty_head;
+        list->empty_head = current;
+        list->empty_size++;
 
         if (current == list->tail) { // if current is the last element
             list->tail = previous; // if list still has elements then tail will become the previous index
@@ -686,11 +683,10 @@ static inline FORWARD_LIST_DATA_TYPE remove_at_forward_list(forward_list_s * lis
 
     list->next[previous] = list->next[current];
 
-    if (list->next[current] != list->size) { // push empty index to 'empty stack'
-        list->next[current] = list->empty_head;
-        list->empty_head = current;
-        list->empty_size++;
-    }
+    // push empty index to 'empty stack'
+    list->next[current] = list->empty_head;
+    list->empty_head = current;
+    list->empty_size++;
 
     if (index == list->size) { // if last element is removed
         list->tail = previous; // if list still has elements then tail will become the previous index
@@ -834,11 +830,10 @@ static inline forward_list_s split_forward_list(forward_list_s * list, const siz
         split.next[i - 1] = mod; // makes sure node at i is 1 + i while last element will have next index 0
 
         list->next[previous] = list->next[current];
-        if (list->next[current] != list->size) { // push empty index to 'empty stack'
-            list->next[current] = list->empty_head;
-            list->empty_head = current;
-            list->empty_size++;
-        }
+        // push empty index to 'empty stack'
+        list->next[current] = list->empty_head;
+        list->empty_head = current;
+        list->empty_size++;
     }
     list->size -= size;
 
@@ -1123,11 +1118,10 @@ static inline FORWARD_LIST_DATA_TYPE remove_first_forward_list(forward_list_s * 
 
             list->next[previous] = list->next[current];
 
-            if (list->next[current] != list->size) { // push empty index to 'empty stack'
-                list->next[current] = list->empty_head;
-                list->empty_head = current;
-                list->empty_size++;
-            }
+            // push empty index to 'empty stack'
+            list->next[current] = list->empty_head;
+            list->empty_head = current;
+            list->empty_size++;
 
             if (current == list->tail) { // if current is the last element
                 list->tail = previous; // if list still has elements then tail will become the previous index
@@ -1198,11 +1192,10 @@ static inline FORWARD_LIST_DATA_TYPE remove_at_forward_list(forward_list_s * lis
 
     list->next[previous] = list->next[current];
 
-    if (list->next[current] != list->size) { // push empty index to 'empty stack'
-        list->next[current] = list->empty_head;
-        list->empty_head = current;
-        list->empty_size++;
-    }
+    // push empty index to 'empty stack'
+    list->next[current] = list->empty_head;
+    list->empty_head = current;
+    list->empty_size++;
 
     if (index == list->size) { // if last element is removed
         list->tail = previous; // if list still has elements then tail will become the previous index
@@ -1375,11 +1368,6 @@ static inline forward_list_s split_forward_list(forward_list_s * list, const siz
         split.next[i - 1] = mod;
 
         list->next[previous] = list->next[current];
-        if (list->next[current] != list->size) { // push empty index to 'empty stack'
-            list->next[current] = list->empty_head;
-            list->empty_head = current;
-            list->empty_size++;
-        }
     }
     list->size -= size;
 
@@ -1857,11 +1845,10 @@ static inline forward_list_s split_forward_list(forward_list_s * list, const siz
         split.next[i - 1] = mod;
 
         list->next[previous] = list->next[current];
-        if (list->next[current] != list->size) { // push empty index to 'empty stack'
-            list->next[current] = list->empty_head;
-            list->empty_head = current;
-            list->empty_size++;
-        }
+        // push empty index to 'empty stack'
+        list->next[current] = list->empty_head;
+        list->empty_head = current;
+        list->empty_size++;
     }
     list->size -= size;
 
