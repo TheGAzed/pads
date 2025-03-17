@@ -131,7 +131,7 @@ typedef struct matrix_graph {
 
 typedef struct dijkstra_table {
     size_t * previous;
-    size_t * distance;
+    long double * distance;
 } dijkstra_table_s;
 
 /// @brief Creates an empty graph of zero size. Edges are automatically set to zero using memset.
@@ -471,17 +471,16 @@ static inline dijkstra_table_s create_dijkstra_table_matrix_graph(const matrix_g
     // create table by allocating memory
     dijkstra_table_s table = {
         .previous = MATRIX_GRAPH_ALLOC(graph.size * sizeof(size_t)),
-        .distance = MATRIX_GRAPH_ALLOC(graph.size * sizeof(size_t)),
+        .distance = MATRIX_GRAPH_ALLOC(graph.size * sizeof(long double)),
     };
     MATRIX_GRAPH_ASSERT(table.distance && "[ERROR] Memory allocation failed.");
     MATRIX_GRAPH_ASSERT(table.previous && "[ERROR] Memory allocation failed.");
 
     for (size_t i = 0; i < graph.size; i++) { // set table sizes and previous nodes to 'infinity'
-        table.distance[i] = (size_t)(-1);
-        table.previous[i] = (size_t)(-1);
+        table.distance[i] = 1.0L / 0.0L;
     }
 
-    size_t minimum_distance = table.distance[start_index] = 0; // set start index' distance to itself to zero and first minimum distance too
+    MATRIX_GRAPH_EDGE_DATA_TYPE minimum_distance = table.distance[start_index] = 0; // set start index' distance to itself to zero and first minimum distance too
     size_t current_index = start_index; // set current index to start
     size_t s = 0; // set graph size index for iteration to 0
     MATRIX_GRAPH_VERTEX_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE; // create empty/non edge to check for every matrix edge
@@ -490,6 +489,7 @@ static inline dijkstra_table_s create_dijkstra_table_matrix_graph(const matrix_g
 
         const size_t row_index_start = (current_index * (current_index - 1)) >> 1;
         for (size_t i = 0; i < current_index; i++) { // iterate for every row edge except current edge in 1D array
+            MATRIX_GRAPH_ASSERT(graph.edges[row_index_start + i] > (MATRIX_GRAPH_EDGE_DATA_TYPE)(0) && "[ERROR] Dijkstra's algorithm does not work with negative edge values.");
             MATRIX_GRAPH_EDGE_DATA_TYPE alternative = table.distance[current_index] + graph.edges[row_index_start + i];
             if (memcmp(graph.edges + row_index_start + i, &empty, sizeof(MATRIX_GRAPH_EDGE_DATA_TYPE)) && !visited_vertex_array[i] && alternative < table.distance[i]) {
                 table.distance[i] = alternative;
@@ -499,6 +499,7 @@ static inline dijkstra_table_s create_dijkstra_table_matrix_graph(const matrix_g
 
         size_t col_index_start = ((current_index * (current_index + 1)) >> 1);
         for (size_t i = current_index + 1; i < graph.size; i++) {
+            MATRIX_GRAPH_ASSERT(graph.edges[col_index_start] > (MATRIX_GRAPH_EDGE_DATA_TYPE)(0) && "[ERROR] Dijkstra's algorithm does not work with negative edge values.");
             MATRIX_GRAPH_EDGE_DATA_TYPE alternative = table.distance[current_index] + graph.edges[col_index_start];
             if (memcmp(graph.edges + col_index_start, &empty, sizeof(MATRIX_GRAPH_EDGE_DATA_TYPE)) && !visited_vertex_array[i] && alternative < table.distance[i]) {
                 table.distance[i] = alternative;
@@ -507,14 +508,14 @@ static inline dijkstra_table_s create_dijkstra_table_matrix_graph(const matrix_g
             col_index_start += current_index;
         }
 
-        minimum_distance = (size_t)(-1); // set minimum distance to 'infinity'
+        minimum_distance = 1.0L / 0.0L; // set minimum distance to 'infinity'
         for (size_t i = 0; i < graph.size; i++) { // find smallest distance
             if (!visited_vertex_array[i] && table.distance[i] < table.distance[current_index]) {
                 current_index = i;
                 minimum_distance = table.distance[i];
             }
         }
-    } while (++s < graph.size && minimum_distance < (size_t)(-1)); 
+    } while (++s < graph.size && minimum_distance != 1.0L / 0.0L); 
     // while not all graph vertices were checked and minimum distance isn't 'infinite' (a path from current index to next exists)
 
     MATRIX_GRAPH_FREE(visited_vertex_array); // free visited vertices array
@@ -522,8 +523,10 @@ static inline dijkstra_table_s create_dijkstra_table_matrix_graph(const matrix_g
     return table; // return initialized table
 }
 
+/// @brief Destroys table with allocated memory.
+/// @param table Dijkstra table to lookup distances and paths to start vertex index.
 static inline void destroy_dijkstra_table_matrix_graph(dijkstra_table_s * table) {
-    MATRIX_GRAPH_ASSERT(table && "[ERROR] 'distances' parameter pointer is NULL.");
+    MATRIX_GRAPH_ASSERT(table && "[ERROR] 'table' parameter pointer is NULL.");
 
     MATRIX_GRAPH_FREE(table->distance);
     MATRIX_GRAPH_FREE(table->previous);
@@ -552,10 +555,12 @@ static inline bool dijkstra_table_search_matrix_graph(matrix_graph_s * graph, co
     MATRIX_GRAPH_ASSERT(stack.array && "[ERROR] Memory allocation failed.");
 
     size_t current_index = end_index;
-    do {
-        stack.array[(stack.size)++] = current_index;
+    stack.array[(stack.size)++] = current_index;
+    while (table.distance[current_index]) {
         current_index = table.previous[current_index];
-    } while (current_index != (size_t)(-1));
+        stack.array[(stack.size)++] = current_index;
+    }
+    
     // if index at top of stack has zero distance to start index, i.e. it is the start index, then a path exists
     const bool is_path = !table.distance[stack.array[stack.size - 1]];
     
@@ -595,8 +600,7 @@ static inline bool dijkstra_algorithm_search_matrix_graph(matrix_graph_s * graph
     MATRIX_GRAPH_ASSERT(table.previous && "[ERROR] Memory allocation failed.");
 
     for (size_t i = 0; i < graph->size; i++) { // set table sizes and previous nodes to 'infinity'
-        table.distance[i] = (size_t)(-1);
-        table.previous[i] = (size_t)(-1);
+        table.distance[i] = 1.0L / 0.0L;
     }
 
     size_t minimum_distance = table.distance[start_index] = 0; // set start index' distance to itself to zero and first minimum distance too
@@ -607,6 +611,7 @@ static inline bool dijkstra_algorithm_search_matrix_graph(matrix_graph_s * graph
     do {
         const size_t row_index_start = (current_index * (current_index - 1)) >> 1;
         for (size_t i = 0; i < current_index; i++) { // iterate for every row edge except current edge in 1D array
+            MATRIX_GRAPH_ASSERT(graph->edges[row_index_start + i] > (MATRIX_GRAPH_EDGE_DATA_TYPE)(0) && "[ERROR] Dijkstra's algorithm does not work with negative edge values.");
             MATRIX_GRAPH_EDGE_DATA_TYPE alternative = table.distance[current_index] + graph->edges[row_index_start + i];
             if (memcmp(graph->edges + row_index_start + i, &empty, sizeof(MATRIX_GRAPH_EDGE_DATA_TYPE)) && !visited_vertex_array[i] && alternative < table.distance[i]) {
                 table.distance[i] = alternative;
@@ -616,6 +621,7 @@ static inline bool dijkstra_algorithm_search_matrix_graph(matrix_graph_s * graph
 
         size_t col_index_start = ((current_index * (current_index + 1)) >> 1);
         for (size_t i = current_index + 1; i < graph->size; i++) {
+            MATRIX_GRAPH_ASSERT(graph->edges[col_index_start] > (MATRIX_GRAPH_EDGE_DATA_TYPE)(0) && "[ERROR] Dijkstra's algorithm does not work with negative edge values.");
             MATRIX_GRAPH_EDGE_DATA_TYPE alternative = table.distance[current_index] + graph->edges[col_index_start];
             if (memcmp(graph->edges + col_index_start, &empty, sizeof(MATRIX_GRAPH_EDGE_DATA_TYPE)) && !visited_vertex_array[i] && alternative < table.distance[i]) {
                 table.distance[i] = alternative;
@@ -624,7 +630,7 @@ static inline bool dijkstra_algorithm_search_matrix_graph(matrix_graph_s * graph
             col_index_start += current_index;
         }
 
-        minimum_distance = (size_t)(-1); // set minimum distance to 'infinity'
+        minimum_distance = 1.0L / 0.0L; // set minimum distance to 'infinity'
         for (size_t i = 0; i < graph->size; i++) { // find smallest distance
             if (!visited_vertex_array[i] && table.distance[i] < table.distance[current_index]) {
                 current_index = i;
@@ -633,7 +639,7 @@ static inline bool dijkstra_algorithm_search_matrix_graph(matrix_graph_s * graph
         }
 
         visited_vertex_array[current_index] = true; // set visited vertex at current index to true
-    } while (++s < graph->size && minimum_distance < (size_t)(-1) && !visited_vertex_array[end_index]); 
+    } while (++s < graph->size && minimum_distance != 1.0L / 0.0L && !visited_vertex_array[end_index]); 
     // while not all graph vertices were checked and minimum distance isn't 'infinite' (a path from current index to next exists)
 
     MATRIX_GRAPH_FREE(visited_vertex_array); // free visited vertices array
@@ -645,10 +651,11 @@ static inline bool dijkstra_algorithm_search_matrix_graph(matrix_graph_s * graph
     MATRIX_GRAPH_ASSERT(stack.array && "[ERROR] Memory allocation failed.");
 
     size_t current_index = end_index;
-    do {
-        stack.array[(stack.size)++] = current_index;
+    stack.array[(stack.size)++] = current_index;
+    while (table.distance[current_index]) {
         current_index = table.previous[current_index];
-    } while (current_index != (size_t)(-1));
+        stack.array[(stack.size)++] = current_index;
+    }
     // if index at top of stack has zero distance to start index, i.e. it is the start index, then a path exists
     const bool is_path = !table.distance[stack.array[stack.size - 1]];
     
