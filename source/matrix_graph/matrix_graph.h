@@ -33,18 +33,21 @@
     For more information, please refer to <https://unlicense.org>
 */
 
-// list mode macros in octal to prevent future overlap with other data structure modes
-#define FINITE_ALLOCATED_MATRIX_GRAPH    72
-#define INFINITE_REALLOC_MATRIX_GRAPH    73
-#define FINITE_PRERPOCESSOR_MATRIX_GRAPH 74
+#define FINITE_ALLOCATED_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH    71
+#define INFINITE_REALLOC_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH    72
+#define FINITE_PRERPOCESSOR_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH 73
+#define FINITE_ALLOCATED_MATRIX_GRAPH                              74
+#define INFINITE_REALLOC_MATRIX_GRAPH                              75
+#define FINITE_PRERPOCESSOR_MATRIX_GRAPH                           76
 
-#define INFINITE_MATRIX_GRAPH INFINITE_REALLOC_MATRIX_GRAPH
-#define FINITE_MATRIX_GRAPH   FINITE_ALLOCATED_MATRIX_GRAPH
+#define INFINITE_MATRIX_GRAPH INFINITE_REALLOC_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH
+#define FINITE_MATRIX_GRAPH   FINITE_ALLOCATED_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH
 
-#define MATRIX_GRAPH_MODE FINITE_ALLOCATED_MATRIX_GRAPH
-//#define MATRIX_GRAPH_MODE INFINITE_REALLOC_MATRIX_GRAPH
-//#define MATRIX_GRAPH_MODE FINITE_PRERPOCESSOR_MATRIX_GRAPH
-// Graph mode that can be set to FINITE_ALLOCATED_MATRIX_GRAPH, INFINITE_REALLOC_MATRIX_GRAPH or FINITE_PRERPOCESSOR_MATRIX_GRAPH
+#define MATRIX_GRAPH_MODE FINITE_ALLOCATED_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH
+//#define MATRIX_GRAPH_MODE INFINITE_REALLOC_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH
+//#define MATRIX_GRAPH_MODE FINITE_PRERPOCESSOR_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH
+// Graph mode that can be set to FINITE_ALLOCATED_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH, INFINITE_REALLOC_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH
+// or FINITE_PRERPOCESSOR_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH
 // Default: INFINITE_ALLOCATED_MATRIX_GRAPH
 #ifndef MATRIX_GRAPH_MODE
 
@@ -53,7 +56,7 @@
 #endif
 
 // Check to make sure a valid list mode is selected.
-#if (MATRIX_GRAPH_MODE != FINITE_ALLOCATED_MATRIX_GRAPH) && (MATRIX_GRAPH_MODE != INFINITE_REALLOC_MATRIX_GRAPH) && (MATRIX_GRAPH_MODE != FINITE_PRERPOCESSOR_MATRIX_GRAPH)
+#if (MATRIX_GRAPH_MODE != FINITE_ALLOCATED_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH) && (MATRIX_GRAPH_MODE != INFINITE_REALLOC_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH) && (MATRIX_GRAPH_MODE != FINITE_PRERPOCESSOR_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH)
 
 #error Invalid type of list mode.
 
@@ -73,12 +76,8 @@
 
 #endif
 
-#ifndef EMPTY_MATRIX_GRAPH_EDGE
-
 /// @brief Defines special edge used to denote a non-edge (or lack of edge) between any vertices.
 #define EMPTY_MATRIX_GRAPH_EDGE (MATRIX_GRAPH_EDGE_DATA_TYPE) { 0 }
-
-#endif
 
 #ifndef MATRIX_GRAPH_ASSERT
 
@@ -121,7 +120,7 @@ typedef bool                          (*operate_vertex_matrix_graph_fn) (MATRIX_
 /// @brief Function pointer to manage an array of graph elements based on generic arguments.
 typedef void                          (*manage_vertex_matrix_graph_fn)  (MATRIX_GRAPH_VERTEX_DATA_TYPE *, const size_t, void *);
 
-#if   FINITE_ALLOCATED_MATRIX_GRAPH    == MATRIX_GRAPH_MODE
+#if   FINITE_ALLOCATED_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH    == MATRIX_GRAPH_MODE
 
 typedef struct matrix_graph {
     size_t size, max;
@@ -464,10 +463,10 @@ static inline dijkstra_table_s create_dijkstra_table_matrix_graph(const matrix_g
     MATRIX_GRAPH_ASSERT(graph.edges && "[ERROR] Graph is empty.");
     MATRIX_GRAPH_ASSERT(graph.vertices && "[ERROR] Graph is empty.");
     MATRIX_GRAPH_ASSERT(start_index < graph.size && "[ERROR] 'start_index' parameter must be less than graph size.");
-
-    bool * visited_vertex_array = MATRIX_GRAPH_ALLOC(graph.size * sizeof(bool)); // create visited boolean array
-    MATRIX_GRAPH_ASSERT(visited_vertex_array && "[ERROR] Memory allocation failed.");
-    memset(visited_vertex_array, 0, sizeof(bool) * graph.size); // set al visited vertices to 'false' (or zero)
+    
+    bool * visited_index = MATRIX_GRAPH_ALLOC(graph.size * sizeof(bool)); // create visited vertex boolean array
+    MATRIX_GRAPH_ASSERT(visited_index && "[ERROR] Memory allocation failed.");
+    memset(visited_index, 0, sizeof(bool) * graph.size); // set al visited vertices to 'false' (or zero)
     // create table by allocating memory
     dijkstra_table_s table = {
         .previous = MATRIX_GRAPH_ALLOC(graph.size * sizeof(size_t)),
@@ -480,45 +479,95 @@ static inline dijkstra_table_s create_dijkstra_table_matrix_graph(const matrix_g
         table.distance[i] = 1.0L / 0.0L;
     }
 
-    MATRIX_GRAPH_EDGE_DATA_TYPE minimum_distance = table.distance[start_index] = 0; // set start index' distance to itself to zero and first minimum distance too
-    size_t current_index = start_index; // set current index to start
-    size_t s = 0; // set graph size index for iteration to 0
+    struct dijkstra_priority_queue { size_t size; size_t * heap; } queue = { // create priority queue heap
+        .heap = MATRIX_GRAPH_ALLOC(((graph.size * (graph.size - 1)) >> 1) * sizeof(size_t)), .size = 0,
+    };
+
+    table.distance[start_index] = 0.0L; // set start index
+    queue.heap[queue.size++] = start_index;
+
     MATRIX_GRAPH_VERTEX_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE; // create empty/non edge to check for every matrix edge
-    do {
-        visited_vertex_array[current_index] = true; // set visited vertex at current index to true
+    // for i being less than graph size, and queue is not empty, and distance at peeked queue index is not infinite, and peeked queue index is not end index
+    for (size_t i = 1; (i < graph.size) && queue.size && (table.distance[queue.heap[0]] != 1.0L / 0.0L); i++) {
+        size_t minimum_index = 0;
+        size_t current_index = queue.heap[minimum_index]; // dequeue index with minimum distance
+        while (minimum_index >= (queue.size >> 1) + 1) { // heapify down to fix binary tree
+            size_t smallest_index = minimum_index;
+            const size_t left_child  = (smallest_index << 1) + 1;
+            const size_t right_child = (smallest_index << 1) + 2;
+
+            if (left_child <= queue.size && table.distance[queue.heap[left_child]] < table.distance[queue.heap[smallest_index]]) {
+                smallest_index = left_child;
+            }
+            if (right_child <= queue.size && table.distance[queue.heap[right_child]] < table.distance[queue.heap[smallest_index]]) {
+                smallest_index = right_child;
+            }
+            if (smallest_index == minimum_index) {
+                break;
+            }
+
+            size_t temp = queue.heap[smallest_index];
+            queue.heap[smallest_index] = queue.heap[minimum_index];
+            queue.heap[minimum_index] = temp;
+
+            minimum_index = smallest_index;
+        }
+        queue.size--; // decrement queue size after removing index
+
+        visited_index[current_index] = true; // set current dequeued index as visited
 
         const size_t row_index_start = (current_index * (current_index - 1)) >> 1;
-        for (size_t i = 0; i < current_index; i++) { // iterate for every row edge except current edge in 1D array
-            MATRIX_GRAPH_ASSERT(graph.edges[row_index_start + i] > (MATRIX_GRAPH_EDGE_DATA_TYPE)(0) && "[ERROR] Dijkstra's algorithm does not work with negative edge values.");
-            MATRIX_GRAPH_EDGE_DATA_TYPE alternative = table.distance[current_index] + graph.edges[row_index_start + i];
-            if (memcmp(graph.edges + row_index_start + i, &empty, sizeof(MATRIX_GRAPH_EDGE_DATA_TYPE)) && !visited_vertex_array[i] && alternative < table.distance[i]) {
-                table.distance[i] = alternative;
-                table.previous[i] = current_index;
+        for (size_t j = 0; j < current_index; j++) { // iterate for every row edge except current edge in 1D array
+            MATRIX_GRAPH_ASSERT(graph.edges[row_index_start + j] > (MATRIX_GRAPH_EDGE_DATA_TYPE)(0) && "[ERROR] Dijkstra's algorithm does not work with negative edge values.");
+
+            long double alternative = table.distance[current_index] + graph.edges[row_index_start + j];
+            if (memcmp(graph.edges + row_index_start + j, &empty, sizeof(MATRIX_GRAPH_EDGE_DATA_TYPE)) && !visited_index[j] && alternative < table.distance[j]) {
+                table.distance[j] = alternative;
+                table.previous[j] = current_index;
+
+                queue.heap[queue.size] = j; // push index to queue end
+                size_t position = queue.size;
+                size_t parent = (position - 1) / 2;
+                while (position && table.distance[queue.heap[parent]] < alternative) { // heapify up to fix heap ordering
+                    const size_t temp = queue.heap[parent];
+                    queue.heap[parent] = queue.heap[position];
+                    queue.heap[position] = temp;
+
+                    position = parent;
+                    size_t parent = (position - 1) / 2;
+                }
+                queue.size++; // increment queue size after enqueueing index
             }
         }
 
         size_t col_index_start = ((current_index * (current_index + 1)) >> 1);
-        for (size_t i = current_index + 1; i < graph.size; i++) {
+        for (size_t j = current_index + 1; j < graph.size; j++) {
             MATRIX_GRAPH_ASSERT(graph.edges[col_index_start] > (MATRIX_GRAPH_EDGE_DATA_TYPE)(0) && "[ERROR] Dijkstra's algorithm does not work with negative edge values.");
+            
             MATRIX_GRAPH_EDGE_DATA_TYPE alternative = table.distance[current_index] + graph.edges[col_index_start];
-            if (memcmp(graph.edges + col_index_start, &empty, sizeof(MATRIX_GRAPH_EDGE_DATA_TYPE)) && !visited_vertex_array[i] && alternative < table.distance[i]) {
-                table.distance[i] = alternative;
-                table.previous[i] = current_index;
+            if (memcmp(graph.edges + col_index_start, &empty, sizeof(MATRIX_GRAPH_EDGE_DATA_TYPE)) && !visited_index[j] && alternative < table.distance[j]) {
+                table.distance[j] = alternative;
+                table.previous[j] = current_index;
+
+                queue.heap[queue.size] = j; // push index to queue end
+                size_t position = queue.size;
+                size_t parent = (position - 1) / 2;
+                while (position && table.distance[queue.heap[parent]] < alternative) { // heapify up to fix heap ordering
+                    const size_t temp = queue.heap[parent];
+                    queue.heap[parent] = queue.heap[position];
+                    queue.heap[position] = temp;
+
+                    position = parent;
+                    size_t parent = (position - 1) / 2;
+                }
+                queue.size++; // increment queue size after enqueueing index
             }
             col_index_start += current_index;
         }
+    }
 
-        minimum_distance = 1.0L / 0.0L; // set minimum distance to 'infinity'
-        for (size_t i = 0; i < graph.size; i++) { // find smallest distance
-            if (!visited_vertex_array[i] && table.distance[i] < table.distance[current_index]) {
-                current_index = i;
-                minimum_distance = table.distance[i];
-            }
-        }
-    } while (++s < graph.size && minimum_distance != 1.0L / 0.0L); 
-    // while not all graph vertices were checked and minimum distance isn't 'infinite' (a path from current index to next exists)
-
-    MATRIX_GRAPH_FREE(visited_vertex_array); // free visited vertices array
+    MATRIX_GRAPH_FREE(visited_index); // free visited index
+    MATRIX_GRAPH_FREE(queue.heap); // free queue heap
     
     return table; // return initialized table
 }
@@ -587,14 +636,15 @@ static inline bool dijkstra_algorithm_search_matrix_graph(matrix_graph_s * graph
     MATRIX_GRAPH_ASSERT(graph->edges && "[ERROR] Graph is empty.");
     MATRIX_GRAPH_ASSERT(graph->vertices && "[ERROR] Graph is empty.");
     MATRIX_GRAPH_ASSERT(start_index < graph->size && "[ERROR] 'start_index' parameter must be less than graph size.");
+    MATRIX_GRAPH_ASSERT(end_index < graph->size && "[ERROR] 'start_index' parameter must be less than graph size.");
 
-    bool * visited_vertex_array = MATRIX_GRAPH_ALLOC(graph->size * sizeof(bool)); // create visited vertex boolean array
-    MATRIX_GRAPH_ASSERT(visited_vertex_array && "[ERROR] Memory allocation failed.");
-    memset(visited_vertex_array, 0, sizeof(bool) * graph->size); // set al visited vertices to 'false' (or zero)
+    bool * visited_index = MATRIX_GRAPH_ALLOC(graph->size * sizeof(bool)); // create visited vertex boolean array
+    MATRIX_GRAPH_ASSERT(visited_index && "[ERROR] Memory allocation failed.");
+    memset(visited_index, 0, sizeof(bool) * graph->size); // set al visited vertices to 'false' (or zero)
     // create table by allocating memory
     dijkstra_table_s table = {
         .previous = MATRIX_GRAPH_ALLOC(graph->size * sizeof(size_t)),
-        .distance = MATRIX_GRAPH_ALLOC(graph->size * sizeof(size_t)),
+        .distance = MATRIX_GRAPH_ALLOC(graph->size * sizeof(long double)),
     };
     MATRIX_GRAPH_ASSERT(table.distance && "[ERROR] Memory allocation failed.");
     MATRIX_GRAPH_ASSERT(table.previous && "[ERROR] Memory allocation failed.");
@@ -603,46 +653,95 @@ static inline bool dijkstra_algorithm_search_matrix_graph(matrix_graph_s * graph
         table.distance[i] = 1.0L / 0.0L;
     }
 
-    size_t minimum_distance = table.distance[start_index] = 0; // set start index' distance to itself to zero and first minimum distance too
-    size_t current_index = start_index; // set current index to start
-    visited_vertex_array[current_index] = true; // set visited vertex at current index to true
-    size_t s = 0; // set graph size index for iteration to 0
+    struct dijkstra_priority_queue { size_t size; size_t * heap; } queue = { // create priority queue heap
+        .heap = MATRIX_GRAPH_ALLOC(((graph->size * (graph->size - 1)) >> 1) * sizeof(size_t)), .size = 0,
+    };
+
+    table.distance[start_index] = 0.0L; // set start index
+    queue.heap[queue.size++] = start_index;
+
     MATRIX_GRAPH_VERTEX_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE; // create empty/non edge to check for every matrix edge
-    do {
+    // for i being less than graph size, and queue is not empty, and distance at peeked queue index is not infinite, and peeked queue index is not end index
+    for (size_t i = 1; (i < graph->size) && queue.size && (table.distance[queue.heap[0]] != 1.0L / 0.0L) && (end_index != queue.heap[0]); i++) {
+        size_t minimum_index = 0;
+        size_t current_index = queue.heap[minimum_index]; // dequeue index with minimum distance
+        while (minimum_index >= (queue.size >> 1) + 1) { // heapify down to fix binary tree
+            size_t smallest_index = minimum_index;
+            const size_t left_child  = (smallest_index << 1) + 1;
+            const size_t right_child = (smallest_index << 1) + 2;
+
+            if (left_child <= queue.size && table.distance[queue.heap[left_child]] < table.distance[queue.heap[smallest_index]]) {
+                smallest_index = left_child;
+            }
+            if (right_child <= queue.size && table.distance[queue.heap[right_child]] < table.distance[queue.heap[smallest_index]]) {
+                smallest_index = right_child;
+            }
+            if (smallest_index == minimum_index) {
+                break;
+            }
+
+            size_t temp = queue.heap[smallest_index];
+            queue.heap[smallest_index] = queue.heap[minimum_index];
+            queue.heap[minimum_index] = temp;
+
+            minimum_index = smallest_index;
+        }
+        queue.size--; // decrement queue size after removing index
+
+        visited_index[current_index] = true; // set current dequeued index as visited
+
         const size_t row_index_start = (current_index * (current_index - 1)) >> 1;
-        for (size_t i = 0; i < current_index; i++) { // iterate for every row edge except current edge in 1D array
-            MATRIX_GRAPH_ASSERT(graph->edges[row_index_start + i] > (MATRIX_GRAPH_EDGE_DATA_TYPE)(0) && "[ERROR] Dijkstra's algorithm does not work with negative edge values.");
-            MATRIX_GRAPH_EDGE_DATA_TYPE alternative = table.distance[current_index] + graph->edges[row_index_start + i];
-            if (memcmp(graph->edges + row_index_start + i, &empty, sizeof(MATRIX_GRAPH_EDGE_DATA_TYPE)) && !visited_vertex_array[i] && alternative < table.distance[i]) {
-                table.distance[i] = alternative;
-                table.previous[i] = current_index;
+        for (size_t j = 0; j < current_index; j++) { // iterate for every row edge except current edge in 1D array
+            MATRIX_GRAPH_ASSERT(graph->edges[row_index_start + j] > (MATRIX_GRAPH_EDGE_DATA_TYPE)(0) && "[ERROR] Dijkstra's algorithm does not work with negative edge values.");
+
+            long double alternative = table.distance[current_index] + graph->edges[row_index_start + j];
+            if (memcmp(graph->edges + row_index_start + j, &empty, sizeof(MATRIX_GRAPH_EDGE_DATA_TYPE)) && !visited_index[j] && alternative < table.distance[j]) {
+                table.distance[j] = alternative;
+                table.previous[j] = current_index;
+
+                queue.heap[queue.size] = j; // push index to queue end
+                size_t position = queue.size;
+                size_t parent = (position - 1) / 2;
+                while (position && table.distance[queue.heap[parent]] < alternative) { // heapify up to fix heap ordering
+                    const size_t temp = queue.heap[parent];
+                    queue.heap[parent] = queue.heap[position];
+                    queue.heap[position] = temp;
+
+                    position = parent;
+                    size_t parent = (position - 1) / 2;
+                }
+                queue.size++; // increment queue size after enqueueing index
             }
         }
 
         size_t col_index_start = ((current_index * (current_index + 1)) >> 1);
-        for (size_t i = current_index + 1; i < graph->size; i++) {
+        for (size_t j = current_index + 1; j < graph->size; j++) {
             MATRIX_GRAPH_ASSERT(graph->edges[col_index_start] > (MATRIX_GRAPH_EDGE_DATA_TYPE)(0) && "[ERROR] Dijkstra's algorithm does not work with negative edge values.");
+
             MATRIX_GRAPH_EDGE_DATA_TYPE alternative = table.distance[current_index] + graph->edges[col_index_start];
-            if (memcmp(graph->edges + col_index_start, &empty, sizeof(MATRIX_GRAPH_EDGE_DATA_TYPE)) && !visited_vertex_array[i] && alternative < table.distance[i]) {
-                table.distance[i] = alternative;
-                table.previous[i] = current_index;
+            if (memcmp(graph->edges + col_index_start, &empty, sizeof(MATRIX_GRAPH_EDGE_DATA_TYPE)) && !visited_index[j] && alternative < table.distance[j]) {
+                table.distance[j] = alternative;
+                table.previous[j] = current_index;
+
+                queue.heap[queue.size] = j; // push index to queue end
+                size_t position = queue.size;
+                size_t parent = (position - 1) / 2;
+                while (position && table.distance[queue.heap[parent]] < alternative) { // heapify up to fix heap ordering
+                    const size_t temp = queue.heap[parent];
+                    queue.heap[parent] = queue.heap[position];
+                    queue.heap[position] = temp;
+
+                    position = parent;
+                    size_t parent = (position - 1) / 2;
+                }
+                queue.size++; // increment queue size after enqueueing index
             }
             col_index_start += current_index;
         }
+    }
 
-        minimum_distance = 1.0L / 0.0L; // set minimum distance to 'infinity'
-        for (size_t i = 0; i < graph->size; i++) { // find smallest distance
-            if (!visited_vertex_array[i] && table.distance[i] < table.distance[current_index]) {
-                current_index = i;
-                minimum_distance = table.distance[i];
-            }
-        }
-
-        visited_vertex_array[current_index] = true; // set visited vertex at current index to true
-    } while (++s < graph->size && minimum_distance != 1.0L / 0.0L && !visited_vertex_array[end_index]); 
-    // while not all graph vertices were checked and minimum distance isn't 'infinite' (a path from current index to next exists)
-
-    MATRIX_GRAPH_FREE(visited_vertex_array); // free visited vertices array
+    MATRIX_GRAPH_FREE(visited_index); // free visited index
+    MATRIX_GRAPH_FREE(queue.heap); // free queue heap
 
     // create stack to remove the need for recursion since Dijkstra's algorithm starts from end index to start
     struct dijkstra_search_stack { size_t size; size_t * array; } stack = {
@@ -666,12 +765,14 @@ static inline bool dijkstra_algorithm_search_matrix_graph(matrix_graph_s * graph
     }
 
     MATRIX_GRAPH_FREE(stack.array);
+    MATRIX_GRAPH_FREE(table.distance);
+    MATRIX_GRAPH_FREE(table.previous);    
 
     return is_path;
 }
 
-#elif INFINITE_REALLOC_MATRIX_GRAPH    == MATRIX_GRAPH_MODE
-#elif FINITE_PRERPOCESSOR_MATRIX_GRAPH == MATRIX_GRAPH_MODE
+#elif INFINITE_REALLOC_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH    == MATRIX_GRAPH_MODE
+#elif FINITE_PRERPOCESSOR_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH == MATRIX_GRAPH_MODE
 #endif
 
 #endif // MATRIX_GRAPH_H

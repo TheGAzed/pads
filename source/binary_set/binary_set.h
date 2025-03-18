@@ -63,10 +63,9 @@
     For more information, please refer to <https://unlicense.org>
 */
 
-// set mode macros in octal to prevent future overlap with other data structure modes
-#define INFINITE_REALLOC_BINARY_SET    51
-#define FINITE_ALLOCATED_BINARY_SET    52
-#define FINITE_PRERPOCESSOR_BINARY_SET 54
+#define INFINITE_REALLOC_BINARY_SET    61
+#define FINITE_ALLOCATED_BINARY_SET    62
+#define FINITE_PRERPOCESSOR_BINARY_SET 63
 
 #define INFINITE_BINARY_SET INFINITE_REALLOC_BINARY_SET
 #define FINITE_BINARY_SET   FINITE_ALLOCATED_BINARY_SET

@@ -32,7 +32,6 @@
     For more information, please refer to <https://unlicense.org>
 */
 
-// stack mode macros in octal to prevent future overlap with other data structure modes
 #define INFINITE_LIST_STACK       1
 #define FINITE_ALLOCATED_STACK    2
 #define INFINITE_REALLOC_STACK    3

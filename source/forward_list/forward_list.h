@@ -32,11 +32,10 @@
     For more information, please refer to <https://unlicense.org>
 */
 
-// list mode macros in octal to prevent future overlap with other data structure modes
-#define INFINITE_ALLOCATED_FORWARD_LIST  21
-#define FINITE_ALLOCATED_FORWARD_LIST    22
-#define INFINITE_REALLOC_FORWARD_LIST    23
-#define FINITE_PRERPOCESSOR_FORWARD_LIST 24
+#define INFINITE_ALLOCATED_FORWARD_LIST  41
+#define FINITE_ALLOCATED_FORWARD_LIST    42
+#define INFINITE_REALLOC_FORWARD_LIST    43
+#define FINITE_PRERPOCESSOR_FORWARD_LIST 44
 
 #define INFINITE_FORWARD_LIST INFINITE_ALLOCATED_FORWARD_LIST
 #define FINITE_FORWARD_LIST   FINITE_ALLOCATED_FORWARD_LIST
