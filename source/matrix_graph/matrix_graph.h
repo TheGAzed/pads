@@ -4,7 +4,6 @@
 #include <stdlib.h>  // imports size_t, malloc, realloc, free
 #include <stdbool.h> // imports bool
 #include <string.h>  // imports memcpy, memmove
-#include <limits.h>  // imports MAX values
 
 /*
     This is free and unencumbered software released into the public domain.
@@ -161,7 +160,7 @@ static inline matrix_graph_s create_matrix_graph(const size_t max) {
 /// @brief Destroys the graph and sets size to zero. The destroyed graph should not be used after calling this
 /// function, else create a new graph.
 /// @param graph Pointer to graph structure.
-/// @param destroy Function pointer to destroy/free each element in graph. Can be NULL if element mustn't be
+/// @param destroy_vertex Function pointer to destroy/free each element in graph. Can be NULL if element mustn't be
 /// destroyed.
 static inline void destroy_matrix_graph(matrix_graph_s * graph, const destroy_vertex_matrix_graph_fn destroy_vertex) {
     MATRIX_GRAPH_ASSERT(graph && "[ERROR] 'graph' parameter pointer is NULL.");
@@ -218,7 +217,7 @@ static inline MATRIX_GRAPH_VERTEX_DATA_TYPE remove_vertex_matrix_graph(matrix_gr
     MATRIX_GRAPH_ASSERT(graph->edges && "[ERROR] Graph edges matrix is NULL.");
     MATRIX_GRAPH_ASSERT(index < graph->size && "[ERRRO] index parameter must be less than graph size.");
 
-    MATRIX_GRAPH_VERTEX_DATA_TYPE removed = graph->vertices[index];
+    const MATRIX_GRAPH_VERTEX_DATA_TYPE removed = graph->vertices[index];
     graph->size--;
 
     const size_t last_start  = ((graph->size) * (graph->size - 1)) >> 1;
@@ -236,7 +235,7 @@ static inline MATRIX_GRAPH_VERTEX_DATA_TYPE remove_vertex_matrix_graph(matrix_gr
         graph->vertices[index] = graph->vertices[graph->size]; // copy last vertex into vertex at index
     }
 
-    MATRIX_GRAPH_EDGE_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE;
+    const MATRIX_GRAPH_EDGE_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE;
     for (size_t i = 0; i < graph->size; i++) { // set edges at last element to empty edge
         memcpy(last_edges + i, &empty, sizeof(MATRIX_GRAPH_EDGE_DATA_TYPE));
     }
@@ -295,10 +294,10 @@ static inline MATRIX_GRAPH_EDGE_DATA_TYPE remove_edge_matrix_graph(matrix_graph_
     const size_t maximum = index_one < index_two ? exlude ^ index_one : exlude ^ index_two;
     const size_t minimum = exlude ^ maximum;
 
-    MATRIX_GRAPH_EDGE_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE;
+    const MATRIX_GRAPH_EDGE_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE;
 
     const size_t row_maximum_start = (maximum * (maximum - 1)) >> 1;
-    MATRIX_GRAPH_EDGE_DATA_TYPE removed = graph->edges[row_maximum_start + minimum];
+    const MATRIX_GRAPH_EDGE_DATA_TYPE removed = graph->edges[row_maximum_start + minimum];
     graph->edges[row_maximum_start + minimum] = empty;
 
     MATRIX_GRAPH_ASSERT(graph->edges[row_maximum_start + minimum] != empty && "[ERROR] No graph edge exists.");
@@ -323,7 +322,7 @@ static inline bool is_edge_matrix_graph(const matrix_graph_s graph, const size_t
 
     const size_t row_maximum_start = (maximum * (maximum - 1)) >> 1;
 
-    MATRIX_GRAPH_EDGE_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE;
+    const MATRIX_GRAPH_EDGE_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE;
     // return true if indexes are not the same and 'edge' isn't an empty/non edge
     return index_one != index_two && graph.edges[row_maximum_start + minimum] != empty;
 }
@@ -346,7 +345,7 @@ static inline MATRIX_GRAPH_EDGE_DATA_TYPE get_edge_matrix_graph(const matrix_gra
 
     const size_t row_maximum_start = (maximum * (maximum - 1)) >> 1;
 
-    MATRIX_GRAPH_EDGE_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE;
+    const MATRIX_GRAPH_EDGE_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE;
     MATRIX_GRAPH_ASSERT(graph.edges[row_maximum_start + minimum] != empty && "[ERROR] No graph edge exists.");
 
     return graph.edges[row_maximum_start + minimum];
@@ -357,7 +356,7 @@ static inline MATRIX_GRAPH_EDGE_DATA_TYPE get_edge_matrix_graph(const matrix_gra
 /// @param start_index Index of vertex to start breadth first search.
 /// @param operate Operate function pointer to operate on vertex elements using arguments.
 /// @param args Arguments for operate function pointer.
-static inline void breadth_first_search_matrix_graph(matrix_graph_s * graph, const size_t start_index, const operate_vertex_matrix_graph_fn operate, void * args) {
+static inline void breadth_first_search_matrix_graph(matrix_graph_s const * graph, const size_t start_index, const operate_vertex_matrix_graph_fn operate, void * args) {
     MATRIX_GRAPH_ASSERT(graph && "[ERROR] 'graph' parameter pointer is NULL.");
     MATRIX_GRAPH_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
     MATRIX_GRAPH_ASSERT(start_index < graph->size && "[ERROR] 'start_index' parameter must be less than graph size.");
@@ -374,7 +373,7 @@ static inline void breadth_first_search_matrix_graph(matrix_graph_s * graph, con
     visited_vertex_array[start_index] = true; // set first visited 
     queue.array[queue.size++] = start_index; // insert first/start index to queue
 
-    MATRIX_GRAPH_EDGE_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE;
+    const MATRIX_GRAPH_EDGE_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE;
     while (queue.size && operate(graph->vertices + queue.array[queue.current], args)) { // while queue is not empty
         const size_t current_index = queue.array[queue.current++];
         queue.size--;
@@ -397,7 +396,7 @@ static inline void breadth_first_search_matrix_graph(matrix_graph_s * graph, con
 /// @param start_index Index of vertex to start depth first search.
 /// @param operate Operate function pointer to operate on vertex elements using arguments.
 /// @param args Arguments for operate function pointer.
-static inline void depth_first_search_matrix_graph(matrix_graph_s * graph, const size_t start_index, const operate_vertex_matrix_graph_fn operate, void * args) {
+static inline void depth_first_search_matrix_graph(matrix_graph_s const * graph, const size_t start_index, const operate_vertex_matrix_graph_fn operate, void * args) {
     MATRIX_GRAPH_ASSERT(graph && "[ERROR] 'graph' parameter pointer is NULL.");
     MATRIX_GRAPH_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
     MATRIX_GRAPH_ASSERT(start_index < graph->size && "[ERROR] 'start_index' parameter must be less than graph size.");
@@ -414,7 +413,7 @@ static inline void depth_first_search_matrix_graph(matrix_graph_s * graph, const
     stack.array[stack.size++] = start_index;
     visited_vertex_array[start_index] = true;
 
-    MATRIX_GRAPH_EDGE_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE;
+    const MATRIX_GRAPH_EDGE_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE;
     while (stack.size && operate(graph->vertices + stack.array[stack.size - 1], args)) {
         const size_t current_index = stack.array[--stack.size];
 
@@ -439,7 +438,7 @@ static inline void depth_first_search_matrix_graph(matrix_graph_s * graph, const
 /// @param args Arguments for operate function pointer.
 /// @return true if shortest path exists, false if not.
 /// @note The seperate creation of dijkstra_algorithm_search is due to the algorithms ability to terminate early after reaching the end index.
-static inline bool dijkstra_algorithm_search_matrix_graph(matrix_graph_s * graph, const size_t start_index, const size_t end_index, const operate_vertex_matrix_graph_fn operate, void * args) {
+static inline bool dijkstra_algorithm_search_matrix_graph(matrix_graph_s const * graph, const size_t start_index, const size_t end_index, const operate_vertex_matrix_graph_fn operate, void * args) {
     MATRIX_GRAPH_ASSERT(graph->size && "[ERROR] Graph is empty.");
     MATRIX_GRAPH_ASSERT(graph->edges && "[ERROR] Graph is empty.");
     MATRIX_GRAPH_ASSERT(graph->vertices && "[ERROR] Graph is empty.");
@@ -450,7 +449,7 @@ static inline bool dijkstra_algorithm_search_matrix_graph(matrix_graph_s * graph
     MATRIX_GRAPH_ASSERT(visited_index && "[ERROR] Memory allocation failed.");
     memset(visited_index, 0, sizeof(bool) * graph->size); // set al visited vertices to 'false' (or zero)
     // create table by allocating memory
-    matrix_graph_table_s table = {
+    const matrix_graph_table_s table = {
         .previous = MATRIX_GRAPH_ALLOC(graph->size * sizeof(size_t)),
         .distance = MATRIX_GRAPH_ALLOC(graph->size * sizeof(long double)),
     };
@@ -464,7 +463,7 @@ static inline bool dijkstra_algorithm_search_matrix_graph(matrix_graph_s * graph
     table.distance[start_index] = 0.0L; // set start index
     struct dijkstra_node { size_t index; long double distance; } current_node = { .distance = 0.0L, .index = start_index, };
 
-    MATRIX_GRAPH_EDGE_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE; // create empty/non edge to check for every matrix edge
+    const MATRIX_GRAPH_EDGE_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE; // create empty/non edge to check for every matrix edge
     for (size_t i = 0; (i < graph->size - 1) && (current_node.distance != 1.0L / 0.0L) && (current_node.index != end_index); i++) {
         const size_t current_index = current_node.index;
         visited_index[current_index] = true; // set current dequeued index as visited
@@ -499,7 +498,7 @@ static inline bool dijkstra_algorithm_search_matrix_graph(matrix_graph_s * graph
     // if index at top of stack has zero distance to start index, i.e. it is the start index, then a path exists
     const bool is_path = !table.distance[stack.array[stack.size - 1]];
     
-    while (stack.size && operate(graph->vertices + stack.array[--(stack.size)], args));
+    while (stack.size && operate(graph->vertices + stack.array[--(stack.size)], args)){};
 
     MATRIX_GRAPH_FREE(stack.array);
     MATRIX_GRAPH_FREE(table.distance);
@@ -522,7 +521,7 @@ static inline matrix_graph_table_s create_dijkstra_table_matrix_graph(const matr
     MATRIX_GRAPH_ASSERT(visited_index && "[ERROR] Memory allocation failed.");
     memset(visited_index, 0, sizeof(bool) * graph.size); // set al visited vertices to 'false' (or zero)
     // create table by allocating memory
-    matrix_graph_table_s table = {
+    const matrix_graph_table_s table = {
         .previous = MATRIX_GRAPH_ALLOC(graph.size * sizeof(size_t)),
         .distance = MATRIX_GRAPH_ALLOC(graph.size * sizeof(long double)),
     };
@@ -537,7 +536,7 @@ static inline matrix_graph_table_s create_dijkstra_table_matrix_graph(const matr
         .distance = table.distance[start_index] = 0.0L, .index = start_index,
     };
 
-    MATRIX_GRAPH_EDGE_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE; // create empty/non edge to check for every matrix edge
+    const MATRIX_GRAPH_EDGE_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE; // create empty/non edge to check for every matrix edge
     for (size_t i = 0; (i < graph.size - 1) && (current_node.distance != 1.0L / 0.0L); i++) {
         const size_t current_index = current_node.index;
         visited_index[current_index] = true; // set current dequeued index as visited
@@ -577,7 +576,7 @@ static inline matrix_graph_table_s create_bellman_ford_table_matrix_graph(const 
     MATRIX_GRAPH_ASSERT(start_index < graph.size && "[ERROR] 'start_index' parameter must be less than graph size.");
 
     // create table by allocating memory
-    matrix_graph_table_s table = {
+    const matrix_graph_table_s table = {
         .previous = MATRIX_GRAPH_ALLOC(graph.size * sizeof(size_t)),
         .distance = MATRIX_GRAPH_ALLOC(graph.size * sizeof(long double)),
     };
@@ -590,7 +589,7 @@ static inline matrix_graph_table_s create_bellman_ford_table_matrix_graph(const 
 
     table.distance[start_index] = 0.0L;
 
-    MATRIX_GRAPH_EDGE_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE; // create empty/non edge to check for every matrix edge
+    const MATRIX_GRAPH_EDGE_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE; // create empty/non edge to check for every matrix edge
     for (size_t i = 0; i < graph.size; i++) {
         size_t edge_index = (i * (i - 1)) >> 1;
         for (size_t j = 0; j < graph.size; edge_index += j < i ? 1 : j, j++) {
@@ -598,7 +597,7 @@ static inline matrix_graph_table_s create_bellman_ford_table_matrix_graph(const 
                 continue;
             }
 
-            long double alternative = table.distance[i] + graph.edges[edge_index];
+            const long double alternative = table.distance[i] + graph.edges[edge_index];
             // if alternative distance is less than current table distance between ith and jth vertex update to new shorter distance
             if (alternative < table.distance[j]) {
                 MATRIX_GRAPH_ASSERT(i == (graph.size - 1) && "[ERROR] Negative cycle detected.");
@@ -623,7 +622,7 @@ static inline matrix_graph_table_s create_prim_table_matrix_graph(const matrix_g
     MATRIX_GRAPH_ASSERT(visited_vertex_array && "[ERROR] Memory allocation failed.");
 
     // create table by allocating memory
-    matrix_graph_table_s table = {
+    const matrix_graph_table_s table = {
         .previous = MATRIX_GRAPH_ALLOC(graph.size * sizeof(size_t)),
         .distance = MATRIX_GRAPH_ALLOC(graph.size * sizeof(long double)),
     };
@@ -638,7 +637,7 @@ static inline matrix_graph_table_s create_prim_table_matrix_graph(const matrix_g
         .distance = table.distance[start_index] = 0.0L, .index = start_index,
     };
 
-    MATRIX_GRAPH_EDGE_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE; // create empty/non edge to check for every matrix edge
+    const MATRIX_GRAPH_EDGE_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE; // create empty/non edge to check for every matrix edge
     for (size_t i = 0; i < graph.size - 1; i++) {
         const size_t current_index = current_node.index;
         visited_vertex_array[current_index] = true;
@@ -668,6 +667,98 @@ static inline matrix_graph_table_s create_prim_table_matrix_graph(const matrix_g
     return table;
 }
 
+static inline matrix_graph_table_s create_kruskal_table_matrix_graph(const matrix_graph_s graph) {
+    MATRIX_GRAPH_ASSERT(graph.size && "Graph is empty.");
+
+    struct kruskal_edge {
+        size_t source, destination;
+        MATRIX_GRAPH_EDGE_DATA_TYPE weight;
+    };
+
+    struct kruskal_edges_array {
+        size_t size;
+        struct kruskal_edge * edges;
+    } edges_array = { .size = 0, .edges = MATRIX_GRAPH_ALLOC(graph.size * sizeof(struct kruskal_edge)) };
+    MATRIX_GRAPH_ASSERT(edges_array.edges && "[ERROR] Memory allocation failed.");
+
+    const MATRIX_GRAPH_EDGE_DATA_TYPE empty = EMPTY_MATRIX_GRAPH_EDGE;
+    for (size_t i = 0; i < graph.size; ++i) {
+        for (size_t j = i + 1; j < graph.size; ++j) {
+            const size_t row_maximum_start = (j * (j - 1)) >> 1;
+
+            const MATRIX_GRAPH_EDGE_DATA_TYPE edge_weight = graph.edges[row_maximum_start + i];
+            if (edge_weight != empty) {
+                edges_array.edges[edges_array.size].source = i;
+                edges_array.edges[edges_array.size].destination = j;
+                edges_array.edges[edges_array.size].weight = edge_weight;
+                edges_array.size++;
+            }
+        }
+    }
+
+    for (size_t i = 0; edges_array.size && i < edges_array.size - 1; ++i) {
+        size_t minimum = i;
+        for (size_t j = i + 1; j < edges_array.size; ++j) {
+            if (edges_array.edges[j].weight < edges_array.edges[minimum].weight) {
+                minimum = j;
+            }
+        }
+        const struct kruskal_edge temp = edges_array.edges[i];
+        edges_array.edges[i] = edges_array.edges[minimum];
+        edges_array.edges[minimum] = temp;
+    }
+
+    // create table by allocating memory
+    const matrix_graph_table_s table = {
+        .previous = MATRIX_GRAPH_ALLOC(graph.size * sizeof(size_t)),
+        .distance = MATRIX_GRAPH_ALLOC(graph.size * sizeof(long double)),
+    };
+    MATRIX_GRAPH_ASSERT(table.distance && "[ERROR] Memory allocation failed.");
+    MATRIX_GRAPH_ASSERT(table.previous && "[ERROR] Memory allocation failed.");
+    // set table sizes and previous nodes to 'infinity'
+    for (size_t i = 0; i < graph.size; i++) {
+        table.previous[i] = i;
+        table.distance[i] = 0.0L;
+    }
+
+    for (int i = 0; i < edges_array.size; ++i) {
+        const struct kruskal_edge smallest = edges_array.edges[i];
+
+        size_t find_source = smallest.source;
+        while (find_source != table.previous[find_source]) {
+            find_source = table.previous[find_source];
+        }
+        size_t find_destination = smallest.destination;
+        while (find_destination != table.previous[find_destination]) {
+            find_destination = table.previous[find_destination];
+        }
+
+        if (find_source != find_destination) {
+            size_t find_source_root = find_source;
+            while (find_source_root != table.previous[find_source_root]) {
+                find_source_root = table.previous[find_source_root];
+            }
+            size_t find_destination_root = find_destination;
+            while (find_destination_root != table.previous[find_destination_root]) {
+                find_destination_root = table.previous[find_destination_root];
+            }
+
+            if (table.distance[find_source_root] < table.distance[find_destination_root]) {
+                table.previous[find_source_root] = find_destination_root;
+            } else if (table.distance[find_source_root] > table.distance[find_destination_root]) {
+                table.previous[find_destination_root] = find_source_root;
+            } else {
+                table.previous[find_destination_root] = find_source_root;
+                table.distance[find_source_root]++;
+            }
+        }
+    }
+
+    MATRIX_GRAPH_FREE(edges_array.edges);
+
+    return table;
+}
+
 /// @brief Destroys table with allocated memory.
 /// @param table Array table to lookup shortest distances and paths from start to any end vertex index.
 static inline void destroy_table_matrix_graph(matrix_graph_table_s * table) {
@@ -689,7 +780,7 @@ static inline void destroy_table_matrix_graph(matrix_graph_table_s * table) {
 /// and other table subgraphs, which might have some uses I am not aware of, idk.
 static inline matrix_graph_s create_table_subgraph_matrix_graph(const matrix_graph_s graph, const matrix_graph_table_s table, const copy_vertex_matrix_graph_fn copy) {
     const size_t matrix_size = (graph.max * (graph.max - 1)) >> 1;
-    matrix_graph_s subgraph = {
+    const matrix_graph_s subgraph = {
         .max = graph.max, .size = graph.size,
         .vertices = MATRIX_GRAPH_ALLOC(graph.max * sizeof(MATRIX_GRAPH_VERTEX_DATA_TYPE)),
         .edges = MATRIX_GRAPH_ALLOC(matrix_size * sizeof(MATRIX_GRAPH_EDGE_DATA_TYPE)),
@@ -723,7 +814,7 @@ static inline matrix_graph_s create_table_subgraph_matrix_graph(const matrix_gra
 /// @param operate Operate function pointer to operate on vertex elements using arguments.
 /// @param args Arguments for operate function pointer.
 /// @return true if shortest path exists, false if not.
-static inline bool table_search_matrix_graph(matrix_graph_s * graph, const matrix_graph_table_s table, const size_t end_index, const operate_vertex_matrix_graph_fn operate, void * args) {
+static inline bool table_search_matrix_graph(matrix_graph_s const * graph, const matrix_graph_table_s table, const size_t end_index, const operate_vertex_matrix_graph_fn operate, void * args) {
     MATRIX_GRAPH_ASSERT(graph && "[ERROR] 'graph' parameter pointer is NULL.");
     MATRIX_GRAPH_ASSERT(operate && "[ERROR] 'operator' parameter function pointer is NULL.");
     MATRIX_GRAPH_ASSERT(end_index < graph->size && "'end_index' parameter must be less than graph size.");
@@ -745,7 +836,7 @@ static inline bool table_search_matrix_graph(matrix_graph_s * graph, const matri
     // if index at top of stack has zero distance to start index, i.e. it is the start index, then a path exists
     const bool is_path = !table.distance[stack.array[stack.size - 1]];
     
-    while (stack.size && operate(graph->vertices + stack.array[--(stack.size)], args));
+    while (stack.size && operate(graph->vertices + stack.array[--(stack.size)], args)){};
 
     MATRIX_GRAPH_FREE(stack.array);
 
@@ -756,7 +847,7 @@ static inline bool table_search_matrix_graph(matrix_graph_s * graph, const matri
 /// @param graph Graph structure pointer.
 /// @param operate Operate function pointer to operate on vertex elements using arguments.
 /// @param args Arguments for operate function pointer.
-static inline void foreach_matrix_graph(matrix_graph_s * graph, const operate_vertex_matrix_graph_fn operate, void * args) {
+static inline void foreach_matrix_graph(matrix_graph_s const * graph, const operate_vertex_matrix_graph_fn operate, void * args) {
     MATRIX_GRAPH_ASSERT(graph && "[ERROR] 'graph' parameter pointer is NULL.");
     MATRIX_GRAPH_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
 
@@ -767,7 +858,7 @@ static inline void foreach_matrix_graph(matrix_graph_s * graph, const operate_ve
 /// @param graph Graph structure pointer.
 /// @param manage Manage function pointer to manage vertex elements array using arguments.
 /// @param args Arguments for manage function pointer.
-static inline void forevery_matrix_graph(matrix_graph_s * graph, const manage_vertex_matrix_graph_fn manage, void * args) {
+static inline void forevery_matrix_graph(matrix_graph_s const * graph, const manage_vertex_matrix_graph_fn manage, void * args) {
     MATRIX_GRAPH_ASSERT(graph && "[ERROR] 'graph' parameter pointer is NULL.");
     MATRIX_GRAPH_ASSERT(manage && "[ERROR] 'operate' parameter pointer is NULL.");
 

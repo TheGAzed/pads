@@ -264,47 +264,30 @@ static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
 static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) {
     queue_s queue_copy = { .size = queue.size, .tail = NULL, .current = queue.current };
 
-    if (queue.size <= LIST_ARRAY_QUEUE_CHUNK - queue.current) {
-        queue_copy.tail = QUEUE_ALLOC(sizeof(struct queue_list_array));
-        QUEUE_ASSERT(queue_copy.tail && "[ERROR] Memory allocation failed");
-        queue_copy.tail->next = queue_copy.tail;
+    struct queue_list_array const * current_queue = queue.tail;
+    struct queue_list_array ** current_copy = &(queue_copy.tail); // two pointer list to remove special .head case
 
-        for (size_t s = queue.current; s < queue.current + queue.size; s++) {
-            queue_copy.tail->elements[s] = copy ? copy(queue.tail->elements[s]) : queue.tail->elements[s];
+    size_t remaining_size = queue.size;
+    size_t start_index = queue.current;
+    struct queue_list_array * last_added = NULL;
+    while (remaining_size) {
+        last_added = (*current_copy) = QUEUE_ALLOC(sizeof(struct queue_list_array));
+        QUEUE_ASSERT((*current_copy) && "[ERROR] Memory allocation failed");
+
+        (*current_copy)->next = queue_copy.tail; // make current/last node's next pointer point to tail
+        current_queue = current_queue->next;
+
+        // outside for loop to get copied chunk size, since it can either be 'remaining_size' or 'LIST_ARRAY_QUEUE_CHUNK'
+        size_t i = start_index;
+        for (; i < remaining_size && i < LIST_ARRAY_QUEUE_CHUNK; ++i) { // while i is less than both 'remaining_size' and 'LIST_ARRAY_QUEUE_CHUNK'
+            (*current_copy)->elements[i] = copy ? copy(current_queue->elements[i]) : current_queue->elements[i];
         }
-    } else {
-        queue_copy.tail = QUEUE_ALLOC(sizeof(struct queue_list_array)); // allocate to tail and leave behind for now
-        QUEUE_ASSERT(queue_copy.tail && "[ERROR] Memory allocation failed");
+        remaining_size -= i; // subtract copied size from remaining size using i
+        start_index = 0; // set start index to zero since we only need start index startinf from queue's currrent in tail node
 
-        queue_copy.tail->next = QUEUE_ALLOC(sizeof(struct queue_list_array));
-        QUEUE_ASSERT(queue_copy.tail->next && "[ERROR] Memory allocation failed");
-
-        for (size_t s = queue.current; s < LIST_ARRAY_QUEUE_CHUNK; s++) {
-            queue_copy.tail->next->elements[s] = copy ? copy(queue.tail->next->elements[s]) : queue.tail->next->elements[s];
-        }
-        size_t copied_size = LIST_ARRAY_QUEUE_CHUNK - queue.current;
-
-        struct queue_list_array const * current_queue = queue.tail->next->next;
-        struct queue_list_array ** current_copy = &(queue_copy.tail->next->next); // two pointer list to remove special .head case
-        while (current_queue != queue.tail) {
-            (*current_copy) = QUEUE_ALLOC(sizeof(struct queue_list_array));
-            QUEUE_ASSERT(*current_copy && "[ERROR] Memory allocation failed");
-
-            for (size_t s = 0; s < LIST_ARRAY_QUEUE_CHUNK; s++) {
-                (*current_copy)->elements[s] = copy ? copy(current_queue->elements[s]) : current_queue->elements[s];
-            }
-            copied_size += LIST_ARRAY_QUEUE_CHUNK;
-
-            current_copy = &((*current_copy)->next);
-            current_queue = current_queue->next;
-        }
-        (*current_copy) = queue_copy.tail;
-
-        // calculate last node element count
-        for (size_t s = 0; s < queue_copy.size - copied_size; s++) {
-            queue_copy.tail->elements[s] = copy ? copy(queue.tail->elements[s]) : queue.tail->elements[s];
-        }
+        current_copy = &((*current_copy)->next);
     }
+    queue_copy.tail = last_added;
 
     return queue_copy;
 }
@@ -430,8 +413,12 @@ static inline queue_s create_queue(const size_t max) {
 static inline void destroy_queue(queue_s * queue, const destroy_queue_fn destroy) {
     QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL.");
 
-    for(size_t s = queue->current; destroy && s < queue->current + queue->size; s++) {
-        destroy(queue->elements + (s % queue->max));
+    const size_t right_size = (queue->current + queue->size) > queue->max ? queue->max - queue->current : queue->size;
+    for (size_t i = 0; destroy && i < right_size; ++i) {
+        destroy(queue->elements + queue->current + i);
+    }
+    for (size_t i = 0; destroy && i < queue->size - right_size; ++i) {
+        destroy(queue->elements + i);
     }
 
     QUEUE_FREE(queue->elements);
@@ -499,28 +486,12 @@ static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) 
     };
     QUEUE_ASSERT(queue_copy.elements && "[ERROR] Memory allocation failed");
 
-    const size_t right_size = queue.max - queue.current;
-    if (queue.size > right_size) { // queue circles to beginning of elements array
-        if (copy) {
-            for (size_t s = queue.current; s < queue.max; s++) {
-                queue_copy.elements[s] = copy(queue.elements[s]);
-            }
-            for (size_t s = 0; s < queue.size - right_size; s++) {
-                queue_copy.elements[s] = copy(queue.elements[s]);
-            }
-        } else {
-            const size_t copied_size = queue.max - queue.current;
-            memcpy(queue_copy.elements + queue_copy.current, queue.elements + queue.current, sizeof(QUEUE_DATA_TYPE) * copied_size);
-            memcpy(queue_copy.elements, queue.elements, sizeof(QUEUE_DATA_TYPE) * (queue.size - copied_size));
-        }
-    } else { // queue does not circle around to start
-        if (copy) {
-            for (size_t s = queue.current; s < queue.current + queue.size; s++) {
-                queue_copy.elements[s] = copy(queue.elements[s]);
-            }
-        } else {
-            memcpy(queue_copy.elements + queue_copy.current, queue.elements + queue.current, sizeof(QUEUE_DATA_TYPE) * queue.size);
-        }
+    const size_t right_size = (queue.current + queue.size) > queue.max ? queue.max - queue.current : queue.size;
+    for (size_t i = 0; i < right_size; ++i) {
+        queue_copy.elements[i + queue.current] = copy ? copy(queue.elements[i + queue.current]) : queue.elements[i + queue.current];
+    }
+    for (size_t i = 0; i < queue.size - right_size; ++i) {
+        queue_copy.elements[i] = copy ? copy(queue.elements[i]) : queue.elements[i];
     }
 
     return queue_copy;
@@ -539,8 +510,12 @@ static inline bool is_empty_queue(const queue_s queue) {
 static inline void clear_queue(queue_s * queue, const destroy_queue_fn destroy) {
     QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL.");
 
-    for(size_t s = queue->current; destroy && s < queue->current + queue->size; s++) {
-        destroy(queue->elements + (s % queue->max));
+    const size_t right_size = (queue->current + queue->size) > queue->max ? queue->max - queue->current : queue->size;
+    for (size_t i = 0; destroy && i < right_size; ++i) {
+        destroy(queue->elements + queue->current + i);
+    }
+    for (size_t i = 0; destroy && i < queue->size - right_size; ++i) {
+        destroy(queue->elements + i);
     }
 
     queue->size = 0;
@@ -556,17 +531,15 @@ static inline void foreach_queue(queue_s const * queue, const operate_queue_fn o
     QUEUE_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
     QUEUE_ASSERT(queue->max > queue->current && "[ERROR] Impossible queue state.");
 
-    const size_t right_size = queue->max - queue->current;
-    if (queue->size > right_size) { // if queue elements circle around
-        for (size_t i = queue->current; i < queue->max; ++i) { // operates on elements right of current index
-            if (!operate(queue->elements + i, args)) return;
+    const size_t right_size = (queue->current + queue->size) > queue->max ? queue->max - queue->current : queue->size;
+    for (size_t i = 0; i < right_size; ++i) {
+        if (!operate(queue->elements + queue->current + i, args)) {
+            return;
         }
-        for (size_t i = 0; i < queue->size - right_size; i++) {// operates on elements left of current index
-            if (!operate(queue->elements + i, args)) return;
-        }
-    } else { // else elements are continuous in array (they don't circle around)
-        for (size_t i = queue->current; i < queue->current + queue->size; ++i) {
-            if (!operate(queue->elements + i, args)) return;
+    }
+    for (size_t i = 0; i < queue->size - right_size; ++i) {
+        if (!operate(queue->elements + i, args)) {
+            return;
         }
     }
 }
@@ -766,19 +739,12 @@ static inline queue_s create_queue(void) {
 static inline void destroy_queue(queue_s * queue, const destroy_queue_fn destroy) {
     QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL");
 
-    if (destroy) {
-        if (queue->size > PREPROCESSOR_QUEUE_SIZE - queue->current) { // queue circles to beginning of elements array
-            for(size_t s = queue->current; s < PREPROCESSOR_QUEUE_SIZE; s++) {
-                destroy(queue->elements + s);
-            }
-            for(size_t s = 0; s < (queue->size - (PREPROCESSOR_QUEUE_SIZE - queue->current)); s++) {
-                destroy(queue->elements + s);
-            }
-        } else { // queue has all element to the right
-            for(size_t s = queue->current; s < queue->current + queue->size; s++) {
-                destroy(queue->elements + s);
-            }
-        }
+    const size_t right_size = (queue->current + queue->size) > PREPROCESSOR_QUEUE_SIZE ? PREPROCESSOR_QUEUE_SIZE - queue->current : queue->size;
+    for (size_t i = 0; destroy && i < right_size; ++i) {
+        destroy(queue->elements + queue->current + i);
+    }
+    for (size_t i = 0; destroy && i < queue->size - right_size; ++i) {
+        destroy(queue->elements + i);
     }
 
     queue->size = 0;
@@ -835,29 +801,12 @@ static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
 static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) {
     queue_s queue_copy = { .size = queue.size, .current = queue.current };
 
-    const size_t right_size = PREPROCESSOR_QUEUE_SIZE - queue.current;
-    if (queue.size > right_size) { // queue circles to beginning of elements array
-        const size_t left_size  = queue.size - right_size;
-
-        if (copy) {
-            for (size_t s = queue.current; s < right_size + queue.current; s++) {
-                queue_copy.elements[s] = copy(queue.elements[s]);
-            }
-            for (size_t s = 0; s < left_size; s++) {
-                queue_copy.elements[s] = copy(queue.elements[s]);
-            }
-        } else {
-            memcpy(queue_copy.elements + queue_copy.current, queue.elements + queue.current, sizeof(QUEUE_DATA_TYPE) * right_size);
-            memcpy(queue_copy.elements, queue.elements, sizeof(QUEUE_DATA_TYPE) * left_size);
-        }
-    } else { // queue has all element to the right
-        if (copy) {
-            for (size_t s = queue.current; s < queue.size + queue.current; s++) {
-                queue_copy.elements[s] = copy(queue.elements[s]);
-            }
-        } else {
-            memcpy(queue_copy.elements + queue_copy.current, queue.elements + queue.current, sizeof(QUEUE_DATA_TYPE) * queue.size);
-        }
+    const size_t right_size = (queue.current + queue.size) > PREPROCESSOR_QUEUE_SIZE ? PREPROCESSOR_QUEUE_SIZE - queue.current : queue.size;
+    for (size_t i = 0; i < right_size; ++i) {
+        queue_copy.elements[i + queue.current] = copy ? copy(queue.elements[i + queue.current]) : queue.elements[i + queue.current];
+    }
+    for (size_t i = 0; i < queue.size - right_size; ++i) {
+        queue_copy.elements[i] = copy ? copy(queue.elements[i]) : queue.elements[i];
     }
 
     return queue_copy;
@@ -876,19 +825,12 @@ static inline bool is_empty_queue(const queue_s queue) {
 static inline void clear_queue(queue_s * queue, const destroy_queue_fn destroy) {
     QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL");
 
-    if (destroy) {
-        if (queue->size > PREPROCESSOR_QUEUE_SIZE - queue->current) { // queue circles to beginning of elements array
-            for(size_t s = queue->current; s < PREPROCESSOR_QUEUE_SIZE; s++) {
-                destroy(queue->elements + s);
-            }
-            for(size_t s = 0; s < (queue->size - (PREPROCESSOR_QUEUE_SIZE - queue->current)); s++) {
-                destroy(queue->elements + s);
-            }
-        } else { // queue has all element to the right
-            for(size_t s = queue->current; s < queue->current + queue->size; s++) {
-                destroy(queue->elements + s);
-            }
-        }
+    const size_t right_size = (queue->current + queue->size) > PREPROCESSOR_QUEUE_SIZE ? PREPROCESSOR_QUEUE_SIZE - queue->current : queue->size;
+    for (size_t i = 0; destroy && i < right_size; ++i) {
+        destroy(queue->elements + queue->current + i);
+    }
+    for (size_t i = 0; destroy && i < queue->size - right_size; ++i) {
+        destroy(queue->elements + i);
     }
 
     queue->size = 0;
@@ -904,17 +846,15 @@ static inline void foreach_queue(queue_s * queue, const operate_queue_fn operate
     QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter pointer is NULL.");
     QUEUE_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
 
-    const size_t right_size = PREPROCESSOR_QUEUE_SIZE - queue->current;
-    if (queue->size > right_size) { // if queue elements circle around
-        for (size_t i = queue->current; i < PREPROCESSOR_QUEUE_SIZE; ++i) { // operates on elements right of current index
-            if (!operate(queue->elements + i, args)) return;
+    const size_t right_size = (queue->current + queue->size) > PREPROCESSOR_QUEUE_SIZE ? PREPROCESSOR_QUEUE_SIZE - queue->current : queue->size;
+    for (size_t i = 0; i < right_size; ++i) {
+        if (!operate(queue->elements + queue->current + i, args)) {
+            return;
         }
-        for (size_t i = 0; i < queue->size - right_size; i++) {// operates on elements left of current index
-            if (!operate(queue->elements + i, args)) return;
-        }
-    } else { // else elements are continuous in array (they don't circle around)
-        for (size_t i = queue->current; i < queue->current + queue->size; ++i) {
-            if (!operate(queue->elements + i, args)) return;
+    }
+    for (size_t i = 0; i < queue->size - right_size; ++i) {
+        if (!operate(queue->elements + i, args)) {
+            return;
         }
     }
 }
