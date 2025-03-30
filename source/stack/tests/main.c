@@ -20,6 +20,18 @@ bool operation_string(STACK_DATA_TYPE * element, void * args) {
     return true;
 }
 
+int compare_element(void * a, void * b) {
+    return ((STACK_DATA_TYPE*)(a))->sub_one - ((STACK_DATA_TYPE*)(b))->sub_one;
+}
+
+int compare_reverse_element(void * a, void * b) {
+    return ((STACK_DATA_TYPE*)(b))->sub_one - ((STACK_DATA_TYPE*)(a))->sub_one;
+}
+
+void sort_element(STACK_DATA_TYPE * elements, const size_t size, void * args) {
+    qsort(elements, size, sizeof(STACK_DATA_TYPE), args);
+}
+
 GREATEST_MAIN_DEFS();
 
 int main(const int argc, char **argv) {
@@ -29,6 +41,7 @@ int main(const int argc, char **argv) {
     RUN_SUITE(finite_allocated_stack_test);
     RUN_SUITE(infinite_realloc_stack_test);
     RUN_SUITE(finite_preprocessor_stack_test);
+    RUN_SUITE(finite_wrapper_stack_test);
 
     GREATEST_MAIN_END();
 }

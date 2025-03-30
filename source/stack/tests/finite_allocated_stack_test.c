@@ -1,242 +1,320 @@
 #include "stack_test.h"
 
-#define STACK_MODE FINITE_ALLOCATED_STACK
+#define STACK_MODE FINITE_ALLOCATED_STACK_MODE
 #define MAXIMUM_STACK_SIZE  (1 << 4)
 #include <stack/stack.h>
 
-/// Tests if stack is initialized correctly when creating it.
-TEST FAS_01(void) {
+TEST FAS_CREATE_01(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
 
     ASSERT_EQm("[FAS-ERROR] Test stack size is not zero.", 0, test.size);
-    ASSERT_EQm("[FAS-ERROR] Test stack max is not MAXIMUM_STACK_SIZE.", MAXIMUM_STACK_SIZE, test.max);
-    ASSERT_NEQm("[FAS-ERROR] Test stack elements is not NULL.", NULL, test.elements);
+    ASSERT_NEQm("[FAS-ERROR] Test stack head is not NULL.", NULL, test.elements);
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Tests if stack is initialized correctly when creating and then destroying it.
-TEST FAS_02(void) {
+TEST FAS_DESTROY_01(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
     destroy_stack(&test, NULL);
 
     ASSERT_EQm("[FAS-ERROR] Test stack size is not zero.", 0, test.size);
-    ASSERT_EQm("[FAS-ERROR] Test stack max is not zero.", 0, test.max);
-    ASSERT_EQm("[FAS-ERROR] Test stack elements is not NULL.", NULL, test.elements);
+    ASSERT_EQm("[FAS-ERROR] Test stack head is not NULL.", NULL, test.elements);
 
     PASS();
 }
 
-/// Tests if one pushed element is peeked correctly.
-TEST FAS_03(void) {
+TEST FAS_DESTROY_02(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
-
-    ASSERT_EQm("[FAS-ERROR] Test stack peeked element not 42.", 42, peep_stack(test).sub_one);
-
     destroy_stack(&test, NULL);
+
+    ASSERT_EQm("[FAS-ERROR] Test stack size is not zero.", 0, test.size);
+    ASSERT_EQm("[FAS-ERROR] Test stack head is not NULL.", NULL, test.elements);
 
     PASS();
 }
 
-/// Tests if 'MAXIMUM_STACK_SIZE' - 1 pushed element is peeked correctly.
-TEST FAS_04(void) {
+TEST FAS_DESTROY_03(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-    for (size_t i = 0; i < MAXIMUM_STACK_SIZE - 2; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1, });
+    for (int i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
     }
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
-
-    ASSERT_EQm("[FAS-ERROR] Test stack peeked element not 42.", 42, peep_stack(test).sub_one);
-
     destroy_stack(&test, NULL);
+
+    ASSERT_EQm("[FAS-ERROR] Test stack size is not zero.", 0, test.size);
+    ASSERT_EQm("[FAS-ERROR] Test stack head is not NULL.", NULL, test.elements);
 
     PASS();
 }
 
-/// Tests if 'MAXIMUM_STACK_SIZE' pushed element is peeked correctly.
-TEST FAS_05(void) {
+TEST FAS_DESTROY_04(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-    for (size_t i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1, });
+    for (int i = 0; i < MAXIMUM_STACK_SIZE; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
     }
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
-
-    ASSERT_EQm("[FAS-ERROR] Test stack peeked element not 42.", 42, peep_stack(test).sub_one);
-
     destroy_stack(&test, NULL);
+
+    ASSERT_EQm("[FAS-ERROR] Test stack size is not zero.", 0, test.size);
+    ASSERT_EQm("[FAS-ERROR] Test stack head is not NULL.", NULL, test.elements);
 
     PASS();
 }
 
-/// Tests if sequence of 'MAXIMUM_STACK_SIZE' - 1 pushed numbers is popped correctly
-TEST FAS_06(void) {
+TEST FAS_DESTROY_05(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-
-    for (int i = 1; i <= MAXIMUM_STACK_SIZE - 1; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i, });
-    }
-
-    for (int i = MAXIMUM_STACK_SIZE - 1; i >= 1; --i) {
-        ASSERT_EQm("[FAS-ERROR] Test stack popped element not 'i'.", i, pop_stack(&test).sub_one);
-    }
-
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Tests if sequence of 'MAXIMUM_STACK_SIZE' pushed numbers is popped correctly
-TEST FAS_07(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-
-    for (int i = 1; i <= MAXIMUM_STACK_SIZE; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i, });
-    }
-
-    for (int i = MAXIMUM_STACK_SIZE; i >= 1; --i) {
-        ASSERT_EQm("[FAS-ERROR] Test stack popped element not 'i'.", i, pop_stack(&test).sub_one);
-    }
-
-    destroy_stack(&test, NULL);
-    PASS();
-}
-
-/// Tests if peek does not change size
-TEST FAS_08(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
-    peep_stack(test);
-
-    ASSERT_EQm("[FAS-ERROR] Expected stack size to not change after peek.", 1, test.size);
-
-    destroy_stack(&test, NULL);
-
-    PASS();
-}
-
-/// Tests if stack is empty when creating it.
-TEST FAS_09(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-
-    ASSERTm("[FAS-ERROR] Expected stack to be empty when creating it.", is_empty_stack(test));
-
-    destroy_stack(&test, NULL);
-
-    PASS();
-}
-
-/// Tests if stack is not empty when push_stacking element.
-TEST FAS_10(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
-    ASSERT_FALSEm("[FAS-ERROR] Expected stack to not be empty when push_stacking element.", is_empty_stack(test));
-
-    destroy_stack(&test, NULL);
-
-    PASS();
-}
-
-/// Tests if one pushed element is popped correctly.
-TEST FAS_11(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
-
-    ASSERT_EQm("[FAS-ERROR] Test stack popped element not 42.", 42, pop_stack(&test).sub_one);
-
-    destroy_stack(&test, NULL);
-
-    PASS();
-}
-
-/// Tests if 'MAXIMUM_STACK_SIZE' - 1 pushed element is popped correctly.
-TEST FAS_12(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-    for (size_t i = 0; i < MAXIMUM_STACK_SIZE - 2; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1, });
-    }
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
-
-    ASSERT_EQm("[FAS-ERROR] Test stack popped element not 42.", 42, pop_stack(&test).sub_one);
-
-    destroy_stack(&test, NULL);
-
-    PASS();
-}
-
-/// Tests if 'MAXIMUM_STACK_SIZE' pushed element is popped correctly.
-TEST FAS_13(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-    for (size_t i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1, });
-    }
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
-
-    ASSERT_EQm("[FAS-ERROR] Test stack popped element not 42.", 42, pop_stack(&test).sub_one);
-
-    destroy_stack(&test, NULL);
-
-    PASS();
-}
-
-/// Test if destroyed element
-TEST FAS_14(void) {
-    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-
-    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
-
     destroy_stack(&test, destroy_element);
+
+    ASSERT_EQm("[FAS-ERROR] Test stack size is not zero.", 0, test.size);
+    ASSERT_EQm("[FAS-ERROR] Test stack head is not NULL.", NULL, test.elements);
+
     PASS();
 }
 
-/// Test if destroyed element
-TEST FAS_15(void) {
+TEST FAS_DESTROY_06(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-    for (size_t i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
-        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
-    }
-
+    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING, }));
     destroy_stack(&test, destroy_element);
+
+    ASSERT_EQm("[FAS-ERROR] Test stack size is not zero.", 0, test.size);
+    ASSERT_EQm("[FAS-ERROR] Test stack head is not NULL.", NULL, test.elements);
+
     PASS();
 }
 
-/// Test if destroyed element
-TEST FAS_16(void) {
+TEST FAS_DESTROY_07(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+    for (int i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING, }));
+    }
+    destroy_stack(&test, destroy_element);
+
+    ASSERT_EQm("[FAS-ERROR] Test stack size is not zero.", 0, test.size);
+    ASSERT_EQm("[FAS-ERROR] Test stack head is not NULL.", NULL, test.elements);
+
+    PASS();
+}
+
+TEST FAS_DESTROY_08(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+    for (int i = 0; i < MAXIMUM_STACK_SIZE; ++i) {
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING, }));
+    }
+    destroy_stack(&test, destroy_element);
+
+    ASSERT_EQm("[FAS-ERROR] Test stack size is not zero.", 0, test.size);
+    ASSERT_EQm("[FAS-ERROR] Test stack head is not NULL.", NULL, test.elements);
+
+    PASS();
+}
+
+TEST FAS_IS_FULL_01(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    ASSERT_FALSEm("[FAS-ERROR] Expected stack to not be full", is_full_stack(test));
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+TEST FAS_IS_FULL_02(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
+    ASSERT_FALSEm("[FAS-ERROR] Expected stack to not be full", is_full_stack(test));
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+TEST FAS_IS_FULL_03(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    for (size_t i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
+    }
+    ASSERT_FALSEm("[FAS-ERROR] Expected stack to not be full", is_full_stack(test));
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+TEST FAS_IS_FULL_04(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
     for (size_t i = 0; i < MAXIMUM_STACK_SIZE; ++i) {
-        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
     }
+    ASSERTm("[FAS-ERROR] Expected stack to be full", is_full_stack(test));
 
-    destroy_stack(&test, destroy_element);
+    destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if 1 copied int element
-TEST FAS_17(void) {
+TEST FAS_PEEP_01(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
+
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
+    ASSERT_EQm("[FAS-ERROR] Expected to peep 42", 42, peep_stack(test).sub_one);
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+TEST FAS_PEEP_02(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    for (int i = 0; i < MAXIMUM_STACK_SIZE - 2; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1, });
+    }
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
+
+    ASSERT_EQm("[FAS-ERROR] Expected to peep 42", 42, peep_stack(test).sub_one);
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+TEST FAS_PEEP_03(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    for (int i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = -1, });
+    }
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
+
+    ASSERT_EQm("[FAS-ERROR] Expected to peep 42", 42, peep_stack(test).sub_one);
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+TEST FAS_PUSH_01(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
+
+    ASSERT_EQm("[FAS-ERROR] Expected to pop 42", 42, pop_stack(&test).sub_one);
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+TEST FAS_PUSH_02(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    for (int i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = MAXIMUM_STACK_SIZE - 2; i >= 0; --i) {
+        ASSERT_EQm("[FAS-ERROR] Expected to pop i", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+TEST FAS_PUSH_03(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    for (int i = 0; i < MAXIMUM_STACK_SIZE; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = MAXIMUM_STACK_SIZE - 1; i >= 0; --i) {
+        ASSERT_EQm("[FAS-ERROR] Expected to pop i", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+TEST FAS_POP_01(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
+
+    ASSERT_EQm("[FAS-ERROR] Expected to pop 42", 42, pop_stack(&test).sub_one);
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+TEST FAS_POP_02(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    for (int i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = MAXIMUM_STACK_SIZE - 2; i >= 0; --i) {
+        ASSERT_EQm("[FAS-ERROR] Expected to pop i", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+TEST FAS_POP_03(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    for (int i = 0; i < MAXIMUM_STACK_SIZE; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = MAXIMUM_STACK_SIZE - 1; i >= 0; --i) {
+        ASSERT_EQm("[FAS-ERROR] Expected to pop i", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+TEST FAS_COPY_01(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
 
     stack_s copy = copy_stack(test, NULL);
 
-    ASSERT_EQm("[FAS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+    ASSERT_EQm("[FAS-ERROR] Expected sizes to be equal", test.size, copy.size);
+    ASSERT_NEQm("[FAS-ERROR] Expected heads to be equal", test.elements, copy.elements);
 
     destroy_stack(&test, NULL);
     destroy_stack(&copy, NULL);
     PASS();
 }
 
-/// Test if 'MAXIMUM_STACK_SIZE' - 1 copied int element
-TEST FAS_18(void) {
+TEST FAS_COPY_02(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
+
+    stack_s copy = copy_stack(test, NULL);
+
+    ASSERT_EQm("[FAS-ERROR] Expected sizes to be equal", test.size, copy.size);
+    ASSERT_NEQm("[FAS-ERROR] Expected heads to not be equal", test.elements, copy.elements);
+
+    ASSERT_EQm("[FAS-ERROR] Expected elements to be equal", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+
+    destroy_stack(&test, NULL);
+    destroy_stack(&copy, NULL);
+    PASS();
+}
+
+TEST FAS_COPY_03(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
     for (int i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i, });
     }
 
     stack_s copy = copy_stack(test, NULL);
+
+    ASSERT_EQm("[FAS-ERROR] Expected sizes to be equal", test.size, copy.size);
+    ASSERT_NEQm("[FAS-ERROR] Expected heads to not be equal", test.elements, copy.elements);
+
     for (int i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
-        ASSERT_EQm("[FAS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+        ASSERT_EQm("[FAS-ERROR] Expected elements to be equal", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
     }
 
     destroy_stack(&test, NULL);
@@ -244,16 +322,20 @@ TEST FAS_18(void) {
     PASS();
 }
 
-/// Test if 'MAXIMUM_STACK_SIZE' copied int element
-TEST FAS_19(void) {
+TEST FAS_COPY_04(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
     for (int i = 0; i < MAXIMUM_STACK_SIZE; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i, });
     }
 
     stack_s copy = copy_stack(test, NULL);
+
+    ASSERT_EQm("[FAS-ERROR] Expected sizes to be equal", test.size, copy.size);
+    ASSERT_NEQm("[FAS-ERROR] Expected heads to not be equal", test.elements, copy.elements);
+
     for (int i = 0; i < MAXIMUM_STACK_SIZE; ++i) {
-        ASSERT_EQm("[FAS-TEST] Test stack is not equal to copy.", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
+        ASSERT_EQm("[FAS-ERROR] Expected elements to be equal", pop_stack(&test).sub_one, pop_stack(&copy).sub_one);
     }
 
     destroy_stack(&test, NULL);
@@ -261,38 +343,54 @@ TEST FAS_19(void) {
     PASS();
 }
 
-/// Test if 1 copied string element
-TEST FAS_20(void) {
+TEST FAS_COPY_05(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
 
     stack_s copy = copy_stack(test, copy_element);
 
-    STACK_DATA_TYPE elemen_test = pop_stack(&test);
-    STACK_DATA_TYPE element_copy = pop_stack(&copy);
-    ASSERT_STRN_EQm("[FAS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
-    destroy_element(&elemen_test);
-    destroy_element(&element_copy);
+    ASSERT_EQm("[FAS-ERROR] Expected sizes to be equal", test.size, copy.size);
+    ASSERT_NEQm("[FAS-ERROR] Expected heads to be equal", test.elements, copy.elements);
 
     destroy_stack(&test, destroy_element);
     destroy_stack(&copy, destroy_element);
     PASS();
 }
 
-/// Test if 'MAXIMUM_STACK_SIZE' - 1 copied string element
-TEST FAS_21(void) {
+TEST FAS_COPY_06(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING, }));
+
+    stack_s copy = copy_stack(test, copy_element);
+
+    ASSERT_EQm("[FAS-ERROR] Expected sizes to be equal", test.size, copy.size);
+    ASSERT_NEQm("[FAS-ERROR] Expected heads to not be equal", test.elements, copy.elements);
+
+    ASSERT_STRN_EQm("[FAS-ERROR] Expected elements to be equal", peep_stack(test).sub_two, peep_stack(copy).sub_two, sizeof(TEST_STRING) - 1);
+
+    destroy_stack(&test, destroy_element);
+    destroy_stack(&copy, destroy_element);
+    PASS();
+}
+
+TEST FAS_COPY_07(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
     for (int i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
-        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING, }));
     }
 
     stack_s copy = copy_stack(test, copy_element);
+
+    ASSERT_EQm("[FAS-ERROR] Expected sizes to be equal", test.size, copy.size);
+    ASSERT_NEQm("[FAS-ERROR] Expected heads to not be equal", test.elements, copy.elements);
+
     for (int i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
-        STACK_DATA_TYPE elemen_test = pop_stack(&test);
-        STACK_DATA_TYPE element_copy = pop_stack(&copy);
-        ASSERT_STRN_EQm("[FAS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
-        destroy_element(&elemen_test);
-        destroy_element(&element_copy);
+        ASSERT_STRN_EQm("[FAS-ERROR] Expected elements to be equal", peep_stack(test).sub_two, peep_stack(copy).sub_two, sizeof(TEST_STRING) - 1);
+        STACK_DATA_TYPE test_element = pop_stack(&test);
+        destroy_element(&test_element);
+        STACK_DATA_TYPE copy_element = pop_stack(&copy);
+        destroy_element(&copy_element);
     }
 
     destroy_stack(&test, destroy_element);
@@ -300,20 +398,24 @@ TEST FAS_21(void) {
     PASS();
 }
 
-/// Test if 'MAXIMUM_STACK_SIZE' copied string element
-TEST FAS_22(void) {
+TEST FAS_COPY_08(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
     for (int i = 0; i < MAXIMUM_STACK_SIZE; ++i) {
-        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING, }));
     }
 
     stack_s copy = copy_stack(test, copy_element);
+
+    ASSERT_EQm("[FAS-ERROR] Expected sizes to be equal", test.size, copy.size);
+    ASSERT_NEQm("[FAS-ERROR] Expected heads to not be equal", test.elements, copy.elements);
+
     for (int i = 0; i < MAXIMUM_STACK_SIZE; ++i) {
-        STACK_DATA_TYPE elemen_test = pop_stack(&test);
-        STACK_DATA_TYPE element_copy = pop_stack(&copy);
-        ASSERT_STRN_EQm("[FAS-TEST] Test stack string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
-        destroy_element(&elemen_test);
-        destroy_element(&element_copy);
+        ASSERT_STRN_EQm("[FAS-ERROR] Expected elements to be equal", peep_stack(test).sub_two, peep_stack(copy).sub_two, sizeof(TEST_STRING) - 1);
+        STACK_DATA_TYPE test_element = pop_stack(&test);
+        destroy_element(&test_element);
+        STACK_DATA_TYPE copy_element = pop_stack(&copy);
+        destroy_element(&copy_element);
     }
 
     destroy_stack(&test, destroy_element);
@@ -321,64 +423,152 @@ TEST FAS_22(void) {
     PASS();
 }
 
-/// Test if stack is not empty
-TEST FAS_23(void) {
+TEST FAS_IS_EMPTY_01(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-    for (int i = 0; i < MAXIMUM_STACK_SIZE; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+
+    ASSERTm("[FAS-ERROR] Expected stack to be empty", is_empty_stack(test));
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+TEST FAS_IS_EMPTY_02(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    for (int i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
     }
 
-    ASSERT_FALSEm("[FAS-TEST] Stack is empty.", is_empty_stack(test));
+    ASSERT_FALSEm("[FAS-ERROR] Expected stack to not be empty", is_empty_stack(test));
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if stack is empty after 1 push_stack/pop_stack
-TEST FAS_24(void) {
+TEST FAS_IS_EMPTY_03(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
-    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    pop_stack(&test);
-    ASSERTm("[FAS-TEST] Stack is not empty.", is_empty_stack(test));
+
+    for (int i = 0; i < MAXIMUM_STACK_SIZE; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
+    }
+
+    ASSERT_FALSEm("[FAS-ERROR] Expected stack to not be empty", is_empty_stack(test));
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if stack is empty after 'MAXIMUM_STACK_SIZE' - 1 push_stack/pop_stack
-TEST FAS_25(void) {
+TEST FAS_CLEAR_01(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    clear_stack(&test, NULL);
+
+    ASSERT_EQm("[FAS-ERROR] Test stack size is not zero.", 0, test.size);
+    ASSERT_NEQm("[FAS-ERROR] Test stack head is not NULL.", NULL, test.elements);
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+TEST FAS_CLEAR_02(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
+
+    clear_stack(&test, NULL);
+
+    ASSERT_EQm("[FAS-ERROR] Test stack size is not zero.", 0, test.size);
+    ASSERT_NEQm("[FAS-ERROR] Test stack head is not NULL.", NULL, test.elements);
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+TEST FAS_CLEAR_03(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
     for (int i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    }
-    for (int i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
-        pop_stack(&test);
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
     }
 
-    ASSERTm("[FAS-TEST] Stack is not empty.", is_empty_stack(test));
+    clear_stack(&test, NULL);
+
+    ASSERT_EQm("[FAS-ERROR] Test stack size is not zero.", 0, test.size);
+    ASSERT_NEQm("[FAS-ERROR] Test stack head is not NULL.", NULL, test.elements);
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if stack is empty after 'MAXIMUM_STACK_SIZE' push_stack/pop_stack
-TEST FAS_26(void) {
+TEST FAS_CLEAR_04(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
     for (int i = 0; i < MAXIMUM_STACK_SIZE; ++i) {
-        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
-    }
-    for (int i = 0; i < MAXIMUM_STACK_SIZE; ++i) {
-        pop_stack(&test);
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
     }
 
-    ASSERTm("[FAS-TEST] Stack is not empty.", is_empty_stack(test));
+    clear_stack(&test, NULL);
+
+    ASSERT_EQm("[FAS-ERROR] Test stack size is not zero.", 0, test.size);
+    ASSERT_NEQm("[FAS-ERROR] Test stack head is not NULL.", NULL, test.elements);
 
     destroy_stack(&test, NULL);
     PASS();
 }
 
-/// Test if all one int values get incremented by 'increment'
-TEST FAS_27(void) {
+TEST FAS_CLEAR_05(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    clear_stack(&test, destroy_element);
+
+    ASSERT_EQm("[FAS-ERROR] Test stack size is not zero.", 0, test.size);
+    ASSERT_NEQm("[FAS-ERROR] Test stack head is not NULL.", NULL, test.elements);
+
+    destroy_stack(&test, destroy_element);
+    PASS();
+}
+
+TEST FAS_CLEAR_06(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+    push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING, }));
+
+    clear_stack(&test, destroy_element);
+
+    ASSERT_EQm("[FAS-ERROR] Test stack size is not zero.", 0, test.size);
+    ASSERT_NEQm("[FAS-ERROR] Test stack head is not NULL.", NULL, test.elements);
+
+    destroy_stack(&test, destroy_element);
+    PASS();
+}
+
+TEST FAS_CLEAR_07(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+    for (int i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING, }));
+    }
+
+    clear_stack(&test, destroy_element);
+
+    ASSERT_EQm("[FAS-ERROR] Test stack size is not zero.", 0, test.size);
+    ASSERT_NEQm("[FAS-ERROR] Test stack head is not NULL.", NULL, test.elements);
+
+    destroy_stack(&test, destroy_element);
+    PASS();
+}
+
+TEST FAS_CLEAR_08(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+    for (int i = 0; i < MAXIMUM_STACK_SIZE; ++i) {
+        push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING, }));
+    }
+
+    clear_stack(&test, destroy_element);
+
+    ASSERT_EQm("[FAS-ERROR] Test stack size is not zero.", 0, test.size);
+    ASSERT_NEQm("[FAS-ERROR] Test stack head is not NULL.", NULL, test.elements);
+
+    destroy_stack(&test, destroy_element);
+    PASS();
+}
+
+TEST FAS_FOREACH_01(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
 
@@ -392,8 +582,7 @@ TEST FAS_27(void) {
     PASS();
 }
 
-/// Test if all 'MAXIMUM_STACK_SIZE - 1' int values get incremented by 'increment'
-TEST FAS_28(void) {
+TEST FAS_FOREACH_02(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
     for (int i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
@@ -411,8 +600,7 @@ TEST FAS_28(void) {
     PASS();
 }
 
-/// Test if all 'MAXIMUM_STACK_SIZE' int values get incremented by 'increment'
-TEST FAS_29(void) {
+TEST FAS_FOREACH_03(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
     for (int i = 0; i < MAXIMUM_STACK_SIZE; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
@@ -430,8 +618,7 @@ TEST FAS_29(void) {
     PASS();
 }
 
-/// Test if all one string values have changed to new string value
-TEST FAS_30(void) {
+TEST FAS_FOREACH_04(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
 
     push_stack(&test, copy_element((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
@@ -448,8 +635,7 @@ TEST FAS_30(void) {
     PASS();
 }
 
-/// Test if all 'MAXIMUM_STACK_SIZE' - 1 string values have changed to new string value
-TEST FAS_31(void) {
+TEST FAS_FOREACH_05(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
 
     for (int i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
@@ -470,8 +656,7 @@ TEST FAS_31(void) {
     PASS();
 }
 
-/// Test if all 'MAXIMUM_STACK_SIZE' string values have changed to new string value
-TEST FAS_32(void) {
+TEST FAS_FOREACH_06(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
 
     for (int i = 0; i < MAXIMUM_STACK_SIZE; ++i) {
@@ -489,16 +674,139 @@ TEST FAS_32(void) {
 
     destroy_stack(&test, destroy_element);
 
+    PASS();
+}
+
+TEST FAS_FOREVERY_01(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    forevery_stack(&test, sort_element, compare_element);
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+TEST FAS_FOREVERY_02(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
+
+    forevery_stack(&test, sort_element, compare_element);
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+TEST FAS_FOREVERY_03(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    for (int i = (MAXIMUM_STACK_SIZE - 1) >> 1; i < MAXIMUM_STACK_SIZE - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    for (int i = 0; i < (MAXIMUM_STACK_SIZE - 1) >> 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    forevery_stack(&test, sort_element, compare_element);
+
+    for (int i = MAXIMUM_STACK_SIZE - 2; i >= 0; --i) {
+        ASSERT_EQm("[FAS-ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+TEST FAS_FOREVERY_04(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    for (int i = (MAXIMUM_STACK_SIZE) >> 1; i < MAXIMUM_STACK_SIZE; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    for (int i = 0; i < (MAXIMUM_STACK_SIZE) >> 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    forevery_stack(&test, sort_element, compare_element);
+
+    for (int i = MAXIMUM_STACK_SIZE - 1; i >= 0; --i) {
+        ASSERT_EQm("[FAS-ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+TEST FAS_FOREVERY_05(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    for (int i = (MAXIMUM_STACK_SIZE - 1) >> 1; i < MAXIMUM_STACK_SIZE - 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    for (int i = 0; i < (MAXIMUM_STACK_SIZE - 1) >> 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    forevery_stack(&test, sort_element, compare_reverse_element);
+
+    for (int i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
+        ASSERT_EQm("[FAS-ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
+    PASS();
+}
+
+TEST FAS_FOREVERY_06(void) {
+    stack_s test = create_stack(MAXIMUM_STACK_SIZE);
+
+    for (int i = (MAXIMUM_STACK_SIZE) >> 1; i < MAXIMUM_STACK_SIZE; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    for (int i = 0; i < (MAXIMUM_STACK_SIZE) >> 1; ++i) {
+        push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
+    }
+
+    forevery_stack(&test, sort_element, compare_reverse_element);
+
+    for (int i = 0; i < MAXIMUM_STACK_SIZE; ++i) {
+        ASSERT_EQm("[FAS-ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
+    }
+
+    destroy_stack(&test, NULL);
     PASS();
 }
 
 SUITE (finite_allocated_stack_test) {
-    RUN_TEST(FAS_01); RUN_TEST(FAS_02); RUN_TEST(FAS_03); RUN_TEST(FAS_04);
-    RUN_TEST(FAS_05); RUN_TEST(FAS_06); RUN_TEST(FAS_07); RUN_TEST(FAS_08);
-    RUN_TEST(FAS_09); RUN_TEST(FAS_10); RUN_TEST(FAS_11); RUN_TEST(FAS_12);
-    RUN_TEST(FAS_13); RUN_TEST(FAS_14); RUN_TEST(FAS_15); RUN_TEST(FAS_16);
-    RUN_TEST(FAS_17); RUN_TEST(FAS_18); RUN_TEST(FAS_19); RUN_TEST(FAS_20);
-    RUN_TEST(FAS_21); RUN_TEST(FAS_22); RUN_TEST(FAS_23); RUN_TEST(FAS_24);
-    RUN_TEST(FAS_25); RUN_TEST(FAS_26); RUN_TEST(FAS_27); RUN_TEST(FAS_28);
-    RUN_TEST(FAS_29); RUN_TEST(FAS_30); RUN_TEST(FAS_31); RUN_TEST(FAS_32);
+    // create
+    RUN_TEST(FAS_CREATE_01);
+    // destroy
+    RUN_TEST(FAS_DESTROY_01); RUN_TEST(FAS_DESTROY_02); RUN_TEST(FAS_DESTROY_03); RUN_TEST(FAS_DESTROY_04); RUN_TEST(FAS_DESTROY_05);
+    RUN_TEST(FAS_DESTROY_06); RUN_TEST(FAS_DESTROY_07); RUN_TEST(FAS_DESTROY_08);
+    // is full
+    RUN_TEST(FAS_IS_FULL_01); RUN_TEST(FAS_IS_FULL_02); RUN_TEST(FAS_IS_FULL_03); RUN_TEST(FAS_IS_FULL_04);
+    // peep
+    RUN_TEST(FAS_PEEP_01); RUN_TEST(FAS_PEEP_02); RUN_TEST(FAS_PEEP_03);
+    // push
+    RUN_TEST(FAS_PUSH_01); RUN_TEST(FAS_PUSH_02); RUN_TEST(FAS_PUSH_03);
+    // pop
+    RUN_TEST(FAS_POP_01); RUN_TEST(FAS_POP_02); RUN_TEST(FAS_POP_03);
+    // copy
+    RUN_TEST(FAS_COPY_01); RUN_TEST(FAS_COPY_02); RUN_TEST(FAS_COPY_03); RUN_TEST(FAS_COPY_04); RUN_TEST(FAS_COPY_05);
+    RUN_TEST(FAS_COPY_06); RUN_TEST(FAS_COPY_07); RUN_TEST(FAS_COPY_08);
+    // is empty
+    RUN_TEST(FAS_IS_EMPTY_01); RUN_TEST(FAS_IS_EMPTY_02); RUN_TEST(FAS_IS_EMPTY_03);
+    // clear
+    RUN_TEST(FAS_CLEAR_01); RUN_TEST(FAS_CLEAR_02); RUN_TEST(FAS_CLEAR_03); RUN_TEST(FAS_CLEAR_04); RUN_TEST(FAS_CLEAR_05);
+    RUN_TEST(FAS_CLEAR_06); RUN_TEST(FAS_CLEAR_07); RUN_TEST(FAS_CLEAR_08);
+    // foreach
+    RUN_TEST(FAS_FOREACH_01); RUN_TEST(FAS_FOREACH_02); RUN_TEST(FAS_FOREACH_03); RUN_TEST(FAS_FOREACH_04); RUN_TEST(FAS_FOREACH_05);
+    RUN_TEST(FAS_FOREACH_06);
+    // foevery
+    RUN_TEST(FAS_FOREVERY_01); RUN_TEST(FAS_FOREVERY_02); RUN_TEST(FAS_FOREVERY_03); RUN_TEST(FAS_FOREVERY_04); RUN_TEST(FAS_FOREVERY_05);
+    RUN_TEST(FAS_FOREVERY_06);
 }

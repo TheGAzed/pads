@@ -18,9 +18,15 @@ STACK_DATA_TYPE copy_element(const STACK_DATA_TYPE element);
 bool operation_int(STACK_DATA_TYPE * element, void * args);
 bool operation_string(STACK_DATA_TYPE * element, void * args);
 
+int compare_element(void * a, void * b);
+int compare_reverse_element(void * a, void * b);
+
+void sort_element(STACK_DATA_TYPE * elements, const size_t size, void * args);
+
 SUITE_EXTERN(infinite_list_stack_test);
 SUITE_EXTERN(finite_allocated_stack_test);
 SUITE_EXTERN(infinite_realloc_stack_test);
 SUITE_EXTERN(finite_preprocessor_stack_test);
+SUITE_EXTERN(finite_wrapper_stack_test);
 
 #endif //STACK_TEST_H
