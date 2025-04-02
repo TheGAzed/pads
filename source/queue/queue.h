@@ -631,7 +631,7 @@ static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
     if ((queue->size % REALLOC_QUEUE_CHUNK) == 0) {
         QUEUE_DATA_TYPE * temp = queue->size ? QUEUE_ALLOC(queue->size * sizeof(QUEUE_DATA_TYPE)) : NULL;
 
-        // QUEUE_ASSERTion fails if allocation returns NULL on non-zero chunk size
+        // asserion fails if allocation returns NULL on non-zero chunk size
         QUEUE_ASSERT((!queue->size || temp) && "[ERROR] Memory allocation failed.");
 
         memcpy(temp, &(queue->elements[queue->current]), queue->size * sizeof(QUEUE_DATA_TYPE));

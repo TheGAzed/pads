@@ -41,7 +41,6 @@ int main(const int argc, char **argv) {
     RUN_SUITE(finite_allocated_stack_test);
     RUN_SUITE(infinite_realloc_stack_test);
     RUN_SUITE(finite_preprocessor_stack_test);
-    RUN_SUITE(finite_wrapper_stack_test);
 
     GREATEST_MAIN_END();
 }

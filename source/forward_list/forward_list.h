@@ -922,41 +922,31 @@ static inline void clear_forward_list(forward_list_s * list, const destroy_forwa
 /// @param list Pointer to forward list structure.
 /// @param manage Function pointer to manage the array of elements based on element count/size and specified args.
 /// @param args Void pointer arguments for 'manage' function.
-/// @note If 'manage' does not change the order of elements then the original element ordering may NOT remain
-/// (it may change if there are holes in the list). This may not apply for other forward list 'forevery_forward_list'
-/// implementations and a note will reflect that.
+/// @note This function can be used to removes holes in list if manage is made as an empty function.
 static inline void forevery_forward_list(forward_list_s * list, const manage_forward_list_fn manage, void * args) {
     FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
     FORWARD_LIST_ASSERT(manage && "[ERROR] 'operate' parameter pointer is NULL.");
 
-    size_t empty_index = list->empty_head;
-    size_t stack_size = list->size + list->empty_size;
-    while (list->empty_size) { // removes holes at the expense of breaking the list
-        stack_size--;
+    FORWARD_LIST_DATA_TYPE * elements_array = FORWARD_LIST_ALLOC(list->size * sizeof(FORWARD_LIST_DATA_TYPE)); // create temporary array to store list elements
 
-        if (empty_index > stack_size) {
-            empty_index = list->next[empty_index];
-        }
-
-        FORWARD_LIST_DATA_TYPE element = list->elements[empty_index];
-        list->elements[empty_index] = list->elements[stack_size];
-        list->elements[stack_size] = element;
-
-        const size_t index = list->next[empty_index];
-        list->next[empty_index] = list->next[stack_size];
-        list->next[stack_size] = empty_index;
-        empty_index = index;
-
-        list->empty_size--;
+    size_t previous = list->tail;
+    for (size_t i = 0; i < list->size; ++i) {
+        previous = list->next[previous];
+        elements_array[i] = list->elements[previous];
     }
 
-    manage(list->elements, list->size, args);
+    manage(elements_array, list->size, args);
 
-    list->tail = list->size ? list->size - 1 : 0;
-    for (size_t i = 1; list->size && i <= list->size; ++i) {
-        const size_t mod = i % list->size;
-        list->next[i - 1] = mod;
+    memcpy(list->elements, elements_array, sizeof(FORWARD_LIST_DATA_TYPE) * list->size); // copy elements from managed
+
+    list->empty_size = list->tail = 0; // set empty stack size and list tail index to zero
+    for (size_t i = 0; i < list->size; ++i) {
+        list->next[i] = i + 1; // set next element index at i to i + 1
+        list->next[list->size - 1] = 0; // set last index at list size - 1 (list size is not zero as loop proves) to make it circular
+        list->tail = list->size - 1; // set zeroed tail to make it index to size - 1, i. e. last element's index
     }
+
+    FORWARD_LIST_FREE(elements_array);
 }
 
 /// @brief Performs a binary search on sorted forward list.
@@ -1485,34 +1475,26 @@ static inline void forevery_forward_list(forward_list_s * list, const manage_for
     FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
     FORWARD_LIST_ASSERT(manage && "[ERROR] 'operate' parameter pointer is NULL.");
 
-    size_t empty_index = list->empty_head;
-    size_t stack_size = list->size + list->empty_size;
-    while (list->empty_size) { // removes holes at the expense of breaking the list
-        stack_size--;
+    FORWARD_LIST_DATA_TYPE * elements_array = FORWARD_LIST_ALLOC(list->size * sizeof(FORWARD_LIST_DATA_TYPE)); // create temporary array to store list elements
 
-        if (empty_index > stack_size) {
-            empty_index = list->next[empty_index];
-        }
-
-        FORWARD_LIST_DATA_TYPE element = list->elements[empty_index];
-        list->elements[empty_index] = list->elements[stack_size];
-        list->elements[stack_size] = element;
-
-        const size_t index = list->next[empty_index];
-        list->next[empty_index] = list->next[stack_size];
-        list->next[stack_size] = empty_index;
-        empty_index = index;
-
-        list->empty_size--;
+    size_t previous = list->tail;
+    for (size_t i = 0; i < list->size; ++i) {
+        previous = list->next[previous];
+        elements_array[i] = list->elements[previous];
     }
 
-    manage(list->elements, list->size, args);
+    manage(elements_array, list->size, args);
 
-    list->tail = list->size ? list->size - 1 : 0;
-    for (size_t i = 1; list->size && i <= list->size; ++i) {
-        const size_t mod = i % list->size;
-        list->next[i - 1] = mod;
+    memcpy(list->elements, elements_array, sizeof(FORWARD_LIST_DATA_TYPE) * list->size); // copy elements from managed
+
+    list->empty_size = list->tail = 0; // set empty stack size and list tail index to zero
+    for (size_t i = 0; i < list->size; ++i) {
+        list->next[i] = i + 1; // set next element index at i to i + 1
+        list->next[list->size - 1] = 0; // set last index at list size - 1 (list size is not zero as loop proves) to make it circular
+        list->tail = list->size - 1; // set zeroed tail to make it index to size - 1, i. e. last element's index
     }
+
+    FORWARD_LIST_FREE(elements_array);
 }
 
 /// @brief Performs a binary search on sorted forward list.
@@ -1937,33 +1919,23 @@ static inline void forevery_forward_list(forward_list_s * list, const manage_for
     FORWARD_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
     FORWARD_LIST_ASSERT(manage && "[ERROR] 'operate' parameter pointer is NULL.");
 
-    size_t empty_index = list->empty_head;
-    size_t stack_size = list->size + list->empty_size;
-    while (list->empty_size) { // removes holes at the expense of breaking the list and turning it into an array
-        stack_size--;
+    FORWARD_LIST_DATA_TYPE elements_array[PREPROCESSOR_FORWARD_LIST_SIZE]; // create temporary array to store list elements
 
-        if (empty_index > stack_size) {
-            empty_index = list->next[empty_index];
-        }
-
-        FORWARD_LIST_DATA_TYPE element = list->elements[empty_index];
-        list->elements[empty_index] = list->elements[stack_size];
-        list->elements[stack_size] = element;
-
-        const size_t index = list->next[empty_index];
-        list->next[empty_index] = list->next[stack_size];
-        list->next[stack_size] = empty_index;
-        empty_index = index;
-
-        list->empty_size--;
+    size_t previous = list->tail;
+    for (size_t i = 0; i < list->size; ++i) {
+        previous = list->next[previous];
+        elements_array[i] = list->elements[previous];
     }
 
-    manage(list->elements, list->size, args);
+    manage(elements_array, list->size, args);
 
-    list->tail = list->size ? list->size - 1 : 0;
-    for (size_t i = 1; list->size && i <= list->size; ++i) {
-        const size_t mod = i % list->size;
-        list->next[i - 1] = mod;
+    memcpy(list->elements, elements_array, sizeof(FORWARD_LIST_DATA_TYPE) * list->size); // copy elements from managed array
+
+    list->empty_size = list->tail = 0; // set empty stack size and list tail index to zero
+    for (size_t i = 0; i < list->size; ++i) {
+        list->next[i] = i + 1; // set next element index at i to i + 1
+        list->next[list->size - 1] = 0; // set last index at list size - 1 (list size is not zero as loop proves) to make it circular
+        list->tail = list->size - 1; // set zeroed tail to make it index to size - 1, i. e. last element's index
     }
 }
 
