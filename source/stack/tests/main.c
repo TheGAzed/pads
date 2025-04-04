@@ -1,11 +1,19 @@
 #include "stack_test.h"
 
-void destroy_element(STACK_DATA_TYPE * element) {
+void destroy_int(STACK_DATA_TYPE * element) {
+    *element = (STACK_DATA_TYPE) { 0 };
+}
+
+void destroy_string(STACK_DATA_TYPE * element) {
     free(element->sub_two);
     *element = (STACK_DATA_TYPE) { 0 };
 }
 
-STACK_DATA_TYPE copy_element(const STACK_DATA_TYPE element) {
+STACK_DATA_TYPE copy_int(const STACK_DATA_TYPE element) {
+    return (STACK_DATA_TYPE) { .sub_one = element.sub_one, };
+}
+
+STACK_DATA_TYPE copy_string(const STACK_DATA_TYPE element) {
     return (STACK_DATA_TYPE) { .sub_two = strdup(element.sub_two), };
 }
 
@@ -20,15 +28,15 @@ bool operation_string(STACK_DATA_TYPE * element, void * args) {
     return true;
 }
 
-int compare_element(void * a, void * b) {
+int compare_int(void * a, void * b) {
     return ((STACK_DATA_TYPE*)(a))->sub_one - ((STACK_DATA_TYPE*)(b))->sub_one;
 }
 
-int compare_reverse_element(void * a, void * b) {
+int compare_reverse_int(void * a, void * b) {
     return ((STACK_DATA_TYPE*)(b))->sub_one - ((STACK_DATA_TYPE*)(a))->sub_one;
 }
 
-void sort_element(STACK_DATA_TYPE * elements, const size_t size, void * args) {
+void sort_int(STACK_DATA_TYPE * elements, const size_t size, void * args) {
     qsort(elements, size, sizeof(STACK_DATA_TYPE), args);
 }
 
