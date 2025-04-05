@@ -1,7 +1,7 @@
 #ifndef STACK_H
 #define STACK_H
 
-#include <stdlib.h>  // imports size_t and malloc
+#include <stddef.h>  // imports size_t
 #include <stdbool.h> // imports bool
 #include <string.h>  // imports memcpy
 
@@ -71,13 +71,12 @@
 #include <assert.h>  // imports assert for debugging
 
 #define STACK_ASSERT assert
-#endif
-
-#ifndef STACK_ALLOC
-
-#define STACK_ALLOC malloc
 
 #endif
+
+#if !defined(STACK_REALLOC) && !defined(STACK_FREE)
+
+#include <stdlib.h>
 
 #ifndef STACK_REALLOC
 
@@ -88,6 +87,16 @@
 #ifndef STACK_FREE
 
 #define STACK_FREE free
+
+#endif
+
+#elif !defined(STACK_REALLOC)
+
+#error Stack reallocator macro is not defined!
+
+#elif !defined(STACK_FREE)
+
+#error Stack free macro is not defined!
 
 #endif
 
@@ -117,7 +126,7 @@ typedef void            (*manage_stack_fn)  (STACK_DATA_TYPE *, const size_t, vo
 /// @brief Linked list of arrays that appends new list element at the start after array is full.
 struct stack_list_array {
     STACK_DATA_TYPE elements[LIST_ARRAY_STACK_CHUNK]; // array to store elements
-    struct stack_list_array * next; // next linked list array
+    struct stack_list_array * next;                   // next linked list array
 };
 
 /// @brief Stack implementation that uses appended lists of arrays and pushes elements based on the size.
@@ -129,7 +138,7 @@ typedef struct stack {
 /// @brief Creates empty stack.
 /// @return Empty stack structure.
 static inline stack_s create_stack(void) {
-    return (stack_s) { 0 };
+    return (stack_s) { 0 }; // creates a list structure set to zero
 }
 
 /// @brief Destroys a stack.
@@ -140,13 +149,10 @@ static inline void destroy_stack(stack_s * stack, const destroy_stack_fn destroy
     STACK_ASSERT(destroy && "[ERROR] 'destroy' parameter pointer is NULL.");
 
     const size_t modulo = stack->size % LIST_ARRAY_STACK_CHUNK;
-    // check if first elements array is full or partially filled
-    size_t destroy_size = modulo ? modulo : LIST_ARRAY_STACK_CHUNK;
-    while (stack->head) { // while loop runs and assigns head's next node to head thus removing the need to set head to NULL at the end of destroy
+    for (size_t destroy_size = modulo ? modulo : LIST_ARRAY_STACK_CHUNK; stack->head; destroy_size = LIST_ARRAY_STACK_CHUNK) {
         for (size_t i = 0; i < destroy_size; i++) { // destroys stack elements
             destroy(stack->head->elements + i); // calls destroy element function pointer
         }
-        destroy_size = LIST_ARRAY_STACK_CHUNK; // sets destroy size to LIST_ARRAY_STACK_CHUNK since special case only applies to first node
 
         struct stack_list_array * temp = stack->head; // temporary pointer to not lose reference
         stack->head = stack->head->next; // go to next pointer
@@ -181,13 +187,11 @@ static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
 
     const size_t next_index = stack->size % LIST_ARRAY_STACK_CHUNK; // index where the next element will be pushed
     if (next_index == 0) { // if head list array is full (is divisible) adds new list element to head
-        struct stack_list_array * temp = STACK_ALLOC(sizeof(struct stack_list_array));
-
+        struct stack_list_array * temp = STACK_REALLOC(NULL, sizeof(struct stack_list_array)); // create new node
         STACK_ASSERT(temp && "[ERROR] Memory allocation failed.");
-        temp->next = NULL; // prevent access to uninitialized memory
 
-        temp->next = stack->head;
-        stack->head = temp;
+        temp->next = stack->head; // make new node's next into stack's head
+        stack->head = temp; // reset stack's head to new node
     }
 
     // pushes element to head's top
@@ -229,7 +233,7 @@ static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) 
     const size_t modulo =  stack.size % LIST_ARRAY_STACK_CHUNK;
     size_t copy_size = modulo ? modulo : LIST_ARRAY_STACK_CHUNK;
     while (current_stack) { // while stack's current node is not NULL
-        (*current_copy) = STACK_ALLOC(sizeof(struct stack_list_array)); // allocate new node to copy's current address
+        (*current_copy) = STACK_REALLOC(NULL, sizeof(struct stack_list_array)); // allocate new node to copy's current address
         STACK_ASSERT((*current_copy) && "[ERROR] Memory allocation failed.");
         (*current_copy)->next = NULL; // end copy's current node with NULL
 
@@ -259,14 +263,11 @@ static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) 
     STACK_ASSERT(stack && "[ERROR] Stack pointer is NULL.");
     STACK_ASSERT(destroy && "[ERROR] 'destroy' parameter pointer is NULL.");
 
-    const size_t modulo =  stack->size % LIST_ARRAY_STACK_CHUNK;
-    // check if first elements array is full or partially filled
-    size_t destroy_size = modulo ? modulo : LIST_ARRAY_STACK_CHUNK;
-    while (stack->head) { // while loop runs and assigns head's next node to head thus removing the need to set head to NULL at the end of destroy
+    const size_t modulo = stack->size % LIST_ARRAY_STACK_CHUNK;
+    for (size_t destroy_size = modulo ? modulo : LIST_ARRAY_STACK_CHUNK; stack->head; destroy_size = LIST_ARRAY_STACK_CHUNK) {
         for (size_t i = 0; i < destroy_size; i++) { // destroys stack elements
             destroy(stack->head->elements + i); // calls destroy element function pointer
         }
-        destroy_size = LIST_ARRAY_STACK_CHUNK; // sets destroy size to LIST_ARRAY_STACK_CHUNK since special case only applies to first node
 
         struct stack_list_array * temp = stack->head; // temporary pointer to not lose reference
         stack->head = stack->head->next; // go to next pointer
@@ -284,18 +285,15 @@ static inline void foreach_stack(stack_s const * stack, const operate_stack_fn o
     STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
     STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
 
-    struct stack_list_array * current = stack->head;
-    const size_t modulo =  stack->size % LIST_ARRAY_STACK_CHUNK;
-    size_t foreach_size = modulo ? modulo : LIST_ARRAY_STACK_CHUNK;
-    while (current) {
-        for (size_t i = 0; i < foreach_size; ++i) {
-            if (!operate(current->elements + (foreach_size - i - 1), args)) {
+    const size_t modulo = stack->size % LIST_ARRAY_STACK_CHUNK; // calculate elements count at start node
+    size_t foreach_size = modulo ? modulo : LIST_ARRAY_STACK_CHUNK; // adjust start node size if modulo is zero
+    for (struct stack_list_array * current = stack->head; current; current = current->next) { // for each node
+        for (size_t i = 0; i < foreach_size; ++i) { // for each element in node
+            if (!operate(current->elements + (foreach_size - i - 1), args)) { // operate on elements until main loop ends or it returns false
                 return;
             }
         }
-        foreach_size = LIST_ARRAY_STACK_CHUNK;
-
-        current = current->next;
+        foreach_size = LIST_ARRAY_STACK_CHUNK; // reset size to chunk after special start case was taken care of
     }
 }
 
@@ -308,33 +306,28 @@ static inline void forevery_stack(stack_s const * stack, const manage_stack_fn m
     STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
     STACK_ASSERT(manage && "[ERROR] 'manage' parameter is NULL.");
 
-    STACK_DATA_TYPE * elements = STACK_ALLOC(sizeof(STACK_DATA_TYPE) * stack->size); // allocate an array for 'manage' function as parameter
+    STACK_DATA_TYPE * elements = STACK_REALLOC(NULL, sizeof(STACK_DATA_TYPE) * stack->size); // allocate an array for 'manage' function as parameter
     STACK_ASSERT(elements && "[ERROR] Memory allocation failed.");
 
-    struct stack_list_array * current = stack->head; // current stack node pointer
     const size_t modulo =  stack->size % LIST_ARRAY_STACK_CHUNK;
     const size_t first_chunk_size = modulo ? modulo : LIST_ARRAY_STACK_CHUNK; // calculate chunk at first node because it is not full
+
     size_t chunk_size = first_chunk_size; // set chunk size to first special chunk size
     size_t start_index = stack->size - first_chunk_size; // get start index from end to turn list based stack into an array one
-    while (current) { // while end node wasn't reached
+    for (struct stack_list_array const * current = stack->head; current; current = current->next) {
         memcpy(elements + start_index, current->elements, chunk_size * sizeof(STACK_DATA_TYPE)); // copy elements in node into array
         chunk_size = LIST_ARRAY_STACK_CHUNK; // set new chunk size as special case does not apply to second until last nodes
         start_index -= LIST_ARRAY_STACK_CHUNK; // set new start index to the left based on stack modes chunk size
-
-        current = current->next; // go to next node
     }
 
     manage(elements, stack->size, args); // manage elements in array form
 
-    current = stack->head; // reset current to head 
     chunk_size = first_chunk_size; // reset shunk size to first chunk size
-    start_index = stack->size - first_chunk_size; // reset staert index to begin from the right side again
-    while (current) { // while end node wasn't reached
-        memcpy(current->elements, elements + start_index, chunk_size * sizeof(STACK_DATA_TYPE));// copy elements in array to node
+    start_index = stack->size - first_chunk_size; // reset start index to begin from the right side again
+    for (struct stack_list_array * current = stack->head; current; current = current->next) {
+        memcpy(current->elements, elements + start_index, chunk_size * sizeof(STACK_DATA_TYPE));
         chunk_size = LIST_ARRAY_STACK_CHUNK;
         start_index -= LIST_ARRAY_STACK_CHUNK;
-
-        current = current->next;
     }
 
     STACK_FREE(elements); // free elements array after copying element back into stack
@@ -357,7 +350,7 @@ static inline stack_s create_stack(const size_t max) {
     STACK_ASSERT(max && "[ERROR] Maximum size can't be zero.");
 
     const stack_s create = {
-        .max = max, .elements = STACK_ALLOC(max * sizeof(STACK_DATA_TYPE)), .size = 0,
+        .max = max, .elements = STACK_REALLOC(NULL, max * sizeof(STACK_DATA_TYPE)), .size = 0,
     };
     STACK_ASSERT(create.elements && "[ERROR] Memory allocation failed.");
 
@@ -433,7 +426,7 @@ static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) 
     STACK_ASSERT(copy && "[ERROR] 'copy' parameter pointer is NULL.");
 
     stack_s stack_copy = stack;
-    stack_copy.elements = STACK_ALLOC(stack.max * sizeof(STACK_DATA_TYPE));
+    stack_copy.elements = STACK_REALLOC(NULL, stack.max * sizeof(STACK_DATA_TYPE));
     STACK_ASSERT(stack_copy.elements && "[ERROR] Memory allocation failed.");
 
     for (size_t i = 0; i < stack.size; i++) {
@@ -493,9 +486,27 @@ static inline void forevery_stack(stack_s const * stack, const manage_stack_fn m
 
 #elif STACK_MODE == INFINITE_REALLOC_STACK_MODE
 
+#if !defined(IS_REALLOC_CAPACITY_STACK) && !defined(EXPAND_REALLOC_CAPACITY_STACK)
+
 #ifndef REALLOC_STACK_CHUNK
 
 #define REALLOC_STACK_CHUNK (1 << 10)
+
+#endif
+
+/// @brief Checks if stack's 'size' has reached capacity.
+#define IS_REALLOC_CAPACITY_STACK(size) (!(size % REALLOC_STACK_CHUNK))
+
+/// @brief Calculates next stack's capacity based on 'size'.
+#define EXPAND_REALLOC_CAPACITY_STACK(size) (size + REALLOC_STACK_CHUNK)
+
+#elif !defined(IS_REALLOC_CAPACITY_STACK)
+
+#error Stack capacity reached check is not defined.
+
+#elif !defined(EXPAND_REALLOC_CAPACITY_STACK)
+
+#error Stack capacity expanded size is not defined.
 
 #endif
 
@@ -551,8 +562,8 @@ static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
     STACK_ASSERT((stack->size + 1) && "[ERROR] Stack size will overflow.");
 
     // first expand memory if necessary and then add element
-    if ((stack->size % REALLOC_STACK_CHUNK) == 0) {
-        stack->elements = STACK_REALLOC(stack->elements, (stack->size + REALLOC_STACK_CHUNK) * sizeof(STACK_DATA_TYPE));
+    if (IS_REALLOC_CAPACITY_STACK(stack->size)) {
+        stack->elements = STACK_REALLOC(stack->elements, EXPAND_REALLOC_CAPACITY_STACK(stack->size) * sizeof(STACK_DATA_TYPE));
         STACK_ASSERT(stack->elements && "[ERROR] Memory allocation failed");
     }
     memcpy(stack->elements + (stack->size++), &element, sizeof(STACK_DATA_TYPE));
@@ -568,7 +579,7 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
 
     // first remove element and then shrink memory if necessary
     STACK_DATA_TYPE element = stack->elements[--(stack->size)];
-    if ((stack->size % REALLOC_STACK_CHUNK) == 0) {
+    if (IS_REALLOC_CAPACITY_STACK(stack->size)) {
         stack->elements = STACK_REALLOC(stack->elements, stack->size * sizeof(STACK_DATA_TYPE));
         if (!stack->size) {
             STACK_FREE(stack->elements);
@@ -591,8 +602,8 @@ static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) 
     stack_s stack_copy = { 0 };
 
     for (; stack_copy.size < stack.size; stack_copy.size++) { // for loop until stack copy's size reaches stack's size
-        if (!(stack_copy.size % REALLOC_STACK_CHUNK)) { // if size reached maximum chunk size, expand elements array
-            stack_copy.elements = STACK_REALLOC(stack_copy.elements, (stack_copy.size + REALLOC_STACK_CHUNK) * sizeof(STACK_DATA_TYPE));
+        if (IS_REALLOC_CAPACITY_STACK(stack_copy.size)) { // if size reached maximum chunk size, expand elements array
+            stack_copy.elements = STACK_REALLOC(stack_copy.elements, EXPAND_REALLOC_CAPACITY_STACK(stack_copy.size) * sizeof(STACK_DATA_TYPE));
             STACK_ASSERT((stack_copy.elements) && "[ERROR] Memory allocation failed.");
         }
 
@@ -789,6 +800,6 @@ static inline void forevery_stack(stack_s * stack, const manage_stack_fn manage,
 
 #else
 
-#error Cannot include multiple headers in same unit
+#error Cannot include multiple headers in same unit.
 
 #endif // STACK_H
