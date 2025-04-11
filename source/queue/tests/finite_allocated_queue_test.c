@@ -4,378 +4,571 @@
 #define MAXIMUM_QUEUE_SIZE  (1 << 4)
 #include <queue/queue.h>
 
-/// Tests if queue is initialized correctly when creating it.
-TEST FAQ_01(void) {
+TEST FAQ_CREATE_01(void) {
     queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
 
     ASSERT_EQm("[FAQ-ERROR] Test queue size is not zero.", 0, test.size);
-    ASSERT_EQm("[FAQ-ERROR] Test queue current is not zero.", 0, test.current);
+    ASSERT_NEQm("[FAQ-ERROR] Test queue head is not NULL.", NULL, test.elements);
 
-    destroy_queue(&test, NULL);
+    destroy_queue(&test, destroy_int);
     PASS();
 }
 
-/// Tests if queue is initialized correctly when creating and then destroying it.
-TEST FAQ_02(void) {
+TEST FAQ_DESTROY_01(void) {
     queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
-    destroy_queue(&test, NULL);
+    destroy_queue(&test, destroy_int);
 
     ASSERT_EQm("[FAQ-ERROR] Test queue size is not zero.", 0, test.size);
-    ASSERT_EQm("[FAQ-ERROR] Test queue current is not zero.", 0, test.current);
+    ASSERT_EQm("[FAQ-ERROR] Test queue head is not NULL.", NULL, test.elements);
 
     PASS();
 }
 
-/// Tests if one enqueued element is peeked correctly.
-TEST FAQ_03(void) {
+TEST FAQ_DESTROY_02(void) {
     queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
     enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
+    destroy_queue(&test, destroy_int);
 
-    ASSERT_EQm("[FAQ-ERROR] Test queue peeked element not 42.", 42, peek_queue(test).sub_one);
-
-    destroy_queue(&test, NULL);
+    ASSERT_EQm("[FAQ-ERROR] Test queue size is not zero.", 0, test.size);
+    ASSERT_EQm("[FAQ-ERROR] Test queue head is not NULL.", NULL, test.elements);
 
     PASS();
 }
 
-/// Tests if 'MAXIMUM_QUEUE_SIZE' - 1 enqueued element is peeked correctly.
-TEST FAQ_04(void) {
+TEST FAQ_DESTROY_03(void) {
     queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
-    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 2; ++i) {
-        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = -1, });
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
     }
+    destroy_queue(&test, destroy_int);
 
-    ASSERT_EQm("[FAQ-ERROR] Test queue peeked element not 42.", 42, peek_queue(test).sub_one);
-
-    destroy_queue(&test, NULL);
+    ASSERT_EQm("[FAQ-ERROR] Test queue size is not zero.", 0, test.size);
+    ASSERT_EQm("[FAQ-ERROR] Test queue head is not NULL.", NULL, test.elements);
 
     PASS();
 }
 
-/// Tests if 'MAXIMUM_QUEUE_SIZE' enqueued element is peeked correctly.
-TEST FAQ_05(void) {
+TEST FAQ_DESTROY_04(void) {
     queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
+    }
+    destroy_queue(&test, destroy_int);
+
+    ASSERT_EQm("[FAQ-ERROR] Test queue size is not zero.", 0, test.size);
+    ASSERT_EQm("[FAQ-ERROR] Test queue head is not NULL.", NULL, test.elements);
+
+    PASS();
+}
+
+TEST FAQ_DESTROY_05(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+    destroy_queue(&test, destroy_string);
+
+    ASSERT_EQm("[FAQ-ERROR] Test queue size is not zero.", 0, test.size);
+    ASSERT_EQm("[FAQ-ERROR] Test queue head is not NULL.", NULL, test.elements);
+
+    PASS();
+}
+
+TEST FAQ_DESTROY_06(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+    enqueue(&test, copy_string((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING, }));
+    destroy_queue(&test, destroy_string);
+
+    ASSERT_EQm("[FAQ-ERROR] Test queue size is not zero.", 0, test.size);
+    ASSERT_EQm("[FAQ-ERROR] Test queue head is not NULL.", NULL, test.elements);
+
+    PASS();
+}
+
+TEST FAQ_DESTROY_07(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+        enqueue(&test, copy_string((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING, }));
+    }
+    destroy_queue(&test, destroy_string);
+
+    ASSERT_EQm("[FAQ-ERROR] Test queue size is not zero.", 0, test.size);
+    ASSERT_EQm("[FAQ-ERROR] Test queue head is not NULL.", NULL, test.elements);
+
+    PASS();
+}
+
+TEST FAQ_DESTROY_08(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+        enqueue(&test, copy_string((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING, }));
+    }
+    destroy_queue(&test, destroy_string);
+
+    ASSERT_EQm("[FAQ-ERROR] Test queue size is not zero.", 0, test.size);
+    ASSERT_EQm("[FAQ-ERROR] Test queue head is not NULL.", NULL, test.elements);
+
+    PASS();
+}
+
+TEST FAQ_IS_FULL_01(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    ASSERT_FALSEm("[FAQ-ERROR] Expected queue to not be full", is_full_queue(test));
+
+    destroy_queue(&test, destroy_int);
+    PASS();
+}
+
+TEST FAQ_IS_FULL_02(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
     enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
+    ASSERT_FALSEm("[FAQ-ERROR] Expected queue to not be full", is_full_queue(test));
+
+    destroy_queue(&test, destroy_int);
+    PASS();
+}
+
+TEST FAQ_IS_FULL_03(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
     for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
-        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = -1, });
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
     }
+    ASSERT_FALSEm("[FAQ-ERROR] Expected queue to not be full", is_full_queue(test));
 
-    ASSERT_EQm("[FAQ-ERROR] Test queue peeked element not 42.", 42, peek_queue(test).sub_one);
-
-    destroy_queue(&test, NULL);
-
+    destroy_queue(&test, destroy_int);
     PASS();
 }
 
-/// Tests if sequence of 'MAXIMUM_QUEUE_SIZE' - 1 enqueued numbers is dequeued correctly
-TEST FAQ_06(void) {
+TEST FAQ_IS_FULL_04(void) {
     queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
 
-    for (int i = 1; i <= MAXIMUM_QUEUE_SIZE - 1; ++i) {
-        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i, });
-    }
-
-    for (int i = 1; i <= MAXIMUM_QUEUE_SIZE - 1; ++i) {
-        ASSERT_EQm("[FAQ-ERROR] Test queue dequeued element not 'i'.", i, dequeue(&test).sub_one);
-    }
-
-    destroy_queue(&test, NULL);
-    PASS();
-}
-
-/// Tests if sequence of 'MAXIMUM_QUEUE_SIZE' enqueued numbers is dequeued correctly
-TEST FAQ_07(void) {
-    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
-
-    for (int i = 1; i <= MAXIMUM_QUEUE_SIZE; ++i) {
-        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i, });
-    }
-
-    for (int i = 1; i <= MAXIMUM_QUEUE_SIZE; ++i) {
-        ASSERT_EQm("[FAQ-ERROR] Test queue dequeued element not 'i'.", i, dequeue(&test).sub_one);
-    }
-
-    destroy_queue(&test, NULL);
-    PASS();
-}
-
-/// Tests if peek does not change size
-TEST FAQ_08(void) {
-    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
-
-    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
-    peek_queue(test);
-
-    ASSERT_EQm("[FAQ-ERROR] Expected queue size to not change after peek.", 1, test.size);
-
-    destroy_queue(&test, NULL);
-
-    PASS();
-}
-
-/// Tests if queue is empty when creating it.
-TEST FAQ_09(void) {
-    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
-
-    ASSERTm("[FAQ-ERROR] Expected queue to be empty when creating it.", is_empty_queue(test));
-
-    destroy_queue(&test, NULL);
-
-    PASS();
-}
-
-/// Tests if queue is not empty when enqueueing element.
-TEST FAQ_10(void) {
-    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
-
-    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
-    ASSERT_FALSEm("[FAQ-ERROR] Expected queue to not be empty when enqueueing element.", is_empty_queue(test));
-
-    destroy_queue(&test, NULL);
-
-    PASS();
-}
-
-/// Tests if one enqueued element is dequeued correctly.
-TEST FAQ_11(void) {
-    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
-    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
-
-    ASSERT_EQm("[FAQ-ERROR] Test queue dequeued element not 42.", 42, dequeue(&test).sub_one);
-
-    destroy_queue(&test, NULL);
-
-    PASS();
-}
-
-/// Tests if 'MAXIMUM_QUEUE_SIZE' - 1 enqueued element is dequeued correctly.
-TEST FAQ_12(void) {
-    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
-    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 2; ++i) {
-        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = -1, });
-    }
-
-    ASSERT_EQm("[FAQ-ERROR] Test queue dequeued element not 42.", 42, dequeue(&test).sub_one);
-
-    destroy_queue(&test, NULL);
-
-    PASS();
-}
-
-/// Tests if 'MAXIMUM_QUEUE_SIZE' enqueued element is dequeued correctly.
-TEST FAQ_13(void) {
-    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
-    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
-        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = -1, });
-    }
-
-    ASSERT_EQm("[FAQ-ERROR] Test queue dequeued element not 42.", 42, dequeue(&test).sub_one);
-
-    destroy_queue(&test, NULL);
-
-    PASS();
-}
-
-/// Test if destroyed element
-TEST FAQ_14(void) {
-    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
-
-    enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
-
-    destroy_queue(&test, destroy_element);
-    PASS();
-}
-
-/// Test if destroyed element
-TEST FAQ_15(void) {
-    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
-    enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
-    enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
-
-    destroy_queue(&test, destroy_element);
-    PASS();
-}
-
-/// Test if destroyed element
-TEST FAQ_16(void) {
-    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
     for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
-        enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
+    }
+    ASSERTm("[FAQ-ERROR] Expected queue to be full", is_full_queue(test));
+
+    destroy_queue(&test, destroy_int);
+    PASS();
+}
+
+TEST FAQ_PEEK_01(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
+    ASSERT_EQm("[FAQ-ERROR] Expected to peep 42", 42, peek_queue(test).sub_one);
+
+    destroy_queue(&test, destroy_int);
+    PASS();
+}
+
+TEST FAQ_PEEK_02(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 2; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = -1, });
     }
 
-    destroy_queue(&test, destroy_element);
+    ASSERT_EQm("[FAQ-ERROR] Expected to peep 42", 42, peek_queue(test).sub_one);
+
+    destroy_queue(&test, destroy_int);
     PASS();
 }
 
-/// Test if 1 copied int element
-TEST FAQ_17(void) {
+TEST FAQ_PEEK_03(void) {
     queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
-    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 0 });
 
-    queue_s copy = copy_queue(test, NULL);
+    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = -1, });
+    }
 
-    ASSERT_EQm("[FAQ-TEST] Test queue is not equal to copy.", dequeue(&test).sub_one, dequeue(&copy).sub_one);
+    ASSERT_EQm("[FAQ-ERROR] Expected to peep 42", 42, peek_queue(test).sub_one);
 
-    destroy_queue(&test, NULL);
-    destroy_queue(&copy, NULL);
+    destroy_queue(&test, destroy_int);
     PASS();
 }
 
-/// Test if 'MAXIMUM_QUEUE_SIZE' - 1 copied int element
-TEST FAQ_18(void) {
+TEST FAQ_ENQUEUE_01(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
+
+    ASSERT_EQm("[FAQ-ERROR] Expected to pop 42", 42, dequeue(&test).sub_one);
+
+    destroy_queue(&test, destroy_int);
+    PASS();
+}
+
+TEST FAQ_ENQUEUE_02(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+        ASSERT_EQm("[FAQ-ERROR] Expected to pop i", i, dequeue(&test).sub_one);
+    }
+
+    destroy_queue(&test, destroy_int);
+    PASS();
+}
+
+TEST FAQ_ENQUEUE_03(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+        ASSERT_EQm("[FAQ-ERROR] Expected to pop i", i, dequeue(&test).sub_one);
+    }
+
+    destroy_queue(&test, destroy_int);
+    PASS();
+}
+
+TEST FAQ_DEQUEUE_01(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
+
+    ASSERT_EQm("[FAQ-ERROR] Expected to pop 42", 42, dequeue(&test).sub_one);
+
+    destroy_queue(&test, destroy_int);
+    PASS();
+}
+
+TEST FAQ_DEQUEUE_02(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+        ASSERT_EQm("[FAQ-ERROR] Expected to pop i", i, dequeue(&test).sub_one);
+    }
+
+    destroy_queue(&test, destroy_int);
+    PASS();
+}
+
+TEST FAQ_DEQUEUE_03(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+        ASSERT_EQm("[FAQ-ERROR] Expected to pop i", i, dequeue(&test).sub_one);
+    }
+
+    destroy_queue(&test, destroy_int);
+    PASS();
+}
+
+TEST FAQ_COPY_01(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    queue_s copy = copy_queue(test, copy_int);
+
+    ASSERT_EQm("[FAQ-ERROR] Expected sizes to be equal", test.size, copy.size);
+    ASSERT_NEQm("[FAQ-ERROR] Expected heads to be equal", test.elements, copy.elements);
+
+    destroy_queue(&test, destroy_int);
+    destroy_queue(&copy, destroy_int);
+    PASS();
+}
+
+TEST FAQ_COPY_02(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
+
+    queue_s copy = copy_queue(test, copy_int);
+
+    ASSERT_EQm("[FAQ-ERROR] Expected sizes to be equal", test.size, copy.size);
+    ASSERT_NEQm("[FAQ-ERROR] Expected heads to not be equal", test.elements, copy.elements);
+
+    ASSERT_EQm("[FAQ-ERROR] Expected elements to be equal", dequeue(&test).sub_one, dequeue(&copy).sub_one);
+
+    destroy_queue(&test, destroy_int);
+    destroy_queue(&copy, destroy_int);
+    PASS();
+}
+
+TEST FAQ_COPY_03(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i, });
+    }
+
+    queue_s copy = copy_queue(test, copy_int);
+
+    ASSERT_EQm("[FAQ-ERROR] Expected sizes to be equal", test.size, copy.size);
+    ASSERT_NEQm("[FAQ-ERROR] Expected heads to not be equal", test.elements, copy.elements);
+
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+        ASSERT_EQm("[FAQ-ERROR] Expected elements to be equal", dequeue(&test).sub_one, dequeue(&copy).sub_one);
+    }
+
+    destroy_queue(&test, destroy_int);
+    destroy_queue(&copy, destroy_int);
+    PASS();
+}
+
+TEST FAQ_COPY_04(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i, });
+    }
+
+    queue_s copy = copy_queue(test, copy_int);
+
+    ASSERT_EQm("[FAQ-ERROR] Expected sizes to be equal", test.size, copy.size);
+    ASSERT_NEQm("[FAQ-ERROR] Expected heads to not be equal", test.elements, copy.elements);
+
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+        ASSERT_EQm("[FAQ-ERROR] Expected elements to be equal", dequeue(&test).sub_one, dequeue(&copy).sub_one);
+    }
+
+    destroy_queue(&test, destroy_int);
+    destroy_queue(&copy, destroy_int);
+    PASS();
+}
+
+TEST FAQ_COPY_05(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    queue_s copy = copy_queue(test, copy_string);
+
+    ASSERT_EQm("[FAQ-ERROR] Expected sizes to be equal", test.size, copy.size);
+    ASSERT_NEQm("[FAQ-ERROR] Expected heads to be equal", test.elements, copy.elements);
+
+    destroy_queue(&test, destroy_string);
+    destroy_queue(&copy, destroy_string);
+    PASS();
+}
+
+TEST FAQ_COPY_06(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    enqueue(&test, copy_string((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING, }));
+
+    queue_s copy = copy_queue(test, copy_string);
+
+    ASSERT_EQm("[FAQ-ERROR] Expected sizes to be equal", test.size, copy.size);
+    ASSERT_NEQm("[FAQ-ERROR] Expected heads to not be equal", test.elements, copy.elements);
+
+    ASSERT_STRN_EQm("[FAQ-ERROR] Expected elements to be equal", peek_queue(test).sub_two, peek_queue(copy).sub_two, sizeof(TEST_STRING) - 1);
+
+    destroy_queue(&test, destroy_string);
+    destroy_queue(&copy, destroy_string);
+    PASS();
+}
+
+TEST FAQ_COPY_07(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+        enqueue(&test, copy_string((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING, }));
+    }
+
+    queue_s copy = copy_queue(test, copy_string);
+
+    ASSERT_EQm("[FAQ-ERROR] Expected sizes to be equal", test.size, copy.size);
+    ASSERT_NEQm("[FAQ-ERROR] Expected heads to not be equal", test.elements, copy.elements);
+
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+        ASSERT_STRN_EQm("[FAQ-ERROR] Expected elements to be equal", peek_queue(test).sub_two, peek_queue(copy).sub_two, sizeof(TEST_STRING) - 1);
+        QUEUE_DATA_TYPE test_element = dequeue(&test);
+        destroy_string(&test_element);
+        QUEUE_DATA_TYPE copy_element = dequeue(&copy);
+        destroy_string(&copy_element);
+    }
+
+    destroy_queue(&test, destroy_string);
+    destroy_queue(&copy, destroy_string);
+    PASS();
+}
+
+TEST FAQ_COPY_08(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+        enqueue(&test, copy_string((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING, }));
+    }
+
+    queue_s copy = copy_queue(test, copy_string);
+
+    ASSERT_EQm("[FAQ-ERROR] Expected sizes to be equal", test.size, copy.size);
+    ASSERT_NEQm("[FAQ-ERROR] Expected heads to not be equal", test.elements, copy.elements);
+
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+        ASSERT_STRN_EQm("[FAQ-ERROR] Expected elements to be equal", peek_queue(test).sub_two, peek_queue(copy).sub_two, sizeof(TEST_STRING) - 1);
+        QUEUE_DATA_TYPE test_element = dequeue(&test);
+        destroy_string(&test_element);
+        QUEUE_DATA_TYPE copy_element = dequeue(&copy);
+        destroy_string(&copy_element);
+    }
+
+    destroy_queue(&test, destroy_string);
+    destroy_queue(&copy, destroy_string);
+    PASS();
+}
+
+TEST FAQ_IS_EMPTY_01(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    ASSERTm("[FAQ-ERROR] Expected queue to be empty", is_empty_queue(test));
+
+    destroy_queue(&test, destroy_int);
+    PASS();
+}
+
+TEST FAQ_IS_EMPTY_02(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
+    }
+
+    ASSERT_FALSEm("[FAQ-ERROR] Expected queue to not be empty", is_empty_queue(test));
+
+    destroy_queue(&test, destroy_int);
+    PASS();
+}
+
+TEST FAQ_IS_EMPTY_03(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
+    }
+
+    ASSERT_FALSEm("[FAQ-ERROR] Expected queue to not be empty", is_empty_queue(test));
+
+    destroy_queue(&test, destroy_int);
+    PASS();
+}
+
+TEST FAQ_CLEAR_01(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    clear_queue(&test, destroy_int);
+
+    ASSERT_EQm("[FAQ-ERROR] Test queue size is not zero.", 0, test.size);
+    ASSERT_NEQm("[FAQ-ERROR] Test queue head is not NULL.", NULL, test.elements);
+
+    destroy_queue(&test, destroy_int);
+    PASS();
+}
+
+TEST FAQ_CLEAR_02(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
+
+    clear_queue(&test, destroy_int);
+
+    ASSERT_EQm("[FAQ-ERROR] Test queue size is not zero.", 0, test.size);
+    ASSERT_NEQm("[FAQ-ERROR] Test queue head is not NULL.", NULL, test.elements);
+
+    destroy_queue(&test, destroy_int);
+    PASS();
+}
+
+TEST FAQ_CLEAR_03(void) {
     queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
     for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
-        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
     }
 
-    queue_s copy = copy_queue(test, NULL);
-    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
-        ASSERT_EQm("[FAQ-TEST] Test queue is not equal to copy.", dequeue(&test).sub_one, dequeue(&copy).sub_one);
-    }
+    clear_queue(&test, destroy_int);
 
-    destroy_queue(&test, NULL);
-    destroy_queue(&copy, NULL);
+    ASSERT_EQm("[FAQ-ERROR] Test queue size is not zero.", 0, test.size);
+    ASSERT_NEQm("[FAQ-ERROR] Test queue head is not NULL.", NULL, test.elements);
+
+    destroy_queue(&test, destroy_int);
     PASS();
 }
 
-/// Test if 'MAXIMUM_QUEUE_SIZE 'copied int element
-TEST FAQ_19(void) {
+TEST FAQ_CLEAR_04(void) {
     queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
     for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
-        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42, });
     }
 
-    queue_s copy = copy_queue(test, NULL);
-    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
-        ASSERT_EQm("[FAQ-TEST] Test queue is not equal to copy.", dequeue(&test).sub_one, dequeue(&copy).sub_one);
-    }
+    clear_queue(&test, destroy_int);
 
-    destroy_queue(&test, NULL);
-    destroy_queue(&copy, NULL);
+    ASSERT_EQm("[FAQ-ERROR] Test queue size is not zero.", 0, test.size);
+    ASSERT_NEQm("[FAQ-ERROR] Test queue head is not NULL.", NULL, test.elements);
+
+    destroy_queue(&test, destroy_int);
     PASS();
 }
 
-/// Test if 1 copied string element
-TEST FAQ_20(void) {
+TEST FAQ_CLEAR_05(void) {
     queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
-    enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
 
-    queue_s copy = copy_queue(test, copy_element);
+    clear_queue(&test, destroy_string);
 
-    QUEUE_DATA_TYPE elemen_test = dequeue(&test);
-    QUEUE_DATA_TYPE element_copy = dequeue(&copy);
-    ASSERT_STRN_EQm("[FAQ-TEST] Test queue string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
-    destroy_element(&elemen_test);
-    destroy_element(&element_copy);
+    ASSERT_EQm("[FAQ-ERROR] Test queue size is not zero.", 0, test.size);
+    ASSERT_NEQm("[FAQ-ERROR] Test queue head is not NULL.", NULL, test.elements);
 
-    destroy_queue(&test, destroy_element);
-    destroy_queue(&copy, destroy_element);
+    destroy_queue(&test, destroy_string);
     PASS();
 }
 
-/// Test if 'MAXIMUM_QUEUE_SIZE' - 1 copied string element
-TEST FAQ_21(void) {
+TEST FAQ_CLEAR_06(void) {
     queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
-    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
-        enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
-    }
+    enqueue(&test, copy_string((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING, }));
 
-    queue_s copy = copy_queue(test, copy_element);
-    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
-        QUEUE_DATA_TYPE elemen_test = dequeue(&test);
-        QUEUE_DATA_TYPE element_copy = dequeue(&copy);
-        ASSERT_STRN_EQm("[FAQ-TEST] Test queue string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
-        destroy_element(&elemen_test);
-        destroy_element(&element_copy);
-    }
+    clear_queue(&test, destroy_string);
 
-    destroy_queue(&test, destroy_element);
-    destroy_queue(&copy, destroy_element);
+    ASSERT_EQm("[FAQ-ERROR] Test queue size is not zero.", 0, test.size);
+    ASSERT_NEQm("[FAQ-ERROR] Test queue head is not NULL.", NULL, test.elements);
+
+    destroy_queue(&test, destroy_string);
     PASS();
 }
 
-/// Test if 'MAXIMUM_QUEUE_SIZE' copied string element
-TEST FAQ_22(void) {
-    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
-    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
-        enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
-    }
-
-    queue_s copy = copy_queue(test, copy_element);
-    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
-        QUEUE_DATA_TYPE elemen_test = dequeue(&test);
-        QUEUE_DATA_TYPE element_copy = dequeue(&copy);
-        ASSERT_STRN_EQm("[FAQ-TEST] Test queue string is not equal to copy.", elemen_test.sub_two, element_copy.sub_two, sizeof(TEST_STRING) - 1);
-        destroy_element(&elemen_test);
-        destroy_element(&element_copy);
-    }
-
-    destroy_queue(&test, destroy_element);
-    destroy_queue(&copy, destroy_element);
-    PASS();
-}
-
-/// Test if queue is not empty
-TEST FAQ_23(void) {
-    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
-    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
-        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
-    }
-
-    ASSERT_FALSEm("[FAQ-TEST] Stack is empty.", is_empty_queue(test));
-
-    destroy_queue(&test, NULL);
-    PASS();
-}
-
-/// Test if queue is empty after 1 enqueue/dequeue
-TEST FAQ_24(void) {
-    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
-    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
-    dequeue(&test);
-    ASSERTm("[FAQ-TEST] Stack is not empty.", is_empty_queue(test));
-
-    destroy_queue(&test, NULL);
-    PASS();
-}
-
-/// Test if queue is empty after 'MAXIMUM_QUEUE_SIZE' - 1 enqueue/dequeue
-TEST FAQ_25(void) {
+TEST FAQ_CLEAR_07(void) {
     queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
     for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
-        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
-    }
-    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
-        dequeue(&test);
+        enqueue(&test, copy_string((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING, }));
     }
 
-    ASSERTm("[FAQ-TEST] Stack is not empty.", is_empty_queue(test));
+    clear_queue(&test, destroy_string);
 
-    destroy_queue(&test, NULL);
+    ASSERT_EQm("[FAQ-ERROR] Test queue size is not zero.", 0, test.size);
+    ASSERT_NEQm("[FAQ-ERROR] Test queue head is not NULL.", NULL, test.elements);
+
+    destroy_queue(&test, destroy_string);
     PASS();
 }
 
-/// Test if queue is empty after 'MAXIMUM_QUEUE_SIZE' enqueue/dequeue
-TEST FAQ_26(void) {
+TEST FAQ_CLEAR_08(void) {
     queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
     for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
-        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
-    }
-    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
-        dequeue(&test);
+        enqueue(&test, copy_string((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING, }));
     }
 
-    ASSERTm("[FAQ-TEST] Stack is not empty.", is_empty_queue(test));
+    clear_queue(&test, destroy_string);
 
-    destroy_queue(&test, NULL);
+    ASSERT_EQm("[FAQ-ERROR] Test queue size is not zero.", 0, test.size);
+    ASSERT_NEQm("[FAQ-ERROR] Test queue head is not NULL.", NULL, test.elements);
+
+    destroy_queue(&test, destroy_string);
     PASS();
 }
 
-/// Test if all one int values get incremented by 'increment'
-TEST FAQ_27(void) {
+TEST FAQ_FOREACH_01(void) {
     queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
     enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 0 });
 
@@ -384,13 +577,12 @@ TEST FAQ_27(void) {
 
     ASSERT_EQm("[FAQ-ERROR] Expected incremented element by 'increment'.", 0 + increment, dequeue(&test).sub_one);
 
-    destroy_queue(&test, NULL);
+    destroy_queue(&test, destroy_int);
 
     PASS();
 }
 
-/// Test if all 'MAXIMUM_QUEUE_SIZE' - 1 int values get incremented by 'increment'
-TEST FAQ_28(void) {
+TEST FAQ_FOREACH_02(void) {
     queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
     for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
@@ -403,13 +595,12 @@ TEST FAQ_28(void) {
         ASSERT_EQm("[FAQ-ERROR] Expected incremented element by 'increment'.", i + increment, dequeue(&test).sub_one);
     }
 
-    destroy_queue(&test, NULL);
+    destroy_queue(&test, destroy_int);
 
     PASS();
 }
 
-/// Test if all 'MAXIMUM_QUEUE_SIZE' int values get incremented by 'increment'
-TEST FAQ_29(void) {
+TEST FAQ_FOREACH_03(void) {
     queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
     for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
@@ -422,35 +613,33 @@ TEST FAQ_29(void) {
         ASSERT_EQm("[FAQ-ERROR] Expected incremented element by 'increment'.", i + increment, dequeue(&test).sub_one);
     }
 
-    destroy_queue(&test, NULL);
+    destroy_queue(&test, destroy_int);
 
     PASS();
 }
 
-/// Test if all one string values have changed to new string value
-TEST FAQ_30(void) {
+TEST FAQ_FOREACH_04(void) {
     queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
 
-    enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
+    enqueue(&test, copy_string((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
 
     char new_string[] = "[REDACTED]";
     foreach_queue(&test, operation_string, new_string);
 
     QUEUE_DATA_TYPE element = dequeue(&test);
     ASSERT_STRN_EQm("[FAQ-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
-    destroy_element(&element);
+    destroy_string(&element);
 
-    destroy_queue(&test, destroy_element);
+    destroy_queue(&test, destroy_string);
 
     PASS();
 }
 
-/// Test if all 'MAXIMUM_QUEUE_SIZE' - 1 string values have changed to new string value
-TEST FAQ_31(void) {
+TEST FAQ_FOREACH_05(void) {
     queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
 
     for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
-        enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
+        enqueue(&test, copy_string((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
     }
 
     char new_string[] = "[REDACTED]";
@@ -459,20 +648,19 @@ TEST FAQ_31(void) {
     for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         QUEUE_DATA_TYPE element = dequeue(&test);
         ASSERT_STRN_EQm("[FAQ-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
-        destroy_element(&element);
+        destroy_string(&element);
     }
 
-    destroy_queue(&test, destroy_element);
+    destroy_queue(&test, destroy_string);
 
     PASS();
 }
 
-/// Test if all 'MAXIMUM_QUEUE_SIZE' string values have changed to new string value
-TEST FAQ_32(void) {
+TEST FAQ_FOREACH_06(void) {
     queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
 
     for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
-        enqueue(&test, copy_element((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
+        enqueue(&test, copy_string((QUEUE_DATA_TYPE) { .sub_two = TEST_STRING }));
     }
 
     char new_string[] = "[REDACTED]";
@@ -481,23 +669,144 @@ TEST FAQ_32(void) {
     for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         QUEUE_DATA_TYPE element = dequeue(&test);
         ASSERT_STRN_EQm("[FAQ-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
-        destroy_element(&element);
+        destroy_string(&element);
     }
 
-    destroy_queue(&test, destroy_element);
+    destroy_queue(&test, destroy_string);
 
+    PASS();
+}
+
+TEST FAQ_FOREVERY_01(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    forevery_queue(&test, sort_int, compare_int);
+
+    destroy_queue(&test, destroy_int);
+    PASS();
+}
+
+TEST FAQ_FOREVERY_02(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
+
+    forevery_queue(&test, sort_int, compare_int);
+
+    destroy_queue(&test, destroy_int);
+    PASS();
+}
+
+TEST FAQ_FOREVERY_03(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    for (int i = (MAXIMUM_QUEUE_SIZE - 1) >> 1; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
+    }
+
+    for (int i = 0; i < (MAXIMUM_QUEUE_SIZE - 1) >> 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
+    }
+
+    forevery_queue(&test, sort_int, compare_int);
+
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+        ASSERT_EQm("[FAQ-ERROR] Expected sorted queue to pop i", i, dequeue(&test).sub_one);
+    }
+
+    destroy_queue(&test, destroy_int);
+    PASS();
+}
+
+TEST FAQ_FOREVERY_04(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    for (int i = (MAXIMUM_QUEUE_SIZE) >> 1; i < MAXIMUM_QUEUE_SIZE; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
+    }
+
+    for (int i = 0; i < (MAXIMUM_QUEUE_SIZE) >> 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
+    }
+
+    forevery_queue(&test, sort_int, compare_int);
+
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+        ASSERT_EQm("[FAQ-ERROR] Expected sorted queue to pop i", i, dequeue(&test).sub_one);
+    }
+
+    destroy_queue(&test, destroy_int);
+    PASS();
+}
+
+TEST FAQ_FOREVERY_05(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    for (int i = (MAXIMUM_QUEUE_SIZE - 1) >> 1; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
+    }
+
+    for (int i = 0; i < (MAXIMUM_QUEUE_SIZE - 1) >> 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
+    }
+
+    forevery_queue(&test, sort_int, compare_reverse_int);
+
+    for (int i = MAXIMUM_QUEUE_SIZE - 2; i >= 0; --i) {
+        ASSERT_EQm("[FAQ-ERROR] Expected sorted queue to pop i", i, dequeue(&test).sub_one);
+    }
+
+    destroy_queue(&test, destroy_int);
+    PASS();
+}
+
+TEST FAQ_FOREVERY_06(void) {
+    queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);
+
+    for (int i = (MAXIMUM_QUEUE_SIZE) >> 1; i < MAXIMUM_QUEUE_SIZE; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
+    }
+
+    for (int i = 0; i < (MAXIMUM_QUEUE_SIZE) >> 1; ++i) {
+        enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
+    }
+
+    forevery_queue(&test, sort_int, compare_reverse_int);
+
+    for (int i = MAXIMUM_QUEUE_SIZE - 1; i >= 0; --i) {
+        ASSERT_EQm("[FAQ-ERROR] Expected sorted queue to pop i", i, dequeue(&test).sub_one);
+    }
+
+    destroy_queue(&test, destroy_int);
     PASS();
 }
 
 SUITE (finite_allocated_queue_test) {
-    RUN_TEST(FAQ_01); RUN_TEST(FAQ_02); RUN_TEST(FAQ_03); RUN_TEST(FAQ_04);
-    RUN_TEST(FAQ_05); RUN_TEST(FAQ_06); RUN_TEST(FAQ_07); RUN_TEST(FAQ_08);
-    RUN_TEST(FAQ_09); RUN_TEST(FAQ_10); RUN_TEST(FAQ_11); RUN_TEST(FAQ_12);
-    RUN_TEST(FAQ_13); RUN_TEST(FAQ_14); RUN_TEST(FAQ_15); RUN_TEST(FAQ_16);
-    RUN_TEST(FAQ_17); RUN_TEST(FAQ_18); RUN_TEST(FAQ_19); RUN_TEST(FAQ_20);
-    RUN_TEST(FAQ_21); RUN_TEST(FAQ_22); RUN_TEST(FAQ_23); RUN_TEST(FAQ_24);
-    RUN_TEST(FAQ_25); RUN_TEST(FAQ_26); RUN_TEST(FAQ_27); RUN_TEST(FAQ_28);
-    RUN_TEST(FAQ_29); RUN_TEST(FAQ_30); RUN_TEST(FAQ_31); RUN_TEST(FAQ_32);
+    // create
+    RUN_TEST(FAQ_CREATE_01);
+    // destroy
+    RUN_TEST(FAQ_DESTROY_01); RUN_TEST(FAQ_DESTROY_02); RUN_TEST(FAQ_DESTROY_03); RUN_TEST(FAQ_DESTROY_04); RUN_TEST(FAQ_DESTROY_05);
+    RUN_TEST(FAQ_DESTROY_06); RUN_TEST(FAQ_DESTROY_07); RUN_TEST(FAQ_DESTROY_08);
+    // is full
+    RUN_TEST(FAQ_IS_FULL_01); RUN_TEST(FAQ_IS_FULL_02); RUN_TEST(FAQ_IS_FULL_03); RUN_TEST(FAQ_IS_FULL_04);
+    // peep
+    RUN_TEST(FAQ_PEEK_01); RUN_TEST(FAQ_PEEK_02); RUN_TEST(FAQ_PEEK_03);
+    // push
+    RUN_TEST(FAQ_ENQUEUE_01); RUN_TEST(FAQ_ENQUEUE_02); RUN_TEST(FAQ_ENQUEUE_03);
+    // pop
+    RUN_TEST(FAQ_DEQUEUE_01); RUN_TEST(FAQ_DEQUEUE_02); RUN_TEST(FAQ_DEQUEUE_03);
+    // copy
+    RUN_TEST(FAQ_COPY_01); RUN_TEST(FAQ_COPY_02); RUN_TEST(FAQ_COPY_03); RUN_TEST(FAQ_COPY_04); RUN_TEST(FAQ_COPY_05);
+    RUN_TEST(FAQ_COPY_06); RUN_TEST(FAQ_COPY_07); RUN_TEST(FAQ_COPY_08);
+    // is empty
+    RUN_TEST(FAQ_IS_EMPTY_01); RUN_TEST(FAQ_IS_EMPTY_02); RUN_TEST(FAQ_IS_EMPTY_03);
+    // clear
+    RUN_TEST(FAQ_CLEAR_01); RUN_TEST(FAQ_CLEAR_02); RUN_TEST(FAQ_CLEAR_03); RUN_TEST(FAQ_CLEAR_04); RUN_TEST(FAQ_CLEAR_05);
+    RUN_TEST(FAQ_CLEAR_06); RUN_TEST(FAQ_CLEAR_07); RUN_TEST(FAQ_CLEAR_08);
+    // foreach
+    RUN_TEST(FAQ_FOREACH_01); RUN_TEST(FAQ_FOREACH_02); RUN_TEST(FAQ_FOREACH_03); RUN_TEST(FAQ_FOREACH_04); RUN_TEST(FAQ_FOREACH_05);
+    RUN_TEST(FAQ_FOREACH_06);
+    // foevery
+    RUN_TEST(FAQ_FOREVERY_01); RUN_TEST(FAQ_FOREVERY_02); RUN_TEST(FAQ_FOREVERY_03); RUN_TEST(FAQ_FOREVERY_04); RUN_TEST(FAQ_FOREVERY_05);
+    RUN_TEST(FAQ_FOREVERY_06);
 }
-
-
