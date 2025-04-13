@@ -32,10 +32,10 @@
     For more information, please refer to <https://unlicense.org>
 */
 
-#define INFINITE_LIST_QUEUE       11
-#define FINITE_ALLOCATED_QUEUE    12
-#define INFINITE_REALLOC_QUEUE    13
-#define FINITE_PREPROCESSOR_QUEUE 14
+#define INFINITE_LIST_QUEUE       101
+#define FINITE_ALLOCATED_QUEUE    102
+#define INFINITE_REALLOC_QUEUE    103
+#define FINITE_PREPROCESSOR_QUEUE 104
 
 //#define QUEUE_MODE INFINITE_LIST_QUEUE
 //#define QUEUE_MODE FINITE_ALLOCATED_QUEUE
@@ -384,10 +384,12 @@ typedef struct queue {
 /// @param max Specifies maximum allocated size of queue structure.
 static inline queue_s create_queue(const size_t max) {
     QUEUE_ASSERT(max && "[ERROR] Maximum size can't be zero");
+
     const queue_s create = {
         .max = max, .elements = QUEUE_REALLOC(NULL, max * sizeof(QUEUE_DATA_TYPE)), .size = 0,
     };
     QUEUE_ASSERT(create.elements && "[ERROR] Memory allocation failed");
+
     return create;
 }
 
@@ -397,6 +399,11 @@ static inline queue_s create_queue(const size_t max) {
 static inline void destroy_queue(queue_s * queue, const destroy_queue_fn destroy) {
     QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL.");
     QUEUE_ASSERT(destroy && "[ERROR] 'destroy' function pointer parameter is NULL.");
+
+    QUEUE_ASSERT(queue->max && "[ERROR] Deque's maximum size can't be zero.");
+    QUEUE_ASSERT(queue->elements && "[ERROR] Deque's elements array can't be NULL.");
+    QUEUE_ASSERT(queue->size <= queue->max && "[ERROR] Deque's size can't exceed its maximum size.");
+    QUEUE_ASSERT(queue->current < queue->max && "[ERROR] Deque's current index must be less than maximum size.");
 
     const size_t right_size = (queue->current + queue->size) > queue->max ? queue->max - queue->current : queue->size;
     for (size_t i = 0; i < right_size; ++i) {
@@ -415,7 +422,12 @@ static inline void destroy_queue(queue_s * queue, const destroy_queue_fn destroy
 /// @return true if queue is full, false otherwise.
 /// @note This function also returns true if maximum size is reached.
 static inline bool is_full_queue(const queue_s queue) {
-    return !(queue.size < queue.max && ~queue.size);
+    QUEUE_ASSERT(queue.max && "[ERROR] Deque's maximum size can't be zero.");
+    QUEUE_ASSERT(queue.elements && "[ERROR] Deque's elements array can't be NULL.");
+    QUEUE_ASSERT(queue.size <= queue.max && "[ERROR] Deque's size can't exceed its maximum size.");
+    QUEUE_ASSERT(queue.current < queue.max && "[ERROR] Deque's current index must be less than maximum size.");
+
+    return queue.size == queue.max;
 }
 
 /// @brief Gets element at the top of the queue without decrementing size (peek the first of the queue).
@@ -423,7 +435,11 @@ static inline bool is_full_queue(const queue_s queue) {
 /// @return The first element of the queue.
 static inline QUEUE_DATA_TYPE peek_queue(const queue_s queue) {
     QUEUE_ASSERT(queue.size && "[ERROR] Can't peek empty queue");
-    QUEUE_ASSERT(queue.elements && "[ERROR] '.elements' is NULL");
+
+    QUEUE_ASSERT(queue.max && "[ERROR] Deque's maximum size can't be zero.");
+    QUEUE_ASSERT(queue.elements && "[ERROR] Deque's elements array can't be NULL.");
+    QUEUE_ASSERT(queue.size <= queue.max && "[ERROR] Deque's size can't exceed its maximum size.");
+    QUEUE_ASSERT(queue.current < queue.max && "[ERROR] Deque's current index must be less than maximum size.");
 
     return queue.elements[queue.current];
 }
@@ -433,9 +449,12 @@ static inline QUEUE_DATA_TYPE peek_queue(const queue_s queue) {
 /// @param element Element to push to end of queue array.
 static inline void enqueue(queue_s * queue, const QUEUE_DATA_TYPE element) {
     QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL");
-    QUEUE_ASSERT((queue->size < queue->max) && "[ERROR] Queue reached maximum size");
-    QUEUE_ASSERT((queue->size + 1) && "[ERROR] Queue's '.size' will overflow");
-    QUEUE_ASSERT(queue->elements && "[ERROR] '.elements' is NULL");
+    QUEUE_ASSERT(queue->size < queue->max && "[ERROR] Queue reached maximum size");
+
+    QUEUE_ASSERT(queue->max && "[ERROR] Deque's maximum size can't be zero.");
+    QUEUE_ASSERT(queue->elements && "[ERROR] Deque's elements array can't be NULL.");
+    QUEUE_ASSERT(queue->size <= queue->max && "[ERROR] Deque's size can't exceed its maximum size.");
+    QUEUE_ASSERT(queue->current < queue->max && "[ERROR] Deque's current index must be less than maximum size.");
 
     memcpy(queue->elements + ((queue->current + queue->size) % queue->max), &element, sizeof(QUEUE_DATA_TYPE));
     queue->size++;
@@ -447,7 +466,11 @@ static inline void enqueue(queue_s * queue, const QUEUE_DATA_TYPE element) {
 static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
     QUEUE_ASSERT(queue && "[ERROR] 'queue' pointer is empty");
     QUEUE_ASSERT(queue->size && "[ERROR] Can't pop empty queue");
-    QUEUE_ASSERT(queue->elements && "[ERROR] '.elements' is NULL");
+
+    QUEUE_ASSERT(queue->max && "[ERROR] Deque's maximum size can't be zero.");
+    QUEUE_ASSERT(queue->elements && "[ERROR] Deque's elements array can't be NULL.");
+    QUEUE_ASSERT(queue->size <= queue->max && "[ERROR] Deque's size can't exceed its maximum size.");
+    QUEUE_ASSERT(queue->current < queue->max && "[ERROR] Deque's current index must be less than maximum size.");
 
     QUEUE_DATA_TYPE element = queue->elements[queue->current];
     queue->size--;
@@ -460,10 +483,12 @@ static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
 /// @param copy Function pointer to create a deep/shallow copy of an element in queue.
 /// @return A 'copy' of the specified 'queue' parameter.
 static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) {
-    QUEUE_ASSERT(queue.elements && "[ERROR] 'queue' has uninitialized memory.");
-    QUEUE_ASSERT(queue.max > queue.current && "[ERROR] Impossible queue state.");
-    QUEUE_ASSERT(queue.max >= queue.size && "[ERROR] Impossible queue state.");
     QUEUE_ASSERT(copy && "[ERROR] 'copy' function pointer parameter is NULL.");
+
+    QUEUE_ASSERT(queue.max && "[ERROR] Deque's maximum size can't be zero.");
+    QUEUE_ASSERT(queue.elements && "[ERROR] Deque's elements array can't be NULL.");
+    QUEUE_ASSERT(queue.size <= queue.max && "[ERROR] Deque's size can't exceed its maximum size.");
+    QUEUE_ASSERT(queue.current < queue.max && "[ERROR] Deque's current index must be less than maximum size.");
 
     const queue_s queue_copy = {
         .size = queue.size, .current = queue.current, .max = queue.max,
@@ -486,6 +511,11 @@ static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) 
 /// @param queue Queue structure to check.
 /// @return true if queue size is zero, false otherwise.
 static inline bool is_empty_queue(const queue_s queue) {
+    QUEUE_ASSERT(queue.max && "[ERROR] Deque's maximum size can't be zero.");
+    QUEUE_ASSERT(queue.elements && "[ERROR] Deque's elements array can't be NULL.");
+    QUEUE_ASSERT(queue.size <= queue.max && "[ERROR] Deque's size can't exceed its maximum size.");
+    QUEUE_ASSERT(queue.current < queue.max && "[ERROR] Deque's current index must be less than maximum size.");
+
     return queue.size == 0;
 }
 
@@ -495,6 +525,11 @@ static inline bool is_empty_queue(const queue_s queue) {
 static inline void clear_queue(queue_s * queue, const destroy_queue_fn destroy) {
     QUEUE_ASSERT(queue && "[ERROR] Queue pointer is NULL.");
     QUEUE_ASSERT(destroy && "[ERROR] 'destroy' function pointer parameter is NULL.");
+
+    QUEUE_ASSERT(queue->max && "[ERROR] Deque's maximum size can't be zero.");
+    QUEUE_ASSERT(queue->elements && "[ERROR] Deque's elements array can't be NULL.");
+    QUEUE_ASSERT(queue->size <= queue->max && "[ERROR] Deque's size can't exceed its maximum size.");
+    QUEUE_ASSERT(queue->current < queue->max && "[ERROR] Deque's current index must be less than maximum size.");
 
     const size_t right_size = (queue->current + queue->size) > queue->max ? queue->max - queue->current : queue->size;
     for (size_t i = 0; i < right_size; ++i) {
@@ -515,7 +550,11 @@ static inline void clear_queue(queue_s * queue, const destroy_queue_fn destroy) 
 static inline void foreach_queue(queue_s const * queue, const operate_queue_fn operate, void * args) {
     QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter pointer is NULL.");
     QUEUE_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
-    QUEUE_ASSERT(queue->max > queue->current && "[ERROR] Impossible queue state.");
+
+    QUEUE_ASSERT(queue->max && "[ERROR] Deque's maximum size can't be zero.");
+    QUEUE_ASSERT(queue->elements && "[ERROR] Deque's elements array can't be NULL.");
+    QUEUE_ASSERT(queue->size <= queue->max && "[ERROR] Deque's size can't exceed its maximum size.");
+    QUEUE_ASSERT(queue->current < queue->max && "[ERROR] Deque's current index must be less than maximum size.");
 
     const size_t right_size = (queue->current + queue->size) > queue->max ? queue->max - queue->current : queue->size;
     for (size_t i = 0; i < right_size; ++i) {
@@ -536,24 +575,28 @@ static inline void foreach_queue(queue_s const * queue, const operate_queue_fn o
 /// @param manage Function pointer that takes an array of queue elements, the number of elements and other arguments
 /// in the form of a 'args'.
 /// @param args Generic void pointer arguments for manage function pointer.
-static inline void forevery_queue(queue_s const * queue, const manage_queue_fn manage, void * args) {
+static inline void forevery_queue(queue_s * queue, const manage_queue_fn manage, void * args) {
     QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter pointer is NULL.");
     QUEUE_ASSERT(manage && "[ERROR] 'operate' parameter pointer is NULL.");
-    QUEUE_ASSERT(queue->max > queue->current && "[ERROR] Impossible queue state.");
+
+    QUEUE_ASSERT(queue->max && "[ERROR] Deque's maximum size can't be zero.");
+    QUEUE_ASSERT(queue->elements && "[ERROR] Deque's elements array can't be NULL.");
+    QUEUE_ASSERT(queue->size <= queue->max && "[ERROR] Deque's size can't exceed its maximum size.");
+    QUEUE_ASSERT(queue->current < queue->max && "[ERROR] Deque's current index must be less than maximum size.");
 
     QUEUE_DATA_TYPE * elements_array = QUEUE_REALLOC(NULL, queue->size * sizeof(QUEUE_DATA_TYPE)); // allocate memory for temporary elements in queue
     QUEUE_ASSERT(elements_array && "[ERROR] Memory allocation failed."); // check if allocation failed
 
     // calculate right size of elements from current index to copy right and left elements into temporary array
     const size_t right_size = (queue->current + queue->size) > queue->max ? queue->max - queue->current : queue->size;
+
     memcpy(elements_array, queue->elements + queue->current, right_size * sizeof(QUEUE_DATA_TYPE));
     memcpy(elements_array + right_size, queue->elements, (queue->size - right_size) * sizeof(QUEUE_DATA_TYPE));
 
     manage(elements_array, queue->size, args); // manage elements in array
 
-    // recopy elements back to queue's array
-    memcpy(queue->elements + queue->current, elements_array, right_size * sizeof(QUEUE_DATA_TYPE));
-    memcpy(queue->elements, elements_array + right_size, (queue->size - right_size) * sizeof(QUEUE_DATA_TYPE));
+    memcpy(queue->elements, elements_array, queue->size * sizeof(QUEUE_DATA_TYPE)); // recopy elements back to queue's array but from queue's start
+    queue->current = 0; // reset current index to 0
 
     QUEUE_FREE(elements_array); // free allocated memory
 }
@@ -791,7 +834,7 @@ static inline void destroy_queue(queue_s * queue, const destroy_queue_fn destroy
 /// @return true if queue is full, false otherwise.
 /// @note This function also returns true if preprocessor defined size is reached.
 static inline bool is_full_queue(const queue_s queue) {
-    return !((queue.size < PREPROCESSOR_QUEUE_SIZE) && (~queue.size));
+    return queue.size == PREPROCESSOR_QUEUE_SIZE;
 }
 
 /// @brief Gets element at the top of the queue without decrementing size (peek the first of the queue).
@@ -908,20 +951,23 @@ static inline void forevery_queue(queue_s * queue, const manage_queue_fn manage,
     QUEUE_ASSERT(manage && "[ERROR] 'operate' parameter pointer is NULL.");
 
     QUEUE_DATA_TYPE elements_array[PREPROCESSOR_QUEUE_SIZE]; // declare array for temporary elements in queue
-    QUEUE_ASSERT(elements_array && "[ERROR] Memory allocation failed."); // check if allocation failed
 
     // calculate right size of elements from current index to copy right and left elements into temporary array
     const size_t right_size = (queue->current + queue->size) > PREPROCESSOR_QUEUE_SIZE ? PREPROCESSOR_QUEUE_SIZE - queue->current : queue->size;
+
     memcpy(elements_array, queue->elements + queue->current, right_size * sizeof(QUEUE_DATA_TYPE));
     memcpy(elements_array + right_size, queue->elements, (queue->size - right_size) * sizeof(QUEUE_DATA_TYPE));
 
     manage(elements_array, queue->size, args); // manage elements in array
 
-    // recopy elements back to queue's array
-    memcpy(queue->elements + queue->current, elements_array, right_size * sizeof(QUEUE_DATA_TYPE));
-    memcpy(queue->elements, elements_array + right_size, (queue->size - right_size) * sizeof(QUEUE_DATA_TYPE));
+    memcpy(queue->elements, elements_array, queue->size * sizeof(QUEUE_DATA_TYPE)); // recopy elements back to queue's array but from queue's start
+    queue->current = 0; // reset current index to 0
 }
 
 #endif
+
+#else
+
+#error Cannot include multiple headers in same unit.
 
 #endif // QUEUE_H

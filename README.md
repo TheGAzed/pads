@@ -21,6 +21,7 @@ PADS data structures are each divided into at least three modes with support for
 
 ### **In Progress:**
 
+- [DEQUE](https://github.com/TheGAzed/pads/blob/main/source/deque)
 - [FORWARD LIST](https://github.com/TheGAzed/pads/blob/main/source/forward_list)
 - [BINARY SET](https://github.com/TheGAzed/pads/blob/main/source/binary_set)
 - [LIST](https://github.com/TheGAzed/pads/blob/main/source/list)

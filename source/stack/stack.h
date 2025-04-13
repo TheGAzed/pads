@@ -361,8 +361,11 @@ static inline stack_s create_stack(const size_t max) {
 /// @param destroy Function pointer that destroys/frees an element reference.
 static inline void destroy_stack(stack_s * stack, const destroy_stack_fn destroy) {
     STACK_ASSERT(stack && "[ERROR] Stack pointer is NULL.");
-    STACK_ASSERT(stack->elements && "[ERROR] Stack's element array can't be NULL.");
     STACK_ASSERT(destroy && "[ERROR] 'destroy' parameter pointer is NULL.");
+
+    STACK_ASSERT(stack->max && "[ERROR] Deque's maximum size can't be zero.");
+    STACK_ASSERT(stack->elements && "[ERROR] Deque's elements array can't be NULL.");
+    STACK_ASSERT(stack->size <= stack->max && "[ERROR] Deque's size can't exceed its maximum size.");
 
     for(size_t i = 0; i < stack->size; i++) {
         destroy(stack->elements + i);
@@ -376,17 +379,22 @@ static inline void destroy_stack(stack_s * stack, const destroy_stack_fn destroy
 /// @param stack Stack structure to check.
 /// @return true if stack size reached maximum or overflows after incrementing it, false otherwise
 static inline bool is_full_stack(const stack_s stack) {
-    STACK_ASSERT(stack.elements && "[ERROR] Stack's element array can't be NULL.");
+    STACK_ASSERT(stack.max && "[ERROR] Deque's maximum size can't be zero.");
+    STACK_ASSERT(stack.elements && "[ERROR] Deque's elements array can't be NULL.");
+    STACK_ASSERT(stack.size <= stack.max && "[ERROR] Deque's size can't exceed its maximum size.");
 
-    return !(stack.size < stack.max && ~stack.size);
+    return (stack.size == stack.max);
 }
 
 /// @brief Gets element at the top of the stack without decrementing size (peeps the top of the stack).
 /// @param stack Stack structure to peep.
 /// @return The top element of the stack as defined by 'STACK_DATA_TYPE' macro.
 static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
-    STACK_ASSERT(stack.elements && "[ERROR] Stack's element array can't be NULL.");
     STACK_ASSERT(stack.size && "[ERROR] Can't peep empty stack.");
+
+    STACK_ASSERT(stack.max && "[ERROR] Deque's maximum size can't be zero.");
+    STACK_ASSERT(stack.elements && "[ERROR] Deque's elements array can't be NULL.");
+    STACK_ASSERT(stack.size <= stack.max && "[ERROR] Deque's size can't exceed its maximum size.");
 
     return stack.elements[stack.size - 1];
 }
@@ -396,9 +404,11 @@ static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
 /// @param element Element to push to top of stack array.
 static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
     STACK_ASSERT(stack && "[ERROR] Stack pointer is NULL.");
-    STACK_ASSERT(stack->elements && "[ERROR] Stack element array can't be NULL.");
-    STACK_ASSERT((stack->size < stack->max) && "[ERROR] Stack reached maximum size.");
-    STACK_ASSERT(~(stack->size) && "[ERROR] Stack size will overflow.");
+    STACK_ASSERT(stack->size < stack->max && "[ERROR] Stack reached maximum size.");
+
+    STACK_ASSERT(stack->max && "[ERROR] Deque's maximum size can't be zero.");
+    STACK_ASSERT(stack->elements && "[ERROR] Deque's elements array can't be NULL.");
+    STACK_ASSERT(stack->size <= stack->max && "[ERROR] Deque's size can't exceed its maximum size.");
 
     memcpy(stack->elements + (stack->size++), &element, sizeof(STACK_DATA_TYPE));
 }
@@ -407,9 +417,12 @@ static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
 /// @param stack Stack structure pointer to pop from.
 /// @return The top element of the stack as defined by 'STACK_DATA_TYPE' macro.
 static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
-    STACK_ASSERT(stack->elements && "[ERROR] Stack's element array can't be NULL.");
     STACK_ASSERT(stack && "[ERROR] 'stack' pointer is empty.");
     STACK_ASSERT(stack->size && "[ERROR] Can't pop empty stack.");
+
+    STACK_ASSERT(stack->max && "[ERROR] Deque's maximum size can't be zero.");
+    STACK_ASSERT(stack->elements && "[ERROR] Deque's elements array can't be NULL.");
+    STACK_ASSERT(stack->size <= stack->max && "[ERROR] Deque's size can't exceed its maximum size.");
 
     return stack->elements[((stack->size)--) - 1];
 }
@@ -421,8 +434,11 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
 /// @param copy Function pointer to create a copy of an element or NULL if 'STACK_DATA_TYPE' is a basic type.
 /// @return A copy of the specified 'stack' parameter.
 static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) {
-    STACK_ASSERT(stack.elements && "[ERROR] Stack's element array can't be NULL.");
     STACK_ASSERT(copy && "[ERROR] 'copy' parameter pointer is NULL.");
+
+    STACK_ASSERT(stack.max && "[ERROR] Deque's maximum size can't be zero.");
+    STACK_ASSERT(stack.elements && "[ERROR] Deque's elements array can't be NULL.");
+    STACK_ASSERT(stack.size <= stack.max && "[ERROR] Deque's size can't exceed its maximum size.");
 
     stack_s stack_copy = stack;
     stack_copy.elements = STACK_REALLOC(NULL, stack.max * sizeof(STACK_DATA_TYPE));
@@ -439,7 +455,9 @@ static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) 
 /// @param stack Stack structure check.
 /// @return true if stack size is zero, false otherwise
 static inline bool is_empty_stack(const stack_s stack) {
-    STACK_ASSERT(stack.elements && "[ERROR] Stack's element array can't be NULL.");
+    STACK_ASSERT(stack.max && "[ERROR] Deque's maximum size can't be zero.");
+    STACK_ASSERT(stack.elements && "[ERROR] Deque's elements array can't be NULL.");
+    STACK_ASSERT(stack.size <= stack.max && "[ERROR] Deque's size can't exceed its maximum size.");
 
     return (stack.size == 0);
 }
@@ -449,8 +467,11 @@ static inline bool is_empty_stack(const stack_s stack) {
 /// @param destroy Function pointer to destroy an element in stack.
 static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) {
     STACK_ASSERT(stack && "[ERROR] Stack pointer is NULL.");
-    STACK_ASSERT(stack->elements && "[ERROR] Stack's element array can't be NULL.");
     STACK_ASSERT(destroy && "[ERROR] 'destroy' parameter pointer is NULL.");
+
+    STACK_ASSERT(stack->max && "[ERROR] Deque's maximum size can't be zero.");
+    STACK_ASSERT(stack->elements && "[ERROR] Deque's elements array can't be NULL.");
+    STACK_ASSERT(stack->size <= stack->max && "[ERROR] Deque's size can't exceed its maximum size.");
 
     for(size_t s = 0; s < stack->size; s++) {
         destroy(stack->elements + s);
@@ -468,6 +489,10 @@ static inline void foreach_stack(stack_s const * stack, const operate_stack_fn o
     STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
     STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
 
+    STACK_ASSERT(stack->max && "[ERROR] Deque's maximum size can't be zero.");
+    STACK_ASSERT(stack->elements && "[ERROR] Deque's elements array can't be NULL.");
+    STACK_ASSERT(stack->size <= stack->max && "[ERROR] Deque's size can't exceed its maximum size.");
+
     for (size_t i = 0; i < stack->size && operate(stack->elements + (stack->size - i - 1), args); ++i) {}
 }
 
@@ -479,6 +504,10 @@ static inline void foreach_stack(stack_s const * stack, const operate_stack_fn o
 static inline void forevery_stack(stack_s const * stack, const manage_stack_fn manage, void * args) {
     STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
     STACK_ASSERT(manage && "[ERROR] 'manage' parameter is NULL.");
+
+    STACK_ASSERT(stack->max && "[ERROR] Deque's maximum size can't be zero.");
+    STACK_ASSERT(stack->elements && "[ERROR] Deque's elements array can't be NULL.");
+    STACK_ASSERT(stack->size <= stack->max && "[ERROR] Deque's size can't exceed its maximum size.");
 
     manage(stack->elements, stack->size, args);
 }
@@ -703,7 +732,7 @@ static inline void destroy_stack(stack_s * stack, const destroy_stack_fn destroy
 /// @param stack Stack structure.
 /// @return true if stack size reached maximum or overflows after incrementing it, false otherwise.
 static inline bool is_full_stack(const stack_s stack) {
-    return !((stack.size < PREPROCESSOR_STACK_SIZE) && (~stack.size));
+    return stack.size == PREPROCESSOR_STACK_SIZE;
 }
 
 /// @brief Gets element at the top of the stack without decrementing size (peeks the top of the stack).
