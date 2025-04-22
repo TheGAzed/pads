@@ -1,5 +1,7 @@
 enable_testing()
 
+add_library(functions functions.c)
+
 add_subdirectory(stack/tests)
 add_subdirectory(queue/tests)
 add_subdirectory(deque/tests)

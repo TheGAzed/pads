@@ -1,5 +1,8 @@
 #include "stack_test.h"
 
+#include <functions.h>
+
+#define STACK_DATA_TYPE DATA_TYPE
 #define STACK_MODE FINITE_PRERPOCESSOR_STACK_MODE
 #define PREPROCESSOR_STACK_SIZE  (1 << 4)
 #include <stack/stack.h>

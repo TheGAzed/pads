@@ -1,45 +1,5 @@
 #include "stack_test.h"
 
-void destroy_int(STACK_DATA_TYPE * element) {
-    *element = (STACK_DATA_TYPE) { 0 };
-}
-
-void destroy_string(STACK_DATA_TYPE * element) {
-    free(element->sub_two);
-    *element = (STACK_DATA_TYPE) { 0 };
-}
-
-STACK_DATA_TYPE copy_int(const STACK_DATA_TYPE element) {
-    return (STACK_DATA_TYPE) { .sub_one = element.sub_one, };
-}
-
-STACK_DATA_TYPE copy_string(const STACK_DATA_TYPE element) {
-    return (STACK_DATA_TYPE) { .sub_two = strdup(element.sub_two), };
-}
-
-bool operation_int(STACK_DATA_TYPE * element, void * args) {
-    element->sub_one += *((int *)(args));
-    return true;
-}
-
-bool operation_string(STACK_DATA_TYPE * element, void * args) {
-    free(element->sub_two);
-    element->sub_two = strdup(args);
-    return true;
-}
-
-int compare_int(void * a, void * b) {
-    return ((STACK_DATA_TYPE*)(a))->sub_one - ((STACK_DATA_TYPE*)(b))->sub_one;
-}
-
-int compare_reverse_int(void * a, void * b) {
-    return ((STACK_DATA_TYPE*)(b))->sub_one - ((STACK_DATA_TYPE*)(a))->sub_one;
-}
-
-void sort_int(STACK_DATA_TYPE * elements, const size_t size, void * args) {
-    qsort(elements, size, sizeof(STACK_DATA_TYPE), args);
-}
-
 GREATEST_MAIN_DEFS();
 
 int main(const int argc, char **argv) {

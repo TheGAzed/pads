@@ -1,6 +1,9 @@
 #include "queue_test.h"
 
-#define QUEUE_MODE FINITE_PREPROCESSOR_QUEUE
+#include <functions.h>
+
+#define QUEUE_DATA_TYPE DATA_TYPE
+#define QUEUE_MODE FINITE_PREPROCESSOR_QUEUE_MODE
 #define PREPROCESSOR_QUEUE_SIZE (1 << 4)
 #include <queue/queue.h>
 

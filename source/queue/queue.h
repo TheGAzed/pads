@@ -32,27 +32,27 @@
     For more information, please refer to <https://unlicense.org>
 */
 
-#define INFINITE_LIST_QUEUE       101
-#define FINITE_ALLOCATED_QUEUE    102
-#define INFINITE_REALLOC_QUEUE    103
-#define FINITE_PREPROCESSOR_QUEUE 104
+#define INFINITE_LIST_QUEUE_MODE       101
+#define FINITE_ALLOCATED_QUEUE_MODE    102
+#define INFINITE_REALLOC_QUEUE_MODE    103
+#define FINITE_PREPROCESSOR_QUEUE_MODE 104
 
-//#define QUEUE_MODE INFINITE_LIST_QUEUE
-//#define QUEUE_MODE FINITE_ALLOCATED_QUEUE
-//#define QUEUE_MODE INFINITE_REALLOC_QUEUE
-//#define QUEUE_MODE FINITE_PREPROCESSOR_QUEUE
-// Queue mode that can be set to INFINITE_LIST_QUEUE, FINITE_ALLOCATED_QUEUE, INFINITE_REALLOC_QUEUE or
+//#define QUEUE_MODE INFINITE_LIST_QUEUE_MODE
+//#define QUEUE_MODE FINITE_ALLOCATED_QUEUE_MODE
+//#define QUEUE_MODE INFINITE_REALLOC_QUEUE_MODE
+//#define QUEUE_MODE FINITE_PREPROCESSOR_QUEUE_MODE
+// Queue mode that can be set to INFINITE_LIST_QUEUE_MODE, FINITE_ALLOCATED_QUEUE_MODE, INFINITE_REALLOC_QUEUE_MODE or
 // FINITE_PRERPOCESSOR_QUEUE.
-// Default: INFINITE_LIST_QUEUE
+// Default: INFINITE_LIST_QUEUE_MODE
 #ifndef QUEUE_MODE
 
-#define QUEUE_MODE INFINITE_LIST_QUEUE
+#define QUEUE_MODE INFINITE_LIST_QUEUE_MODE
 
 #endif
 
 // Check to make sure a valid queue mode is selected.
-#if (QUEUE_MODE != INFINITE_LIST_QUEUE)    && (QUEUE_MODE != FINITE_ALLOCATED_QUEUE) && \
-    (QUEUE_MODE != INFINITE_REALLOC_QUEUE) && (QUEUE_MODE != FINITE_PREPROCESSOR_QUEUE)
+#if (QUEUE_MODE != INFINITE_LIST_QUEUE_MODE)    && (QUEUE_MODE != FINITE_ALLOCATED_QUEUE_MODE) && \
+    (QUEUE_MODE != INFINITE_REALLOC_QUEUE_MODE) && (QUEUE_MODE != FINITE_PREPROCESSOR_QUEUE_MODE)
 
 #error Invalid type of queue mode.
 
@@ -108,7 +108,7 @@ typedef bool            (*operate_queue_fn) (QUEUE_DATA_TYPE *, void *);
 /// @brief Function pointer to manage an array of graph elements based on generic arguments.
 typedef void            (*manage_queue_fn)  (QUEUE_DATA_TYPE *, const size_t, void *);
 
-#if   QUEUE_MODE == INFINITE_LIST_QUEUE
+#if   QUEUE_MODE == INFINITE_LIST_QUEUE_MODE
 
 // Queue list array size.
 // DEFAULT: (1 << 10) or 1024
@@ -237,7 +237,7 @@ static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
 /// @brief Copies the queue and all its elements into a new queue structure.
 /// @param queue Queue structure to copy.
 /// @param copy Function pointer to create a deep/shallow copy of an element in queue.
-/// @return A 'copy' of the specified 'queue' parameter.
+/// @return A copy of the specified 'queue' parameter.
 static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) {
     QUEUE_ASSERT(copy && "[ERROR] 'copy' function pointer is NULL.");
 
@@ -370,7 +370,7 @@ static inline void forevery_queue(queue_s const * queue, const manage_queue_fn m
     QUEUE_FREE(elements_array);
 }
 
-#elif QUEUE_MODE == FINITE_ALLOCATED_QUEUE
+#elif QUEUE_MODE == FINITE_ALLOCATED_QUEUE_MODE
 
 /// @brief Queue implementation that uses allocated memory array and pushes elements based on the current
 /// and maximum size.
@@ -427,7 +427,7 @@ static inline bool is_full_queue(const queue_s queue) {
     QUEUE_ASSERT(queue.size <= queue.max && "[ERROR] Deque's size can't exceed its maximum size.");
     QUEUE_ASSERT(queue.current < queue.max && "[ERROR] Deque's current index must be less than maximum size.");
 
-    return queue.size == queue.max;
+    return (queue.size == queue.max);
 }
 
 /// @brief Gets element at the top of the queue without decrementing size (peek the first of the queue).
@@ -472,16 +472,20 @@ static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
     QUEUE_ASSERT(queue->size <= queue->max && "[ERROR] Deque's size can't exceed its maximum size.");
     QUEUE_ASSERT(queue->current < queue->max && "[ERROR] Deque's current index must be less than maximum size.");
 
-    QUEUE_DATA_TYPE element = queue->elements[queue->current];
+    QUEUE_DATA_TYPE element = queue->elements[queue->current++];
     queue->size--;
-    queue->current = (queue->current + 1) % queue->max;
+
+    if (queue->max == queue->current) {
+        queue->current = 0;
+    }
+
     return element;
 }
 
 /// @brief Copies the queue and all its elements into a new queue structure.
 /// @param queue Queue structure to copy.
 /// @param copy Function pointer to create a deep/shallow copy of an element in queue.
-/// @return A 'copy' of the specified 'queue' parameter.
+/// @return A copy of the specified 'queue' parameter.
 static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) {
     QUEUE_ASSERT(copy && "[ERROR] 'copy' function pointer parameter is NULL.");
 
@@ -516,7 +520,7 @@ static inline bool is_empty_queue(const queue_s queue) {
     QUEUE_ASSERT(queue.size <= queue.max && "[ERROR] Deque's size can't exceed its maximum size.");
     QUEUE_ASSERT(queue.current < queue.max && "[ERROR] Deque's current index must be less than maximum size.");
 
-    return queue.size == 0;
+    return (queue.size == 0);
 }
 
 /// @brief Clears all elements from the queue.
@@ -601,7 +605,7 @@ static inline void forevery_queue(queue_s * queue, const manage_queue_fn manage,
     QUEUE_FREE(elements_array); // free allocated memory
 }
 
-#elif QUEUE_MODE == INFINITE_REALLOC_QUEUE
+#elif QUEUE_MODE == INFINITE_REALLOC_QUEUE_MODE
 
 #if !defined(IS_REALLOC_CAPACITY_QUEUE) && !defined(EXPAND_REALLOC_CAPACITY_QUEUE)
 
@@ -719,7 +723,7 @@ static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
 /// @brief Copies the queue and all its elements into a new queue structure.
 /// @param queue Queue structure to copy.
 /// @param copy Function pointer to create a deep/shallow copy of an element in queue.
-/// @return A 'copy' of the specified 'queue' parameter.
+/// @return A copy of the specified 'queue' parameter.
 static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) {
     QUEUE_ASSERT(copy && "[ERROR] 'copy' function pointer parameter is NULL");
 
@@ -739,7 +743,7 @@ static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) 
 /// @param queue Queue structure to check.
 /// @return true if queue size is zero, false otherwise.
 static inline bool is_empty_queue(const queue_s queue) {
-    return queue.size == 0;
+    return (queue.size == 0);
 }
 
 /// @brief Clears all elements from the queue.
@@ -756,7 +760,7 @@ static inline void clear_queue(queue_s * queue, const destroy_queue_fn destroy) 
 
     QUEUE_FREE(queue->elements);
 
-    *queue = (queue_s) { 0 }; // reset queue to zero
+    (*queue) = (queue_s) { 0 }; // reset queue to zero
 }
 
 /// @brief Foreach funtion that iterates over all elements in queue and performs 'operate' function on them using 'args'
@@ -768,9 +772,7 @@ static inline void foreach_queue(queue_s const * queue, const operate_queue_fn o
     QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter pointer is NULL.");
     QUEUE_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
 
-    for (size_t i = queue->current; i < queue->current + queue->size; ++i) {
-        if (!operate(queue->elements + i, args)) return;
-    }
+    for (size_t i = 0; i < queue->size && operate(queue->elements + i + queue->current, args); ++i) {}
 }
 
 /// @brief Forevery function that manages every element as an array with 'manage' function using queue's size and 'args'
@@ -786,7 +788,7 @@ static inline void forevery_queue(queue_s const * queue, const manage_queue_fn m
     manage(queue->elements + queue->current, queue->size, args);
 }
 
-#elif QUEUE_MODE == FINITE_PREPROCESSOR_QUEUE
+#elif QUEUE_MODE == FINITE_PREPROCESSOR_QUEUE_MODE
 
 #ifndef PREPROCESSOR_QUEUE_SIZE
 
@@ -865,16 +867,20 @@ static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
     QUEUE_ASSERT(queue && "[ERROR] 'queue' pointer is empty");
     QUEUE_ASSERT(queue->size && "[ERROR] Can't pop empty queue");
 
-    QUEUE_DATA_TYPE element = queue->elements[queue->current];
+    QUEUE_DATA_TYPE element = queue->elements[queue->current++];
     queue->size--;
-    queue->current = (queue->current + 1) % PREPROCESSOR_QUEUE_SIZE;
+
+    if (PREPROCESSOR_QUEUE_SIZE == queue->current) {
+        queue->current = 0;
+    }
+
     return element;
 }
 
 /// @brief Copies the queue and all its elements into a new queue structure.
 /// @param queue Queue structure to copy.
 /// @param copy Function pointer to create a deep/shallow copy of an element in queue.
-/// @return A 'copy' of the specified 'queue' parameter.
+/// @return A copy of the specified 'queue' parameter.
 static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) {
     QUEUE_ASSERT(copy && "[ERROR] 'copy' function pointer is NULL.");
 

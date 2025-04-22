@@ -1,5 +1,8 @@
 #include "stack_test.h"
 
+#include <functions.h>
+
+#define STACK_DATA_TYPE DATA_TYPE
 #define STACK_MODE INFINITE_LIST_STACK_MODE
 #define LIST_ARRAY_STACK_CHUNK (1 << 4)
 #include <stack/stack.h>

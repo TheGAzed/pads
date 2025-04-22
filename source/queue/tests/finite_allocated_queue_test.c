@@ -1,8 +1,12 @@
 #include "queue_test.h"
 
-#define QUEUE_MODE FINITE_ALLOCATED_QUEUE
-#define MAXIMUM_QUEUE_SIZE  (1 << 4)
+#include <functions.h>
+
+#define QUEUE_DATA_TYPE DATA_TYPE
+#define QUEUE_MODE FINITE_ALLOCATED_QUEUE_MODE
 #include <queue/queue.h>
+
+#define MAXIMUM_QUEUE_SIZE  (1 << 4)
 
 TEST FAQ_CREATE_01(void) {
     queue_s test = create_queue(MAXIMUM_QUEUE_SIZE);

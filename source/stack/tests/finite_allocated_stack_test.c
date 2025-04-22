@@ -1,8 +1,12 @@
 #include "stack_test.h"
 
+#include <functions.h>
+
+#define STACK_DATA_TYPE DATA_TYPE
 #define STACK_MODE FINITE_ALLOCATED_STACK_MODE
-#define MAXIMUM_STACK_SIZE  (1 << 4)
 #include <stack/stack.h>
+
+#define MAXIMUM_STACK_SIZE  (1 << 4)
 
 TEST FAS_CREATE_01(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);

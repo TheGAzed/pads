@@ -1,6 +1,9 @@
 #include "queue_test.h"
 
-#define QUEUE_MODE INFINITE_LIST_QUEUE
+#include <functions.h>
+
+#define QUEUE_DATA_TYPE DATA_TYPE
+#define QUEUE_MODE INFINITE_LIST_QUEUE_MODE
 #define LIST_ARRAY_QUEUE_CHUNK (1 << 4)
 #include <queue/queue.h>
 

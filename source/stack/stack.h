@@ -218,10 +218,10 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
     return element;
 }
 
-/// @bried Creates and returns a copy of a stack using copy element function.
+/// @brief Copies the stack and all its elements into a new structure.
 /// @param stack Stack structure to copy.
-/// @param copy Function pointer that returns a deep or shallow copy of an element.
-/// @return New stack copy with copied elements.
+/// @param copy Function pointer to create a deep/shallow copy of an element in stack.
+/// @return A copy of the specified 'stack' parameter.
 static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) {
     STACK_ASSERT(copy && "[ERROR] 'copy' parameter pointer is NULL.");
 
@@ -427,11 +427,9 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
     return stack->elements[((stack->size)--) - 1];
 }
 
-/// @brief Copies the stack and all its elements into a new stack structure. If copy_element is null a shallow copy
-/// will be created
-/// otherwise copy_element is called.
+/// @brief Copies the stack and all its elements into a new structure.
 /// @param stack Stack structure to copy.
-/// @param copy Function pointer to create a copy of an element or NULL if 'STACK_DATA_TYPE' is a basic type.
+/// @param copy Function pointer to create a deep/shallow copy of an element in stack.
 /// @return A copy of the specified 'stack' parameter.
 static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) {
     STACK_ASSERT(copy && "[ERROR] 'copy' parameter pointer is NULL.");
@@ -622,11 +620,9 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
     return element;
 }
 
-/// @brief Copies the stack and all its elements into a new stack structure. If copy_element is null a shallow copy
-/// will be created
-/// otherwise copy_element is called.
-/// @param stack Stack structure.
-/// @param copy
+/// @brief Copies the stack and all its elements into a new structure.
+/// @param stack Stack structure to copy.
+/// @param copy Function pointer to create a deep/shallow copy of an element in stack.
 /// @return A copy of the specified 'stack' parameter.
 static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) {
     STACK_ASSERT(copy && "[ERROR] 'copy' parameter pointer is NULL.");
@@ -765,11 +761,9 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
     return stack->elements[--(stack->size)]; // treat decremented size as current index
 }
 
-/// @brief Copies the stack and all its elements into a new stack structure. If copy_element is null a shallow copy
-/// will be created
-/// otherwise copy_element is called.
-/// @param stack Stack structure.
-/// @param copy
+/// @brief Copies the stack and all its elements into a new structure.
+/// @param stack Stack structure to copy.
+/// @param copy Function pointer to create a deep/shallow copy of an element in stack.
 /// @return A copy of the specified 'stack' parameter.
 static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) {
     STACK_ASSERT(copy && "[ERROR] 'copy' parameter pointer is NULL.");

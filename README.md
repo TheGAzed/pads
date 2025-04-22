@@ -18,10 +18,10 @@ PADS data structures are each divided into at least three modes with support for
 ### **Available:**
 - [STACK](https://github.com/TheGAzed/pads/blob/main/source/stack)
 - [QUEUE](https://github.com/TheGAzed/pads/blob/main/source/queue)
+- [DEQUE](https://github.com/TheGAzed/pads/blob/main/source/deque)
 
 ### **In Progress:**
 
-- [DEQUE](https://github.com/TheGAzed/pads/blob/main/source/deque)
 - [FORWARD LIST](https://github.com/TheGAzed/pads/blob/main/source/forward_list)
 - [BINARY SET](https://github.com/TheGAzed/pads/blob/main/source/binary_set)
 - [LIST](https://github.com/TheGAzed/pads/blob/main/source/list)
