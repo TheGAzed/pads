@@ -607,7 +607,7 @@ static inline void forevery_queue(queue_s * queue, const manage_queue_fn manage,
 
 #elif QUEUE_MODE == INFINITE_REALLOC_QUEUE_MODE
 
-#if !defined(IS_REALLOC_CAPACITY_QUEUE) && !defined(EXPAND_REALLOC_CAPACITY_QUEUE)
+#if !defined(IS_CAPACITY_QUEUE) && !defined(EXPAND_CAPACITY_QUEUE)
 
 #ifndef REALLOC_QUEUE_CHUNK
 
@@ -620,16 +620,16 @@ static inline void forevery_queue(queue_s * queue, const manage_queue_fn manage,
 #endif
 
 /// @brief Checks if stack's 'size' has reached capacity.
-#define IS_REALLOC_CAPACITY_QUEUE(size) (!(size % REALLOC_QUEUE_CHUNK))
+#define IS_CAPACITY_QUEUE(size) (!((size) % REALLOC_QUEUE_CHUNK))
 
 /// @brief Calculates next stack's capacity based on 'size'.
-#define EXPAND_REALLOC_CAPACITY_QUEUE(capacity) (capacity + REALLOC_QUEUE_CHUNK)
+#define EXPAND_CAPACITY_QUEUE(capacity) ((capacity) + REALLOC_QUEUE_CHUNK)
 
-#elif !defined(IS_REALLOC_CAPACITY_QUEUE)
+#elif !defined(IS_CAPACITY_QUEUE)
 
 #error Stack capacity reached check is not defined.
 
-#elif !defined(EXPAND_REALLOC_CAPACITY_QUEUE)
+#elif !defined(EXPAND_CAPACITY_QUEUE)
 
 #error Stack capacity expanded size is not defined.
 
@@ -688,8 +688,8 @@ static inline void enqueue(queue_s * queue, const QUEUE_DATA_TYPE element) {
 
     // first expand memory if necessary and then add element
     const size_t actual_size = queue->current + queue->size;
-    if (IS_REALLOC_CAPACITY_QUEUE(actual_size)) {
-        queue->elements = QUEUE_REALLOC(queue->elements, (EXPAND_REALLOC_CAPACITY_QUEUE(actual_size)) * sizeof(QUEUE_DATA_TYPE));
+    if (IS_CAPACITY_QUEUE(actual_size)) {
+        queue->elements = QUEUE_REALLOC(queue->elements, (EXPAND_CAPACITY_QUEUE(actual_size)) * sizeof(QUEUE_DATA_TYPE));
         QUEUE_ASSERT(queue->elements && "[ERROR] Memory allocation failed");
     }
     memcpy(queue->elements + actual_size, &element, sizeof(QUEUE_DATA_TYPE));
@@ -707,7 +707,7 @@ static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
     // first remove element and then shrink memory if necessary
     QUEUE_DATA_TYPE element = queue->elements[queue->current++];
     queue->size--;
-    if (IS_REALLOC_CAPACITY_QUEUE(queue->size)) {
+    if (IS_CAPACITY_QUEUE(queue->size)) {
         QUEUE_DATA_TYPE * temp = queue->size ? QUEUE_REALLOC(NULL, queue->size * sizeof(QUEUE_DATA_TYPE)) : NULL;
         QUEUE_ASSERT((!queue->size || temp) && "[ERROR] Memory allocation failed."); // fails if allocation returns NULL on non-zero chunk size
 
@@ -729,8 +729,8 @@ static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) 
 
     queue_s replica = { .current = 0, .elements = NULL, .size = 0 };
     for (; replica.size < queue.size; ++(replica.size)) {
-        if (IS_REALLOC_CAPACITY_QUEUE(replica.size)) {
-            replica.elements = QUEUE_REALLOC(replica.elements, (EXPAND_REALLOC_CAPACITY_QUEUE(replica.size)) * sizeof(QUEUE_DATA_TYPE));
+        if (IS_CAPACITY_QUEUE(replica.size)) {
+            replica.elements = QUEUE_REALLOC(replica.elements, (EXPAND_CAPACITY_QUEUE(replica.size)) * sizeof(QUEUE_DATA_TYPE));
             QUEUE_ASSERT(replica.elements && "[ERROR] Memory allocation failed");
         }
         replica.elements[replica.size] = copy(queue.elements[replica.size + queue.current]);

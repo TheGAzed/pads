@@ -512,7 +512,7 @@ static inline void forevery_stack(stack_s const * stack, const manage_stack_fn m
 
 #elif STACK_MODE == INFINITE_REALLOC_STACK_MODE
 
-#if !defined(IS_REALLOC_CAPACITY_STACK) && !defined(EXPAND_REALLOC_CAPACITY_STACK)
+#if !defined(IS_CAPACITY_STACK) && !defined(EXPAND_CAPACITY_STACK)
 
 #ifndef REALLOC_STACK_CHUNK
 
@@ -525,16 +525,16 @@ static inline void forevery_stack(stack_s const * stack, const manage_stack_fn m
 #endif
 
 /// @brief Checks if stack's 'size' has reached capacity.
-#define IS_REALLOC_CAPACITY_STACK(size) (!(size % REALLOC_STACK_CHUNK))
+#define IS_CAPACITY_STACK(size) (!((size) % REALLOC_STACK_CHUNK))
 
 /// @brief Calculates next stack's capacity based on 'size'.
-#define EXPAND_REALLOC_CAPACITY_STACK(capacity) (capacity + REALLOC_STACK_CHUNK)
+#define EXPAND_CAPACITY_STACK(capacity) ((capacity) + REALLOC_STACK_CHUNK)
 
-#elif !defined(IS_REALLOC_CAPACITY_STACK)
+#elif !defined(IS_CAPACITY_STACK)
 
 #error Stack capacity reached check is not defined.
 
-#elif !defined(EXPAND_REALLOC_CAPACITY_STACK)
+#elif !defined(EXPAND_CAPACITY_STACK)
 
 #error Stack capacity expanded size is not defined.
 
@@ -592,8 +592,8 @@ static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
     STACK_ASSERT((stack->size + 1) && "[ERROR] Stack size will overflow.");
 
     // first expand memory if necessary and then add element
-    if (IS_REALLOC_CAPACITY_STACK(stack->size)) {
-        stack->elements = STACK_REALLOC(stack->elements, (EXPAND_REALLOC_CAPACITY_STACK(stack->size)) * sizeof(STACK_DATA_TYPE));
+    if (IS_CAPACITY_STACK(stack->size)) {
+        stack->elements = STACK_REALLOC(stack->elements, (EXPAND_CAPACITY_STACK(stack->size)) * sizeof(STACK_DATA_TYPE));
         STACK_ASSERT(stack->elements && "[ERROR] Memory allocation failed");
     }
     memcpy(stack->elements + (stack->size++), &element, sizeof(STACK_DATA_TYPE));
@@ -609,7 +609,7 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
 
     // first remove element and then shrink memory if necessary
     STACK_DATA_TYPE element = stack->elements[--(stack->size)];
-    if (IS_REALLOC_CAPACITY_STACK(stack->size)) {
+    if (IS_CAPACITY_STACK(stack->size)) {
         stack->elements = STACK_REALLOC(stack->elements, stack->size * sizeof(STACK_DATA_TYPE));
         if (!stack->size) {
             STACK_FREE(stack->elements);
@@ -630,8 +630,8 @@ static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) 
     stack_s stack_copy = { 0 };
 
     for (; stack_copy.size < stack.size; stack_copy.size++) { // for loop until stack copy's size reaches stack's size
-        if (IS_REALLOC_CAPACITY_STACK(stack_copy.size)) { // if size reached maximum chunk size, expand elements array
-            stack_copy.elements = STACK_REALLOC(stack_copy.elements, (EXPAND_REALLOC_CAPACITY_STACK(stack_copy.size)) * sizeof(STACK_DATA_TYPE));
+        if (IS_CAPACITY_STACK(stack_copy.size)) { // if size reached maximum chunk size, expand elements array
+            stack_copy.elements = STACK_REALLOC(stack_copy.elements, (EXPAND_CAPACITY_STACK(stack_copy.size)) * sizeof(STACK_DATA_TYPE));
             STACK_ASSERT((stack_copy.elements) && "[ERROR] Memory allocation failed.");
         }
 
