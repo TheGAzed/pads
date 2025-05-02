@@ -6,5 +6,5 @@ add_executable(queue_test main.c
 )
 
 target_include_directories(queue_test PUBLIC .)
-target_link_libraries(queue_test PRIVATE greatest project_headers functions)
+target_link_libraries(queue_test PRIVATE greatest PADS functions)
 add_test(NAME QUEUE_TEST COMMAND queue_test)

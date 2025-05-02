@@ -6,5 +6,5 @@ add_executable(deque_test main.c
 )
 
 target_include_directories(deque_test PUBLIC .)
-target_link_libraries(deque_test PRIVATE greatest project_headers functions)
+target_link_libraries(deque_test PRIVATE greatest PADS functions)
 add_test(NAME DEQUE_TEST COMMAND deque_test)

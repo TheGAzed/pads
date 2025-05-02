@@ -1344,7 +1344,6 @@ static inline void map_deque(deque_s * deque, const manage_deque_fn manage, void
     DEQUE_ASSERT(deque->current < PREPROCESSOR_DEQUE_SIZE && "[ERROR] Deque's current index must be less than maximum size.");
 
     DEQUE_DATA_TYPE elements_array[PREPROCESSOR_DEQUE_SIZE];
-    DEQUE_ASSERT(elements_array && "[ERROR] Memory allocation failed.");
 
     const size_t right_size = (deque->current + deque->size) > PREPROCESSOR_DEQUE_SIZE ? PREPROCESSOR_DEQUE_SIZE - deque->current : deque->size;
 

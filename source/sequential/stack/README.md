@@ -1,8 +1,5 @@
 # [STACK](https://en.wikipedia.org/wiki/Stack_(abstract_data_type))
 
-> [!WARNING]
-> Only one stack.h header can be included **per executable** file. If a separate header file includes stack.h, then no other file with the 'separate header' can use stack.h.
-
 The stack is a last in first out (LIFO) data structure. Here it is made in four implementation modes each defined by a special value.
 
 ### List of special modes and their values:

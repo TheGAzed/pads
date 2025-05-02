@@ -18,7 +18,7 @@ DATA_TYPE copy_int(const DATA_TYPE element) {
 }
 
 DATA_TYPE copy_string(const DATA_TYPE element) {
-    return (DATA_TYPE) { .sub_two = strdup(element.sub_two), };
+    return (DATA_TYPE) { .sub_two = strcpy(calloc((strlen(element.sub_two) + 1), sizeof(char)), element.sub_two), };
 }
 
 bool operation_int(DATA_TYPE * element, void * args) {
@@ -28,7 +28,7 @@ bool operation_int(DATA_TYPE * element, void * args) {
 
 bool operation_string(DATA_TYPE * element, void * args) {
     free(element->sub_two);
-    element->sub_two = strdup(args);
+    element->sub_two = strcpy(calloc((strlen(args) + 1), sizeof(char)), args);
     return true;
 }
 

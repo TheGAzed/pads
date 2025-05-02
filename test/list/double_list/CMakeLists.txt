@@ -4,5 +4,5 @@ add_executable(list_test main.c
         finite_preprocessor_list_test.c
         infinite_realloc_list_test.c
 )
-target_link_libraries(list_test PRIVATE functions greatest project_headers)
+target_link_libraries(list_test PRIVATE functions greatest PADS)
 add_test(NAME LIST_TEST COMMAND list_test)

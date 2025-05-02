@@ -4,5 +4,5 @@ add_executable(forward_list_test main.c
         infinite_realloc_forward_list_test.c
         finite_preprocessor_forward_list_test.c
 )
-target_link_libraries(forward_list_test PRIVATE functions greatest project_headers)
+target_link_libraries(forward_list_test PRIVATE functions greatest PADS)
 add_test(NAME FORWARD_LIST_TEST COMMAND forward_list_test)

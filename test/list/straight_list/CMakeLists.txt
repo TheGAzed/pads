@@ -6,5 +6,5 @@ add_executable(straight_list_test main.c
 )
 
 target_include_directories(straight_list_test PUBLIC .)
-target_link_libraries(straight_list_test PRIVATE functions greatest project_headers)
+target_link_libraries(straight_list_test PRIVATE greatest PADS functions)
 add_test(NAME STRAIGHT_LIST_TEST COMMAND straight_list_test)

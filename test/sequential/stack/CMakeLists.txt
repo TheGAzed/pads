@@ -6,5 +6,5 @@ add_executable(stack_test main.c
 )
 
 target_include_directories(stack_test PUBLIC .)
-target_link_libraries(stack_test PRIVATE greatest project_headers functions)
+target_link_libraries(stack_test PRIVATE greatest PADS functions)
 add_test(NAME STACK_TEST COMMAND stack_test)

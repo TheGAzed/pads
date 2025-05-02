@@ -44,7 +44,7 @@ TEST FAD_DESTROY_02(void) {
 TEST FAD_DESTROY_03(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -59,7 +59,7 @@ TEST FAD_DESTROY_03(void) {
 TEST FAD_DESTROY_04(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -87,7 +87,7 @@ TEST FAD_DESTROY_05(void) {
 TEST FAD_DESTROY_06(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -102,7 +102,7 @@ TEST FAD_DESTROY_06(void) {
 TEST FAD_DESTROY_07(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -143,7 +143,7 @@ TEST FAD_CLEAR_02(void) {
 TEST FAD_CLEAR_03(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -159,7 +159,7 @@ TEST FAD_CLEAR_03(void) {
 TEST FAD_CLEAR_04(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -189,7 +189,7 @@ TEST FAD_CLEAR_05(void) {
 TEST FAD_CLEAR_06(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -205,7 +205,7 @@ TEST FAD_CLEAR_06(void) {
 TEST FAD_CLEAR_07(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -234,7 +234,7 @@ TEST FAD_COPY_01(void) {
 TEST FAD_COPY_02(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -257,7 +257,7 @@ TEST FAD_COPY_02(void) {
 TEST FAD_COPY_03(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -280,7 +280,7 @@ TEST FAD_COPY_03(void) {
 TEST FAD_COPY_04(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -303,7 +303,7 @@ TEST FAD_COPY_04(void) {
 TEST FAD_COPY_05(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -326,7 +326,7 @@ TEST FAD_COPY_05(void) {
 TEST FAD_COPY_06(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue_back(&test, copy_string((DEQUE_DATA_TYPE) { .sub_two = TEST_STRING, }));
     }
 
@@ -352,7 +352,7 @@ TEST FAD_COPY_06(void) {
 TEST FAD_COPY_07(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue_back(&test, copy_string((DEQUE_DATA_TYPE) { .sub_two = TEST_STRING, }));
     }
 
@@ -400,7 +400,7 @@ TEST FAD_IS_EMPTY_02(void) {
 TEST FAD_IS_EMPTY_03(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
@@ -414,7 +414,7 @@ TEST FAD_IS_EMPTY_03(void) {
 TEST FAD_IS_EMPTY_04(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
@@ -442,11 +442,11 @@ TEST FAD_IS_EMPTY_05(void) {
 TEST FAD_IS_EMPTY_06(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         dequeue_front(&test);
     }
 
@@ -460,11 +460,11 @@ TEST FAD_IS_EMPTY_06(void) {
 TEST FAD_IS_EMPTY_07(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         dequeue_front(&test);
     }
 
@@ -490,7 +490,7 @@ TEST FAD_IS_EMPTY_08(void) {
 TEST FAD_IS_EMPTY_09(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
@@ -504,7 +504,7 @@ TEST FAD_IS_EMPTY_09(void) {
 TEST FAD_IS_EMPTY_10(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
@@ -532,11 +532,11 @@ TEST FAD_IS_EMPTY_11(void) {
 TEST FAD_IS_EMPTY_12(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         dequeue_back(&test);
     }
 
@@ -550,11 +550,11 @@ TEST FAD_IS_EMPTY_12(void) {
 TEST FAD_IS_EMPTY_13(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         dequeue_back(&test);
     }
 
@@ -602,7 +602,7 @@ TEST FAD_ENQUEUE_FRONT_01(void) {
 TEST FAD_ENQUEUE_FRONT_02(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -616,7 +616,7 @@ TEST FAD_ENQUEUE_FRONT_02(void) {
 TEST FAD_ENQUEUE_FRONT_03(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -642,7 +642,7 @@ TEST FAD_ENQUEUE_BACK_01(void) {
 TEST FAD_ENQUEUE_BACK_02(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -656,7 +656,7 @@ TEST FAD_ENQUEUE_BACK_02(void) {
 TEST FAD_ENQUEUE_BACK_03(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -683,7 +683,7 @@ TEST FAD_PEEK_FRONT_01(void) {
 TEST FAD_PEEK_FRONT_02(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -698,7 +698,7 @@ TEST FAD_PEEK_FRONT_02(void) {
 TEST FAD_PEEK_FRONT_03(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -713,7 +713,7 @@ TEST FAD_PEEK_FRONT_03(void) {
 TEST FAD_PEEK_FRONT_04(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -728,7 +728,7 @@ TEST FAD_PEEK_FRONT_04(void) {
 TEST FAD_PEEK_FRONT_05(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -756,7 +756,7 @@ TEST FAD_PEEK_BACK_01(void) {
 TEST FAD_PEEK_BACK_02(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -771,7 +771,7 @@ TEST FAD_PEEK_BACK_02(void) {
 TEST FAD_PEEK_BACK_03(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -786,7 +786,7 @@ TEST FAD_PEEK_BACK_03(void) {
 TEST FAD_PEEK_BACK_04(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -801,7 +801,7 @@ TEST FAD_PEEK_BACK_04(void) {
 TEST FAD_PEEK_BACK_05(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -829,13 +829,13 @@ TEST FAD_DEQUEUE_FRONT_01(void) {
 TEST FAD_DEQUEUE_FRONT_02(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_EQm("[FAD-ERROR] Expected size to be 'MAXIMUM_QUEUE_SIZE - 1'.", MAXIMUM_QUEUE_SIZE - 1, test.size);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         ASSERT_EQm("[FAD-ERROR] Expected peeked element to be i.", MAXIMUM_QUEUE_SIZE - 1 - 1 - i, dequeue_front(&test).sub_one);
     }
 
@@ -847,13 +847,13 @@ TEST FAD_DEQUEUE_FRONT_02(void) {
 TEST FAD_DEQUEUE_FRONT_03(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_EQm("[FAD-ERROR] Expected size to be 'MAXIMUM_QUEUE_SIZE'.", MAXIMUM_QUEUE_SIZE, test.size);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         ASSERT_EQm("[FAD-ERROR] Expected peeked element to be i.", MAXIMUM_QUEUE_SIZE - 1 - i, dequeue_front(&test).sub_one);
     }
 
@@ -865,13 +865,13 @@ TEST FAD_DEQUEUE_FRONT_03(void) {
 TEST FAD_DEQUEUE_FRONT_04(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_EQm("[FAD-ERROR] Expected size to be 'MAXIMUM_QUEUE_SIZE - 1'.", MAXIMUM_QUEUE_SIZE - 1, test.size);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         ASSERT_EQm("[FAD-ERROR] Expected peeked element to be i.", i, dequeue_front(&test).sub_one);
     }
 
@@ -883,13 +883,13 @@ TEST FAD_DEQUEUE_FRONT_04(void) {
 TEST FAD_DEQUEUE_FRONT_05(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_EQm("[FAD-ERROR] Expected size to be 'MAXIMUM_QUEUE_SIZE'.", MAXIMUM_QUEUE_SIZE, test.size);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         ASSERT_EQm("[FAD-ERROR] Expected peeked element to be i.", i, dequeue_front(&test).sub_one);
     }
 
@@ -914,13 +914,13 @@ TEST FAD_DEQUEUE_BACK_01(void) {
 TEST FAD_DEQUEUE_BACK_02(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_EQm("[FAD-ERROR] Expected size to be 'MAXIMUM_QUEUE_SIZE - 1'.", MAXIMUM_QUEUE_SIZE - 1, test.size);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         ASSERT_EQm("[FAD-ERROR] Expected peeked element to be i.", MAXIMUM_QUEUE_SIZE - 1 - 1 - i, dequeue_back(&test).sub_one);
     }
 
@@ -932,13 +932,13 @@ TEST FAD_DEQUEUE_BACK_02(void) {
 TEST FAD_DEQUEUE_BACK_03(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_EQm("[FAD-ERROR] Expected size to be 'MAXIMUM_QUEUE_SIZE'.", MAXIMUM_QUEUE_SIZE, test.size);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         ASSERT_EQm("[FAD-ERROR] Expected peeked element to be i.", MAXIMUM_QUEUE_SIZE - 1 - i, dequeue_back(&test).sub_one);
     }
 
@@ -950,13 +950,13 @@ TEST FAD_DEQUEUE_BACK_03(void) {
 TEST FAD_DEQUEUE_BACK_04(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_EQm("[FAD-ERROR] Expected size to be 'MAXIMUM_QUEUE_SIZE - 1'.", MAXIMUM_QUEUE_SIZE - 1, test.size);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         ASSERT_EQm("[FAD-ERROR] Expected peeked element to be i.", i, dequeue_back(&test).sub_one);
     }
 
@@ -968,13 +968,13 @@ TEST FAD_DEQUEUE_BACK_04(void) {
 TEST FAD_DEQUEUE_BACK_05(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_EQm("[FAD-ERROR] Expected size to be 'MAXIMUM_QUEUE_SIZE'.", MAXIMUM_QUEUE_SIZE, test.size);
 
-    for (size_t i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
+    for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         ASSERT_EQm("[FAD-ERROR] Expected peeked element to be i.", i, dequeue_back(&test).sub_one);
     }
 

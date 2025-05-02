@@ -44,7 +44,7 @@ TEST ILD_DESTROY_02(void) {
 TEST ILD_DESTROY_03(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -59,7 +59,7 @@ TEST ILD_DESTROY_03(void) {
 TEST ILD_DESTROY_04(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -74,7 +74,7 @@ TEST ILD_DESTROY_04(void) {
 TEST ILD_DESTROY_05(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -102,7 +102,7 @@ TEST ILD_DESTROY_06(void) {
 TEST ILD_DESTROY_07(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -117,7 +117,7 @@ TEST ILD_DESTROY_07(void) {
 TEST ILD_DESTROY_08(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -132,7 +132,7 @@ TEST ILD_DESTROY_08(void) {
 TEST ILD_DESTROY_09(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -175,7 +175,7 @@ TEST ILD_CLEAR_02(void) {
 TEST ILD_CLEAR_03(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -192,7 +192,7 @@ TEST ILD_CLEAR_03(void) {
 TEST ILD_CLEAR_04(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -209,7 +209,7 @@ TEST ILD_CLEAR_04(void) {
 TEST ILD_CLEAR_05(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -241,7 +241,7 @@ TEST ILD_CLEAR_06(void) {
 TEST ILD_CLEAR_07(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -258,7 +258,7 @@ TEST ILD_CLEAR_07(void) {
 TEST ILD_CLEAR_08(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -275,7 +275,7 @@ TEST ILD_CLEAR_08(void) {
 TEST ILD_CLEAR_09(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -306,7 +306,7 @@ TEST ILD_COPY_01(void) {
 TEST ILD_COPY_02(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -329,7 +329,7 @@ TEST ILD_COPY_02(void) {
 TEST ILD_COPY_03(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -352,7 +352,7 @@ TEST ILD_COPY_03(void) {
 TEST ILD_COPY_04(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -375,7 +375,7 @@ TEST ILD_COPY_04(void) {
 TEST ILD_COPY_05(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -398,7 +398,7 @@ TEST ILD_COPY_05(void) {
 TEST ILD_COPY_06(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -421,7 +421,7 @@ TEST ILD_COPY_06(void) {
 TEST ILD_COPY_07(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -444,7 +444,7 @@ TEST ILD_COPY_07(void) {
 TEST ILD_COPY_08(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         enqueue_back(&test, copy_string((DEQUE_DATA_TYPE) { .sub_two = TEST_STRING, }));
     }
 
@@ -470,7 +470,7 @@ TEST ILD_COPY_08(void) {
 TEST ILD_COPY_09(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         enqueue_back(&test, copy_string((DEQUE_DATA_TYPE) { .sub_two = TEST_STRING, }));
     }
 
@@ -496,7 +496,7 @@ TEST ILD_COPY_09(void) {
 TEST ILD_COPY_10(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         enqueue_back(&test, copy_string((DEQUE_DATA_TYPE) { .sub_two = TEST_STRING, }));
     }
 
@@ -544,7 +544,7 @@ TEST ILD_IS_EMPTY_02(void) {
 TEST ILD_IS_EMPTY_03(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
@@ -558,7 +558,7 @@ TEST ILD_IS_EMPTY_03(void) {
 TEST ILD_IS_EMPTY_04(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
@@ -572,7 +572,7 @@ TEST ILD_IS_EMPTY_04(void) {
 TEST ILD_IS_EMPTY_05(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
@@ -600,11 +600,11 @@ TEST ILD_IS_EMPTY_06(void) {
 TEST ILD_IS_EMPTY_07(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         dequeue_front(&test);
     }
 
@@ -618,11 +618,11 @@ TEST ILD_IS_EMPTY_07(void) {
 TEST ILD_IS_EMPTY_08(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         dequeue_front(&test);
     }
 
@@ -636,11 +636,11 @@ TEST ILD_IS_EMPTY_08(void) {
 TEST ILD_IS_EMPTY_09(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         dequeue_front(&test);
     }
 
@@ -666,7 +666,7 @@ TEST ILD_IS_EMPTY_10(void) {
 TEST ILD_IS_EMPTY_11(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
@@ -680,7 +680,7 @@ TEST ILD_IS_EMPTY_11(void) {
 TEST ILD_IS_EMPTY_12(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
@@ -694,7 +694,7 @@ TEST ILD_IS_EMPTY_12(void) {
 TEST ILD_IS_EMPTY_13(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
@@ -722,11 +722,11 @@ TEST ILD_IS_EMPTY_14(void) {
 TEST ILD_IS_EMPTY_15(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         dequeue_back(&test);
     }
 
@@ -740,11 +740,11 @@ TEST ILD_IS_EMPTY_15(void) {
 TEST ILD_IS_EMPTY_16(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         dequeue_back(&test);
     }
 
@@ -758,11 +758,11 @@ TEST ILD_IS_EMPTY_16(void) {
 TEST ILD_IS_EMPTY_17(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         dequeue_back(&test);
     }
 
@@ -810,7 +810,7 @@ TEST ILD_ENQUEUE_FRONT_01(void) {
 TEST ILD_ENQUEUE_FRONT_02(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -824,7 +824,7 @@ TEST ILD_ENQUEUE_FRONT_02(void) {
 TEST ILD_ENQUEUE_FRONT_03(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -838,7 +838,7 @@ TEST ILD_ENQUEUE_FRONT_03(void) {
 TEST ILD_ENQUEUE_FRONT_04(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -864,7 +864,7 @@ TEST ILD_ENQUEUE_BACK_01(void) {
 TEST ILD_ENQUEUE_BACK_02(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -878,7 +878,7 @@ TEST ILD_ENQUEUE_BACK_02(void) {
 TEST ILD_ENQUEUE_BACK_03(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -892,7 +892,7 @@ TEST ILD_ENQUEUE_BACK_03(void) {
 TEST ILD_ENQUEUE_BACK_04(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -919,7 +919,7 @@ TEST ILD_PEEK_FRONT_01(void) {
 TEST ILD_PEEK_FRONT_02(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -934,7 +934,7 @@ TEST ILD_PEEK_FRONT_02(void) {
 TEST ILD_PEEK_FRONT_03(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -949,7 +949,7 @@ TEST ILD_PEEK_FRONT_03(void) {
 TEST ILD_PEEK_FRONT_04(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -964,7 +964,7 @@ TEST ILD_PEEK_FRONT_04(void) {
 TEST ILD_PEEK_FRONT_05(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -979,7 +979,7 @@ TEST ILD_PEEK_FRONT_05(void) {
 TEST ILD_PEEK_FRONT_06(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -994,7 +994,7 @@ TEST ILD_PEEK_FRONT_06(void) {
 TEST ILD_PEEK_FRONT_07(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1022,7 +1022,7 @@ TEST ILD_PEEK_BACK_01(void) {
 TEST ILD_PEEK_BACK_02(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1037,7 +1037,7 @@ TEST ILD_PEEK_BACK_02(void) {
 TEST ILD_PEEK_BACK_03(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1052,7 +1052,7 @@ TEST ILD_PEEK_BACK_03(void) {
 TEST ILD_PEEK_BACK_04(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1067,7 +1067,7 @@ TEST ILD_PEEK_BACK_04(void) {
 TEST ILD_PEEK_BACK_05(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1082,7 +1082,7 @@ TEST ILD_PEEK_BACK_05(void) {
 TEST ILD_PEEK_BACK_06(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1097,7 +1097,7 @@ TEST ILD_PEEK_BACK_06(void) {
 TEST ILD_PEEK_BACK_07(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1125,13 +1125,13 @@ TEST ILD_DEQUEUE_FRONT_01(void) {
 TEST ILD_DEQUEUE_FRONT_02(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_EQm("[ILD-ERROR] Expected size to be 'LIST_ARRAY_DEQUE_CHUNK - 1'.", LIST_ARRAY_DEQUE_CHUNK - 1, test.size);
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         ASSERT_EQm("[ILD-ERROR] Expected peeked element to be i.", LIST_ARRAY_DEQUE_CHUNK - 1 - 1 - i, dequeue_front(&test).sub_one);
     }
 
@@ -1143,13 +1143,13 @@ TEST ILD_DEQUEUE_FRONT_02(void) {
 TEST ILD_DEQUEUE_FRONT_03(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_EQm("[ILD-ERROR] Expected size to be 'LIST_ARRAY_DEQUE_CHUNK'.", LIST_ARRAY_DEQUE_CHUNK, test.size);
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         ASSERT_EQm("[ILD-ERROR] Expected peeked element to be i.", LIST_ARRAY_DEQUE_CHUNK - 1 - i, dequeue_front(&test).sub_one);
     }
 
@@ -1161,13 +1161,13 @@ TEST ILD_DEQUEUE_FRONT_03(void) {
 TEST ILD_DEQUEUE_FRONT_04(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_EQm("[ILD-ERROR] Expected size to be 'LIST_ARRAY_DEQUE_CHUNK + 1'.", LIST_ARRAY_DEQUE_CHUNK + 1, test.size);
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         ASSERT_EQm("[ILD-ERROR] Expected peeked element to be i.", LIST_ARRAY_DEQUE_CHUNK + 1 - 1 - i, dequeue_front(&test).sub_one);
     }
 
@@ -1179,13 +1179,13 @@ TEST ILD_DEQUEUE_FRONT_04(void) {
 TEST ILD_DEQUEUE_FRONT_05(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_EQm("[ILD-ERROR] Expected size to be 'LIST_ARRAY_DEQUE_CHUNK - 1'.", LIST_ARRAY_DEQUE_CHUNK - 1, test.size);
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         ASSERT_EQm("[ILD-ERROR] Expected peeked element to be i.", i, dequeue_front(&test).sub_one);
     }
 
@@ -1197,13 +1197,13 @@ TEST ILD_DEQUEUE_FRONT_05(void) {
 TEST ILD_DEQUEUE_FRONT_06(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_EQm("[ILD-ERROR] Expected size to be 'LIST_ARRAY_DEQUE_CHUNK'.", LIST_ARRAY_DEQUE_CHUNK, test.size);
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         ASSERT_EQm("[ILD-ERROR] Expected peeked element to be i.", i, dequeue_front(&test).sub_one);
     }
 
@@ -1215,13 +1215,13 @@ TEST ILD_DEQUEUE_FRONT_06(void) {
 TEST ILD_DEQUEUE_FRONT_07(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_EQm("[ILD-ERROR] Expected size to be 'LIST_ARRAY_DEQUE_CHUNK + 1'.", LIST_ARRAY_DEQUE_CHUNK + 1, test.size);
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         ASSERT_EQm("[ILD-ERROR] Expected peeked element to be i.", i, dequeue_front(&test).sub_one);
     }
 
@@ -1246,13 +1246,13 @@ TEST ILD_DEQUEUE_BACK_01(void) {
 TEST ILD_DEQUEUE_BACK_02(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_EQm("[ILD-ERROR] Expected size to be 'LIST_ARRAY_DEQUE_CHUNK - 1'.", LIST_ARRAY_DEQUE_CHUNK - 1, test.size);
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         ASSERT_EQm("[ILD-ERROR] Expected peeked element to be i.", LIST_ARRAY_DEQUE_CHUNK - 1 - 1 - i, dequeue_back(&test).sub_one);
     }
 
@@ -1264,13 +1264,13 @@ TEST ILD_DEQUEUE_BACK_02(void) {
 TEST ILD_DEQUEUE_BACK_03(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_EQm("[ILD-ERROR] Expected size to be 'LIST_ARRAY_DEQUE_CHUNK'.", LIST_ARRAY_DEQUE_CHUNK, test.size);
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         ASSERT_EQm("[ILD-ERROR] Expected peeked element to be i.", LIST_ARRAY_DEQUE_CHUNK - 1 - i, dequeue_back(&test).sub_one);
     }
 
@@ -1282,13 +1282,13 @@ TEST ILD_DEQUEUE_BACK_03(void) {
 TEST ILD_DEQUEUE_BACK_04(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_EQm("[ILD-ERROR] Expected size to be 'LIST_ARRAY_DEQUE_CHUNK + 1'.", LIST_ARRAY_DEQUE_CHUNK + 1, test.size);
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         ASSERT_EQm("[ILD-ERROR] Expected peeked element to be i.", LIST_ARRAY_DEQUE_CHUNK + 1 - 1 - i, dequeue_back(&test).sub_one);
     }
 
@@ -1300,13 +1300,13 @@ TEST ILD_DEQUEUE_BACK_04(void) {
 TEST ILD_DEQUEUE_BACK_05(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_EQm("[ILD-ERROR] Expected size to be 'LIST_ARRAY_DEQUE_CHUNK - 1'.", LIST_ARRAY_DEQUE_CHUNK - 1, test.size);
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         ASSERT_EQm("[ILD-ERROR] Expected peeked element to be i.", i, dequeue_back(&test).sub_one);
     }
 
@@ -1318,13 +1318,13 @@ TEST ILD_DEQUEUE_BACK_05(void) {
 TEST ILD_DEQUEUE_BACK_06(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_EQm("[ILD-ERROR] Expected size to be 'LIST_ARRAY_DEQUE_CHUNK'.", LIST_ARRAY_DEQUE_CHUNK, test.size);
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         ASSERT_EQm("[ILD-ERROR] Expected peeked element to be i.", i, dequeue_back(&test).sub_one);
     }
 
@@ -1336,13 +1336,13 @@ TEST ILD_DEQUEUE_BACK_06(void) {
 TEST ILD_DEQUEUE_BACK_07(void) {
     deque_s test = create_deque();
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_EQm("[ILD-ERROR] Expected size to be 'LIST_ARRAY_DEQUE_CHUNK + 1'.", LIST_ARRAY_DEQUE_CHUNK + 1, test.size);
 
-    for (size_t i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
+    for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         ASSERT_EQm("[ILD-ERROR] Expected peeked element to be i.", i, dequeue_back(&test).sub_one);
     }
 

@@ -403,7 +403,7 @@ TEST IRSL_COPY_03(void) {
     ASSERT_NEQm("[IRSL-ERROR] Expected head to not be NULL.", NULL, copy.next);
     ASSERT_EQm("[IRSL-ERROR] Expected size to be 'REALLOC_STRAIGHT_LIST_CHUNK - 1'.", REALLOC_STRAIGHT_LIST_CHUNK - 1, copy.size);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; ++i) {
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; ++i) {
         ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", get_straight_list(test, i).sub_one, get_straight_list(copy, i).sub_one);
     }
 
@@ -426,7 +426,7 @@ TEST IRSL_COPY_04(void) {
     ASSERT_NEQm("[IRSL-ERROR] Expected head to not be NULL.", NULL, copy.next);
     ASSERT_EQm("[IRSL-ERROR] Expected size to be 'REALLOC_STRAIGHT_LIST_CHUNK'.", REALLOC_STRAIGHT_LIST_CHUNK, copy.size);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; ++i) {
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; ++i) {
         ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", get_straight_list(test, i).sub_one, get_straight_list(copy, i).sub_one);
     }
 
@@ -449,7 +449,7 @@ TEST IRSL_COPY_05(void) {
     ASSERT_NEQm("[IRSL-ERROR] Expected head to not be NULL.", NULL, copy.next);
     ASSERT_EQm("[IRSL-ERROR] Expected size to be 'REALLOC_STRAIGHT_LIST_CHUNK + 1'.", REALLOC_STRAIGHT_LIST_CHUNK + 1, copy.size);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; ++i) {
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; ++i) {
         ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", get_straight_list(test, i).sub_one, get_straight_list(copy, i).sub_one);
     }
 
@@ -507,7 +507,7 @@ TEST IRSL_COPY_08(void) {
     ASSERT_NEQm("[IRSL-ERROR] Expected head to not be NULL.", NULL, copy.next);
     ASSERT_EQm("[IRSL-ERROR] Expected size to be 'REALLOC_STRAIGHT_LIST_CHUNK - 1'.", REALLOC_STRAIGHT_LIST_CHUNK - 1, copy.size);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; ++i) {
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; ++i) {
         STRAIGHT_LIST_DATA_TYPE test_element = get_straight_list(test, i);
         STRAIGHT_LIST_DATA_TYPE copy_element = get_straight_list(copy, i);
         ASSERT_STRN_EQm("[IRSL-ERROR] Expected elements to be equal.", test_element.sub_two , copy_element.sub_two, sizeof(TEST_STRING) - 1);
@@ -532,7 +532,7 @@ TEST IRSL_COPY_09(void) {
     ASSERT_NEQm("[IRSL-ERROR] Expected head to not be NULL.", NULL, copy.next);
     ASSERT_EQm("[IRSL-ERROR] Expected size to be 'REALLOC_STRAIGHT_LIST_CHUNK'.", REALLOC_STRAIGHT_LIST_CHUNK, copy.size);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; ++i) {
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; ++i) {
         STRAIGHT_LIST_DATA_TYPE test_element = get_straight_list(test, i);
         STRAIGHT_LIST_DATA_TYPE copy_element = get_straight_list(copy, i);
         ASSERT_STRN_EQm("[IRSL-ERROR] Expected elements to be equal.", test_element.sub_two , copy_element.sub_two, sizeof(TEST_STRING) - 1);
@@ -557,7 +557,7 @@ TEST IRSL_COPY_10(void) {
     ASSERT_NEQm("[IRSL-ERROR] Expected head to not be NULL.", NULL, copy.next);
     ASSERT_EQm("[IRSL-ERROR] Expected size to be 'REALLOC_STRAIGHT_LIST_CHUNK + 1'.", REALLOC_STRAIGHT_LIST_CHUNK + 1, copy.size);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; ++i) {
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; ++i) {
         STRAIGHT_LIST_DATA_TYPE test_element = get_straight_list(test, i);
         STRAIGHT_LIST_DATA_TYPE copy_element = get_straight_list(copy, i);
         ASSERT_STRN_EQm("[IRSL-ERROR] Expected elements to be equal.", test_element.sub_two , copy_element.sub_two, sizeof(TEST_STRING) - 1);
@@ -869,8 +869,8 @@ TEST IRSL_MAP_02(void) {
 
     map_straight_list(&test, sort_int, compare_int);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; ++i) {
-        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; ++i) {
+        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -891,8 +891,8 @@ TEST IRSL_MAP_03(void) {
 
     map_straight_list(&test, sort_int, compare_int);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; ++i) {
-        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; ++i) {
+        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -913,8 +913,8 @@ TEST IRSL_MAP_04(void) {
 
     map_straight_list(&test, sort_int, compare_int);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; ++i) {
-        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; ++i) {
+        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -945,8 +945,8 @@ TEST IRSL_MAP_06(void) {
 
     map_straight_list(&test, sort_int, compare_reverse_int);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; ++i) {
-        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (REALLOC_STRAIGHT_LIST_CHUNK - 1 - 1) - i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; ++i) {
+        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (REALLOC_STRAIGHT_LIST_CHUNK - 1 - 1) - (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -967,8 +967,8 @@ TEST IRSL_MAP_07(void) {
 
     map_straight_list(&test, sort_int, compare_reverse_int);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; ++i) {
-        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (REALLOC_STRAIGHT_LIST_CHUNK - 1) - i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; ++i) {
+        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (REALLOC_STRAIGHT_LIST_CHUNK - 1) - (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -989,8 +989,8 @@ TEST IRSL_MAP_08(void) {
 
     map_straight_list(&test, sort_int, compare_reverse_int);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; ++i) {
-        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (REALLOC_STRAIGHT_LIST_CHUNK + 1 - 1) - i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; ++i) {
+        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (REALLOC_STRAIGHT_LIST_CHUNK + 1 - 1) - (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1023,8 +1023,8 @@ TEST IRSL_BINARY_SEARCH_02(void) {
 TEST IRSL_BINARY_SEARCH_03(void) {
     straight_list_s test = create_straight_list();
 
-    const size_t count = REALLOC_STRAIGHT_LIST_CHUNK - 1;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = REALLOC_STRAIGHT_LIST_CHUNK - 1;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1040,8 +1040,8 @@ TEST IRSL_BINARY_SEARCH_03(void) {
 TEST IRSL_BINARY_SEARCH_04(void) {
     straight_list_s test = create_straight_list();
 
-    const size_t count = REALLOC_STRAIGHT_LIST_CHUNK;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = REALLOC_STRAIGHT_LIST_CHUNK;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1057,8 +1057,8 @@ TEST IRSL_BINARY_SEARCH_04(void) {
 TEST IRSL_BINARY_SEARCH_05(void) {
     straight_list_s test = create_straight_list();
 
-    const size_t count = REALLOC_STRAIGHT_LIST_CHUNK + 1;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = REALLOC_STRAIGHT_LIST_CHUNK + 1;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1074,8 +1074,8 @@ TEST IRSL_BINARY_SEARCH_05(void) {
 TEST IRSL_BINARY_SEARCH_06(void) {
     straight_list_s test = create_straight_list();
 
-    const size_t count = REALLOC_STRAIGHT_LIST_CHUNK - 1;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = REALLOC_STRAIGHT_LIST_CHUNK - 1;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1091,8 +1091,8 @@ TEST IRSL_BINARY_SEARCH_06(void) {
 TEST IRSL_BINARY_SEARCH_07(void) {
     straight_list_s test = create_straight_list();
 
-    const size_t count = REALLOC_STRAIGHT_LIST_CHUNK;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = REALLOC_STRAIGHT_LIST_CHUNK;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1108,8 +1108,8 @@ TEST IRSL_BINARY_SEARCH_07(void) {
 TEST IRSL_BINARY_SEARCH_08(void) {
     straight_list_s test = create_straight_list();
 
-    const size_t count = REALLOC_STRAIGHT_LIST_CHUNK + 1;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = REALLOC_STRAIGHT_LIST_CHUNK + 1;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1125,8 +1125,8 @@ TEST IRSL_BINARY_SEARCH_08(void) {
 TEST IRSL_BINARY_SEARCH_09(void) {
     straight_list_s test = create_straight_list();
 
-    const size_t count = REALLOC_STRAIGHT_LIST_CHUNK - 1;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = REALLOC_STRAIGHT_LIST_CHUNK - 1;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1142,8 +1142,8 @@ TEST IRSL_BINARY_SEARCH_09(void) {
 TEST IRSL_BINARY_SEARCH_10(void) {
     straight_list_s test = create_straight_list();
 
-    const size_t count = REALLOC_STRAIGHT_LIST_CHUNK;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = REALLOC_STRAIGHT_LIST_CHUNK;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1159,8 +1159,8 @@ TEST IRSL_BINARY_SEARCH_10(void) {
 TEST IRSL_BINARY_SEARCH_11(void) {
     straight_list_s test = create_straight_list();
 
-    const size_t count = REALLOC_STRAIGHT_LIST_CHUNK + 1;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = REALLOC_STRAIGHT_LIST_CHUNK + 1;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1176,8 +1176,8 @@ TEST IRSL_BINARY_SEARCH_11(void) {
 TEST IRSL_BINARY_SEARCH_12(void) {
     straight_list_s test = create_straight_list();
 
-    const size_t count = REALLOC_STRAIGHT_LIST_CHUNK - 1;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = REALLOC_STRAIGHT_LIST_CHUNK - 1;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1193,8 +1193,8 @@ TEST IRSL_BINARY_SEARCH_12(void) {
 TEST IRSL_BINARY_SEARCH_13(void) {
     straight_list_s test = create_straight_list();
 
-    const size_t count = REALLOC_STRAIGHT_LIST_CHUNK;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = REALLOC_STRAIGHT_LIST_CHUNK;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1210,8 +1210,8 @@ TEST IRSL_BINARY_SEARCH_13(void) {
 TEST IRSL_BINARY_SEARCH_14(void) {
     straight_list_s test = create_straight_list();
 
-    const size_t count = REALLOC_STRAIGHT_LIST_CHUNK + 1;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = REALLOC_STRAIGHT_LIST_CHUNK + 1;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1227,8 +1227,8 @@ TEST IRSL_BINARY_SEARCH_14(void) {
 TEST IRSL_BINARY_SEARCH_15(void) {
     straight_list_s test = create_straight_list();
 
-    const size_t count = REALLOC_STRAIGHT_LIST_CHUNK - 1;
-    for (size_t i = 1; i < count; ++i) {
+    const int count = REALLOC_STRAIGHT_LIST_CHUNK - 1;
+    for (int i = 1; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1244,8 +1244,8 @@ TEST IRSL_BINARY_SEARCH_15(void) {
 TEST IRSL_BINARY_SEARCH_16(void) {
     straight_list_s test = create_straight_list();
 
-    const size_t count = REALLOC_STRAIGHT_LIST_CHUNK;
-    for (size_t i = 1; i < count; ++i) {
+    const int count = REALLOC_STRAIGHT_LIST_CHUNK;
+    for (int i = 1; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1261,8 +1261,8 @@ TEST IRSL_BINARY_SEARCH_16(void) {
 TEST IRSL_BINARY_SEARCH_17(void) {
     straight_list_s test = create_straight_list();
 
-    const size_t count = REALLOC_STRAIGHT_LIST_CHUNK + 1;
-    for (size_t i = 1; i < count; ++i) {
+    const int count = REALLOC_STRAIGHT_LIST_CHUNK + 1;
+    for (int i = 1; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1278,8 +1278,8 @@ TEST IRSL_BINARY_SEARCH_17(void) {
 TEST IRSL_BINARY_SEARCH_18(void) {
     straight_list_s test = create_straight_list();
 
-    const size_t count = REALLOC_STRAIGHT_LIST_CHUNK - 1;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = REALLOC_STRAIGHT_LIST_CHUNK - 1;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1297,8 +1297,8 @@ TEST IRSL_BINARY_SEARCH_18(void) {
 TEST IRSL_BINARY_SEARCH_19(void) {
     straight_list_s test = create_straight_list();
 
-    const size_t count = REALLOC_STRAIGHT_LIST_CHUNK;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = REALLOC_STRAIGHT_LIST_CHUNK;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1316,8 +1316,8 @@ TEST IRSL_BINARY_SEARCH_19(void) {
 TEST IRSL_BINARY_SEARCH_20(void) {
     straight_list_s test = create_straight_list();
 
-    const size_t count = REALLOC_STRAIGHT_LIST_CHUNK + 1;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = REALLOC_STRAIGHT_LIST_CHUNK + 1;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1354,8 +1354,8 @@ TEST IRSL_INSERT_AT_02(void) {
 
     ASSERT_EQm("[IRSL_ERROR] Expected size to be 'REALLOC_STRAIGHT_LIST_CHUNK - 1'.", REALLOC_STRAIGHT_LIST_CHUNK - 1, test.size);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; ++i) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; ++i) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1372,8 +1372,8 @@ TEST IRSL_INSERT_AT_03(void) {
 
     ASSERT_EQm("[IRSL_ERROR] Expected size to be 'REALLOC_STRAIGHT_LIST_CHUNK'.", REALLOC_STRAIGHT_LIST_CHUNK, test.size);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; ++i) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; ++i) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1390,8 +1390,8 @@ TEST IRSL_INSERT_AT_04(void) {
 
     ASSERT_EQm("[IRSL_ERROR] Expected size to be 'REALLOC_STRAIGHT_LIST_CHUNK + 1'.", REALLOC_STRAIGHT_LIST_CHUNK + 1, test.size);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; ++i) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; ++i) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1421,7 +1421,7 @@ TEST IRSL_INSERT_AT_06(void) {
 
     ASSERT_EQm("[IRSL_ERROR] Expected size to be 'REALLOC_STRAIGHT_LIST_CHUNK - 1'.", REALLOC_STRAIGHT_LIST_CHUNK - 1, test.size);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; ++i) {
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; ++i) {
         ASSERT_STRN_EQm("[IRSL-ERROR] Expected elements to be equal.", TEST_STRING, get_straight_list(test, i).sub_two, sizeof(TEST_STRING) - 1);
     }
 
@@ -1439,7 +1439,7 @@ TEST IRSL_INSERT_AT_07(void) {
 
     ASSERT_EQm("[IRSL_ERROR] Expected size to be 'REALLOC_STRAIGHT_LIST_CHUNK'.", REALLOC_STRAIGHT_LIST_CHUNK, test.size);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; ++i) {
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; ++i) {
         ASSERT_STRN_EQm("[IRSL-ERROR] Expected elements to be equal.", TEST_STRING, get_straight_list(test, i).sub_two, sizeof(TEST_STRING) - 1);
     }
 
@@ -1457,7 +1457,7 @@ TEST IRSL_INSERT_AT_08(void) {
 
     ASSERT_EQm("[IRSL_ERROR] Expected size to be 'REALLOC_STRAIGHT_LIST_CHUNK + 1'.", REALLOC_STRAIGHT_LIST_CHUNK + 1, test.size);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; ++i) {
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; ++i) {
         ASSERT_STRN_EQm("[IRSL-ERROR] Expected elements to be equal.", TEST_STRING, get_straight_list(test, i).sub_two, sizeof(TEST_STRING) - 1);
     }
 
@@ -1485,8 +1485,8 @@ TEST IRSL_GET_02(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; ++i) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; ++i) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1501,8 +1501,8 @@ TEST IRSL_GET_03(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; ++i) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; ++i) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1517,8 +1517,8 @@ TEST IRSL_GET_04(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; ++i) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; ++i) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1545,7 +1545,7 @@ TEST IRSL_GET_06(void) {
         insert_at_straight_list(&test, test.size, copy_string((STRAIGHT_LIST_DATA_TYPE) { .sub_two = TEST_STRING, }));
     }
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; ++i) {
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; ++i) {
         ASSERT_STRN_EQm("[IRSL-ERROR] Expected elements to be equal.", TEST_STRING, get_straight_list(test, i).sub_two, sizeof(TEST_STRING) - 1);
     }
 
@@ -1561,7 +1561,7 @@ TEST IRSL_GET_07(void) {
         insert_at_straight_list(&test, test.size, copy_string((STRAIGHT_LIST_DATA_TYPE) { .sub_two = TEST_STRING, }));
     }
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; ++i) {
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; ++i) {
         ASSERT_STRN_EQm("[IRSL-ERROR] Expected elements to be equal.", TEST_STRING, get_straight_list(test, i).sub_two, sizeof(TEST_STRING) - 1);
     }
 
@@ -1577,7 +1577,7 @@ TEST IRSL_GET_08(void) {
         insert_at_straight_list(&test, test.size, copy_string((STRAIGHT_LIST_DATA_TYPE) { .sub_two = TEST_STRING, }));
     }
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; ++i) {
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; ++i) {
         ASSERT_STRN_EQm("[IRSL-ERROR] Expected elements to be equal.", TEST_STRING, get_straight_list(test, i).sub_two, sizeof(TEST_STRING) - 1);
     }
 
@@ -1721,7 +1721,7 @@ TEST IRSL_REMOVE_AT_02(void) {
     }
 
     for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, remove_at_straight_list(&test, 0).sub_one);
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, remove_at_straight_list(&test, 0).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1737,7 +1737,7 @@ TEST IRSL_REMOVE_AT_03(void) {
     }
 
     for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, remove_at_straight_list(&test, 0).sub_one);
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, remove_at_straight_list(&test, 0).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1753,7 +1753,7 @@ TEST IRSL_REMOVE_AT_04(void) {
     }
 
     for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, remove_at_straight_list(&test, 0).sub_one);
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, remove_at_straight_list(&test, 0).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1769,7 +1769,7 @@ TEST IRSL_REMOVE_AT_05(void) {
     }
 
     for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, remove_at_straight_list(&test, test.size - 1).sub_one);
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, remove_at_straight_list(&test, test.size - 1).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1785,7 +1785,7 @@ TEST IRSL_REMOVE_AT_06(void) {
     }
 
     for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, remove_at_straight_list(&test, test.size - 1).sub_one);
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, remove_at_straight_list(&test, test.size - 1).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1801,7 +1801,7 @@ TEST IRSL_REMOVE_AT_07(void) {
     }
 
     for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, remove_at_straight_list(&test, test.size - 1).sub_one);
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, remove_at_straight_list(&test, test.size - 1).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1842,8 +1842,8 @@ TEST IRSL_REVERSE_03(void) {
 
     reverse_straight_list(&test);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i,  get_straight_list(test, test.size - 1 - i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; i++) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i,  get_straight_list(test, test.size - 1 - i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1860,8 +1860,8 @@ TEST IRSL_REVERSE_04(void) {
 
     reverse_straight_list(&test);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i,  get_straight_list(test, test.size - 1 - i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; i++) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i,  get_straight_list(test, test.size - 1 - i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1878,8 +1878,8 @@ TEST IRSL_REVERSE_05(void) {
 
     reverse_straight_list(&test);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i,  get_straight_list(test, test.size - 1 - i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; i++) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i,  get_straight_list(test, test.size - 1 - i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1896,8 +1896,8 @@ TEST IRSL_REVERSE_06(void) {
 
     reverse_straight_list(&test);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i,  get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; i++) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i,  get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1914,8 +1914,8 @@ TEST IRSL_REVERSE_07(void) {
 
     reverse_straight_list(&test);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i,  get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; i++) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i,  get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1932,8 +1932,8 @@ TEST IRSL_REVERSE_08(void) {
 
     reverse_straight_list(&test);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i,  get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; i++) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i,  get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -2002,8 +2002,8 @@ TEST IRSL_SPLICE_03(void) {
     ASSERT_NEQm("[IRSL-ERROR] Expected elements to not be NULL.", NULL, one.elements);
     ASSERT_NEQm("[IRSL-ERROR] Expected next to not be NULL.", NULL, one.next);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, get_straight_list(one, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; i++) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(one, i).sub_one);
     }
 
     destroy_straight_list(&one, destroy_int);
@@ -2030,8 +2030,8 @@ TEST IRSL_SPLICE_04(void) {
     ASSERT_NEQm("[IRSL-ERROR] Expected elements to not be NULL.", NULL, one.elements);
     ASSERT_NEQm("[IRSL-ERROR] Expected next to not be NULL.", NULL, one.next);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, get_straight_list(one, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; i++) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(one, i).sub_one);
     }
 
     destroy_straight_list(&one, destroy_int);
@@ -2058,8 +2058,8 @@ TEST IRSL_SPLICE_05(void) {
     ASSERT_NEQm("[IRSL-ERROR] Expected elements to not be NULL.", NULL, one.elements);
     ASSERT_NEQm("[IRSL-ERROR] Expected next to not be NULL.", NULL, one.next);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, get_straight_list(one, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; i++) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(one, i).sub_one);
     }
 
     destroy_straight_list(&one, destroy_int);
@@ -2090,8 +2090,8 @@ TEST IRSL_SPLICE_06(void) {
     ASSERT_NEQm("[IRSL-ERROR] Expected elements to not be NULL.", NULL, one.elements);
     ASSERT_NEQm("[IRSL-ERROR] Expected next to not be NULL.", NULL, one.next);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, get_straight_list(one, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; i++) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(one, i).sub_one);
     }
 
     destroy_straight_list(&one, destroy_int);
@@ -2122,8 +2122,8 @@ TEST IRSL_SPLICE_07(void) {
     ASSERT_NEQm("[IRSL-ERROR] Expected elements to not be NULL.", NULL, one.elements);
     ASSERT_NEQm("[IRSL-ERROR] Expected next to not be NULL.", NULL, one.next);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, get_straight_list(one, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; i++) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(one, i).sub_one);
     }
 
     destroy_straight_list(&one, destroy_int);
@@ -2154,8 +2154,8 @@ TEST IRSL_SPLICE_08(void) {
     ASSERT_NEQm("[IRSL-ERROR] Expected elements to not be NULL.", NULL, one.elements);
     ASSERT_NEQm("[IRSL-ERROR] Expected next to not be NULL.", NULL, one.next);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, get_straight_list(one, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; i++) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(one, i).sub_one);
     }
 
     destroy_straight_list(&one, destroy_int);
@@ -2186,8 +2186,8 @@ TEST IRSL_SPLICE_09(void) {
     ASSERT_NEQm("[IRSL-ERROR] Expected elements to not be NULL.", NULL, one.elements);
     ASSERT_NEQm("[IRSL-ERROR] Expected next to not be NULL.", NULL, one.next);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, get_straight_list(one, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; i++) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(one, i).sub_one);
     }
 
     destroy_straight_list(&one, destroy_int);
@@ -2218,8 +2218,8 @@ TEST IRSL_SPLICE_10(void) {
     ASSERT_NEQm("[IRSL-ERROR] Expected elements to not be NULL.", NULL, one.elements);
     ASSERT_NEQm("[IRSL-ERROR] Expected next to not be NULL.", NULL, one.next);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, get_straight_list(one, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; i++) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(one, i).sub_one);
     }
 
     destroy_straight_list(&one, destroy_int);
@@ -2250,8 +2250,8 @@ TEST IRSL_SPLICE_11(void) {
     ASSERT_NEQm("[IRSL-ERROR] Expected elements to not be NULL.", NULL, one.elements);
     ASSERT_NEQm("[IRSL-ERROR] Expected next to not be NULL.", NULL, one.next);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, get_straight_list(one, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; i++) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(one, i).sub_one);
     }
 
     destroy_straight_list(&one, destroy_int);
@@ -2289,8 +2289,8 @@ TEST IRSL_SPLICE_12(void) {
     ASSERT_NEQm("[IRSL-ERROR] Expected elements to not be NULL.", NULL, one.elements);
     ASSERT_NEQm("[IRSL-ERROR] Expected next to not be NULL.", NULL, one.next);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, get_straight_list(one, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; i++) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(one, i).sub_one);
     }
 
     destroy_straight_list(&one, destroy_int);
@@ -2329,8 +2329,8 @@ TEST IRSL_SPLICE_13(void) {
     ASSERT_EQm("[IRSL-ERROR] Expected elements to be NULL.", NULL, three.elements);
     ASSERT_EQm("[IRSL-ERROR] Expected next to be NULL.", NULL, three.next);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, get_straight_list(one, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; i++) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(one, i).sub_one);
     }
 
     destroy_straight_list(&one, destroy_int);
@@ -2369,8 +2369,8 @@ TEST IRSL_SPLICE_14(void) {
     ASSERT_EQm("[IRSL-ERROR] Expected elements to be NULL.", NULL, three.elements);
     ASSERT_EQm("[IRSL-ERROR] Expected next to be NULL.", NULL, three.next);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; i++) {
-        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", i, get_straight_list(one, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; i++) {
+        ASSERT_EQm("[IRSL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(one, i).sub_one);
     }
 
     destroy_straight_list(&one, destroy_int);
@@ -2410,12 +2410,12 @@ TEST IRSL_SPLIT_02(void) {
 
     straight_list_s split = split_straight_list(&test, 0, (REALLOC_STRAIGHT_LIST_CHUNK - 1) >> 1);
 
-    for (int i = 0; i < (REALLOC_STRAIGHT_LIST_CHUNK - 1) >> 1; ++i) {
-        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", i, get_straight_list(split, i).sub_one);
+    for (size_t i = 0; i < (REALLOC_STRAIGHT_LIST_CHUNK - 1) >> 1; ++i) {
+        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(split, i).sub_one);
     }
 
-    for (int i = (REALLOC_STRAIGHT_LIST_CHUNK - 1) >> 1; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; ++i) {
-        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", i, get_straight_list(test, i - ((REALLOC_STRAIGHT_LIST_CHUNK - 1) >> 1)).sub_one);
+    for (size_t i = (REALLOC_STRAIGHT_LIST_CHUNK - 1) >> 1; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; ++i) {
+        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(test, i - ((REALLOC_STRAIGHT_LIST_CHUNK - 1) >> 1)).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -2433,12 +2433,12 @@ TEST IRSL_SPLIT_03(void) {
 
     straight_list_s split = split_straight_list(&test, 0, REALLOC_STRAIGHT_LIST_CHUNK >> 1);
 
-    for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK >> 1; ++i) {
-        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", i, get_straight_list(split, i).sub_one);
+    for (size_t i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK >> 1; ++i) {
+        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(split, i).sub_one);
     }
 
-    for (int i = (REALLOC_STRAIGHT_LIST_CHUNK) >> 1; i < REALLOC_STRAIGHT_LIST_CHUNK; ++i) {
-        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", i, get_straight_list(test, i - (REALLOC_STRAIGHT_LIST_CHUNK >> 1)).sub_one);
+    for (size_t i = (REALLOC_STRAIGHT_LIST_CHUNK) >> 1; i < REALLOC_STRAIGHT_LIST_CHUNK; ++i) {
+        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(test, i - (REALLOC_STRAIGHT_LIST_CHUNK >> 1)).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -2456,12 +2456,12 @@ TEST IRSL_SPLIT_04(void) {
 
     straight_list_s split = split_straight_list(&test, 0, (REALLOC_STRAIGHT_LIST_CHUNK + 1) >> 1);
 
-    for (int i = 0; i < (REALLOC_STRAIGHT_LIST_CHUNK + 1) >> 1; ++i) {
-        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", i, get_straight_list(split, i).sub_one);
+    for (size_t i = 0; i < (REALLOC_STRAIGHT_LIST_CHUNK + 1) >> 1; ++i) {
+        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(split, i).sub_one);
     }
 
-    for (int i = (REALLOC_STRAIGHT_LIST_CHUNK + 1) >> 1; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; ++i) {
-        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", i, get_straight_list(test, i - ((REALLOC_STRAIGHT_LIST_CHUNK + 1) >> 1)).sub_one);
+    for (size_t i = (REALLOC_STRAIGHT_LIST_CHUNK + 1) >> 1; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; ++i) {
+        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(test, i - ((REALLOC_STRAIGHT_LIST_CHUNK + 1) >> 1)).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -2479,12 +2479,12 @@ TEST IRSL_SPLIT_05(void) {
 
     straight_list_s split = split_straight_list(&test, (REALLOC_STRAIGHT_LIST_CHUNK - 1) >> 1, test.size - ((REALLOC_STRAIGHT_LIST_CHUNK - 1) >> 1));
 
-    for (int i = 0; i < (REALLOC_STRAIGHT_LIST_CHUNK - 1) >> 1; ++i) {
-        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < (REALLOC_STRAIGHT_LIST_CHUNK - 1) >> 1; ++i) {
+        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(test, i).sub_one);
     }
 
-    for (int i = (REALLOC_STRAIGHT_LIST_CHUNK - 1) >> 1; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; ++i) {
-        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", i, get_straight_list(split, i - ((REALLOC_STRAIGHT_LIST_CHUNK - 1) >> 1)).sub_one);
+    for (size_t i = (REALLOC_STRAIGHT_LIST_CHUNK - 1) >> 1; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; ++i) {
+        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(split, i - ((REALLOC_STRAIGHT_LIST_CHUNK - 1) >> 1)).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -2502,12 +2502,12 @@ TEST IRSL_SPLIT_06(void) {
 
     straight_list_s split = split_straight_list(&test, REALLOC_STRAIGHT_LIST_CHUNK >> 1, test.size - (REALLOC_STRAIGHT_LIST_CHUNK >> 1));
 
-    for (int i = 0; i < (REALLOC_STRAIGHT_LIST_CHUNK) >> 1; ++i) {
-        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < (REALLOC_STRAIGHT_LIST_CHUNK) >> 1; ++i) {
+        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(test, i).sub_one);
     }
 
-    for (int i = (REALLOC_STRAIGHT_LIST_CHUNK) >> 1; i < REALLOC_STRAIGHT_LIST_CHUNK; ++i) {
-        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", i, get_straight_list(split, i - (REALLOC_STRAIGHT_LIST_CHUNK >> 1)).sub_one);
+    for (size_t i = (REALLOC_STRAIGHT_LIST_CHUNK) >> 1; i < REALLOC_STRAIGHT_LIST_CHUNK; ++i) {
+        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(split, i - (REALLOC_STRAIGHT_LIST_CHUNK >> 1)).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -2525,12 +2525,12 @@ TEST IRSL_SPLIT_07(void) {
 
     straight_list_s split = split_straight_list(&test, (REALLOC_STRAIGHT_LIST_CHUNK + 1) >> 1, test.size - ((REALLOC_STRAIGHT_LIST_CHUNK + 1) >> 1));
 
-    for (int i = 0; i < (REALLOC_STRAIGHT_LIST_CHUNK + 1) >> 1; ++i) {
-        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < (REALLOC_STRAIGHT_LIST_CHUNK + 1) >> 1; ++i) {
+        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(test, i).sub_one);
     }
 
-    for (int i = (REALLOC_STRAIGHT_LIST_CHUNK + 1) >> 1; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; ++i) {
-        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", i, get_straight_list(split, i - ((REALLOC_STRAIGHT_LIST_CHUNK + 1) >> 1)).sub_one);
+    for (size_t i = (REALLOC_STRAIGHT_LIST_CHUNK + 1) >> 1; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; ++i) {
+        ASSERT_EQm("[IRSL-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(split, i - ((REALLOC_STRAIGHT_LIST_CHUNK + 1) >> 1)).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);

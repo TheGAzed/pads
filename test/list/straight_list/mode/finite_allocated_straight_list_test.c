@@ -329,7 +329,7 @@ TEST FASL_COPY_03(void) {
     ASSERT_NEQm("[FASL-ERROR] Expected head to not be NULL.", NULL, copy.next);
     ASSERT_EQm("[FASL-ERROR] Expected size to be 'MAXIMUM_FINITE_STRAIGHT_LIST - 1'.", MAXIMUM_FINITE_STRAIGHT_LIST - 1, copy.size);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
         ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", get_straight_list(test, i).sub_one, get_straight_list(copy, i).sub_one);
     }
 
@@ -352,7 +352,7 @@ TEST FASL_COPY_04(void) {
     ASSERT_NEQm("[FASL-ERROR] Expected head to not be NULL.", NULL, copy.next);
     ASSERT_EQm("[FASL-ERROR] Expected size to be 'MAXIMUM_FINITE_STRAIGHT_LIST'.", MAXIMUM_FINITE_STRAIGHT_LIST, copy.size);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
         ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", get_straight_list(test, i).sub_one, get_straight_list(copy, i).sub_one);
     }
 
@@ -410,7 +410,7 @@ TEST FASL_COPY_07(void) {
     ASSERT_NEQm("[FASL-ERROR] Expected head to not be NULL.", NULL, copy.next);
     ASSERT_EQm("[FASL-ERROR] Expected size to be 'MAXIMUM_FINITE_STRAIGHT_LIST - 1'.", MAXIMUM_FINITE_STRAIGHT_LIST - 1, copy.size);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
         STRAIGHT_LIST_DATA_TYPE test_element = get_straight_list(test, i);
         STRAIGHT_LIST_DATA_TYPE copy_element = get_straight_list(copy, i);
         ASSERT_STRN_EQm("[FASL-ERROR] Expected elements to be equal.", test_element.sub_two , copy_element.sub_two, sizeof(TEST_STRING) - 1);
@@ -435,7 +435,7 @@ TEST FASL_COPY_08(void) {
     ASSERT_NEQm("[FASL-ERROR] Expected head to not be NULL.", NULL, copy.next);
     ASSERT_EQm("[FASL-ERROR] Expected size to be 'MAXIMUM_FINITE_STRAIGHT_LIST'.", MAXIMUM_FINITE_STRAIGHT_LIST, copy.size);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
         STRAIGHT_LIST_DATA_TYPE test_element = get_straight_list(test, i);
         STRAIGHT_LIST_DATA_TYPE copy_element = get_straight_list(copy, i);
         ASSERT_STRN_EQm("[FASL-ERROR] Expected elements to be equal.", test_element.sub_two , copy_element.sub_two, sizeof(TEST_STRING) - 1);
@@ -680,8 +680,8 @@ TEST FASL_MAP_02(void) {
 
     map_straight_list(&test, sort_int, compare_int);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
-        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
+        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -702,8 +702,8 @@ TEST FASL_MAP_03(void) {
 
     map_straight_list(&test, sort_int, compare_int);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
-        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
+        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -734,8 +734,8 @@ TEST FASL_MAP_05(void) {
 
     map_straight_list(&test, sort_int, compare_reverse_int);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
-        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (MAXIMUM_FINITE_STRAIGHT_LIST - 1 - 1) - i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
+        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (MAXIMUM_FINITE_STRAIGHT_LIST - 1 - 1) - (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -756,8 +756,8 @@ TEST FASL_MAP_06(void) {
 
     map_straight_list(&test, sort_int, compare_reverse_int);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
-        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (MAXIMUM_FINITE_STRAIGHT_LIST - 1) - i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
+        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (MAXIMUM_FINITE_STRAIGHT_LIST - 1) - (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -790,7 +790,7 @@ TEST FASL_BINARY_SEARCH_02(void) {
 TEST FASL_BINARY_SEARCH_03(void) {
     straight_list_s test = create_straight_list(MAXIMUM_FINITE_STRAIGHT_LIST);
 
-    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
+    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -806,7 +806,7 @@ TEST FASL_BINARY_SEARCH_03(void) {
 TEST FASL_BINARY_SEARCH_04(void) {
     straight_list_s test = create_straight_list(MAXIMUM_FINITE_STRAIGHT_LIST);
 
-    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
+    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -822,8 +822,8 @@ TEST FASL_BINARY_SEARCH_04(void) {
 TEST FASL_BINARY_SEARCH_05(void) {
     straight_list_s test = create_straight_list(MAXIMUM_FINITE_STRAIGHT_LIST);
 
-    const size_t count = MAXIMUM_FINITE_STRAIGHT_LIST - 1;
-    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
+    const int count = MAXIMUM_FINITE_STRAIGHT_LIST - 1;
+    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -839,8 +839,8 @@ TEST FASL_BINARY_SEARCH_05(void) {
 TEST FASL_BINARY_SEARCH_06(void) {
     straight_list_s test = create_straight_list(MAXIMUM_FINITE_STRAIGHT_LIST);
 
-    const size_t count = MAXIMUM_FINITE_STRAIGHT_LIST;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = MAXIMUM_FINITE_STRAIGHT_LIST;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -856,8 +856,8 @@ TEST FASL_BINARY_SEARCH_06(void) {
 TEST FASL_BINARY_SEARCH_07(void) {
     straight_list_s test = create_straight_list(MAXIMUM_FINITE_STRAIGHT_LIST);
 
-    const size_t count = MAXIMUM_FINITE_STRAIGHT_LIST - 1;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = MAXIMUM_FINITE_STRAIGHT_LIST - 1;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -873,8 +873,8 @@ TEST FASL_BINARY_SEARCH_07(void) {
 TEST FASL_BINARY_SEARCH_08(void) {
     straight_list_s test = create_straight_list(MAXIMUM_FINITE_STRAIGHT_LIST);
 
-    const size_t count = MAXIMUM_FINITE_STRAIGHT_LIST;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = MAXIMUM_FINITE_STRAIGHT_LIST;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -890,8 +890,8 @@ TEST FASL_BINARY_SEARCH_08(void) {
 TEST FASL_BINARY_SEARCH_09(void) {
     straight_list_s test = create_straight_list(MAXIMUM_FINITE_STRAIGHT_LIST);
 
-    const size_t count = MAXIMUM_FINITE_STRAIGHT_LIST - 1;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = MAXIMUM_FINITE_STRAIGHT_LIST - 1;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -907,8 +907,8 @@ TEST FASL_BINARY_SEARCH_09(void) {
 TEST FASL_BINARY_SEARCH_10(void) {
     straight_list_s test = create_straight_list(MAXIMUM_FINITE_STRAIGHT_LIST);
 
-    const size_t count = MAXIMUM_FINITE_STRAIGHT_LIST;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = MAXIMUM_FINITE_STRAIGHT_LIST;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -924,8 +924,8 @@ TEST FASL_BINARY_SEARCH_10(void) {
 TEST FASL_BINARY_SEARCH_11(void) {
     straight_list_s test = create_straight_list(MAXIMUM_FINITE_STRAIGHT_LIST);
 
-    const size_t count = MAXIMUM_FINITE_STRAIGHT_LIST - 1;
-    for (size_t i = 1; i < count; ++i) {
+    const int count = MAXIMUM_FINITE_STRAIGHT_LIST - 1;
+    for (int i = 1; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -941,8 +941,8 @@ TEST FASL_BINARY_SEARCH_11(void) {
 TEST FASL_BINARY_SEARCH_12(void) {
     straight_list_s test = create_straight_list(MAXIMUM_FINITE_STRAIGHT_LIST);
 
-    const size_t count = MAXIMUM_FINITE_STRAIGHT_LIST;
-    for (size_t i = 1; i < count; ++i) {
+    const int count = MAXIMUM_FINITE_STRAIGHT_LIST;
+    for (int i = 1; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -958,8 +958,8 @@ TEST FASL_BINARY_SEARCH_12(void) {
 TEST FASL_BINARY_SEARCH_13(void) {
     straight_list_s test = create_straight_list(MAXIMUM_FINITE_STRAIGHT_LIST);
 
-    const size_t count = MAXIMUM_FINITE_STRAIGHT_LIST - 1;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = MAXIMUM_FINITE_STRAIGHT_LIST - 1;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -977,8 +977,8 @@ TEST FASL_BINARY_SEARCH_13(void) {
 TEST FASL_BINARY_SEARCH_14(void) {
     straight_list_s test = create_straight_list(MAXIMUM_FINITE_STRAIGHT_LIST);
 
-    const size_t count = MAXIMUM_FINITE_STRAIGHT_LIST;
-    for (size_t i = 0; i < count; ++i) {
+    const int count = MAXIMUM_FINITE_STRAIGHT_LIST;
+    for (int i = 0; i < count; ++i) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
@@ -1015,8 +1015,8 @@ TEST FASL_INSERT_AT_02(void) {
 
     ASSERT_EQm("[FASL_ERROR] Expected size to be 'MAXIMUM_FINITE_STRAIGHT_LIST - 1'.", MAXIMUM_FINITE_STRAIGHT_LIST - 1, test.size);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
-        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
+        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1033,8 +1033,8 @@ TEST FASL_INSERT_AT_03(void) {
 
     ASSERT_EQm("[FASL_ERROR] Expected size to be 'MAXIMUM_FINITE_STRAIGHT_LIST'.", MAXIMUM_FINITE_STRAIGHT_LIST, test.size);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
-        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
+        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1064,7 +1064,7 @@ TEST FASL_INSERT_AT_05(void) {
 
     ASSERT_EQm("[FASL_ERROR] Expected size to be 'MAXIMUM_FINITE_STRAIGHT_LIST - 1'.", MAXIMUM_FINITE_STRAIGHT_LIST - 1, test.size);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
         ASSERT_STRN_EQm("[FASL-ERROR] Expected elements to be equal.", TEST_STRING, get_straight_list(test, i).sub_two, sizeof(TEST_STRING) - 1);
     }
 
@@ -1082,7 +1082,7 @@ TEST FASL_INSERT_AT_06(void) {
 
     ASSERT_EQm("[FASL_ERROR] Expected size to be 'MAXIMUM_FINITE_STRAIGHT_LIST'.", MAXIMUM_FINITE_STRAIGHT_LIST, test.size);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
         ASSERT_STRN_EQm("[FASL-ERROR] Expected elements to be equal.", TEST_STRING, get_straight_list(test, i).sub_two, sizeof(TEST_STRING) - 1);
     }
 
@@ -1110,8 +1110,8 @@ TEST FASL_GET_02(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
-        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
+        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1126,8 +1126,8 @@ TEST FASL_GET_03(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
-        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
+        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1154,7 +1154,7 @@ TEST FASL_GET_05(void) {
         insert_at_straight_list(&test, test.size, copy_string((STRAIGHT_LIST_DATA_TYPE) { .sub_two = TEST_STRING, }));
     }
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
         ASSERT_STRN_EQm("[FASL-ERROR] Expected elements to be equal.", TEST_STRING, get_straight_list(test, i).sub_two, sizeof(TEST_STRING) - 1);
     }
 
@@ -1170,7 +1170,7 @@ TEST FASL_GET_06(void) {
         insert_at_straight_list(&test, test.size, copy_string((STRAIGHT_LIST_DATA_TYPE) { .sub_two = TEST_STRING, }));
     }
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
         ASSERT_STRN_EQm("[FASL-ERROR] Expected elements to be equal.", TEST_STRING, get_straight_list(test, i).sub_two, sizeof(TEST_STRING) - 1);
     }
 
@@ -1335,8 +1335,8 @@ TEST FASL_REVERSE_03(void) {
 
     reverse_straight_list(&test);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; i++) {
-        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", i,  get_straight_list(test, test.size - 1 - i).sub_one);
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; i++) {
+        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", (int)i,  get_straight_list(test, test.size - 1 - i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1353,8 +1353,8 @@ TEST FASL_REVERSE_04(void) {
 
     reverse_straight_list(&test);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; i++) {
-        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", i,  get_straight_list(test, test.size - 1 - i).sub_one);
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; i++) {
+        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", (int)i,  get_straight_list(test, test.size - 1 - i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1371,8 +1371,8 @@ TEST FASL_REVERSE_05(void) {
 
     reverse_straight_list(&test);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; i++) {
-        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", i,  get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; i++) {
+        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1389,8 +1389,8 @@ TEST FASL_REVERSE_06(void) {
 
     reverse_straight_list(&test);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; i++) {
-        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", i,  get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; i++) {
+        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(test, i).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1462,8 +1462,8 @@ TEST FASL_SPLICE_03(void) {
     ASSERT_NEQm("[FASL-ERROR] Expected elements to not be NULL.", NULL, one.elements);
     ASSERT_NEQm("[FASL-ERROR] Expected next to not be NULL.", NULL, one.next);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; i++) {
-        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", i, get_straight_list(one, i).sub_one);
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; i++) {
+        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(one, i).sub_one);
     }
 
     destroy_straight_list(&one, destroy_int);
@@ -1491,8 +1491,8 @@ TEST FASL_SPLICE_04(void) {
     ASSERT_NEQm("[FASL-ERROR] Expected elements to not be NULL.", NULL, one.elements);
     ASSERT_NEQm("[FASL-ERROR] Expected next to not be NULL.", NULL, one.next);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; i++) {
-        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", i, get_straight_list(one, i).sub_one);
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; i++) {
+        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(one, i).sub_one);
     }
 
     destroy_straight_list(&one, destroy_int);
@@ -1524,8 +1524,8 @@ TEST FASL_SPLICE_05(void) {
     ASSERT_NEQm("[FASL-ERROR] Expected elements to not be NULL.", NULL, one.elements);
     ASSERT_NEQm("[FASL-ERROR] Expected next to not be NULL.", NULL, one.next);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; i++) {
-        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", i, get_straight_list(one, i).sub_one);
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; i++) {
+        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(one, i).sub_one);
     }
 
     destroy_straight_list(&one, destroy_int);
@@ -1557,8 +1557,8 @@ TEST FASL_SPLICE_06(void) {
     ASSERT_NEQm("[FASL-ERROR] Expected elements to not be NULL.", NULL, one.elements);
     ASSERT_NEQm("[FASL-ERROR] Expected next to not be NULL.", NULL, one.next);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; i++) {
-        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", i, get_straight_list(one, i).sub_one);
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; i++) {
+        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(one, i).sub_one);
     }
 
     destroy_straight_list(&one, destroy_int);
@@ -1590,8 +1590,8 @@ TEST FASL_SPLICE_07(void) {
     ASSERT_NEQm("[FASL-ERROR] Expected elements to not be NULL.", NULL, one.elements);
     ASSERT_NEQm("[FASL-ERROR] Expected next to not be NULL.", NULL, one.next);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; i++) {
-        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", i, get_straight_list(one, i).sub_one);
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; i++) {
+        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(one, i).sub_one);
     }
 
     destroy_straight_list(&one, destroy_int);
@@ -1623,8 +1623,8 @@ TEST FASL_SPLICE_08(void) {
     ASSERT_NEQm("[FASL-ERROR] Expected elements to not be NULL.", NULL, one.elements);
     ASSERT_NEQm("[FASL-ERROR] Expected next to not be NULL.", NULL, one.next);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; i++) {
-        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", i, get_straight_list(one, i).sub_one);
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; i++) {
+        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(one, i).sub_one);
     }
 
     destroy_straight_list(&one, destroy_int);
@@ -1665,8 +1665,8 @@ TEST FASL_SPLICE_09(void) {
     ASSERT_NEQm("[FASL-ERROR] Expected elements to not be NULL.", NULL, one.elements);
     ASSERT_NEQm("[FASL-ERROR] Expected next to not be NULL.", NULL, one.next);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; i++) {
-        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", i, get_straight_list(one, i).sub_one);
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; i++) {
+        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(one, i).sub_one);
     }
 
     destroy_straight_list(&one, destroy_int);
@@ -1708,8 +1708,8 @@ TEST FASL_SPLICE_10(void) {
     ASSERT_NEQm("[FASL-ERROR] Expected elements to be NULL.", NULL, three.elements);
     ASSERT_NEQm("[FASL-ERROR] Expected next to be NULL.", NULL, three.next);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; i++) {
-        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", i, get_straight_list(one, i).sub_one);
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST; i++) {
+        ASSERT_EQm("[FASL-ERROR] Expected elements to be equal.", (int)i, get_straight_list(one, i).sub_one);
     }
 
     destroy_straight_list(&one, destroy_int);
@@ -1751,12 +1751,12 @@ TEST FASL_SPLIT_02(void) {
     straight_list_s split = split_straight_list(&test, 0, (MAXIMUM_FINITE_STRAIGHT_LIST - 1) >> 1, MAXIMUM_FINITE_STRAIGHT_LIST);
     ASSERT_EQm("[FASL-ERROR] Expected maximums to be the same.", MAXIMUM_FINITE_STRAIGHT_LIST, split.max);
 
-    for (int i = 0; i < (MAXIMUM_FINITE_STRAIGHT_LIST - 1) >> 1; ++i) {
-        ASSERT_EQm("[FASL-ERROR] Expected element to be equal to i.", i, get_straight_list(split, i).sub_one);
+    for (size_t i = 0; i < (MAXIMUM_FINITE_STRAIGHT_LIST - 1) >> 1; ++i) {
+        ASSERT_EQm("[FASL-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(split, i).sub_one);
     }
 
-    for (int i = (MAXIMUM_FINITE_STRAIGHT_LIST - 1) >> 1; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
-        ASSERT_EQm("[FASL-ERROR] Expected element to be equal to i.", i, get_straight_list(test, i - ((MAXIMUM_FINITE_STRAIGHT_LIST - 1) >> 1)).sub_one);
+    for (size_t i = (MAXIMUM_FINITE_STRAIGHT_LIST - 1) >> 1; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
+        ASSERT_EQm("[FASL-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(test, i - ((MAXIMUM_FINITE_STRAIGHT_LIST - 1) >> 1)).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1775,12 +1775,12 @@ TEST FASL_SPLIT_03(void) {
     straight_list_s split = split_straight_list(&test, 0, MAXIMUM_FINITE_STRAIGHT_LIST >> 1, MAXIMUM_FINITE_STRAIGHT_LIST);
     ASSERT_EQm("[FASL-ERROR] Expected maximums to be the same.", MAXIMUM_FINITE_STRAIGHT_LIST, split.max);
 
-    for (int i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST >> 1; ++i) {
-        ASSERT_EQm("[FASL-ERROR] Expected element to be equal to i.", i, get_straight_list(split, i).sub_one);
+    for (size_t i = 0; i < MAXIMUM_FINITE_STRAIGHT_LIST >> 1; ++i) {
+        ASSERT_EQm("[FASL-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(split, i).sub_one);
     }
 
-    for (int i = (MAXIMUM_FINITE_STRAIGHT_LIST) >> 1; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
-        ASSERT_EQm("[FASL-ERROR] Expected element to be equal to i.", i, get_straight_list(test, i - (MAXIMUM_FINITE_STRAIGHT_LIST >> 1)).sub_one);
+    for (size_t i = (MAXIMUM_FINITE_STRAIGHT_LIST) >> 1; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
+        ASSERT_EQm("[FASL-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(test, i - (MAXIMUM_FINITE_STRAIGHT_LIST >> 1)).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1799,12 +1799,12 @@ TEST FASL_SPLIT_04(void) {
     straight_list_s split = split_straight_list(&test, (MAXIMUM_FINITE_STRAIGHT_LIST - 1) >> 1, test.size - ((MAXIMUM_FINITE_STRAIGHT_LIST - 1) >> 1), MAXIMUM_FINITE_STRAIGHT_LIST);
     ASSERT_EQm("[FASL-ERROR] Expected maximums to be the same.", MAXIMUM_FINITE_STRAIGHT_LIST, split.max);
 
-    for (int i = 0; i < (MAXIMUM_FINITE_STRAIGHT_LIST - 1) >> 1; ++i) {
-        ASSERT_EQm("[FASL-ERROR] Expected element to be equal to i.", i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < (MAXIMUM_FINITE_STRAIGHT_LIST - 1) >> 1; ++i) {
+        ASSERT_EQm("[FASL-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(test, i).sub_one);
     }
 
-    for (int i = (MAXIMUM_FINITE_STRAIGHT_LIST - 1) >> 1; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
-        ASSERT_EQm("[FASL-ERROR] Expected element to be equal to i.", i, get_straight_list(split, i - ((MAXIMUM_FINITE_STRAIGHT_LIST - 1) >> 1)).sub_one);
+    for (size_t i = (MAXIMUM_FINITE_STRAIGHT_LIST - 1) >> 1; i < MAXIMUM_FINITE_STRAIGHT_LIST - 1; ++i) {
+        ASSERT_EQm("[FASL-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(split, i - ((MAXIMUM_FINITE_STRAIGHT_LIST - 1) >> 1)).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
@@ -1823,12 +1823,12 @@ TEST FASL_SPLIT_05(void) {
     straight_list_s split = split_straight_list(&test, MAXIMUM_FINITE_STRAIGHT_LIST >> 1, test.size - (MAXIMUM_FINITE_STRAIGHT_LIST >> 1), MAXIMUM_FINITE_STRAIGHT_LIST);
     ASSERT_EQm("[FASL-ERROR] Expected maximums to be the same.", MAXIMUM_FINITE_STRAIGHT_LIST, split.max);
 
-    for (int i = 0; i < (MAXIMUM_FINITE_STRAIGHT_LIST) >> 1; ++i) {
-        ASSERT_EQm("[FASL-ERROR] Expected element to be equal to i.", i, get_straight_list(test, i).sub_one);
+    for (size_t i = 0; i < (MAXIMUM_FINITE_STRAIGHT_LIST) >> 1; ++i) {
+        ASSERT_EQm("[FASL-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(test, i).sub_one);
     }
 
-    for (int i = (MAXIMUM_FINITE_STRAIGHT_LIST) >> 1; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
-        ASSERT_EQm("[FASL-ERROR] Expected element to be equal to i.", i, get_straight_list(split, i - (MAXIMUM_FINITE_STRAIGHT_LIST >> 1)).sub_one);
+    for (size_t i = (MAXIMUM_FINITE_STRAIGHT_LIST) >> 1; i < MAXIMUM_FINITE_STRAIGHT_LIST; ++i) {
+        ASSERT_EQm("[FASL-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(split, i - (MAXIMUM_FINITE_STRAIGHT_LIST >> 1)).sub_one);
     }
 
     destroy_straight_list(&test, destroy_int);
