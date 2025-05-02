@@ -13,13 +13,18 @@ PADS data structures are each divided into at least three modes with support for
 - Finite predefined size array structure using preprocessor
 
 ## Prerequisites
-- C compiler that supports the **C99 standard** to compile headers, like:
+- C compiler that supports the **C99 standard**, like:
   - [GNU Compiler Collection (gcc)](https://gcc.gnu.org), 
   - [Microsoft Visual C++ (MSVC)](https://visualstudio.microsoft.com/vs/features/cplusplus/),
   - [Clang](https://clang.llvm.org)
 
+## Download
+- Go to the list below and click on the link with **Available** data structures.
+- Click on the specific ```*.h``` file.
+- Type ```Ctrl + Shift + s``` to download the header.
+
 > [!WARNING]
-> Only one header can be included **per executable** file. If a separate header file includes stack.h, then no other file with the 'separate header' can use stack.h.
+> Only one header can be included **per executable** file. If a separate header file includes stack.h, then no other file with the 'separate header' can use stack.h. The header will generate an **error** if they collide.
 
 ## **List of Data Structures:**
 
@@ -29,7 +34,6 @@ PADS data structures are each divided into at least three modes with support for
   - [QUEUE](https://github.com/TheGAzed/pads/blob/main/source/sequential/queue)
   - [DEQUE](https://github.com/TheGAzed/pads/blob/main/source/sequential/deque)
 
-
 - [LIST](https://github.com/TheGAzed/pads/blob/main/source/list)
   - [STRAIGHT LIST](https://github.com/TheGAzed/pads/blob/main/source/list/straight_list)
 
@@ -38,7 +42,6 @@ PADS data structures are each divided into at least three modes with support for
 - [LIST](https://github.com/TheGAzed/pads/blob/main/source/list)
   - [CIRCULAR LIST](https://github.com/TheGAzed/pads/blob/main/source/list/circular_list)
   - [DOUBLE LIST](https://github.com/TheGAzed/pads/blob/main/source/list/double_list)
-
 
 - [SET](https://github.com/TheGAzed/pads/blob/main/source/set)
   - [BINARY SET](https://github.com/TheGAzed/pads/blob/main/source/set/binary_set)
