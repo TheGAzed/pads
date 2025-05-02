@@ -1,0 +1,3 @@
+add_subdirectory(straight_list)
+#add_subdirectory(circular_list)
+#add_subdirectory(double_list)

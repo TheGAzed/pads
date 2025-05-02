@@ -18,4 +18,9 @@ set_target_properties(project_headers PROPERTIES LINKER_LANGUAGE C)
 
 include(CTest)
 enable_testing()
-add_subdirectory(source)
+
+add_subdirectory(test)
+
+if (EXISTS experiment)
+    add_subdirectory(experiment)
+endif ()
