@@ -16,7 +16,7 @@ The implementation also includes the following macros that can be used by other 
 ### List of special stack macros:
 
 > [!WARNING]
-> Each macro mentioned below must be defined before including the stack header.
+> Each stack and mode macro mentioned below must be defined before including the stack header.
 
 ```C
 #define STACK_DATA_TYPE [type] // default '(void*)'
@@ -42,10 +42,10 @@ Defines the reallocate function that should be called when a memory chunk needs 
 Defines the free function that should be called when a memory chunk needs to be freed/removed. If no free is defined then stdlib.h will be included and ```free()``` will be used.
 
 > [!WARNING]
-> If either STACK_REALLOC or STACK_FREE is newly defined then the other MUST also be defined.
+> If either ```STACK_REALLOC``` or ```STACK_FREE``` is newly defined then the other MUST also be defined.
 
 > [!NOTE]
-> The finite preprocessor defined mode DOES NOT use memory allocation. Thus, it is unnecessary to define a new STACK_REALLOC and STACK_FREE for it.
+> The finite preprocessor defined mode DOES NOT use memory allocation. Thus, it is unnecessary to define a new ```STACK_REALLOC``` and ```STACK_FREE``` for it.
 
 ```C
 #define STACK_MODE [mode] // default 'INFINITE_REALLOC_STACK_MODE'
@@ -129,7 +129,7 @@ The default macros expand the stack linearly using the predefined macro value:
 ```
 
 > [!WARNING]
-> If either IS_CAPACITY_STACK or EXPAND_CAPACITY_STACK is defined then the other MUST also be defined.
+> If either ```IS_CAPACITY_STACK``` or ```EXPAND_CAPACITY_STACK``` is defined then the other MUST also be defined.
 
 ## 4. Finite preprocessor defined mode
 
@@ -149,7 +149,3 @@ typedef struct stack {
 #define STACK_MODE FINITE_PREPROCESSOR_STACK_MODE
 #include "stack.h"
 ```
-
-> [!WARNING]
-> If either IS_CAPACITY_STACK or EXPAND_CAPACITY_STACK is defined then the other MUST also be defined.
-
