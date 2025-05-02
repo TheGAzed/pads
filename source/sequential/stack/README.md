@@ -28,18 +28,15 @@ Defines the element type to use in stack.
 #define STACK_ASSERT [assert] // default 'assert'
 #include "stack.h"
 ```
-Defines the function that should be called when an assertion or condition fails. If no function is defined then assert.h will be included and ```assert()``` will be used instead.
+Defines the function that should be called when an assertion or condition fails. If no function is defined then ```assert.h``` will be included and ```assert()``` will be used instead.
 
 ```C
 #define STACK_REALLOC [reallocate] // default 'realloc'
-```
-Defines the reallocate function that should be called when a memory chunk needs to be changed or created. If no reallocate is defined then stdlib.h will be included and ```realloc()``` will be used.
-
-```C
 #define STACK_FREE [free] // default 'free'
-#include "stack.h"
+#include "stack.h" // will generate error if both are not defined
 ```
-Defines the free function that should be called when a memory chunk needs to be freed/removed. If no free is defined then stdlib.h will be included and ```free()``` will be used.
+Defines the reallocate and free functions that should be called when a memory chunk needs to be changed, created or freed. If no reallocate is defined then ```stdlib.h``` will be included and ```realloc()``` will be used. If no free is defined then stdlib.h will be included and ```free()``` will be used.
+
 
 > [!WARNING]
 > If either ```STACK_REALLOC``` or ```STACK_FREE``` is newly defined then the other MUST also be defined.
