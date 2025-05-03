@@ -25,8 +25,17 @@ bool operation_string(DATA_TYPE * element, void * args);
 bool print_int(DATA_TYPE * element, void * format);
 bool print_string(DATA_TYPE * element, void * format);
 
-int compare_int(const void * a, const void * b);
-int compare_reverse_int(const void * a, const void * b);
+int compare_int(const DATA_TYPE a, const DATA_TYPE b);
+int compare_reverse_int(const DATA_TYPE a, const DATA_TYPE b);
+
+int compare_string(const DATA_TYPE a, const DATA_TYPE b);
+int compare_reverse_string(const DATA_TYPE a, const DATA_TYPE b);
+
+int compare_int_generic(const void * a, const void * b);
+int compare_reverse_int_generic(const void * a, const void * b);
+
+int compare_string_generic(const void * a, const void * b);
+int compare_reverse_string_generic(const void * a, const void * b);
 
 void sort_int(DATA_TYPE * elements, const size_t size, void * args);
 

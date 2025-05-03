@@ -1650,7 +1650,7 @@ TEST ILD_FOREACH_REVERSE_08(void) {
 TEST ILD_MAP_01(void) {
     deque_s test = create_deque();
 
-    map_deque(&test, sort_int, compare_int);
+    map_deque(&test, sort_int, compare_int_generic);
 
     destroy_deque(&test, destroy_int);
     PASS();
@@ -1661,7 +1661,7 @@ TEST ILD_MAP_02(void) {
 
     enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = 42 });
 
-    map_deque(&test, sort_int, compare_int);
+    map_deque(&test, sort_int, compare_int_generic);
 
     destroy_deque(&test, destroy_int);
     PASS();
@@ -1678,7 +1678,7 @@ TEST ILD_MAP_03(void) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_deque(&test, sort_int, compare_int);
+    map_deque(&test, sort_int, compare_int_generic);
 
     for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK - 1; ++i) {
         ASSERT_EQm("[ILD-ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);
@@ -1699,7 +1699,7 @@ TEST ILD_MAP_04(void) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_deque(&test, sort_int, compare_int);
+    map_deque(&test, sort_int, compare_int_generic);
 
     for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK; ++i) {
         ASSERT_EQm("[ILD-ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);
@@ -1720,7 +1720,7 @@ TEST ILD_MAP_05(void) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_deque(&test, sort_int, compare_int);
+    map_deque(&test, sort_int, compare_int_generic);
 
     for (int i = 0; i < LIST_ARRAY_DEQUE_CHUNK + 1; ++i) {
         ASSERT_EQm("[ILD-ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);
@@ -1741,7 +1741,7 @@ TEST ILD_MAP_06(void) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_deque(&test, sort_int, compare_reverse_int);
+    map_deque(&test, sort_int, compare_reverse_int_generic);
 
     for (int i = LIST_ARRAY_DEQUE_CHUNK - 2; i >= 0; --i) {
         ASSERT_EQm("[ILD-ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);
@@ -1762,7 +1762,7 @@ TEST ILD_MAP_07(void) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_deque(&test, sort_int, compare_reverse_int);
+    map_deque(&test, sort_int, compare_reverse_int_generic);
 
     for (int i = LIST_ARRAY_DEQUE_CHUNK - 1; i >= 0; --i) {
         ASSERT_EQm("[ILD-ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);
@@ -1783,7 +1783,7 @@ TEST ILD_MAP_08(void) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_deque(&test, sort_int, compare_reverse_int);
+    map_deque(&test, sort_int, compare_reverse_int_generic);
 
     for (int i = LIST_ARRAY_DEQUE_CHUNK; i >= 0; --i) {
         ASSERT_EQm("[ILD-ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);

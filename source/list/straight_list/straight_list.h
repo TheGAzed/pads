@@ -73,6 +73,8 @@
 
 #endif
 
+#if STRAIGHT_LIST_MODE != FINITE_PRERPOCESSOR_STRAIGHT_LIST
+
 #if !defined(STRAIGHT_LIST_REALLOC) && !defined(STRAIGHT_LIST_FREE)
 
 #include <stdlib.h>
@@ -99,13 +101,15 @@
 
 #endif
 
+#endif
+
 /// @brief Function pointer to create a deep/shallow copy for straight list element.
 typedef STRAIGHT_LIST_DATA_TYPE (*copy_straight_list_fn)    (const STRAIGHT_LIST_DATA_TYPE);
 /// @brief Function pointer to destroy/free an element for straight list element.
 typedef void                    (*destroy_straight_list_fn) (STRAIGHT_LIST_DATA_TYPE *);
 /// @brief Function pointer to comapre two straight list elements. Returns zero if they're equal, a negative number if
 /// 'less than', else a positive number if 'more than'.
-typedef int                     (*compare_straight_list_fn) (const void *, const void *);
+typedef int                     (*compare_straight_list_fn) (const STRAIGHT_LIST_DATA_TYPE, const STRAIGHT_LIST_DATA_TYPE);
 /// @brief Function pointer to operate on a single straight list element based on generic arguments.
 typedef bool                    (*operate_straight_list_fn) (STRAIGHT_LIST_DATA_TYPE *, void *);
 /// @brief Function pointer to manage an array of straight list elements based on generic arguments.
@@ -266,7 +270,7 @@ static inline bool binary_search_straight_list(const straight_list_s list, const
             current = current->next;
         }
 
-        const int comparison = compare(&element, &(current->element));
+        const int comparison = compare(element, current->element);
 
         if (0 == comparison) {
             return true;
@@ -335,7 +339,7 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_first_straight_list(straight_list_s
 
     // interate while derefernced pointer is not NULL
     for (struct straight_list_node ** current = &(list->head); (*current); current = &((*current)->next)) {
-        if (0 == compare(&((*current)->element), &element)) { // if comparison returns zero, i.e. elements are equal
+        if (0 == compare((*current)->element, element)) { // if comparison returns zero, i.e. elements are equal
             STRAIGHT_LIST_DATA_TYPE removed = (*current)->element; // save removed element to not lose it
             list->size--; // decrement list size to reflect removal
 
@@ -665,7 +669,7 @@ static inline bool binary_search_straight_list(const straight_list_s list, const
             current = list.next[current];
         }
 
-        const int comparison = compare(&element, list.elements + current);
+        const int comparison = compare(element, list.elements[current]);
 
         if (0 == comparison) {
             return true;
@@ -749,7 +753,7 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_first_straight_list(straight_list_s
 
     size_t * current = &(list->head);
     for (size_t i = 0; i < list->size; ++i) {
-        if (0 != compare(list->elements + (*current), &element)) { // early continue in order to remove one needless nesting level
+        if (0 != compare(list->elements[(*current)], element)) { // early continue in order to remove one needless nesting level
             current = list->next + (*current);
             continue;
         }
@@ -1163,7 +1167,7 @@ static inline bool binary_search_straight_list(const straight_list_s list, const
             current = list.next[current];
         }
 
-        const int comparison = compare(&element, list.elements + current);
+        const int comparison = compare(element, list.elements[current]);
 
         if (0 == comparison) {
             return true;
@@ -1246,7 +1250,7 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_first_straight_list(straight_list_s
 
     size_t * current = &(list->head); // save pointer to list's head as current index pointer
     for (size_t i = 0; i < list->size; ++i) {
-        if (0 != compare(list->elements + (*current), &element)) { // early continue in order to remove one needless nesting level
+        if (0 != compare(list->elements[(*current)], element)) { // early continue in order to remove one needless nesting level
             current = list->next + (*current); // go to next index
             continue; // continue if comparison is not equal, i.e. 0
         }
@@ -1688,7 +1692,7 @@ static inline bool binary_search_straight_list(const straight_list_s list, const
             current = list.next[current];
         }
 
-        const int comparison = compare(&element, list.elements + current);
+        const int comparison = compare(element, list.elements[current]);
 
         if (0 == comparison) {
             return true;
@@ -1763,7 +1767,7 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_first_straight_list(straight_list_s
 
     size_t * current = &(list->head);
     for (size_t i = 0; i < list->size; ++i) {
-        if (0 != compare(list->elements + (*current), &element)) { // early continue in order to remove one needless nesting level
+        if (0 != compare(list->elements[(*current)], element)) { // early continue in order to remove one needless nesting level
             current = list->next + (*current);
             continue;
         }

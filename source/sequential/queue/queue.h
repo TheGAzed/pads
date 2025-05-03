@@ -73,6 +73,8 @@
 
 #endif
 
+#if QUEUE_MODE != FINITE_PREPROCESSOR_QUEUE_MODE
+
 #if !defined(QUEUE_REALLOC) && !defined(QUEUE_FREE)
 
 #include <stdlib.h>
@@ -96,6 +98,8 @@
 #elif !defined(QUEUE_FREE)
 
 #error Queue free macro is not defined!
+
+#endif
 
 #endif
 

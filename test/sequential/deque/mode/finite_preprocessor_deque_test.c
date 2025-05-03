@@ -1196,7 +1196,7 @@ TEST FPD_FOREACH_REVERSE_06(void) {
 TEST FPD_MAP_01(void) {
     deque_s test = create_deque();
 
-    map_deque(&test, sort_int, compare_int);
+    map_deque(&test, sort_int, compare_int_generic);
 
     destroy_deque(&test, destroy_int);
     PASS();
@@ -1207,7 +1207,7 @@ TEST FPD_MAP_02(void) {
 
     enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = 42 });
 
-    map_deque(&test, sort_int, compare_int);
+    map_deque(&test, sort_int, compare_int_generic);
 
     destroy_deque(&test, destroy_int);
     PASS();
@@ -1224,7 +1224,7 @@ TEST FPD_MAP_03(void) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_deque(&test, sort_int, compare_int);
+    map_deque(&test, sort_int, compare_int_generic);
 
     for (int i = 0; i < PREPROCESSOR_QUEUE_SIZE - 1; ++i) {
         ASSERT_EQm("[FPD-ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);
@@ -1245,7 +1245,7 @@ TEST FPD_MAP_04(void) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_deque(&test, sort_int, compare_int);
+    map_deque(&test, sort_int, compare_int_generic);
 
     for (int i = 0; i < PREPROCESSOR_QUEUE_SIZE; ++i) {
         ASSERT_EQm("[FPD-ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);
@@ -1266,7 +1266,7 @@ TEST FPD_MAP_05(void) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_deque(&test, sort_int, compare_reverse_int);
+    map_deque(&test, sort_int, compare_reverse_int_generic);
 
     for (int i = PREPROCESSOR_QUEUE_SIZE - 2; i >= 0; --i) {
         ASSERT_EQm("[FPD-ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);
@@ -1287,7 +1287,7 @@ TEST FPD_MAP_06(void) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_deque(&test, sort_int, compare_reverse_int);
+    map_deque(&test, sort_int, compare_reverse_int_generic);
 
     for (int i = PREPROCESSOR_QUEUE_SIZE - 1; i >= 0; --i) {
         ASSERT_EQm("[FPD-ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);

@@ -907,7 +907,7 @@ TEST ILS_FOREACH_08(void) {
 TEST ILS_MAP_01(void) {
     stack_s test = create_stack();
 
-    map_stack(&test, sort_int, compare_int);
+    map_stack(&test, sort_int, compare_int_generic);
 
     destroy_stack(&test, destroy_int);
     PASS();
@@ -918,7 +918,7 @@ TEST ILS_MAP_02(void) {
 
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
 
-    map_stack(&test, sort_int, compare_int);
+    map_stack(&test, sort_int, compare_int_generic);
 
     destroy_stack(&test, destroy_int);
     PASS();
@@ -935,7 +935,7 @@ TEST ILS_MAP_03(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
     }
 
-    map_stack(&test, sort_int, compare_int);
+    map_stack(&test, sort_int, compare_int_generic);
 
     for (int i = LIST_ARRAY_STACK_CHUNK - 2; i >= 0; --i) {
         ASSERT_EQm("[ILS-ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
@@ -956,7 +956,7 @@ TEST ILS_MAP_04(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
     }
 
-    map_stack(&test, sort_int, compare_int);
+    map_stack(&test, sort_int, compare_int_generic);
 
     for (int i = LIST_ARRAY_STACK_CHUNK - 1; i >= 0; --i) {
         ASSERT_EQm("[ILS-ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
@@ -977,7 +977,7 @@ TEST ILS_MAP_05(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
     }
 
-    map_stack(&test, sort_int, compare_int);
+    map_stack(&test, sort_int, compare_int_generic);
 
     for (int i = LIST_ARRAY_STACK_CHUNK; i >= 0; --i) {
         ASSERT_EQm("[ILS-ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
@@ -998,7 +998,7 @@ TEST ILS_MAP_06(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
     }
 
-    map_stack(&test, sort_int, compare_reverse_int);
+    map_stack(&test, sort_int, compare_reverse_int_generic);
 
     for (int i = 0; i < LIST_ARRAY_STACK_CHUNK - 1; ++i) {
         ASSERT_EQm("[ILS-ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
@@ -1019,7 +1019,7 @@ TEST ILS_MAP_07(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
     }
 
-    map_stack(&test, sort_int, compare_reverse_int);
+    map_stack(&test, sort_int, compare_reverse_int_generic);
 
     for (int i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) {
         ASSERT_EQm("[ILS-ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
@@ -1040,7 +1040,7 @@ TEST ILS_MAP_08(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
     }
 
-    map_stack(&test, sort_int, compare_reverse_int);
+    map_stack(&test, sort_int, compare_reverse_int_generic);
 
     for (int i = 0; i < LIST_ARRAY_STACK_CHUNK + 1; ++i) {
         ASSERT_EQm("[ILS-ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);

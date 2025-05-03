@@ -74,6 +74,8 @@
 
 #endif
 
+#if DEQUE_MODE != FINITE_PREPROCESSOR_DEQUE_MODE
+
 #if !defined(DEQUE_REALLOC) && !defined(DEQUE_FREE)
 
 #include <stdlib.h>
@@ -97,6 +99,8 @@
 #elif !defined(DEQUE_FREE)
 
 #error Queue free macro is not defined!
+
+#endif
 
 #endif
 

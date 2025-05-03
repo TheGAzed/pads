@@ -675,7 +675,7 @@ TEST FPS_FOREACH_06(void) {
 TEST FPS_MAP_01(void) {
     stack_s test = create_stack();
 
-    map_stack(&test, sort_int, compare_int);
+    map_stack(&test, sort_int, compare_int_generic);
 
     destroy_stack(&test, destroy_int);
     PASS();
@@ -686,7 +686,7 @@ TEST FPS_MAP_02(void) {
 
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
 
-    map_stack(&test, sort_int, compare_int);
+    map_stack(&test, sort_int, compare_int_generic);
 
     destroy_stack(&test, destroy_int);
     PASS();
@@ -703,7 +703,7 @@ TEST FPS_MAP_03(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
     }
 
-    map_stack(&test, sort_int, compare_int);
+    map_stack(&test, sort_int, compare_int_generic);
 
     for (int i = PREPROCESSOR_STACK_SIZE - 2; i >= 0; --i) {
         ASSERT_EQm("[FPS-ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
@@ -724,7 +724,7 @@ TEST FPS_MAP_04(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
     }
 
-    map_stack(&test, sort_int, compare_int);
+    map_stack(&test, sort_int, compare_int_generic);
 
     for (int i = PREPROCESSOR_STACK_SIZE - 1; i >= 0; --i) {
         ASSERT_EQm("[FPS-ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
@@ -745,7 +745,7 @@ TEST FPS_MAP_05(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
     }
 
-    map_stack(&test, sort_int, compare_reverse_int);
+    map_stack(&test, sort_int, compare_reverse_int_generic);
 
     for (int i = 0; i < PREPROCESSOR_STACK_SIZE - 1; ++i) {
         ASSERT_EQm("[FPS-ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
@@ -766,7 +766,7 @@ TEST FPS_MAP_06(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
     }
 
-    map_stack(&test, sort_int, compare_reverse_int);
+    map_stack(&test, sort_int, compare_reverse_int_generic);
 
     for (int i = 0; i < PREPROCESSOR_STACK_SIZE; ++i) {
         ASSERT_EQm("[FPS-ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);

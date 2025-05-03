@@ -684,7 +684,7 @@ TEST FAS_FOREACH_06(void) {
 TEST FAS_MAP_01(void) {
     stack_s test = create_stack(MAXIMUM_STACK_SIZE);
 
-    map_stack(&test, sort_int, compare_int);
+    map_stack(&test, sort_int, compare_int_generic);
 
     destroy_stack(&test, destroy_int);
     PASS();
@@ -695,7 +695,7 @@ TEST FAS_MAP_02(void) {
 
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
 
-    map_stack(&test, sort_int, compare_int);
+    map_stack(&test, sort_int, compare_int_generic);
 
     destroy_stack(&test, destroy_int);
     PASS();
@@ -712,7 +712,7 @@ TEST FAS_MAP_03(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
     }
 
-    map_stack(&test, sort_int, compare_int);
+    map_stack(&test, sort_int, compare_int_generic);
 
     for (int i = MAXIMUM_STACK_SIZE - 2; i >= 0; --i) {
         ASSERT_EQm("[FAS-ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
@@ -733,7 +733,7 @@ TEST FAS_MAP_04(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
     }
 
-    map_stack(&test, sort_int, compare_int);
+    map_stack(&test, sort_int, compare_int_generic);
 
     for (int i = MAXIMUM_STACK_SIZE - 1; i >= 0; --i) {
         ASSERT_EQm("[FAS-ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
@@ -754,7 +754,7 @@ TEST FAS_MAP_05(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
     }
 
-    map_stack(&test, sort_int, compare_reverse_int);
+    map_stack(&test, sort_int, compare_reverse_int_generic);
 
     for (int i = 0; i < MAXIMUM_STACK_SIZE - 1; ++i) {
         ASSERT_EQm("[FAS-ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
@@ -775,7 +775,7 @@ TEST FAS_MAP_06(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
     }
 
-    map_stack(&test, sort_int, compare_reverse_int);
+    map_stack(&test, sort_int, compare_reverse_int_generic);
 
     for (int i = 0; i < MAXIMUM_STACK_SIZE; ++i) {
         ASSERT_EQm("[FAS-ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);

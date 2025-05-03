@@ -74,6 +74,8 @@
 
 #endif
 
+#if STACK_MODE != FINITE_PREPROCESSOR_STACK_MODE
+
 #if !defined(STACK_REALLOC) && !defined(STACK_FREE)
 
 #include <stdlib.h>
@@ -97,6 +99,8 @@
 #elif !defined(STACK_FREE)
 
 #error Stack free macro is not defined!
+
+#endif
 
 #endif
 

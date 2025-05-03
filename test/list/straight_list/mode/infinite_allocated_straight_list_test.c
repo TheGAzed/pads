@@ -795,7 +795,7 @@ TEST IASL_FOREACH_08(void) {
 TEST IASL_MAP_01(void) {
     straight_list_s test = create_straight_list();
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     destroy_straight_list(&test, destroy_int);
 
@@ -813,7 +813,7 @@ TEST IASL_MAP_02(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     for (size_t i = 0; i < MAXIMUM_INFINITE_STRAIGHT_LIST - 1; ++i) {
         ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(test, i).sub_one);
@@ -835,7 +835,7 @@ TEST IASL_MAP_03(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     for (size_t i = 0; i < MAXIMUM_INFINITE_STRAIGHT_LIST; ++i) {
         ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(test, i).sub_one);
@@ -857,7 +857,7 @@ TEST IASL_MAP_04(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     for (size_t i = 0; i < MAXIMUM_INFINITE_STRAIGHT_LIST + 1; ++i) {
         ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(test, i).sub_one);
@@ -871,7 +871,7 @@ TEST IASL_MAP_04(void) {
 TEST IASL_MAP_05(void) {
     straight_list_s test = create_straight_list();
 
-    map_straight_list(&test, sort_int, compare_reverse_int);
+    map_straight_list(&test, sort_int, compare_reverse_int_generic);
 
     destroy_straight_list(&test, destroy_int);
 
@@ -889,7 +889,7 @@ TEST IASL_MAP_06(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_reverse_int);
+    map_straight_list(&test, sort_int, compare_reverse_int_generic);
 
     for (size_t i = 0; i < MAXIMUM_INFINITE_STRAIGHT_LIST - 1; ++i) {
         ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (MAXIMUM_INFINITE_STRAIGHT_LIST - 1 - 1) - (int)i, get_straight_list(test, i).sub_one);
@@ -911,7 +911,7 @@ TEST IASL_MAP_07(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_reverse_int);
+    map_straight_list(&test, sort_int, compare_reverse_int_generic);
 
     for (size_t i = 0; i < MAXIMUM_INFINITE_STRAIGHT_LIST; ++i) {
         ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (MAXIMUM_INFINITE_STRAIGHT_LIST - 1) - (int)i, get_straight_list(test, i).sub_one);
@@ -933,7 +933,7 @@ TEST IASL_MAP_08(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_reverse_int);
+    map_straight_list(&test, sort_int, compare_reverse_int_generic);
 
     for (size_t i = 0; i < MAXIMUM_INFINITE_STRAIGHT_LIST + 1; ++i) {
         ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (MAXIMUM_INFINITE_STRAIGHT_LIST + 1 - 1) - (int)i, get_straight_list(test, i).sub_one);
@@ -974,7 +974,7 @@ TEST IASL_BINARY_SEARCH_03(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     ASSERTm("[IASL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = 0, }, compare_int));
 
@@ -991,7 +991,7 @@ TEST IASL_BINARY_SEARCH_04(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     ASSERTm("[IASL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = 0, }, compare_int));
 
@@ -1008,7 +1008,7 @@ TEST IASL_BINARY_SEARCH_05(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     ASSERTm("[IASL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = 0, }, compare_int));
 
@@ -1025,7 +1025,7 @@ TEST IASL_BINARY_SEARCH_06(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     ASSERTm("[IASL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = count - 1, }, compare_int));
 
@@ -1042,7 +1042,7 @@ TEST IASL_BINARY_SEARCH_07(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     ASSERTm("[IASL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = count - 1, }, compare_int));
 
@@ -1059,7 +1059,7 @@ TEST IASL_BINARY_SEARCH_08(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     ASSERTm("[IASL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = count - 1, }, compare_int));
 
@@ -1076,7 +1076,7 @@ TEST IASL_BINARY_SEARCH_09(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     ASSERTm("[IASL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = count / 2, }, compare_int));
 
@@ -1093,7 +1093,7 @@ TEST IASL_BINARY_SEARCH_10(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     ASSERTm("[IASL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = count / 2, }, compare_int));
 
@@ -1110,7 +1110,7 @@ TEST IASL_BINARY_SEARCH_11(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     ASSERTm("[IASL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = count / 2, }, compare_int));
 
@@ -1127,7 +1127,7 @@ TEST IASL_BINARY_SEARCH_12(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     ASSERT_FALSEm("[IASL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = count, }, compare_int));
 
@@ -1144,7 +1144,7 @@ TEST IASL_BINARY_SEARCH_13(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     ASSERT_FALSEm("[IASL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = count, }, compare_int));
 
@@ -1161,7 +1161,7 @@ TEST IASL_BINARY_SEARCH_14(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     ASSERT_FALSEm("[IASL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = count, }, compare_int));
 
@@ -1178,7 +1178,7 @@ TEST IASL_BINARY_SEARCH_15(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     ASSERT_FALSEm("[IASL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = 0, }, compare_int));
 
@@ -1195,7 +1195,7 @@ TEST IASL_BINARY_SEARCH_16(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     ASSERT_FALSEm("[IASL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = 0, }, compare_int));
 
@@ -1212,7 +1212,7 @@ TEST IASL_BINARY_SEARCH_17(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     ASSERT_FALSEm("[IASL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = 0, }, compare_int));
 
@@ -1229,7 +1229,7 @@ TEST IASL_BINARY_SEARCH_18(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     for (int i = 0; i < count; ++i) {
         ASSERTm("[IASL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, }, compare_int));
@@ -1248,7 +1248,7 @@ TEST IASL_BINARY_SEARCH_19(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     for (int i = 0; i < count; ++i) {
         ASSERTm("[IASL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, }, compare_int));
@@ -1267,7 +1267,7 @@ TEST IASL_BINARY_SEARCH_20(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int);
+    map_straight_list(&test, sort_int, compare_int_generic);
 
     for (int i = 0; i < count; ++i) {
         ASSERTm("[IASL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, }, compare_int));

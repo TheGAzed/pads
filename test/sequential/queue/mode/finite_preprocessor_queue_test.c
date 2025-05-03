@@ -675,7 +675,7 @@ TEST FPQ_FOREACH_06(void) {
 TEST FPQ_MAP_01(void) {
     queue_s test = create_queue();
 
-    map_queue(&test, sort_int, compare_int);
+    map_queue(&test, sort_int, compare_int_generic);
 
     destroy_queue(&test, destroy_int);
     PASS();
@@ -686,7 +686,7 @@ TEST FPQ_MAP_02(void) {
 
     enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
 
-    map_queue(&test, sort_int, compare_int);
+    map_queue(&test, sort_int, compare_int_generic);
 
     destroy_queue(&test, destroy_int);
     PASS();
@@ -703,7 +703,7 @@ TEST FPQ_MAP_03(void) {
         enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_queue(&test, sort_int, compare_int);
+    map_queue(&test, sort_int, compare_int_generic);
 
     for (int i = 0; i < PREPROCESSOR_QUEUE_SIZE - 1; ++i) {
         ASSERT_EQm("[FPQ-ERROR] Expected sorted queue to pop i", i, dequeue(&test).sub_one);
@@ -724,7 +724,7 @@ TEST FPQ_MAP_04(void) {
         enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_queue(&test, sort_int, compare_int);
+    map_queue(&test, sort_int, compare_int_generic);
 
     for (int i = 0; i < PREPROCESSOR_QUEUE_SIZE; ++i) {
         ASSERT_EQm("[FPQ-ERROR] Expected sorted queue to pop i", i, dequeue(&test).sub_one);
@@ -745,7 +745,7 @@ TEST FPQ_MAP_05(void) {
         enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_queue(&test, sort_int, compare_reverse_int);
+    map_queue(&test, sort_int, compare_reverse_int_generic);
 
     for (int i = PREPROCESSOR_QUEUE_SIZE - 2; i >= 0; --i) {
         ASSERT_EQm("[FPQ-ERROR] Expected sorted queue to pop i", i, dequeue(&test).sub_one);
@@ -766,7 +766,7 @@ TEST FPQ_MAP_06(void) {
         enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_queue(&test, sort_int, compare_reverse_int);
+    map_queue(&test, sort_int, compare_reverse_int_generic);
 
     for (int i = PREPROCESSOR_QUEUE_SIZE - 1; i >= 0; --i) {
         ASSERT_EQm("[FPQ-ERROR] Expected sorted queue to pop i", i, dequeue(&test).sub_one);

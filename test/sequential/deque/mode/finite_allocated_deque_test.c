@@ -1204,7 +1204,7 @@ TEST FAD_FOREACH_REVERSE_06(void) {
 TEST FAD_MAP_01(void) {
     deque_s test = create_deque(MAXIMUM_QUEUE_SIZE);
 
-    map_deque(&test, sort_int, compare_int);
+    map_deque(&test, sort_int, compare_int_generic);
 
     destroy_deque(&test, destroy_int);
     PASS();
@@ -1215,7 +1215,7 @@ TEST FAD_MAP_02(void) {
 
     enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = 42 });
 
-    map_deque(&test, sort_int, compare_int);
+    map_deque(&test, sort_int, compare_int_generic);
 
     destroy_deque(&test, destroy_int);
     PASS();
@@ -1232,7 +1232,7 @@ TEST FAD_MAP_03(void) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_deque(&test, sort_int, compare_int);
+    map_deque(&test, sort_int, compare_int_generic);
 
     for (int i = 0; i < MAXIMUM_QUEUE_SIZE - 1; ++i) {
         ASSERT_EQm("[FAD-ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);
@@ -1253,7 +1253,7 @@ TEST FAD_MAP_04(void) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_deque(&test, sort_int, compare_int);
+    map_deque(&test, sort_int, compare_int_generic);
 
     for (int i = 0; i < MAXIMUM_QUEUE_SIZE; ++i) {
         ASSERT_EQm("[FAD-ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);
@@ -1274,7 +1274,7 @@ TEST FAD_MAP_05(void) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_deque(&test, sort_int, compare_reverse_int);
+    map_deque(&test, sort_int, compare_reverse_int_generic);
 
     for (int i = MAXIMUM_QUEUE_SIZE - 2; i >= 0; --i) {
         ASSERT_EQm("[FAD-ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);
@@ -1295,7 +1295,7 @@ TEST FAD_MAP_06(void) {
         enqueue_back(&test, (DEQUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_deque(&test, sort_int, compare_reverse_int);
+    map_deque(&test, sort_int, compare_reverse_int_generic);
 
     for (int i = MAXIMUM_QUEUE_SIZE - 1; i >= 0; --i) {
         ASSERT_EQm("[FAD-ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);

@@ -907,7 +907,7 @@ TEST ILQ_FOREACH_08(void) {
 TEST ILQ_MAP_01(void) {
     queue_s test = create_queue();
 
-    map_queue(&test, sort_int, compare_int);
+    map_queue(&test, sort_int, compare_int_generic);
 
     destroy_queue(&test, destroy_int);
     PASS();
@@ -918,7 +918,7 @@ TEST ILQ_MAP_02(void) {
 
     enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = 42 });
 
-    map_queue(&test, sort_int, compare_int);
+    map_queue(&test, sort_int, compare_int_generic);
 
     destroy_queue(&test, destroy_int);
     PASS();
@@ -935,7 +935,7 @@ TEST ILQ_MAP_03(void) {
         enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_queue(&test, sort_int, compare_int);
+    map_queue(&test, sort_int, compare_int_generic);
 
     for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK - 1; ++i) {
         ASSERT_EQm("[ILQ-ERROR] Expected sorted queue to dequeue i", i, dequeue(&test).sub_one);
@@ -956,7 +956,7 @@ TEST ILQ_MAP_04(void) {
         enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_queue(&test, sort_int, compare_int);
+    map_queue(&test, sort_int, compare_int_generic);
 
     for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK; ++i) {
         ASSERT_EQm("[ILQ-ERROR] Expected sorted queue to dequeue i", i, dequeue(&test).sub_one);
@@ -977,7 +977,7 @@ TEST ILQ_MAP_05(void) {
         enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_queue(&test, sort_int, compare_int);
+    map_queue(&test, sort_int, compare_int_generic);
 
     for (int i = 0; i < LIST_ARRAY_QUEUE_CHUNK + 1; ++i) {
         ASSERT_EQm("[ILQ-ERROR] Expected sorted queue to dequeue i", i, dequeue(&test).sub_one);
@@ -998,7 +998,7 @@ TEST ILQ_MAP_06(void) {
         enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_queue(&test, sort_int, compare_reverse_int);
+    map_queue(&test, sort_int, compare_reverse_int_generic);
 
     for (int i = LIST_ARRAY_QUEUE_CHUNK - 2; i >= 0; --i) {
         ASSERT_EQm("[ILQ-ERROR] Expected sorted queue to dequeue i", i, dequeue(&test).sub_one);
@@ -1019,7 +1019,7 @@ TEST ILQ_MAP_07(void) {
         enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_queue(&test, sort_int, compare_reverse_int);
+    map_queue(&test, sort_int, compare_reverse_int_generic);
 
     for (int i = LIST_ARRAY_QUEUE_CHUNK - 1; i >= 0; --i) {
         ASSERT_EQm("[ILQ-ERROR] Expected sorted queue to dequeue i", i, dequeue(&test).sub_one);
@@ -1040,7 +1040,7 @@ TEST ILQ_MAP_08(void) {
         enqueue(&test, (QUEUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_queue(&test, sort_int, compare_reverse_int);
+    map_queue(&test, sort_int, compare_reverse_int_generic);
 
     for (int i = LIST_ARRAY_QUEUE_CHUNK; i >= 0; --i) {
         ASSERT_EQm("[ILQ-ERROR] Expected sorted queue to dequeue i", i, dequeue(&test).sub_one);
