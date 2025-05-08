@@ -41,7 +41,7 @@
 #define FINITE_CIRCULAR_LIST   FINITE_ALLOCATED_CIRCULAR_LIST
 
 //#define CIRCULAR_LIST_MODE INFINITE_ALLOCATED_CIRCULAR_LIST
-//#define CIRCULAR_LIST_MODE FINITE_ALLOCATED_CIRCULAR_LIST
+#define CIRCULAR_LIST_MODE FINITE_ALLOCATED_CIRCULAR_LIST
 //#define CIRCULAR_LIST_MODE INFINITE_REALLOC_CIRCULAR_LIST
 //#define CIRCULAR_LIST_MODE FINITE_PRERPOCESSOR_CIRCULAR_LIST
 // List mode that can be set to INFINITE_ALLOCATED_CIRCULAR_LIST, FINITE_ALLOCATED_CIRCULAR_LIST, INFINITE_REALLOC_CIRCULAR_LIST or
@@ -842,6 +842,11 @@ static inline void splice_circular_list(circular_list_s * restrict destination, 
     CIRCULAR_LIST_ASSERT(source->next && "[ERROR] List's element array is NULL.");
     CIRCULAR_LIST_ASSERT(source->max && "[ERROR] Maximum size can't be zero");
     CIRCULAR_LIST_ASSERT(source->size <= source->max && "[ERROR] Maximum size can't be greater than size.");
+
+    destination->elements = CIRCULAR_LIST_REALLOC(destination->elements, sizeof(CIRCULAR_LIST_DATA_TYPE) * max);
+    CIRCULAR_LIST_ASSERT(destination->elements && "[ERROR] Memory allocation failed.");
+    destination->next = CIRCULAR_LIST_REALLOC(destination->next, sizeof(size_t) * max);
+    CIRCULAR_LIST_ASSERT(destination->next && "[ERROR] Memory allocation failed.");
 
     size_t previous_destination = destination->tail, previous_source = source->tail;
     // if index doesn't point to end and until index node is reached
