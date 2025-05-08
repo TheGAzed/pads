@@ -36,15 +36,14 @@ C compiler that supports the **C99 standard and above**, for example:
 
 - [LIST](https://github.com/TheGAzed/pads/blob/main/source/list)
   - [STRAIGHT LIST](https://github.com/TheGAzed/pads/blob/main/source/list/straight_list)
+  - [CIRCULAR LIST](https://github.com/TheGAzed/pads/blob/main/source/list/circular_list)
 
 ### **In Progress:**
 
 - [LIST](https://github.com/TheGAzed/pads/blob/main/source/list)
-  - [CIRCULAR LIST](https://github.com/TheGAzed/pads/blob/main/source/list/circular_list)
   - [DOUBLE LIST](https://github.com/TheGAzed/pads/blob/main/source/list/double_list)
 
 - [SET](https://github.com/TheGAzed/pads/blob/main/source/set)
   - [BINARY SET](https://github.com/TheGAzed/pads/blob/main/source/set/binary_set)
-
 
 - [MATRIX GRAPH](https://github.com/TheGAzed/pads/blob/main/source/graph/matrix_graph)

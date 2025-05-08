@@ -998,340 +998,6 @@ TEST IRSL_MAP_08(void) {
     PASS();
 }
 
-TEST IRSL_BINARY_SEARCH_01(void) {
-    straight_list_s test = create_straight_list();
-
-    ASSERT_FALSEm("[IRSL-ERROR] Expected search to be false.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = 42, }, compare_int));
-
-    destroy_straight_list(&test, destroy_int);
-
-    PASS();
-}
-
-TEST IRSL_BINARY_SEARCH_02(void) {
-    straight_list_s test = create_straight_list();
-
-    insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = 42, });
-
-    ASSERTm("[IRSL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = 42, }, compare_int));
-
-    destroy_straight_list(&test, destroy_int);
-
-    PASS();
-}
-
-TEST IRSL_BINARY_SEARCH_03(void) {
-    straight_list_s test = create_straight_list();
-
-    const int count = REALLOC_STRAIGHT_LIST_CHUNK - 1;
-    for (int i = 0; i < count; ++i) {
-        insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_straight_list(&test, sort_int, compare_int_generic);
-
-    ASSERTm("[IRSL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = 0, }, compare_int));
-
-    destroy_straight_list(&test, destroy_int);
-
-    PASS();
-}
-
-TEST IRSL_BINARY_SEARCH_04(void) {
-    straight_list_s test = create_straight_list();
-
-    const int count = REALLOC_STRAIGHT_LIST_CHUNK;
-    for (int i = 0; i < count; ++i) {
-        insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_straight_list(&test, sort_int, compare_int_generic);
-
-    ASSERTm("[IRSL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = 0, }, compare_int));
-
-    destroy_straight_list(&test, destroy_int);
-
-    PASS();
-}
-
-TEST IRSL_BINARY_SEARCH_05(void) {
-    straight_list_s test = create_straight_list();
-
-    const int count = REALLOC_STRAIGHT_LIST_CHUNK + 1;
-    for (int i = 0; i < count; ++i) {
-        insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_straight_list(&test, sort_int, compare_int_generic);
-
-    ASSERTm("[IRSL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = 0, }, compare_int));
-
-    destroy_straight_list(&test, destroy_int);
-
-    PASS();
-}
-
-TEST IRSL_BINARY_SEARCH_06(void) {
-    straight_list_s test = create_straight_list();
-
-    const int count = REALLOC_STRAIGHT_LIST_CHUNK - 1;
-    for (int i = 0; i < count; ++i) {
-        insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_straight_list(&test, sort_int, compare_int_generic);
-
-    ASSERTm("[IRSL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = count - 1, }, compare_int));
-
-    destroy_straight_list(&test, destroy_int);
-
-    PASS();
-}
-
-TEST IRSL_BINARY_SEARCH_07(void) {
-    straight_list_s test = create_straight_list();
-
-    const int count = REALLOC_STRAIGHT_LIST_CHUNK;
-    for (int i = 0; i < count; ++i) {
-        insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_straight_list(&test, sort_int, compare_int_generic);
-
-    ASSERTm("[IRSL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = count - 1, }, compare_int));
-
-    destroy_straight_list(&test, destroy_int);
-
-    PASS();
-}
-
-TEST IRSL_BINARY_SEARCH_08(void) {
-    straight_list_s test = create_straight_list();
-
-    const int count = REALLOC_STRAIGHT_LIST_CHUNK + 1;
-    for (int i = 0; i < count; ++i) {
-        insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_straight_list(&test, sort_int, compare_int_generic);
-
-    ASSERTm("[IRSL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = count - 1, }, compare_int));
-
-    destroy_straight_list(&test, destroy_int);
-
-    PASS();
-}
-
-TEST IRSL_BINARY_SEARCH_09(void) {
-    straight_list_s test = create_straight_list();
-
-    const int count = REALLOC_STRAIGHT_LIST_CHUNK - 1;
-    for (int i = 0; i < count; ++i) {
-        insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_straight_list(&test, sort_int, compare_int_generic);
-
-    ASSERTm("[IRSL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = count / 2, }, compare_int));
-
-    destroy_straight_list(&test, destroy_int);
-
-    PASS();
-}
-
-TEST IRSL_BINARY_SEARCH_10(void) {
-    straight_list_s test = create_straight_list();
-
-    const int count = REALLOC_STRAIGHT_LIST_CHUNK;
-    for (int i = 0; i < count; ++i) {
-        insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_straight_list(&test, sort_int, compare_int_generic);
-
-    ASSERTm("[IRSL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = count / 2, }, compare_int));
-
-    destroy_straight_list(&test, destroy_int);
-
-    PASS();
-}
-
-TEST IRSL_BINARY_SEARCH_11(void) {
-    straight_list_s test = create_straight_list();
-
-    const int count = REALLOC_STRAIGHT_LIST_CHUNK + 1;
-    for (int i = 0; i < count; ++i) {
-        insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_straight_list(&test, sort_int, compare_int_generic);
-
-    ASSERTm("[IRSL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = count / 2, }, compare_int));
-
-    destroy_straight_list(&test, destroy_int);
-
-    PASS();
-}
-
-TEST IRSL_BINARY_SEARCH_12(void) {
-    straight_list_s test = create_straight_list();
-
-    const int count = REALLOC_STRAIGHT_LIST_CHUNK - 1;
-    for (int i = 0; i < count; ++i) {
-        insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_straight_list(&test, sort_int, compare_int_generic);
-
-    ASSERT_FALSEm("[IRSL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = count, }, compare_int));
-
-    destroy_straight_list(&test, destroy_int);
-
-    PASS();
-}
-
-TEST IRSL_BINARY_SEARCH_13(void) {
-    straight_list_s test = create_straight_list();
-
-    const int count = REALLOC_STRAIGHT_LIST_CHUNK;
-    for (int i = 0; i < count; ++i) {
-        insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_straight_list(&test, sort_int, compare_int_generic);
-
-    ASSERT_FALSEm("[IRSL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = count, }, compare_int));
-
-    destroy_straight_list(&test, destroy_int);
-
-    PASS();
-}
-
-TEST IRSL_BINARY_SEARCH_14(void) {
-    straight_list_s test = create_straight_list();
-
-    const int count = REALLOC_STRAIGHT_LIST_CHUNK + 1;
-    for (int i = 0; i < count; ++i) {
-        insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_straight_list(&test, sort_int, compare_int_generic);
-
-    ASSERT_FALSEm("[IRSL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = count, }, compare_int));
-
-    destroy_straight_list(&test, destroy_int);
-
-    PASS();
-}
-
-TEST IRSL_BINARY_SEARCH_15(void) {
-    straight_list_s test = create_straight_list();
-
-    const int count = REALLOC_STRAIGHT_LIST_CHUNK - 1;
-    for (int i = 1; i < count; ++i) {
-        insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_straight_list(&test, sort_int, compare_int_generic);
-
-    ASSERT_FALSEm("[IRSL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = 0, }, compare_int));
-
-    destroy_straight_list(&test, destroy_int);
-
-    PASS();
-}
-
-TEST IRSL_BINARY_SEARCH_16(void) {
-    straight_list_s test = create_straight_list();
-
-    const int count = REALLOC_STRAIGHT_LIST_CHUNK;
-    for (int i = 1; i < count; ++i) {
-        insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_straight_list(&test, sort_int, compare_int_generic);
-
-    ASSERT_FALSEm("[IRSL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = 0, }, compare_int));
-
-    destroy_straight_list(&test, destroy_int);
-
-    PASS();
-}
-
-TEST IRSL_BINARY_SEARCH_17(void) {
-    straight_list_s test = create_straight_list();
-
-    const int count = REALLOC_STRAIGHT_LIST_CHUNK + 1;
-    for (int i = 1; i < count; ++i) {
-        insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_straight_list(&test, sort_int, compare_int_generic);
-
-    ASSERT_FALSEm("[IRSL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = 0, }, compare_int));
-
-    destroy_straight_list(&test, destroy_int);
-
-    PASS();
-}
-
-TEST IRSL_BINARY_SEARCH_18(void) {
-    straight_list_s test = create_straight_list();
-
-    const int count = REALLOC_STRAIGHT_LIST_CHUNK - 1;
-    for (int i = 0; i < count; ++i) {
-        insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_straight_list(&test, sort_int, compare_int_generic);
-
-    for (int i = 0; i < count; ++i) {
-        ASSERTm("[IRSL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, }, compare_int));
-    }
-
-    destroy_straight_list(&test, destroy_int);
-
-    PASS();
-}
-
-TEST IRSL_BINARY_SEARCH_19(void) {
-    straight_list_s test = create_straight_list();
-
-    const int count = REALLOC_STRAIGHT_LIST_CHUNK;
-    for (int i = 0; i < count; ++i) {
-        insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_straight_list(&test, sort_int, compare_int_generic);
-
-    for (int i = 0; i < count; ++i) {
-        ASSERTm("[IRSL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, }, compare_int));
-    }
-
-    destroy_straight_list(&test, destroy_int);
-
-    PASS();
-}
-
-TEST IRSL_BINARY_SEARCH_20(void) {
-    straight_list_s test = create_straight_list();
-
-    const int count = REALLOC_STRAIGHT_LIST_CHUNK + 1;
-    for (int i = 0; i < count; ++i) {
-        insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_straight_list(&test, sort_int, compare_int_generic);
-
-    for (int i = 0; i < count; ++i) {
-        ASSERTm("[IRSL-ERROR] Expected search to be true.", binary_search_straight_list(test, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, }, compare_int));
-    }
-
-    destroy_straight_list(&test, destroy_int);
-
-    PASS();
-}
-
 TEST IRSL_INSERT_AT_01(void) {
     straight_list_s test = create_straight_list();
 
@@ -1812,16 +1478,6 @@ TEST IRSL_REMOVE_AT_07(void) {
 TEST IRSL_REVERSE_01(void) {
     straight_list_s test = create_straight_list();
 
-    reverse_straight_list(&test);
-
-    destroy_straight_list(&test, destroy_int);
-
-    PASS();
-}
-
-TEST IRSL_REVERSE_02(void) {
-    straight_list_s test = create_straight_list();
-
     insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = 42, });
 
     reverse_straight_list(&test);
@@ -1833,7 +1489,7 @@ TEST IRSL_REVERSE_02(void) {
     PASS();
 }
 
-TEST IRSL_REVERSE_03(void) {
+TEST IRSL_REVERSE_02(void) {
     straight_list_s test = create_straight_list();
 
     for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; i++) {
@@ -1851,7 +1507,7 @@ TEST IRSL_REVERSE_03(void) {
     PASS();
 }
 
-TEST IRSL_REVERSE_04(void) {
+TEST IRSL_REVERSE_03(void) {
     straight_list_s test = create_straight_list();
 
     for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; i++) {
@@ -1869,7 +1525,7 @@ TEST IRSL_REVERSE_04(void) {
     PASS();
 }
 
-TEST IRSL_REVERSE_05(void) {
+TEST IRSL_REVERSE_04(void) {
     straight_list_s test = create_straight_list();
 
     for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; i++) {
@@ -1887,7 +1543,7 @@ TEST IRSL_REVERSE_05(void) {
     PASS();
 }
 
-TEST IRSL_REVERSE_06(void) {
+TEST IRSL_REVERSE_05(void) {
     straight_list_s test = create_straight_list();
 
     for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK - 1; i++) {
@@ -1905,7 +1561,7 @@ TEST IRSL_REVERSE_06(void) {
     PASS();
 }
 
-TEST IRSL_REVERSE_07(void) {
+TEST IRSL_REVERSE_06(void) {
     straight_list_s test = create_straight_list();
 
     for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK; i++) {
@@ -1923,7 +1579,7 @@ TEST IRSL_REVERSE_07(void) {
     PASS();
 }
 
-TEST IRSL_REVERSE_08(void) {
+TEST IRSL_REVERSE_07(void) {
     straight_list_s test = create_straight_list();
 
     for (int i = 0; i < REALLOC_STRAIGHT_LIST_CHUNK + 1; i++) {
@@ -2566,12 +2222,6 @@ SUITE (infinite_realloc_straight_list_test) {
     // map
     RUN_TEST(IRSL_MAP_01); RUN_TEST(IRSL_MAP_02); RUN_TEST(IRSL_MAP_03); RUN_TEST(IRSL_MAP_04);
     RUN_TEST(IRSL_MAP_05); RUN_TEST(IRSL_MAP_06); RUN_TEST(IRSL_MAP_07); RUN_TEST(IRSL_MAP_08);
-    // binary search
-    RUN_TEST(IRSL_BINARY_SEARCH_01); RUN_TEST(IRSL_BINARY_SEARCH_02); RUN_TEST(IRSL_BINARY_SEARCH_03); RUN_TEST(IRSL_BINARY_SEARCH_04);
-    RUN_TEST(IRSL_BINARY_SEARCH_05); RUN_TEST(IRSL_BINARY_SEARCH_06); RUN_TEST(IRSL_BINARY_SEARCH_07); RUN_TEST(IRSL_BINARY_SEARCH_08);
-    RUN_TEST(IRSL_BINARY_SEARCH_09); RUN_TEST(IRSL_BINARY_SEARCH_10); RUN_TEST(IRSL_BINARY_SEARCH_11); RUN_TEST(IRSL_BINARY_SEARCH_12);
-    RUN_TEST(IRSL_BINARY_SEARCH_13); RUN_TEST(IRSL_BINARY_SEARCH_14); RUN_TEST(IRSL_BINARY_SEARCH_15); RUN_TEST(IRSL_BINARY_SEARCH_16);
-    RUN_TEST(IRSL_BINARY_SEARCH_17); RUN_TEST(IRSL_BINARY_SEARCH_18); RUN_TEST(IRSL_BINARY_SEARCH_19); RUN_TEST(IRSL_BINARY_SEARCH_20);
     // insert at
     RUN_TEST(IRSL_INSERT_AT_01); RUN_TEST(IRSL_INSERT_AT_02); RUN_TEST(IRSL_INSERT_AT_03); RUN_TEST(IRSL_INSERT_AT_04);
     RUN_TEST(IRSL_INSERT_AT_05); RUN_TEST(IRSL_INSERT_AT_06); RUN_TEST(IRSL_INSERT_AT_07); RUN_TEST(IRSL_INSERT_AT_08);
@@ -2586,7 +2236,7 @@ SUITE (infinite_realloc_straight_list_test) {
     RUN_TEST(IRSL_REMOVE_AT_05); RUN_TEST(IRSL_REMOVE_AT_06); RUN_TEST(IRSL_REMOVE_AT_07);
     // reverse
     RUN_TEST(IRSL_REVERSE_01); RUN_TEST(IRSL_REVERSE_02); RUN_TEST(IRSL_REVERSE_03); RUN_TEST(IRSL_REVERSE_04);
-    RUN_TEST(IRSL_REVERSE_05); RUN_TEST(IRSL_REVERSE_06); RUN_TEST(IRSL_REVERSE_07); RUN_TEST(IRSL_REVERSE_08);
+    RUN_TEST(IRSL_REVERSE_05); RUN_TEST(IRSL_REVERSE_06); RUN_TEST(IRSL_REVERSE_07);
     // splice
     RUN_TEST(IRSL_SPLICE_01); RUN_TEST(IRSL_SPLICE_02); RUN_TEST(IRSL_SPLICE_03); RUN_TEST(IRSL_SPLICE_04);
     RUN_TEST(IRSL_SPLICE_05); RUN_TEST(IRSL_SPLICE_06); RUN_TEST(IRSL_SPLICE_07); RUN_TEST(IRSL_SPLICE_08);

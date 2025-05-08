@@ -1,8 +1,10 @@
-add_executable(forward_list_test main.c
-        infinite_allocated_forward_list_test.c
-        finite_allocated_forward_list_test.c
-        infinite_realloc_forward_list_test.c
-        finite_preprocessor_forward_list_test.c
+add_executable(circular_list_test main.c
+        mode/infinite_allocated_circular_list_test.c
+        mode/finite_allocated_circular_list_test.c
+        mode/infinite_realloc_circular_list_test.c
+        mode/finite_preprocessor_circular_list_test.c
 )
-target_link_libraries(forward_list_test PRIVATE functions greatest PADS)
-add_test(NAME FORWARD_LIST_TEST COMMAND forward_list_test)
+
+target_include_directories(circular_list_test PUBLIC .)
+target_link_libraries(circular_list_test PRIVATE greatest PADS functions)
+add_test(NAME CIRCULAR_LIST_TEST COMMAND circular_list_test)

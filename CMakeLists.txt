@@ -23,6 +23,6 @@ enable_testing()
 
 add_subdirectory(test)
 
-if (EXISTS experiment)
+if (EXISTS "${CMAKE_SOURCE_DIR}/experiment")
     add_subdirectory(experiment)
 endif ()

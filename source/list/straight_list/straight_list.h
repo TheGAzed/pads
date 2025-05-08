@@ -207,6 +207,7 @@ static inline bool is_empty_straight_list(const straight_list_s list) {
 /// @brief Checks if list is full.
 /// @param list Readonly straight list structure.
 /// @return 'true' if list is full, 'false' otherwise.
+/// @note Since list is infinite the function checks if its size will overflow.
 static inline bool is_full_straight_list(const straight_list_s list) {
     // if size has all bits set to 1 it is considered full, therefore switching bits will make them all zero
     // and negating it makes function return true only if full
@@ -249,39 +250,6 @@ static inline void map_straight_list(straight_list_s const * list, const manage_
     }
 
     STRAIGHT_LIST_FREE(elements_array);
-}
-
-/// @brief Performs a binary search on sorted straight list.
-/// @param list Readonly straight list structure.
-/// @param element Readonly element to search in list.
-/// @param compare Readonly function pointer to compare elements in list. Zero if they're the same, negative if less than,
-/// positive if greater than element parameter.
-/// @return 'true' if element was found, 'false' otherwise.
-/// @note The list must be sorted based on 'compare' function pointer. Map function can be used to sort the list.
-static inline bool binary_search_straight_list(const straight_list_s list, const STRAIGHT_LIST_DATA_TYPE element, const compare_straight_list_fn compare) {
-    STRAIGHT_LIST_ASSERT(compare && "[ERROR] 'compare' parameter pointer is NULL.");
-    // this implementation is based on a similar array based binary search algorithm:
-    // https://github.com/gcc-mirror/gcc/blob/master/libiberty/bsearch.c
-    struct straight_list_node const * base = list.head; // base starting from list tail
-    for (size_t limit = list.size; limit != 0; limit >>= 1) {
-        // start from next element to move from tail and to ignore alread compared elements
-        struct straight_list_node const * current = base;
-        for (size_t i = 0; i < limit >> 1; ++i) { // iterate to middle element in list
-            current = current->next;
-        }
-
-        const int comparison = compare(element, current->element);
-
-        if (0 == comparison) {
-            return true;
-        }
-        if (0 < comparison) {
-            base = current->next; // increment element pointer to next
-            limit--; // decrement limit to avoid 'out of bounds' access (if we ignore circularity)
-        }
-    }
-
-    return false;
 }
 
 /// @brief Inserts an element at any index in the list.
@@ -385,6 +353,7 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_at_straight_list(straight_list_s * 
 /// @param list Pointer to straight list structure.
 static inline void reverse_straight_list(straight_list_s * list) {
     STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+    STRAIGHT_LIST_ASSERT(list->size && "[ERROR] Can't reverse an empty list.");
 
     struct straight_list_node * previous = NULL; // set previous node pointer to NULL
     for (struct straight_list_node * current = list->head, * next = NULL; current; previous = current, current = next) {
@@ -543,26 +512,23 @@ static inline straight_list_s copy_straight_list(const straight_list_s list, con
     STRAIGHT_LIST_ASSERT(list.next && "[ERROR] List's next array can't be NULL.");
     STRAIGHT_LIST_ASSERT(list.size <= list.max && "[ERROR] List's size can't exceed its maximum size.");
 
-    straight_list_s list_copy = {
+    straight_list_s replica = {
         .next = STRAIGHT_LIST_REALLOC(NULL, list.max * sizeof(size_t)), .head = 0, .size = list.size, .max = list.max,
         .elements = STRAIGHT_LIST_REALLOC(NULL, list.max * sizeof(STRAIGHT_LIST_DATA_TYPE)), .empty_head = 0, .empty_size = 0,
     };
-    STRAIGHT_LIST_ASSERT(list_copy.elements && "[ERROR] Memory allocation failed.");
-    STRAIGHT_LIST_ASSERT(list_copy.next && "[ERROR] Memory allocation failed.");
+    STRAIGHT_LIST_ASSERT(replica.elements && "[ERROR] Memory allocation failed.");
+    STRAIGHT_LIST_ASSERT(replica.next && "[ERROR] Memory allocation failed.");
 
-    size_t current_list = list.head;
-    // double pointer since this also works on copying straight list
-    size_t * current_copy = &(list_copy.head);
-    for (size_t i = 0; i < list.size; ++i) {
+    for (size_t i = 0, current_list = list.head, * current_copy = &(replica.head); i < list.size; ++i) {
         // set element copy to list copy at index i to automatically remove holes from copy
-        list_copy.elements[i] = copy(list.elements[current_list]);
+        replica.elements[i] = copy(list.elements[current_list]);
         (*current_copy) = i; // set head and indexes at list copy's next array to proper index
 
         current_list = list.next[current_list]; // go to next list node
-        current_copy = list_copy.next + (*current_copy); // go to next copy list's pointer to node
+        current_copy = replica.next + (*current_copy); // go to next copy list's pointer to node
     }
 
-    return list_copy;
+    return replica;
 }
 
 /// @brief Checks if list is empty.
@@ -587,100 +553,6 @@ static inline bool is_full_straight_list(const straight_list_s list) {
     STRAIGHT_LIST_ASSERT(list.size <= list.max && "[ERROR] List's size can't exceed its maximum size.");
     // if size is equal to maximum
     return (list.size == list.max);
-}
-
-/// @brief Iterates through each straight list element.
-/// @param list Pointer to readonly straight list structure.
-/// @param operate Readonly function pointer to operate on every single element pointer while using arguments.
-/// @param args Arguments for 'operate' function pointer.
-static inline void foreach_straight_list(straight_list_s const * list, const operate_straight_list_fn operate, void * args) {
-    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
-    STRAIGHT_LIST_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
-
-    STRAIGHT_LIST_ASSERT(list->max && "[ERROR] List's maximum size can't be zero.");
-    STRAIGHT_LIST_ASSERT(list->elements && "[ERROR] List's elements array can't be NULL.");
-    STRAIGHT_LIST_ASSERT(list->next && "[ERROR] List's next array can't be NULL.");
-    STRAIGHT_LIST_ASSERT(list->size <= list->max && "[ERROR] List's size can't exceed its maximum size.");
-
-    for (size_t i = 0, current = list->head; i < list->size && operate(list->elements + current, args); ++i) {
-        current = list->next[current];
-    }
-}
-
-/// @brief Map function that maps elements into array and manages it using size and args.
-/// @param list Pointer to readonly straight list structure.
-/// @param manage Readonly function pointer to manage the array of elements based on list size and specified arguments.
-/// @param args Void pointer arguments for 'manage' function.
-/// @note This function can also be used to remove holes in list.
-static inline void map_straight_list(straight_list_s * list, const manage_straight_list_fn manage, void * args) {
-    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
-    STRAIGHT_LIST_ASSERT(manage && "[ERROR] 'operate' parameter pointer is NULL.");
-
-    STRAIGHT_LIST_ASSERT(list->max && "[ERROR] List's maximum size can't be zero.");
-    STRAIGHT_LIST_ASSERT(list->elements && "[ERROR] List's elements array can't be NULL.");
-    STRAIGHT_LIST_ASSERT(list->next && "[ERROR] List's next array can't be NULL.");
-    STRAIGHT_LIST_ASSERT(list->size <= list->max && "[ERROR] List's size can't exceed its maximum size.");
-
-    straight_list_s replica = {
-        .empty_head = 0, .empty_size = 0, .size = 0, .head = 0, .max = list->max,
-        .elements = STRAIGHT_LIST_REALLOC(NULL, sizeof(STRAIGHT_LIST_DATA_TYPE) * list->max),
-        .next = STRAIGHT_LIST_REALLOC(NULL, sizeof(size_t) * list->max),
-    };
-    STRAIGHT_LIST_ASSERT(replica.elements && "[ERROR] Memory allocation failed.");
-    STRAIGHT_LIST_ASSERT(replica.next && "[ERROR] Memory allocation failed.");
-
-    for (size_t list_current = list->head, * replica_current = &(replica.head); replica.size < list->size; replica.size++) {
-        replica.elements[replica.size] = list->elements[list_current];
-        (*replica_current) = replica.size;
-
-        replica_current = replica.next + replica.size;
-        list_current = list->next[list_current];
-    }
-
-    STRAIGHT_LIST_FREE(list->elements);
-    STRAIGHT_LIST_FREE(list->next);
-    (*list) = replica;
-
-    manage(list->elements, list->size, args);
-}
-
-/// @brief Performs a binary search on sorted straight list.
-/// @param list Readonly straight list structure.
-/// @param element Readonly element to search in list.
-/// @param compare Readonly function pointer to compare elements in list. Zero if they're the same, negative if less than,
-/// positive if greater than element parameter.
-/// @return 'true' if element was found, 'false' otherwise.
-/// @note The list must be sorted based on 'compare' function pointer. Map function can be used to sort the list.
-static inline bool binary_search_straight_list(const straight_list_s list, const STRAIGHT_LIST_DATA_TYPE element, const compare_straight_list_fn compare) {
-    STRAIGHT_LIST_ASSERT(compare && "[ERROR] 'compare' parameter pointer is NULL.");
-
-    STRAIGHT_LIST_ASSERT(list.max && "[ERROR] List's maximum size can't be zero.");
-    STRAIGHT_LIST_ASSERT(list.elements && "[ERROR] List's elements array can't be NULL.");
-    STRAIGHT_LIST_ASSERT(list.next && "[ERROR] List's next array can't be NULL.");
-    STRAIGHT_LIST_ASSERT(list.size <= list.max && "[ERROR] List's size can't exceed its maximum size.");
-
-    // this implementation is based on a similar array based binary search algorithm:
-    // https://github.com/gcc-mirror/gcc/blob/master/libiberty/bsearch.c
-    size_t base = list.head; // base starting from list tail
-    for (size_t limit = list.size; limit != 0; limit >>= 1) {
-        // start from next element to move from tail and to ignore alread compared elements
-        size_t current = base;
-        for (size_t i = 0; i < limit >> 1; ++i) { // iterate to middle element in list
-            current = list.next[current];
-        }
-
-        const int comparison = compare(element, list.elements[current]);
-
-        if (0 == comparison) {
-            return true;
-        }
-        if (0 < comparison) {
-            base = list.next[current]; // increment element pointer to next
-            limit--; // decrement limit to avoid 'out of bounds' access (if we ignore circularity)
-        }
-    }
-
-    return false;
 }
 
 /// @brief Inserts an element at any index in the list.
@@ -821,6 +693,7 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_at_straight_list(straight_list_s * 
 /// @param list Pointer to straight list structure.
 static inline void reverse_straight_list(straight_list_s * list) {
     STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+    STRAIGHT_LIST_ASSERT(list->size && "[ERROR] Can't reverse an empty list.");
 
     STRAIGHT_LIST_ASSERT(list->max && "[ERROR] List's maximum size can't be zero.");
     STRAIGHT_LIST_ASSERT(list->elements && "[ERROR] List's elements array can't be NULL.");
@@ -867,32 +740,34 @@ static inline void splice_straight_list(straight_list_s * restrict destination, 
     STRAIGHT_LIST_ASSERT(destination->next && "[ERROR] Memory allocation failed.");
     destination->max = max;
 
-    size_t * destination_current = &(destination->head);
+    size_t * destination_current = &(destination->head), source_current = source->head;
+
     for (size_t i = 0; i < index; ++i) { // iterate to pointer to node at index position
         destination_current = destination->next + (*destination_current);
     }
 
-    size_t const * last_source = &(source->head);
-    for (; source->size && destination->empty_size; source->size--, destination->size++, destination->empty_size--) {
-        memcpy(destination->elements + destination->empty_head, source->elements + (*last_source), sizeof(STRAIGHT_LIST_DATA_TYPE));
+    for (; source->size && destination->empty_size; source->size--, destination->size++) {
+        // pop empty index from 'empty stack'
+        const size_t empty_pop = destination->empty_head;
+        destination->empty_head = destination->next[destination->empty_head];
+        destination->empty_size--;
 
-        const size_t temp = destination->empty_head; // save empty head index as tempt to not lose it
-        destination->empty_head = destination->next[destination->empty_head]; // set empty head to next empty index
-
-        destination->next[temp] = (*destination_current); // set temp's next index to index at current pointer
-        (*destination_current) = temp; // set index at current pointer, previous' next index, to temp
+        destination->elements[empty_pop] = source->elements[source_current]; // copy element from source to destination
+        destination->next[empty_pop] = (*destination_current); // set temp's next index to index at current pointer
+        (*destination_current) = empty_pop; // set index at current pointer, previous' next index, to temp
 
         destination_current = destination->next + (*destination_current);
-        last_source = source->next + (*last_source);
+        source_current = source->next[source_current];
     }
 
     for (; source->size; source->size--, destination->size++) {
-        memcpy(destination->elements + destination->size, source->elements + (*last_source), sizeof(STRAIGHT_LIST_DATA_TYPE));
+        destination->elements[destination->size] = source->elements[source_current];
+
         destination->next[destination->size] = (*destination_current);
         (*destination_current) = destination->size;
 
         destination_current = destination->next + (*destination_current);
-        last_source = source->next + (*last_source);
+        source_current = source->next[source_current];
     }
 
     source->empty_size = source->head = 0;
@@ -965,6 +840,61 @@ static inline straight_list_s split_straight_list(straight_list_s * list, const 
     (*list) = replica; // turn list to replica
 
     return split;
+}
+
+/// @brief Iterates through each straight list element.
+/// @param list Pointer to readonly straight list structure.
+/// @param operate Readonly function pointer to operate on every single element pointer while using arguments.
+/// @param args Arguments for 'operate' function pointer.
+static inline void foreach_straight_list(straight_list_s const * list, const operate_straight_list_fn operate, void * args) {
+    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
+    STRAIGHT_LIST_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
+
+    STRAIGHT_LIST_ASSERT(list->max && "[ERROR] List's maximum size can't be zero.");
+    STRAIGHT_LIST_ASSERT(list->elements && "[ERROR] List's elements array can't be NULL.");
+    STRAIGHT_LIST_ASSERT(list->next && "[ERROR] List's next array can't be NULL.");
+    STRAIGHT_LIST_ASSERT(list->size <= list->max && "[ERROR] List's size can't exceed its maximum size.");
+
+    for (size_t i = 0, current = list->head; i < list->size && operate(list->elements + current, args); ++i) {
+        current = list->next[current];
+    }
+}
+
+/// @brief Map function that maps elements into array and manages it using size and args.
+/// @param list Pointer to readonly straight list structure.
+/// @param manage Readonly function pointer to manage the array of elements based on list size and specified arguments.
+/// @param args Void pointer arguments for 'manage' function.
+/// @note This function can also be used to remove holes in list.
+static inline void map_straight_list(straight_list_s * list, const manage_straight_list_fn manage, void * args) {
+    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
+    STRAIGHT_LIST_ASSERT(manage && "[ERROR] 'operate' parameter pointer is NULL.");
+
+    STRAIGHT_LIST_ASSERT(list->max && "[ERROR] List's maximum size can't be zero.");
+    STRAIGHT_LIST_ASSERT(list->elements && "[ERROR] List's elements array can't be NULL.");
+    STRAIGHT_LIST_ASSERT(list->next && "[ERROR] List's next array can't be NULL.");
+    STRAIGHT_LIST_ASSERT(list->size <= list->max && "[ERROR] List's size can't exceed its maximum size.");
+
+    straight_list_s replica = {
+        .empty_head = 0, .empty_size = 0, .size = 0, .head = 0, .max = list->max,
+        .elements = STRAIGHT_LIST_REALLOC(NULL, sizeof(STRAIGHT_LIST_DATA_TYPE) * list->max),
+        .next = STRAIGHT_LIST_REALLOC(NULL, sizeof(size_t) * list->max),
+    };
+    STRAIGHT_LIST_ASSERT(replica.elements && "[ERROR] Memory allocation failed.");
+    STRAIGHT_LIST_ASSERT(replica.next && "[ERROR] Memory allocation failed.");
+
+    for (size_t list_current = list->head, * replica_current = &(replica.head); replica.size < list->size; replica.size++) {
+        replica.elements[replica.size] = list->elements[list_current];
+        (*replica_current) = replica.size;
+
+        replica_current = replica.next + replica.size;
+        list_current = list->next[list_current];
+    }
+
+    STRAIGHT_LIST_FREE(list->elements);
+    STRAIGHT_LIST_FREE(list->next);
+    (*list) = replica;
+
+    manage(list->elements, list->size, args);
 }
 
 #elif STRAIGHT_LIST_MODE == INFINITE_REALLOC_STRAIGHT_LIST
@@ -1092,6 +1022,7 @@ static inline bool is_empty_straight_list(const straight_list_s list) {
 /// @brief Checks if list is full.
 /// @param list Readonly straight list structure.
 /// @return 'true' if list is full, 'false' otherwise.
+/// @note Since list is infinite the function checks if its size will overflow.
 static inline bool is_full_straight_list(const straight_list_s list) {
     // if size has all bits set to 1 it is considered full, therefore switching bits will make them all zero
     // and negating it makes function return true only if full
@@ -1146,39 +1077,6 @@ static inline void map_straight_list(straight_list_s * list, const manage_straig
     (*list) = replica;
 
     manage(list->elements, list->size, args);
-}
-
-/// @brief Performs a binary search on sorted straight list.
-/// @param list Readonly straight list structure.
-/// @param element Readonly element to search in list.
-/// @param compare Readonly function pointer to compare elements in list. Zero if they're the same, negative if less than,
-/// positive if greater than element parameter.
-/// @return 'true' if element was found, 'false' otherwise.
-/// @note The list must be sorted based on 'compare' function pointer. Map function can be used to sort the list.
-static inline bool binary_search_straight_list(const straight_list_s list, const STRAIGHT_LIST_DATA_TYPE element, const compare_straight_list_fn compare) {
-    STRAIGHT_LIST_ASSERT(compare && "[ERROR] 'compare' parameter pointer is NULL.");
-    // this implementation is based on a similar array based binary search algorithm:
-    // https://github.com/gcc-mirror/gcc/blob/master/libiberty/bsearch.c
-    size_t base = list.head; // base starting from list tail
-    for (size_t limit = list.size; limit != 0; limit >>= 1) {
-        // start from next element to move from tail and to ignore alread compared elements
-        size_t current = base;
-        for (size_t i = 0; i < limit >> 1; ++i) { // iterate to middle element in list
-            current = list.next[current];
-        }
-
-        const int comparison = compare(element, list.elements[current]);
-
-        if (0 == comparison) {
-            return true;
-        }
-        if (0 < comparison) {
-            base = list.next[current]; // increment element pointer to next
-            limit--; // decrement limit to avoid 'out of bounds' access (if we ignore circularity)
-        }
-    }
-
-    return false;
 }
 
 /// @brief Inserts an element at any index in the list.
@@ -1369,6 +1267,7 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_at_straight_list(straight_list_s * 
 /// @param list Pointer to straight list structure.
 static inline void reverse_straight_list(straight_list_s * list) {
     STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+    STRAIGHT_LIST_ASSERT(list->size && "[ERROR] Can't reverse an empty list.");
 
     size_t previous = 0; // set previous index to zero
     size_t current = list->head; // set current index to list's head index
@@ -1391,28 +1290,28 @@ static inline void splice_straight_list(straight_list_s * restrict destination, 
     STRAIGHT_LIST_ASSERT(destination != source && "[ERROR] Lists can't be the same.");
     STRAIGHT_LIST_ASSERT(index <= destination->size && "[ERROR] index can't exceed list_one's size");
 
-    size_t * current_dest = &(destination->head);
+    size_t * destination_current = &(destination->head), source_current = source->head;
+
     for (size_t i = 0; i < index; ++i) { // iterate to pointer to node at index position
-        current_dest = destination->next + (*current_dest); // go to next pointer to destination's current index
+        destination_current = destination->next + (*destination_current); // go to next pointer to destination's current index
     }
 
-    size_t const * last_source = &(source->head);
-    for (; source->size && destination->empty_size; source->size--, destination->size++, destination->empty_size--) {
-        memcpy(destination->elements + destination->empty_head, source->elements + (*last_source), sizeof(STRAIGHT_LIST_DATA_TYPE));
-
-        const size_t temp = destination->empty_head;
+    for (; source->size && destination->empty_size; source->size--, destination->size++) {
+        const size_t empty_pop = destination->empty_head;
         destination->empty_head = destination->next[destination->empty_head];
+        destination->empty_size--;
 
-        destination->next[temp] = (*current_dest);
-        (*current_dest) = temp;
+        destination->elements[empty_pop] = source->elements[source_current];
+        destination->next[empty_pop] = (*destination_current);
+        (*destination_current) = empty_pop;
 
-        current_dest = destination->next + (*current_dest);
-        last_source = source->next + (*last_source);
+        destination_current = destination->next + empty_pop;
+        source_current = source->next[source_current];
     }
 
-    for (; source->size; source->size--) {
-        const size_t temp = (*current_dest); // if realloc is performed we may loose the pointer to destinations's current index
-        (*current_dest) = destination->size; // before reallocation may happen we change the index at current destination's pointer
+    for (; source->size; source->size--, destination->size++) {
+        const size_t temp = (*destination_current); // if realloc is performed we may loose the pointer to destinations's current index
+        (*destination_current) = destination->size; // before reallocation may happen we change the index at current destination's pointer
 
         if ((IS_CAPACITY_STRAIGHT_LIST(destination->size))) {
             const size_t expand = EXPAND_CAPACITY_STRAIGHT_LIST(destination->size);
@@ -1424,11 +1323,11 @@ static inline void splice_straight_list(straight_list_s * restrict destination, 
             STRAIGHT_LIST_ASSERT(destination->next && "[ERROR] Memory allocation failed");
         }
 
-        memcpy(destination->elements + destination->size, source->elements + (*last_source), sizeof(STRAIGHT_LIST_DATA_TYPE));
-        destination->next[destination->size++] = temp;
+        destination->elements[destination->size] = source->elements[source_current];
+        destination->next[destination->size] = temp;
 
-        current_dest = destination->next + destination->size - 1;
-        last_source = source->next + (*last_source);
+        destination_current = destination->next + destination->size;
+        source_current = source->next[source_current];
     }
 
     STRAIGHT_LIST_FREE(source->elements);
@@ -1670,42 +1569,6 @@ static inline void map_straight_list(straight_list_s * list, const manage_straig
     manage(list->elements, list->size, args);
 }
 
-/// @brief Performs a binary search on sorted straight list.
-/// @param list Readonly straight list structure.
-/// @param element Readonly element to search in list.
-/// @param compare Readonly function pointer to compare elements in list. Zero if they're the same, negative if less than,
-/// positive if greater than element parameter.
-/// @return 'true' if element was found, 'false' otherwise.
-/// @note The list must be sorted based on 'compare' function pointer. Map function can be used to sort the list.
-static inline bool binary_search_straight_list(const straight_list_s list, const STRAIGHT_LIST_DATA_TYPE element, const compare_straight_list_fn compare) {
-    STRAIGHT_LIST_ASSERT(compare && "[ERROR] 'compare' parameter pointer is NULL.");
-
-    STRAIGHT_LIST_ASSERT(list.size <= PREPROCESSOR_STRAIGHT_LIST_SIZE && "[ERROR] List size exceeds maximum size.");
-
-    // this implementation is based on a similar array based binary search algorithm:
-    // https://github.com/gcc-mirror/gcc/blob/master/libiberty/bsearch.c
-    size_t base = list.head; // base starting from list tail
-    for (size_t limit = list.size; limit != 0; limit >>= 1) {
-        // start from next element to move from tail and to ignore alread compared elements
-        size_t current = base;
-        for (size_t i = 0; i < limit >> 1; ++i) { // iterate to middle element in list
-            current = list.next[current];
-        }
-
-        const int comparison = compare(element, list.elements[current]);
-
-        if (0 == comparison) {
-            return true;
-        }
-        if (0 < comparison) {
-            base = list.next[current]; // increment element pointer to next
-            limit--; // decrement limit to avoid 'out of bounds' access (if we ignore circularity)
-        }
-    }
-
-    return false;
-}
-
 /// @brief Inserts an element at any index in the list.
 /// @param list Pointer to straight list structure.
 /// @param index Readonly zeero based index to insert element at.
@@ -1833,6 +1696,7 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_at_straight_list(straight_list_s * 
 /// @param list Pointer to straight list structure.
 static inline void reverse_straight_list(straight_list_s * list) {
     STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+    STRAIGHT_LIST_ASSERT(list->size && "[ERROR] Can't reverse an empty list.");
 
     STRAIGHT_LIST_ASSERT(list->size <= PREPROCESSOR_STRAIGHT_LIST_SIZE && "[ERROR] List size exceeds maximum size.");
 
@@ -1858,32 +1722,31 @@ static inline void splice_straight_list(straight_list_s * restrict destination, 
     STRAIGHT_LIST_ASSERT(destination->size <= PREPROCESSOR_STRAIGHT_LIST_SIZE && "[ERROR] List size exceeds maximum size.");
     STRAIGHT_LIST_ASSERT(source->size <= PREPROCESSOR_STRAIGHT_LIST_SIZE && "[ERROR] List size exceeds maximum size.");
 
-    size_t * destination_current = &(destination->head);
+    size_t * destination_current = &(destination->head), current_source = source->head;
     for (size_t i = 0; i < index; ++i) { // iterate to pointer to node at index position
         destination_current = destination->next + (*destination_current);
     }
 
-    size_t * last_source = &(source->head);
-    for (; source->size && destination->empty_size; source->size--, destination->size++, destination->empty_size--) {
-        memcpy(destination->elements + destination->empty_head, source->elements + (*last_source), sizeof(STRAIGHT_LIST_DATA_TYPE));
-
-        const size_t temp = destination->empty_head; // save empty head index as tempt to not lose it
+    for (; source->size && destination->empty_size; source->size--, destination->size++) {
+        const size_t empty_pop = destination->empty_head; // pop empty head from empty stack
         destination->empty_head = destination->next[destination->empty_head]; // set empty head to next empty index
+        destination->empty_size--; // decrement empty stack size
 
-        destination->next[temp] = (*destination_current); // set temp's next index to index at current pointer
-        (*destination_current) = temp; // set index at current pointer, previous' next index, to temp
+        destination->elements[destination->size] = source->elements[empty_pop];
+        destination->next[empty_pop] = (*destination_current); // set temp's next index to index at current pointer
+        (*destination_current) = empty_pop; // set index at current pointer, previous' next index, to temp
 
         destination_current = destination->next + (*destination_current);
-        last_source = source->next + (*last_source);
+        current_source = source->next[current_source];
     }
 
     for (; source->size; source->size--, destination->size++) {
-        memcpy(destination->elements + destination->size, source->elements + (*last_source), sizeof(STRAIGHT_LIST_DATA_TYPE));
+        destination->elements[destination->size] = source->elements[current_source];
         destination->next[destination->size] = (*destination_current);
         (*destination_current) = destination->size;
 
         destination_current = destination->next + (*destination_current);
-        last_source = source->next + (*last_source);
+        current_source = source->next[current_source];
     }
 
     source->empty_size = source->head = 0;
