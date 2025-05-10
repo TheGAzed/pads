@@ -353,7 +353,6 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_at_straight_list(straight_list_s * 
 /// @param list Pointer to straight list structure.
 static inline void reverse_straight_list(straight_list_s * list) {
     STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
-    STRAIGHT_LIST_ASSERT(list->size && "[ERROR] Can't reverse an empty list.");
 
     struct straight_list_node * previous = NULL; // set previous node pointer to NULL
     for (struct straight_list_node * current = list->head, * next = NULL; current; previous = current, current = next) {
@@ -693,7 +692,6 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_at_straight_list(straight_list_s * 
 /// @param list Pointer to straight list structure.
 static inline void reverse_straight_list(straight_list_s * list) {
     STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
-    STRAIGHT_LIST_ASSERT(list->size && "[ERROR] Can't reverse an empty list.");
 
     STRAIGHT_LIST_ASSERT(list->max && "[ERROR] List's maximum size can't be zero.");
     STRAIGHT_LIST_ASSERT(list->elements && "[ERROR] List's elements array can't be NULL.");
@@ -1267,7 +1265,6 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_at_straight_list(straight_list_s * 
 /// @param list Pointer to straight list structure.
 static inline void reverse_straight_list(straight_list_s * list) {
     STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
-    STRAIGHT_LIST_ASSERT(list->size && "[ERROR] Can't reverse an empty list.");
 
     size_t previous = 0; // set previous index to zero
     size_t current = list->head; // set current index to list's head index
@@ -1696,7 +1693,6 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_at_straight_list(straight_list_s * 
 /// @param list Pointer to straight list structure.
 static inline void reverse_straight_list(straight_list_s * list) {
     STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
-    STRAIGHT_LIST_ASSERT(list->size && "[ERROR] Can't reverse an empty list.");
 
     STRAIGHT_LIST_ASSERT(list->size <= PREPROCESSOR_STRAIGHT_LIST_SIZE && "[ERROR] List size exceeds maximum size.");
 

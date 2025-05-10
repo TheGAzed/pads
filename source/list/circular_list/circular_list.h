@@ -1,7 +1,7 @@
 #ifndef CIRCULAR_LIST_H
 #define CIRCULAR_LIST_H
 
-#include <stdlib.h>  // imports size_t, malloc, realloc, free
+#include <stddef.h>  // imports size_t, malloc, realloc, free
 #include <stdbool.h> // imports bool
 #include <string.h>  // imports memcpy, memmove
 
@@ -346,11 +346,10 @@ static inline CIRCULAR_LIST_DATA_TYPE remove_at_circular_list(circular_list_s * 
 /// @param list Pointer to list structure.
 static inline void reverse_circular_list(circular_list_s * list) {
     CIRCULAR_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
-    CIRCULAR_LIST_ASSERT(list->size && "[ERROR] Can't reverse an empty list.");
 
     struct circular_list_node * previous = list->tail;
-    struct circular_list_node * current = previous->next;
-    struct circular_list_node * next = current->next;
+    struct circular_list_node * current = list->size ? previous->next : NULL;
+    struct circular_list_node * next = list->size ? previous->next->next : NULL;
     list->tail = current; // since head changes to tail, tail also changes to head
     for (size_t i = 0; i < list->size; ++i) {
         current->next = previous;
@@ -481,7 +480,7 @@ static inline void map_circular_list(circular_list_s const * list, const manage_
     // manage function that takes an array as argument, its size and argument void pointer
     manage(elements_array, list->size, args);
 
-    previous = list->tail;
+    // previous = list->tail; // pointles since previous will return as tail
     for (size_t i = 0; i < list->size; ++i) { // loop to re-add new list element's ordering
         previous = previous->next;
         previous->element = elements_array[i];
@@ -782,7 +781,6 @@ static inline CIRCULAR_LIST_DATA_TYPE remove_at_circular_list(circular_list_s * 
 /// @param list Pointer to list structure.
 static inline void reverse_circular_list(circular_list_s * list) {
     CIRCULAR_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
-    CIRCULAR_LIST_ASSERT(list->size && "[ERROR] Can't reverse an empty list.");
 
     CIRCULAR_LIST_ASSERT(list->elements && "[ERROR] List's element array is NULL.");
     CIRCULAR_LIST_ASSERT(list->next && "[ERROR] List's element array is NULL.");
@@ -790,8 +788,8 @@ static inline void reverse_circular_list(circular_list_s * list) {
     CIRCULAR_LIST_ASSERT(list->size <= list->max && "[ERROR] Maximum size can't be greater than size.");
 
     size_t previous = list->tail;
-    size_t current  = list->next[previous];
-    size_t next     = list->next[current];
+    size_t current  = list->size ? list->next[previous] : 0;
+    size_t next     = list->size ? list->next[current] : 0;
     list->tail = current;
     for (size_t i = 0; i < list->size; ++i) {
         list->next[current] = previous;
@@ -1367,11 +1365,10 @@ static inline CIRCULAR_LIST_DATA_TYPE remove_at_circular_list(circular_list_s * 
 /// @param list Pointer to list structure.
 static inline void reverse_circular_list(circular_list_s * list) {
     CIRCULAR_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
-    CIRCULAR_LIST_ASSERT(list->size && "[ERROR] Can't reverse an empty list.");
 
     size_t previous = list->tail;
-    size_t current = list->next[previous];
-    size_t next = list->next[current];
+    size_t current  = list->size ? list->next[previous] : 0;
+    size_t next     = list->size ? list->next[current] : 0;
     list->tail = current;
     for (size_t i = 0; i < list->size; ++i) {
         list->next[current] = previous;
@@ -1848,13 +1845,12 @@ static inline CIRCULAR_LIST_DATA_TYPE remove_at_circular_list(circular_list_s * 
 /// @param list Pointer to list structure.
 static inline void reverse_circular_list(circular_list_s * list) {
     CIRCULAR_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
-    CIRCULAR_LIST_ASSERT(list->size && "[ERROR] Can't reverse an empty list.");
 
     CIRCULAR_LIST_ASSERT(list->size <= PREPROCESSOR_CIRCULAR_LIST_SIZE && "[ERROR] list size exceeds maximum macro.");
 
     size_t previous = list->tail;
-    size_t current = list->next[previous];
-    size_t next = list->next[current];
+    size_t current  = list->size ? list->next[previous] : 0;
+    size_t next     = list->size ? list->next[current] : 0;
     list->tail = current;
     for (size_t i = 0; i < list->size; ++i) {
         list->next[current] = previous;

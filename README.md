@@ -28,13 +28,12 @@ C compiler that supports the **C99 standard and above**, for example:
 
 ## **List of Data Structures:**
 
-### **Available:**
-#### [SEQUENTIAL](https://github.com/TheGAzed/pads/blob/main/source/sequential)
+### [SEQUENTIAL](https://github.com/TheGAzed/pads/blob/main/source/sequential)
 - [STACK](https://github.com/TheGAzed/pads/blob/main/source/sequential/stack)
 - [QUEUE](https://github.com/TheGAzed/pads/blob/main/source/sequential/queue)
 - [DEQUE](https://github.com/TheGAzed/pads/blob/main/source/sequential/deque)
 
-#### [LIST](https://github.com/TheGAzed/pads/blob/main/source/list)
+### [LIST](https://github.com/TheGAzed/pads/blob/main/source/list)
 - [STRAIGHT LIST](https://github.com/TheGAzed/pads/blob/main/source/list/straight_list)
 - [CIRCULAR LIST](https://github.com/TheGAzed/pads/blob/main/source/list/circular_list)
 
