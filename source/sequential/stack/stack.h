@@ -94,11 +94,11 @@
 
 #elif !defined(STACK_REALLOC)
 
-#error Stack reallocator macro is not defined!
+#error Reallocator macro is not defined!
 
 #elif !defined(STACK_FREE)
 
-#error Stack free macro is not defined!
+#error Free macro is not defined!
 
 #endif
 

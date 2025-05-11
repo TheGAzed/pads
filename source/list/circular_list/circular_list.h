@@ -1,9 +1,9 @@
 #ifndef CIRCULAR_LIST_H
 #define CIRCULAR_LIST_H
 
-#include <stddef.h>  // imports size_t, malloc, realloc, free
+#include <stddef.h>  // imports size_t
 #include <stdbool.h> // imports bool
-#include <string.h>  // imports memcpy, memmove
+#include <string.h>  // imports memcpy
 
 /*
     This is free and unencumbered software released into the public domain.
@@ -96,11 +96,11 @@
 
 #elif !defined(CIRCULAR_LIST_REALLOC)
 
-#error Queue reallocator macro is not defined!
+#error Reallocator macro is not defined!
 
 #elif !defined(CIRCULAR_LIST_FREE)
 
-#error Queue free macro is not defined!
+#error Free macro is not defined!
 
 #endif
 

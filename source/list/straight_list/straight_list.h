@@ -3,7 +3,7 @@
 
 #include <stddef.h>  // imports size_t
 #include <stdbool.h> // imports bool
-#include <string.h>  // imports memcpy, memmove
+#include <string.h>  // imports memcpy
 
 /*
     This is free and unencumbered software released into the public domain.
@@ -93,11 +93,11 @@
 
 #elif !defined(STRAIGHT_LIST_REALLOC)
 
-#error Queue reallocator macro is not defined!
+#error Reallocator macro is not defined!
 
 #elif !defined(STRAIGHT_LIST_FREE)
 
-#error Queue free macro is not defined!
+#error Free macro is not defined!
 
 #endif
 

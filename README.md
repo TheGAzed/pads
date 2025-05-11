@@ -13,7 +13,7 @@ PADS data structures are each divided into at least three modes with support for
 - Finite predefined size array structure using preprocessor
 
 ## Prerequisite
-C compiler that supports the **C99 standard and above**, for example:
+C compiler that at least supports the **C99 standard**, for example:
 - [GNU Compiler Collection (gcc)](https://gcc.gnu.org), 
 - [Microsoft Visual C++ (MSVC)](https://visualstudio.microsoft.com/vs/features/cplusplus/),
 - [Clang](https://clang.llvm.org)
@@ -39,11 +39,6 @@ C compiler that supports the **C99 standard and above**, for example:
 
 ### **In Progress:**
 
-[LIST](https://github.com/TheGAzed/pads/blob/main/source/list)
 - [DOUBLE LIST](https://github.com/TheGAzed/pads/blob/main/source/list/double_list)
-
-[SET](https://github.com/TheGAzed/pads/blob/main/source/set)
 - [BINARY SET](https://github.com/TheGAzed/pads/blob/main/source/set/binary_set)
-
-[GRAPH](https://github.com/TheGAzed/pads/blob/main/source/graph)
 - [MATRIX GRAPH](https://github.com/TheGAzed/pads/blob/main/source/graph/matrix_graph)

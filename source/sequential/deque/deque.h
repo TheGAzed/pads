@@ -42,7 +42,7 @@
 //#define DEQUE_MODE FINITE_ALLOCATED_DEQUE_MODE
 //#define DEQUE_MODE INFINITE_REALLOC_DEQUE_MODE
 //#define DEQUE_MODE FINITE_PREPROCESSOR_DEQUE_MODE
-// Queue mode that can be set to INFINITE_LIST_DEQUE_MODE, FINITE_ALLOCATED_DEQUE_MODE, INFINITE_REALLOC_DEQUE_MODE or
+// Deque mode that can be set to INFINITE_LIST_DEQUE_MODE, FINITE_ALLOCATED_DEQUE_MODE, INFINITE_REALLOC_DEQUE_MODE or
 // FINITE_PRERPOCESSOR_DEQUE.
 // Default: INFINITE_LIST_DEQUE_MODE
 #ifndef DEQUE_MODE
@@ -59,7 +59,7 @@
 
 #endif
 
-// Queue data type to specify what datatype to deque.
+// Deque data type to specify what datatype to deque.
 // DEFAULT: void *
 #ifndef DEQUE_DATA_TYPE
 
@@ -94,11 +94,11 @@
 
 #elif !defined(DEQUE_REALLOC)
 
-#error Queue reallocator macro is not defined!
+#error Reallocator macro is not defined!
 
 #elif !defined(DEQUE_FREE)
 
-#error Queue free macro is not defined!
+#error Free macro is not defined!
 
 #endif
 
@@ -115,7 +115,7 @@ typedef void            (*manage_deque_fn)  (DEQUE_DATA_TYPE *, const size_t, vo
 
 #if   DEQUE_MODE == INFINITE_LIST_DEQUE_MODE
 
-// Queue list array size.
+// Deque list array size.
 // DEFAULT: (1 << 5) or 1024
 #ifndef LIST_ARRAY_DEQUE_CHUNK
 

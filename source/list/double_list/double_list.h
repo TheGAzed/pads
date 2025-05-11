@@ -1,9 +1,9 @@
 #ifndef DOUBLE_LIST_H
 #define DOUBLE_LIST_H
 
-#include <stddef.h>  // imports size_t, malloc, realloc, free
+#include <stddef.h>  // imports size_t
 #include <stdbool.h> // imports bool
-#include <string.h>  // imports memcpy, memmove
+#include <string.h>  // imports memcpy
 
 /*
     This is free and unencumbered software released into the public domain.
@@ -40,7 +40,7 @@
 #define INFINITE_DOUBLE_LIST INFINITE_ALLOCATED_DOUBLE_LIST
 #define FINITE_DOUBLE_LIST   FINITE_ALLOCATED_DOUBLE_LIST
 
-#define DOUBLE_LIST_MODE INFINITE_ALLOCATED_DOUBLE_LIST
+//#define DOUBLE_LIST_MODE INFINITE_ALLOCATED_DOUBLE_LIST
 //#define DOUBLE_LIST_MODE FINITE_ALLOCATED_DOUBLE_LIST
 //#define DOUBLE_LIST_MODE INFINITE_REALLOC_DOUBLE_LIST
 //#define DOUBLE_LIST_MODE FINITE_PREPROCESSOR_DOUBLE_LIST
@@ -96,11 +96,11 @@
 
 #elif !defined(DOUBLE_LIST_REALLOC)
 
-#error Queue reallocator macro is not defined!
+#error Reallocator macro is not defined!
 
 #elif !defined(DOUBLE_LIST_FREE)
 
-#error Queue free macro is not defined!
+#error Free macro is not defined!
 
 #endif
 
@@ -408,11 +408,11 @@ static inline void splice_double_list(double_list_s * restrict destination, doub
         first_destination->node[DOUBLE_LIST_PREV_INDEX] = last_source;
     }
 
-    destination->size += source->size;
-
     if (!index) {
         destination->head = source->head;
     }
+
+    destination->size += source->size;
 
     (*source) = (double_list_s) { 0 };
 }
@@ -864,6 +864,7 @@ static inline void shift_prev_double_list(double_list_s * list, const size_t shi
 /// @param destination Pointer of list to splice into.
 /// @param source Pointer of list to splice from.
 /// @param index Zero-based index at destination list to start splicing.
+/// @param max New non-zero maximum size of destination list.
 static inline void splice_double_list(double_list_s * restrict destination, double_list_s * restrict source, const size_t index, const size_t max) {
     DOUBLE_LIST_ASSERT(destination && "[ERROR] 'list_one' parameter pointer is NULL.");
     DOUBLE_LIST_ASSERT(source && "[ERROR] 'list_two' parameter pointer is NULL.");
@@ -884,44 +885,40 @@ static inline void splice_double_list(double_list_s * restrict destination, doub
     destination->node[DOUBLE_LIST_NEXT_INDEX] = DOUBLE_LIST_REALLOC(destination->node[DOUBLE_LIST_NEXT_INDEX], sizeof(size_t) * max);
     destination->node[DOUBLE_LIST_PREV_INDEX] = DOUBLE_LIST_REALLOC(destination->node[DOUBLE_LIST_PREV_INDEX], sizeof(size_t) * max);
 
-    source->head += destination->size;
     for (size_t i = 0; i < source->size; ++i) {
         destination->elements[destination->size + i] = source->elements[i];
         destination->node[DOUBLE_LIST_NEXT_INDEX][destination->size + i] = source->node[DOUBLE_LIST_NEXT_INDEX][i] + destination->size;
         destination->node[DOUBLE_LIST_PREV_INDEX][destination->size + i] = source->node[DOUBLE_LIST_PREV_INDEX][i] + destination->size;
     }
-
+    // source elements and its nodes were copied in destination, thus source and destination are spliced only in destination
     if (destination->size && source->size) {
         const size_t first_destination = current;
         const size_t last_destination  = destination->node[DOUBLE_LIST_PREV_INDEX][current];
 
-        const size_t first_source = source->head;
-        const size_t last_source  = source->node[DOUBLE_LIST_PREV_INDEX][source->head];
+        const size_t first_source = source->head + destination->size;
+        const size_t last_source  = source->node[DOUBLE_LIST_PREV_INDEX][source->head] + destination->size;
 
         destination->node[DOUBLE_LIST_NEXT_INDEX][last_destination] = first_source;
-        source->node[DOUBLE_LIST_PREV_INDEX][first_source] = last_destination;
+        destination->node[DOUBLE_LIST_PREV_INDEX][first_source] = last_destination; // source is in destination
 
-        source->node[DOUBLE_LIST_NEXT_INDEX][last_source] = first_destination;
+        destination->node[DOUBLE_LIST_NEXT_INDEX][last_source] = first_destination; // source is in destination
         destination->node[DOUBLE_LIST_PREV_INDEX][first_destination] = last_source;
     }
 
-    DOUBLE_LIST_FREE(source->elements);
-    DOUBLE_LIST_FREE(source->node[DOUBLE_LIST_NEXT_INDEX]);
-    DOUBLE_LIST_FREE(source->node[DOUBLE_LIST_PREV_INDEX]);
+    if (!index && source->size) { // if source isn't empty and inedx points to head node destination's make head to source's
+        destination->head = source->head + destination->size;
+    }
 
     destination->size += source->size;
 
-    if (!index && source->size) {
-        destination->head = source->head;
-    }
-
-    (*source) = (double_list_s) { 0 };
+    source->size = source->head = 0; // clear source, DON'T DESTROY IT
 }
 
 /// @brief Splits list at index and removes size parameter elements as new list.
 /// @param list Pointer of list to split.
 /// @param index Zero-based index at list to start splitting.
 /// @param size Number of elements to split and return as new list.
+/// @param max Non-zero maximum size of new split list.
 /// @return Split list with size number of elements at index.
 /// @note Since the list is circular the function can be used to split it as a circle at any index.
 static inline double_list_s split_double_list(double_list_s * list, const size_t index, const size_t size, const size_t max) {
@@ -932,43 +929,47 @@ static inline double_list_s split_double_list(double_list_s * list, const size_t
     DOUBLE_LIST_ASSERT(size <= list->size && "[ERROR] Size parameter bigger than list size.");
     DOUBLE_LIST_ASSERT(size <= max && "[ERROR] List size exceed max size of new split list.");
 
-    size_t current = list->head;
+    size_t list_current = list->head;
     const size_t real_index = index < (list->size >> 1) ? index : list->size - index;
     const bool node_index = real_index == index ? DOUBLE_LIST_NEXT_INDEX : DOUBLE_LIST_PREV_INDEX;
     for (size_t i = 0; i < real_index; ++i) {
-        current = list->node[node_index][current];
+        list_current = list->node[node_index][list_current];
     }
 
-    double_list_s const split_list = {
-        .head = 0, .size = size,
+    double_list_s split = {
+        .head = 0, .size = 0,
         .elements                     = DOUBLE_LIST_REALLOC(NULL, sizeof(DOUBLE_LIST_DATA_TYPE) * max),
         .node[DOUBLE_LIST_NEXT_INDEX] = DOUBLE_LIST_REALLOC(NULL, sizeof(size_t) * max),
         .node[DOUBLE_LIST_PREV_INDEX] = DOUBLE_LIST_REALLOC(NULL, sizeof(size_t) * max),
     };
 
-    DOUBLE_LIST_ASSERT(split_list.elements && "[ERROR] Memory allocation failed");
-    DOUBLE_LIST_ASSERT(split_list.node[DOUBLE_LIST_NEXT_INDEX] && "[ERROR] Memory allocation failed");
-    DOUBLE_LIST_ASSERT(split_list.node[DOUBLE_LIST_PREV_INDEX] && "[ERROR] Memory allocation failed");
+    DOUBLE_LIST_ASSERT(split.elements && "[ERROR] Memory allocation failed");
+    DOUBLE_LIST_ASSERT(split.node[DOUBLE_LIST_NEXT_INDEX] && "[ERROR] Memory allocation failed");
+    DOUBLE_LIST_ASSERT(split.node[DOUBLE_LIST_PREV_INDEX] && "[ERROR] Memory allocation failed");
 
-    for (size_t i = 0; i < split_list.size; ++i) {
-        split_list.elements[i] = list->elements[current];
+    size_t * split_current = &(split.head);
+    for (; split.size < list->size; split.size++) {
+        split.elements[split.size] = list->elements[list_current];
+        (*split_current) = split.size; // set head and next nodes to next index
+        split.node[DOUBLE_LIST_PREV_INDEX][split.size] = split.size - 1; // set previous node indexes to one minus current
         list->size--;
 
-        split_list.node[DOUBLE_LIST_NEXT_INDEX][i] = i + 1, split_list.node[DOUBLE_LIST_PREV_INDEX][i] = i - 1;
+        // swap element and node indexes at current index with last in elements and nodes arrays
+        list->elements[list_current] = list->elements[list->size];
+        list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][list->size]] = list_current;
+        list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][list->size]] = list_current;
 
-        list->elements[current] = list->elements[list->size];
-        list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][list->size]] = current;
-        list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][list->size]] = current;
-
-        current = list->node[DOUBLE_LIST_NEXT_INDEX][current];
+        list_current = list->node[DOUBLE_LIST_NEXT_INDEX][list_current]; // go to next list node
+        split_current = split.node[DOUBLE_LIST_NEXT_INDEX] + split.size; // go to next split list node pointer
     }
-    split_list.node[DOUBLE_LIST_NEXT_INDEX][split_list.size - 1] = 0; split_list.node[DOUBLE_LIST_PREV_INDEX][0] = split_list.size - 1;
+    split.node[DOUBLE_LIST_PREV_INDEX][0] = size - 1; // to make list circular first index in previous must point to last element
+    (*split_current) = 0;
 
-    if (!index || ((index + size) > list->size)) {
-        list->head = current;
+    if (!index || (index > list->size)) {
+        list->head = list_current;
     }
 
-    return split_list;
+    return split;
 }
 
 /// @brief Checks if list is empty.
@@ -992,21 +993,21 @@ static inline bool is_full_double_list(const double_list_s list) {
 static inline double_list_s copy_double_list(const double_list_s list, const copy_double_list_fn copy) {
     DOUBLE_LIST_ASSERT(copy && "[ERROR] 'copy' pointer parameter is NULL.");
 
-    const double_list_s replica = {
+    double_list_s replica = {
         .elements                     = DOUBLE_LIST_REALLOC(NULL, sizeof(DOUBLE_LIST_DATA_TYPE) * list.max),
         .node[DOUBLE_LIST_NEXT_INDEX] = DOUBLE_LIST_REALLOC(NULL, sizeof(size_t) * list.max),
         .node[DOUBLE_LIST_PREV_INDEX] = DOUBLE_LIST_REALLOC(NULL, sizeof(size_t) * list.max),
-        .head = list.head, .max = list.max, .size = list.size,
+        .head = list.head, .max = list.max, .size = 0,
     };
 
     DOUBLE_LIST_ASSERT(replica.elements && "[ERROR] Memory allocation failed.");
     DOUBLE_LIST_ASSERT(replica.node[DOUBLE_LIST_NEXT_INDEX] && "[ERROR] Memory allocation failed.");
     DOUBLE_LIST_ASSERT(replica.node[DOUBLE_LIST_PREV_INDEX] && "[ERROR] Memory allocation failed.");
 
-    for (size_t i = 0; i < list.size; ++i) {
-        replica.elements[i] = copy(list.elements[i]);
-        replica.node[DOUBLE_LIST_NEXT_INDEX][i] = list.node[DOUBLE_LIST_NEXT_INDEX][i];
-        replica.node[DOUBLE_LIST_PREV_INDEX][i] = list.node[DOUBLE_LIST_PREV_INDEX][i];
+    for (; replica.size < list.size; replica.size++) {
+        replica.elements[replica.size] = copy(list.elements[replica.size]);
+        replica.node[DOUBLE_LIST_NEXT_INDEX][replica.size] = list.node[DOUBLE_LIST_NEXT_INDEX][replica.size];
+        replica.node[DOUBLE_LIST_PREV_INDEX][replica.size] = list.node[DOUBLE_LIST_PREV_INDEX][replica.size];
     }
 
     return replica;
@@ -1021,7 +1022,7 @@ static inline void foreach_double_list(double_list_s const * list, const operate
     DOUBLE_LIST_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
 
     size_t current = list->head;
-    for (size_t i = 0; i < list->size && operate(&(list->elements[current]), args); ++i) {
+    for (size_t i = 0; i < list->size && operate(list->elements + current, args); ++i) {
         current = list->node[DOUBLE_LIST_NEXT_INDEX][current];
     }
 }
@@ -1073,9 +1074,31 @@ static inline void map_double_list(double_list_s const * list, const manage_doub
 
 #elif DOUBLE_LIST_MODE == INFINITE_REALLOC_DOUBLE_LIST
 
+#if !defined(IS_CAPACITY_DOUBLE_LIST) && !defined(EXPAND_CAPACITY_DOUBLE_LIST)
+
 #ifndef REALLOC_DOUBLE_LIST_CHUNK
 
-#define REALLOC_DOUBLE_LIST_CHUNK (1 << 10)
+#define REALLOC_DOUBLE_LIST_CHUNK (1 << 5)
+
+#elif REALLOC_DOUBLE_LIST_CHUNK <= 0
+
+#error 'REALLOC_DOUBLE_LIST_CHUNK' cannot be less than or equal to 0
+
+#endif
+
+/// @brief Checks if stack's 'size' has reached capacity.
+#define IS_CAPACITY_DOUBLE_LIST(size) (!((size) % REALLOC_DOUBLE_LIST_CHUNK))
+
+/// @brief Calculates next stack's capacity based on 'size'.
+#define EXPAND_CAPACITY_DOUBLE_LIST(capacity) ((capacity) + REALLOC_DOUBLE_LIST_CHUNK)
+
+#elif !defined(IS_CAPACITY_DOUBLE_LIST)
+
+#error Stack capacity reached check is not defined.
+
+#elif !defined(EXPAND_CAPACITY_DOUBLE_LIST)
+
+#error Stack capacity expanded size is not defined.
 
 #endif
 
@@ -1101,23 +1124,37 @@ static inline void destroy_double_list(double_list_s * list, const destroy_doubl
     DOUBLE_LIST_ASSERT(destroy && "[ERROR] 'destroy' pointer parameter is NULL.");
 
     size_t current = list->head;
-    for (size_t s = 0; destroy && (s < list->size); ++s) {
+    for (size_t s = 0; s < list->size; ++s) {
         destroy(&(list->elements[current]));
         current = list->node[DOUBLE_LIST_NEXT_INDEX][current];
     }
 
     DOUBLE_LIST_FREE(list->elements);
-    for (size_t i = 0; i < DOUBLE_LIST_NODE_COUNT; ++i) {
-        DOUBLE_LIST_FREE(list->node[i]);
-    }
+    DOUBLE_LIST_FREE(list->node[DOUBLE_LIST_NEXT_INDEX]);
+    DOUBLE_LIST_FREE(list->node[DOUBLE_LIST_PREV_INDEX]);
 
-    *list = (double_list_s) { 0 };
+    (*list) = (double_list_s) { 0 };
 }
 
 /// @brief Clears a list's elements using a function pointer.
 /// @param list Pointer of list to destroy.
 /// @param destroy Destroy function pointer to destroy/free each element in list.
-static inline void clear_double_list(double_list_s * list, const destroy_double_list_fn destroy) {}
+static inline void clear_double_list(double_list_s * list, const destroy_double_list_fn destroy) {
+    DOUBLE_LIST_ASSERT(list && "[ERROR] 'list' pointer parameter is NULL.");
+    DOUBLE_LIST_ASSERT(destroy && "[ERROR] 'destroy' pointer parameter is NULL.");
+
+    size_t current = list->head;
+    for (size_t s = 0; s < list->size; ++s) {
+        destroy(&(list->elements[current]));
+        current = list->node[DOUBLE_LIST_NEXT_INDEX][current];
+    }
+
+    DOUBLE_LIST_FREE(list->elements);
+    DOUBLE_LIST_FREE(list->node[DOUBLE_LIST_NEXT_INDEX]);
+    DOUBLE_LIST_FREE(list->node[DOUBLE_LIST_PREV_INDEX]);
+
+    (*list) = (double_list_s) { 0 };
+}
 
 /// @brief Inserts element into list based on index number.
 /// @param list Pointer of list to insert element into.
@@ -1128,25 +1165,26 @@ static inline void insert_at_double_list(double_list_s * list, const size_t inde
     DOUBLE_LIST_ASSERT(index <= list->size && "[ERROR] Index bigger than size.");
     DOUBLE_LIST_ASSERT(~list->size && "[ERROR] List size will overflow.");
 
-    if (!(list->size % REALLOC_DOUBLE_LIST_CHUNK)) {
-        list->elements = DOUBLE_LIST_REALLOC(list->elements, (list->size + REALLOC_DOUBLE_LIST_CHUNK) * sizeof(DOUBLE_LIST_DATA_TYPE));
-        list->node[DOUBLE_LIST_NEXT_INDEX] = DOUBLE_LIST_REALLOC(list->elements, (list->size + REALLOC_DOUBLE_LIST_CHUNK) * sizeof(size_t));
-        list->node[DOUBLE_LIST_PREV_INDEX] = DOUBLE_LIST_REALLOC(list->elements, (list->size + REALLOC_DOUBLE_LIST_CHUNK) * sizeof(size_t));
+    if ((IS_CAPACITY_DOUBLE_LIST(list->size))) { // if size reached capacity expand elements and nodes arrays
+        const size_t expand = EXPAND_CAPACITY_DOUBLE_LIST(list->size);
+
+        list->elements = DOUBLE_LIST_REALLOC(list->elements, expand * sizeof(DOUBLE_LIST_DATA_TYPE));
+        list->node[DOUBLE_LIST_NEXT_INDEX] = DOUBLE_LIST_REALLOC(list->elements, expand * sizeof(size_t));
+        list->node[DOUBLE_LIST_PREV_INDEX] = DOUBLE_LIST_REALLOC(list->elements, expand * sizeof(size_t));
     }
 
-    size_t current = list->head, smaller_size = list->size - index, node_index = DOUBLE_LIST_PREV_INDEX;
-    if (index <= (list->size >> 1)) {
-        smaller_size = index;
-        node_index = DOUBLE_LIST_NEXT_INDEX;
-    }
-    for (size_t i = 0; i < smaller_size; ++i) {
+    size_t current = list->head;
+    const size_t real_index = index <= (list->size >> 1) ? index : list->size - index;
+    const bool node_index = real_index == index ? DOUBLE_LIST_NEXT_INDEX : DOUBLE_LIST_PREV_INDEX;
+    for (size_t i = 0; i < list->size; ++i) {
         current = list->node[node_index][current];
     }
 
     list->node[DOUBLE_LIST_NEXT_INDEX][list->size] = current;
     list->node[DOUBLE_LIST_PREV_INDEX][list->size] = list->node[DOUBLE_LIST_PREV_INDEX][current];
 
-    list->node[DOUBLE_LIST_PREV_INDEX][current] = list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][current]] = list->size;
+    list->node[DOUBLE_LIST_PREV_INDEX][current] = list->size;
+    list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][current]] = list->size;
     if (!index) {
         list->head = list->size;
     }
@@ -1164,14 +1202,10 @@ static inline DOUBLE_LIST_DATA_TYPE get_double_list(const double_list_s list, co
     DOUBLE_LIST_ASSERT(index < list.size && "[ERROR] 'index' parameter exceeds list size.");
 
     size_t current = list.head;
-    if (index < (list.size << 2)) {
-        for (size_t i = 0; i < index; ++i) {
-            current = list.node[DOUBLE_LIST_NEXT_INDEX][current];
-        }
-    } else {
-        for (size_t i = 0; i < list.size - index; ++i) {
-            current = list.node[DOUBLE_LIST_PREV_INDEX][current];
-        }
+    const size_t real_index = index <= (list.size >> 1) ? index : list.size - index;
+    const bool node_index = real_index == index ? DOUBLE_LIST_NEXT_INDEX : DOUBLE_LIST_PREV_INDEX;
+    for (size_t i = 0; i < list.size; ++i) {
+        current = list.node[node_index][current];
     }
 
     return list.elements[current];
@@ -1192,9 +1226,8 @@ static inline DOUBLE_LIST_DATA_TYPE remove_first_double_list(double_list_s * lis
     DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_NEXT_INDEX] && "[ERROR] No memory available.");
 
     size_t current = list->head;
-    for (size_t s = 0; s < list->size; ++s) {
-		const int comparison = compare ? compare(&(list->elements[current]), &element) : memcmp(&(list->elements[current]), &element, sizeof(DOUBLE_LIST_DATA_TYPE));
-        if (0 != comparison) {
+    for (size_t i = 0; i < list->size; ++i) {
+        if (0 != compare(list->elements[current], element)) {
             current = list->node[DOUBLE_LIST_NEXT_INDEX][current];
             continue;
         }
@@ -1208,23 +1241,31 @@ static inline DOUBLE_LIST_DATA_TYPE remove_first_double_list(double_list_s * lis
         list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][current]] = list->node[DOUBLE_LIST_NEXT_INDEX][current];
         list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][current]] = list->node[DOUBLE_LIST_PREV_INDEX][current];
 
-        DOUBLE_LIST_DATA_TYPE found = list->elements[current];
+        DOUBLE_LIST_DATA_TYPE removed = list->elements[current];
+        list->size--;
 
         // move element at double_list->size - 1 to current's position to avoid 'holes' in array.
-        list->size--;
         list->node[DOUBLE_LIST_NEXT_INDEX][current] = list->node[DOUBLE_LIST_NEXT_INDEX][list->size];
         list->node[DOUBLE_LIST_PREV_INDEX][current] = list->node[DOUBLE_LIST_PREV_INDEX][list->size];
 
-        list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][list->size]] = list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][list->size]] = current;
+        list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][list->size]] = current;
+        list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][list->size]] = current;
         list->elements[current] = list->elements[list->size];
 
-        if (!(list->size % REALLOC_DOUBLE_LIST_CHUNK)) {
-            list->elements = list->size ? DOUBLE_LIST_REALLOC(list->elements, list->size * sizeof(DOUBLE_LIST_DATA_TYPE)) : NULL;
-            list->node[DOUBLE_LIST_PREV_INDEX] = list->size ? DOUBLE_LIST_REALLOC(list->node[DOUBLE_LIST_PREV_INDEX], list->size * sizeof(size_t)) : NULL;
-            list->node[DOUBLE_LIST_NEXT_INDEX] = list->size ? DOUBLE_LIST_REALLOC(list->node[DOUBLE_LIST_NEXT_INDEX], list->size * sizeof(size_t)) : NULL;
+        if (!list->size) { // if list bacomes empty free elements and nodes arrays and set thme to zero
+            DOUBLE_LIST_FREE(list->elements);
+            DOUBLE_LIST_FREE(list->node[DOUBLE_LIST_NEXT_INDEX]);
+            DOUBLE_LIST_FREE(list->node[DOUBLE_LIST_PREV_INDEX]);
+            list->elements = NULL;
+            list->node[DOUBLE_LIST_NEXT_INDEX] = NULL;
+            list->node[DOUBLE_LIST_PREV_INDEX] = NULL;
+        } else if ((IS_CAPACITY_DOUBLE_LIST(list->size))) { // else if bottom capacity is reached shrink arrays
+            list->elements = DOUBLE_LIST_REALLOC(list->elements, list->size * sizeof(DOUBLE_LIST_DATA_TYPE));
+            list->node[DOUBLE_LIST_NEXT_INDEX] = DOUBLE_LIST_REALLOC(list->node[DOUBLE_LIST_NEXT_INDEX], list->size * sizeof(size_t));
+            list->node[DOUBLE_LIST_PREV_INDEX] = DOUBLE_LIST_REALLOC(list->node[DOUBLE_LIST_PREV_INDEX], list->size * sizeof(size_t));
         }
 
-        return found;
+        return removed;
     }
 
     DOUBLE_LIST_ASSERT(0 && "[ERROR] Element not found in double_list.");
@@ -1249,8 +1290,7 @@ static inline DOUBLE_LIST_DATA_TYPE remove_last_double_list(double_list_s * list
     for (size_t s = 0; s < list->size; ++s) {
         current = list->node[DOUBLE_LIST_PREV_INDEX][current];
 
-		const int comparison = compare ? compare(&(list->elements[current]), &element) : memcmp(&(list->elements[current]), &element, sizeof(DOUBLE_LIST_DATA_TYPE));
-        if (0 != comparison) {
+        if (0 != compare(list->elements[current], element)) {
             continue;
         }
 
@@ -1270,13 +1310,21 @@ static inline DOUBLE_LIST_DATA_TYPE remove_last_double_list(double_list_s * list
         list->node[DOUBLE_LIST_NEXT_INDEX][current] = list->node[DOUBLE_LIST_NEXT_INDEX][list->size];
         list->node[DOUBLE_LIST_PREV_INDEX][current] = list->node[DOUBLE_LIST_PREV_INDEX][list->size];
 
-        list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][list->size]] = list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][list->size]] = current;
+        list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][list->size]] = current;
+        list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][list->size]] = current;
         list->elements[current] = list->elements[list->size];
 
-        if (!(list->size % REALLOC_DOUBLE_LIST_CHUNK)) {
-            list->elements = list->size ? DOUBLE_LIST_REALLOC(list->elements, list->size * sizeof(DOUBLE_LIST_DATA_TYPE)) : NULL;
-            list->node[DOUBLE_LIST_PREV_INDEX] = list->size ? DOUBLE_LIST_REALLOC(list->node[DOUBLE_LIST_PREV_INDEX], list->size * sizeof(size_t)) : NULL;
-            list->node[DOUBLE_LIST_NEXT_INDEX] = list->size ? DOUBLE_LIST_REALLOC(list->node[DOUBLE_LIST_NEXT_INDEX], list->size * sizeof(size_t)) : NULL;
+        if (!list->size) { // if list bacomes empty free elements and nodes arrays and set thme to zero
+            DOUBLE_LIST_FREE(list->elements);
+            DOUBLE_LIST_FREE(list->node[DOUBLE_LIST_NEXT_INDEX]);
+            DOUBLE_LIST_FREE(list->node[DOUBLE_LIST_PREV_INDEX]);
+            list->elements = NULL;
+            list->node[DOUBLE_LIST_NEXT_INDEX] = NULL;
+            list->node[DOUBLE_LIST_PREV_INDEX] = NULL;
+        } else if ((IS_CAPACITY_DOUBLE_LIST(list->size))) { // else if bottom capacity is reached shrink arrays
+            list->elements = DOUBLE_LIST_REALLOC(list->elements, list->size * sizeof(DOUBLE_LIST_DATA_TYPE));
+            list->node[DOUBLE_LIST_NEXT_INDEX] = DOUBLE_LIST_REALLOC(list->node[DOUBLE_LIST_NEXT_INDEX], list->size * sizeof(size_t));
+            list->node[DOUBLE_LIST_PREV_INDEX] = DOUBLE_LIST_REALLOC(list->node[DOUBLE_LIST_PREV_INDEX], list->size * sizeof(size_t));
         }
 
         return found;
@@ -1296,14 +1344,10 @@ static inline DOUBLE_LIST_DATA_TYPE remove_at_double_list(double_list_s * list, 
     DOUBLE_LIST_ASSERT(index < list->size && "[ERROR] Index parameter greater than list size.");
 
     size_t current = list->head;
-    if (index <= (list->size >> 1)) {
-        for (size_t i = 0; i < index; ++i) {
-            current = list->node[DOUBLE_LIST_NEXT_INDEX][current];
-        }
-    } else {
-        for (size_t i = 0; i < list->size - index; ++i) {
-            current = list->node[DOUBLE_LIST_PREV_INDEX][current];
-        }
+    const size_t real_index = index <= (list->size >> 1) ? index : list->size - index;
+    const bool node_index = real_index == index ? DOUBLE_LIST_NEXT_INDEX : DOUBLE_LIST_PREV_INDEX;
+    for (size_t i = 0; i < list->size; ++i) {
+        current = list->node[node_index][current];
     }
 
     if (list->head == list->size - 1) {
@@ -1315,27 +1359,31 @@ static inline DOUBLE_LIST_DATA_TYPE remove_at_double_list(double_list_s * list, 
     list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][current]] = list->node[DOUBLE_LIST_NEXT_INDEX][current];
     list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][current]] = list->node[DOUBLE_LIST_PREV_INDEX][current];
 
-    DOUBLE_LIST_DATA_TYPE found = list->elements[current];
+    DOUBLE_LIST_DATA_TYPE removed = list->elements[current];
+    list->size--;
 
     // move element at double_list->size - 1 to current's position to avoid 'holes' in array.
-    list->size--;
     list->node[DOUBLE_LIST_NEXT_INDEX][current] = list->node[DOUBLE_LIST_NEXT_INDEX][list->size];
     list->node[DOUBLE_LIST_PREV_INDEX][current] = list->node[DOUBLE_LIST_PREV_INDEX][list->size];
 
-    list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][list->size]] = list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][list->size]] = current;
+    list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][list->size]] = current;
+    list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][list->size]] = current;
     list->elements[current] = list->elements[list->size];
 
-    if (!(list->size % REALLOC_DOUBLE_LIST_CHUNK)) {
-        if (list->size) {
-            list->elements = DOUBLE_LIST_REALLOC(list->elements, list->size * sizeof(DOUBLE_LIST_DATA_TYPE));
-            list->node[DOUBLE_LIST_PREV_INDEX] = DOUBLE_LIST_REALLOC(list->node[DOUBLE_LIST_PREV_INDEX], list->size * sizeof(size_t));
-            list->node[DOUBLE_LIST_NEXT_INDEX] = DOUBLE_LIST_REALLOC(list->node[DOUBLE_LIST_NEXT_INDEX], list->size * sizeof(size_t));
-        } else {
-            list->elements = (DOUBLE_LIST_DATA_TYPE *) (list->node[DOUBLE_LIST_PREV_INDEX] = list->node[DOUBLE_LIST_NEXT_INDEX] = NULL);
-        }
+    if (!list->size) { // if list bacomes empty free elements and nodes arrays and set thme to zero
+        DOUBLE_LIST_FREE(list->elements);
+        DOUBLE_LIST_FREE(list->node[DOUBLE_LIST_NEXT_INDEX]);
+        DOUBLE_LIST_FREE(list->node[DOUBLE_LIST_PREV_INDEX]);
+        list->elements = NULL;
+        list->node[DOUBLE_LIST_NEXT_INDEX] = NULL;
+        list->node[DOUBLE_LIST_PREV_INDEX] = NULL;
+    } else if ((IS_CAPACITY_DOUBLE_LIST(list->size))) { // else if bottom capacity is reached shrink arrays
+        list->elements = DOUBLE_LIST_REALLOC(list->elements, list->size * sizeof(DOUBLE_LIST_DATA_TYPE));
+        list->node[DOUBLE_LIST_NEXT_INDEX] = DOUBLE_LIST_REALLOC(list->node[DOUBLE_LIST_NEXT_INDEX], list->size * sizeof(size_t));
+        list->node[DOUBLE_LIST_PREV_INDEX] = DOUBLE_LIST_REALLOC(list->node[DOUBLE_LIST_PREV_INDEX], list->size * sizeof(size_t));
     }
 
-    return found;
+    return removed;
 }
 
 /// @brief Reverses list element ordering.
@@ -1344,7 +1392,7 @@ static inline void reverse_double_list(double_list_s * list) {
     DOUBLE_LIST_ASSERT(list && "[ERROR] 'list' pointer parameter is NULL.");
 
     size_t current = list->head;
-    for (size_t s = 0; s < list->size; ++s) {
+    for (size_t i = 0; i < list->size; ++i) {
         list->head = current;
 
         const size_t temp = list->node[DOUBLE_LIST_NEXT_INDEX][current];
@@ -1362,7 +1410,7 @@ static inline void shift_next_double_list(double_list_s * list, const size_t shi
     DOUBLE_LIST_ASSERT(list && "[ERROR] 'list' pointer parameter is NULL.");
     DOUBLE_LIST_ASSERT(list->size && "[ERROR] Can't shift empty list.");
 
-    for (size_t s = 0; list->size && (s < shift); ++s) {
+    for (size_t i = 0; i < shift; ++i) {
         list->head = list->node[DOUBLE_LIST_NEXT_INDEX][list->head];
     }
 }
@@ -1374,7 +1422,7 @@ static inline void shift_prev_double_list(double_list_s * list, const size_t shi
     DOUBLE_LIST_ASSERT(list && "[ERROR] 'list' pointer parameter is NULL.");
     DOUBLE_LIST_ASSERT(list->size && "[ERROR] Can't shift empty list.");
 
-    for (size_t s = 0; list->size && (s < shift); ++s) {
+    for (size_t i = 0; i < shift; ++i) {
         list->head = list->node[DOUBLE_LIST_PREV_INDEX][list->head];
     }
 }
@@ -1383,68 +1431,61 @@ static inline void shift_prev_double_list(double_list_s * list, const size_t shi
 /// @param destination Pointer of list to splice into.
 /// @param source Pointer of list to splice from.
 /// @param index Zero-based index at destination list to start splicing.
-static inline void splice_double_list(double_list_s * restrict list_one, double_list_s * restrict list_two, const size_t index) {
-    DOUBLE_LIST_ASSERT(list_one && "[ERROR] 'list_one' parameter pointer is NULL.");
-    DOUBLE_LIST_ASSERT(list_two && "[ERROR] 'list_two' parameter pointer is NULL.");
-    DOUBLE_LIST_ASSERT(list_one != list_two && "[ERROR] Lists can't be the same.");
-    DOUBLE_LIST_ASSERT(index <= list_one->size && "[ERROR] index can't exceed list_one's size");
+static inline void splice_double_list(double_list_s * restrict destination, double_list_s * restrict source, const size_t index) {
+    DOUBLE_LIST_ASSERT(destination && "[ERROR] 'list_one' parameter pointer is NULL.");
+    DOUBLE_LIST_ASSERT(source && "[ERROR] 'list_two' parameter pointer is NULL.");
+    DOUBLE_LIST_ASSERT(destination != source && "[ERROR] Lists can't be the same.");
+    DOUBLE_LIST_ASSERT(index <= destination->size && "[ERROR] index can't exceed list_one's size");
 
-    const size_t new_size = (list_one->size + list_two->size);
-    if (!new_size) return (double_list_s) { 0 };
-
-    const size_t alloc_size = new_size - (new_size % REALLOC_DOUBLE_LIST_CHUNK) + REALLOC_DOUBLE_LIST_CHUNK;
-
-    list_two->head += list_one->size;
-    for (size_t i = 0; i < list_two->size; ++i) { // incrementing list_twos indexes since they get appended to list_one
-        list_two->node[DOUBLE_LIST_NEXT_INDEX][i] += list_one->size;
-        list_two->node[DOUBLE_LIST_PREV_INDEX][i] += list_one->size;
+    size_t current = destination->head;
+    const size_t real_index = index <= (destination->size >> 1) ? index : destination->size - index;
+    const bool node_index = real_index == index ? DOUBLE_LIST_NEXT_INDEX : DOUBLE_LIST_PREV_INDEX;
+    for (size_t i = 0; i < destination->size; ++i) {
+        current = destination->node[node_index][current];
     }
 
-    list_one->elements = DOUBLE_LIST_REALLOC(list_one->elements, sizeof(DOUBLE_LIST_DATA_TYPE) * alloc_size);
-    list_one->node[DOUBLE_LIST_NEXT_INDEX] = DOUBLE_LIST_REALLOC(list_one->node[DOUBLE_LIST_NEXT_INDEX], sizeof(size_t) * alloc_size);
-    list_one->node[DOUBLE_LIST_PREV_INDEX] = DOUBLE_LIST_REALLOC(list_one->node[DOUBLE_LIST_PREV_INDEX], sizeof(size_t) * alloc_size);
+    for (size_t i = 0; i < source->size; ++i) { // push source elements and nodes with proper node indexes to destination
+        if ((IS_CAPACITY_DOUBLE_LIST((destination->size + i)))) { // expand destination capacity if needed
+            const size_t expand = EXPAND_CAPACITY_DOUBLE_LIST(destination->size);
 
-    size_t current = list_one->head;
-    if (index < (list_one->size >> 1)) {
-        for (size_t i = 0; i < index; ++i) {
-            current = list_one->node[DOUBLE_LIST_NEXT_INDEX][current];
+            destination->elements = DOUBLE_LIST_REALLOC(destination->elements, expand * sizeof(DOUBLE_LIST_DATA_TYPE));
+            DOUBLE_LIST_ASSERT(destination->elements && "[ERROR] Memory allocation failed.");
+            destination->node[DOUBLE_LIST_NEXT_INDEX] = DOUBLE_LIST_REALLOC(destination->node[DOUBLE_LIST_NEXT_INDEX], expand * sizeof(size_t));
+            DOUBLE_LIST_ASSERT(destination->node[DOUBLE_LIST_NEXT_INDEX] && "[ERROR] Memory allocation failed.");
+            destination->node[DOUBLE_LIST_PREV_INDEX] = DOUBLE_LIST_REALLOC(destination->node[DOUBLE_LIST_PREV_INDEX], expand * sizeof(size_t));
+            DOUBLE_LIST_ASSERT(destination->node[DOUBLE_LIST_PREV_INDEX] && "[ERROR] Memory allocation failed.");
         }
-    } else {
-        for (size_t i = 0; i < list_one->size - index; ++i) {
-            current = list_one->node[DOUBLE_LIST_PREV_INDEX][current];
-        }
+
+        destination->elements[destination->size + i] = source->elements[i];
+        destination->node[DOUBLE_LIST_NEXT_INDEX][destination->size + i] = source->node[DOUBLE_LIST_NEXT_INDEX][i] + destination->size;
+        destination->node[DOUBLE_LIST_PREV_INDEX][destination->size + i] = source->node[DOUBLE_LIST_PREV_INDEX][i] + destination->size;
+    }
+    // source elements and its nodes were copied in destination, thus source and destination are spliced only in destination
+    if (destination->size && source->size) { // if there is something to splice
+        const size_t first_destination = current;
+        const size_t last_destination  = destination->node[DOUBLE_LIST_PREV_INDEX][current];
+
+        const size_t first_source = source->head;
+        const size_t last_source  = source->node[DOUBLE_LIST_PREV_INDEX][source->head];
+
+        destination->node[DOUBLE_LIST_NEXT_INDEX][last_destination] = first_source;
+        destination->node[DOUBLE_LIST_PREV_INDEX][first_source] = last_destination;
+
+        destination->node[DOUBLE_LIST_NEXT_INDEX][last_source] = first_destination;
+        destination->node[DOUBLE_LIST_PREV_INDEX][first_destination] = last_source;
     }
 
-    if (list_one->size && list_two->size) {
-        const size_t first_one = current;
-        const size_t last_one  = list_one->node[DOUBLE_LIST_PREV_INDEX][current];
+    DOUBLE_LIST_FREE(source->elements);
+    DOUBLE_LIST_FREE(source->node[DOUBLE_LIST_NEXT_INDEX]);
+    DOUBLE_LIST_FREE(source->node[DOUBLE_LIST_PREV_INDEX]);
 
-        const size_t first_two = list_two->head;
-        const size_t last_two  = list_two->node[DOUBLE_LIST_PREV_INDEX][list_two->head];
-
-        list_one->node[DOUBLE_LIST_NEXT_INDEX][last_one] = first_two;
-        list_two->node[DOUBLE_LIST_PREV_INDEX][first_two] = last_one;
-
-        list_two->node[DOUBLE_LIST_NEXT_INDEX][last_two] = first_one;
-        list_one->node[DOUBLE_LIST_PREV_INDEX][first_one] = last_two;
+    if (!index && source->size) { // if source isn't empty and inedx points to head node destination's make head to source's
+        destination->head = source->head + destination->size;
     }
 
-    memcpy(list_one->elements + list_one->size, list_two->elements, sizeof(DOUBLE_LIST_DATA_TYPE) * list_two->size);
-    memcpy(list_one->node[DOUBLE_LIST_NEXT_INDEX] + list_one->size, list_two->node[DOUBLE_LIST_NEXT_INDEX], sizeof(size_t) * list_two->size);
-    memcpy(list_one->node[DOUBLE_LIST_PREV_INDEX] + list_one->size, list_two->node[DOUBLE_LIST_PREV_INDEX], sizeof(size_t) * list_two->size);
+    destination->size += source->size;
 
-    DOUBLE_LIST_FREE(list_two->elements);
-    DOUBLE_LIST_FREE(list_two->node[DOUBLE_LIST_NEXT_INDEX]);
-    DOUBLE_LIST_FREE(list_two->node[DOUBLE_LIST_PREV_INDEX]);
-
-    const double_list_s list = {
-        .head = (index || !list_two->size) ? list_one->head : list_two->head, .elements = list_one->elements, .size = new_size,
-        .node[DOUBLE_LIST_NEXT_INDEX] = list_one->node[DOUBLE_LIST_NEXT_INDEX], .node[DOUBLE_LIST_PREV_INDEX] = list_one->node[DOUBLE_LIST_PREV_INDEX],
-    };
-
-    *list_one = *list_two = (double_list_s) { 0 };
-
-    return list;
+    (*source) = (double_list_s) { 0 }; // clear source
 }
 
 /// @brief Splits list at index and removes size parameter elements as new list.
@@ -1459,58 +1500,68 @@ static inline double_list_s split_double_list(double_list_s * list, const size_t
     DOUBLE_LIST_ASSERT(size && "[ERROR] Size parameter can't be zero");
     DOUBLE_LIST_ASSERT(size <= list->size && "[ERROR] Size parameter bigger than list size.");
 
-    if (!size) {
-        return (double_list_s) { 0 };
+    double_list_s split = { 0 }; // create empty list to push list's split elements into
+
+    size_t list_current = list->head;
+    const size_t real_index = index <= (list->size >> 1) ? index : list->size - index;
+    const bool node_index = real_index == index ? DOUBLE_LIST_NEXT_INDEX : DOUBLE_LIST_PREV_INDEX;
+    for (size_t i = 0; i < list->size; ++i) { // go to list element index at parameter index
+        list_current = list->node[node_index][list_current];
     }
 
-    const size_t split_chunk = size - (size % REALLOC_DOUBLE_LIST_CHUNK) + REALLOC_DOUBLE_LIST_CHUNK;
-    double_list_s const split_list = {
-        .elements       = DOUBLE_LIST_REALLOC(NULL, sizeof(DOUBLE_LIST_DATA_TYPE) * split_chunk), .head = 0, .size = size,
-        .node[DOUBLE_LIST_NEXT_INDEX] = DOUBLE_LIST_REALLOC(NULL, sizeof(size_t) * split_chunk),
-        .node[DOUBLE_LIST_PREV_INDEX] = DOUBLE_LIST_REALLOC(NULL, sizeof(size_t) * split_chunk),
-    };
+    size_t * split_current = &(split.head);
+    for (; split.size < size; split.size++) {
+        if (IS_CAPACITY_DOUBLE_LIST(split.size)) { // if split list reached capacity expand it
+            const size_t expand = EXPAND_CAPACITY_DOUBLE_LIST(split.size);
 
-    DOUBLE_LIST_ASSERT(split_list.elements && "[ERROR] Memory allocation failed");
-    DOUBLE_LIST_ASSERT(split_list.node[DOUBLE_LIST_NEXT_INDEX] && "[ERROR] Memory allocation failed");
-    DOUBLE_LIST_ASSERT(split_list.node[DOUBLE_LIST_PREV_INDEX] && "[ERROR] Memory allocation failed");
-
-    size_t current = list->head; // pointer to change head while splitting
-    if (index <= (list->size >> 1)) {
-        for (size_t i = 0; i < index; ++i) { current = list->node[DOUBLE_LIST_NEXT_INDEX][current]; }
-    } else {
-        for (size_t i = 0; i < list->size - index; ++i) { current = list->node[DOUBLE_LIST_PREV_INDEX][current];}
-    }
-
-    for (size_t i = 0; i < split_list.size; ++i) {
-        split_list.elements[i] = list->elements[current];
-        split_list.node[DOUBLE_LIST_NEXT_INDEX][i] = i + 1, split_list.node[DOUBLE_LIST_PREV_INDEX][i] = i - 1;
-
-        list->size--;
-        list->elements[current] = list->elements[list->size];
-        list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][list->size]] = list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][list->size]] = current;
-
-        if (list->size) {
-            if (!(list->size % REALLOC_DOUBLE_LIST_CHUNK)) { // shorten chunk to save memory if possible
-                list->elements = DOUBLE_LIST_REALLOC(list->elements, list->size * sizeof(DOUBLE_LIST_DATA_TYPE));
-                list->node[DOUBLE_LIST_PREV_INDEX] = DOUBLE_LIST_REALLOC(list->node[DOUBLE_LIST_PREV_INDEX], list->size * sizeof(size_t));
-                list->node[DOUBLE_LIST_NEXT_INDEX] = DOUBLE_LIST_REALLOC(list->node[DOUBLE_LIST_NEXT_INDEX], list->size * sizeof(size_t));
-            }
-
-            current = list->node[DOUBLE_LIST_NEXT_INDEX][current];
-        } else {
-            DOUBLE_LIST_FREE(list->elements);
-            DOUBLE_LIST_FREE(list->node[DOUBLE_LIST_PREV_INDEX]);
-            DOUBLE_LIST_FREE(list->node[DOUBLE_LIST_NEXT_INDEX]);
-            list->elements = (DOUBLE_LIST_DATA_TYPE *) (list->node[DOUBLE_LIST_PREV_INDEX] = list->node[DOUBLE_LIST_NEXT_INDEX] = NULL);
+            split.elements = DOUBLE_LIST_REALLOC(split.elements, expand * sizeof(DOUBLE_LIST_DATA_TYPE));
+            DOUBLE_LIST_ASSERT(split.elements && "[ERROR] Memory allocation failed.");
+            split.node[DOUBLE_LIST_NEXT_INDEX] = DOUBLE_LIST_REALLOC(split.node[DOUBLE_LIST_NEXT_INDEX], expand * sizeof(size_t));
+            DOUBLE_LIST_ASSERT(split.node[DOUBLE_LIST_NEXT_INDEX] && "[ERROR] Memory allocation failed.");
+            split.node[DOUBLE_LIST_PREV_INDEX] = DOUBLE_LIST_REALLOC(split.node[DOUBLE_LIST_PREV_INDEX], expand * sizeof(size_t));
+            DOUBLE_LIST_ASSERT(split.node[DOUBLE_LIST_PREV_INDEX] && "[ERROR] Memory allocation failed.");
         }
-    }
-    split_list.node[DOUBLE_LIST_NEXT_INDEX][split_list.size - 1] = 0; split_list.node[DOUBLE_LIST_PREV_INDEX][0] = split_list.size - 1;
 
-    if (!index || ((index + size) > list->size)) {
-        list->head = current;
+        split.elements[split.size] = list->elements[list_current];
+        (*split_current) = split.size; // set head and next nodes to next index
+        split.node[DOUBLE_LIST_PREV_INDEX][split.size] = split.size - 1; // set previous node indexes to one minus current
+        list->size--;
+
+        // swap element and node indexes at current index with last in elements and nodes arrays
+        list->elements[list_current] = list->elements[list->size];
+        list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][list->size]] = list_current;
+        list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][list->size]] = list_current;
+
+        if (IS_CAPACITY_DOUBLE_LIST(list->size)) { // if list reached bottom capacity shrink it to its size
+            list->elements = DOUBLE_LIST_REALLOC(list->elements, list->size * sizeof(DOUBLE_LIST_DATA_TYPE));
+            DOUBLE_LIST_ASSERT((!(list->size) || list->elements) && "[ERROR] Memory allocation failed.");
+            list->node[DOUBLE_LIST_NEXT_INDEX] = DOUBLE_LIST_REALLOC(list->node[DOUBLE_LIST_NEXT_INDEX], list->size * sizeof(size_t));
+            DOUBLE_LIST_ASSERT((!(list->size) || list->node[DOUBLE_LIST_NEXT_INDEX]) && "[ERROR] Memory allocation failed.");
+            list->node[DOUBLE_LIST_PREV_INDEX] = DOUBLE_LIST_REALLOC(list->node[DOUBLE_LIST_PREV_INDEX], list->size * sizeof(size_t));
+            DOUBLE_LIST_ASSERT((!(list->size) || list->node[DOUBLE_LIST_PREV_INDEX]) && "[ERROR] Memory allocation failed.");
+        }
+
+        list_current = list->node[DOUBLE_LIST_NEXT_INDEX][list_current]; // go to next list node
+        split_current = split.node[DOUBLE_LIST_NEXT_INDEX] + split.size; // go to next split list node pointer
+    }
+    split.node[DOUBLE_LIST_PREV_INDEX][0] = size - 1; // to make list circular first index in previous must point to last element
+    (*split_current) = 0; // make next index of last element in array 0 to make list circular
+
+    if (!list->size) {
+        DOUBLE_LIST_FREE(list->elements);
+        DOUBLE_LIST_FREE(list->node[DOUBLE_LIST_NEXT_INDEX]);
+        DOUBLE_LIST_FREE(list->node[DOUBLE_LIST_PREV_INDEX]);
+
+        list->elements = NULL;
+        list->node[DOUBLE_LIST_NEXT_INDEX] = NULL;
+        list->node[DOUBLE_LIST_PREV_INDEX] = NULL;
     }
 
-    return split_list;
+    if (!index || (index > list->size)) {
+        list->head = list_current;
+    }
+
+    return split;
 }
 
 /// @brief Checks if list is empty.
@@ -1535,33 +1586,27 @@ static inline bool is_full_double_list(const double_list_s list) {
 static inline double_list_s copy_double_list(const double_list_s list, const copy_double_list_fn copy) {
     DOUBLE_LIST_ASSERT(copy && "[ERROR] 'copy' pointer parameter is NULL.");
 
-    if (!list.size) return (double_list_s) { 0 };
+    double_list_s replica = { .head = list.head, .size = 0 };
+    for (; replica.size < list.size; replica.size++) {
+        if (IS_CAPACITY_DOUBLE_LIST(replica.size)) { // if remlica size reached capacity expand it
+            const size_t expand = EXPAND_CAPACITY_DOUBLE_LIST(replica.size);
 
-    const size_t copy_chunk = list.size - (list.size % REALLOC_DOUBLE_LIST_CHUNK) + REALLOC_DOUBLE_LIST_CHUNK;
-    const double_list_s list_copy = {
-        .elements                     = DOUBLE_LIST_REALLOC(NULL, sizeof(DOUBLE_LIST_DATA_TYPE) * copy_chunk),
-        .node[DOUBLE_LIST_NEXT_INDEX] = DOUBLE_LIST_REALLOC(NULL, sizeof(size_t) * copy_chunk),
-        .node[DOUBLE_LIST_PREV_INDEX] = DOUBLE_LIST_REALLOC(NULL, sizeof(size_t) * copy_chunk),
-        .head = list.head, .size = list.size,
-    };
+            replica.elements = DOUBLE_LIST_REALLOC(replica.elements, expand * sizeof(DOUBLE_LIST_DATA_TYPE));
+            DOUBLE_LIST_ASSERT(replica.elements && "[ERROR] Memory allocation failed.");
 
-    DOUBLE_LIST_ASSERT(list_copy.elements && "[ERROR] Memory allocation failed.");
-    DOUBLE_LIST_ASSERT(list_copy.node[DOUBLE_LIST_NEXT_INDEX] && "[ERROR] Memory allocation failed.");
-    DOUBLE_LIST_ASSERT(list_copy.node[DOUBLE_LIST_PREV_INDEX] && "[ERROR] Memory allocation failed.");
+            replica.node[DOUBLE_LIST_NEXT_INDEX] = DOUBLE_LIST_REALLOC(replica.node[DOUBLE_LIST_NEXT_INDEX], expand * sizeof(size_t));
+            DOUBLE_LIST_ASSERT(replica.node[DOUBLE_LIST_NEXT_INDEX] && "[ERROR] Memory allocation failed.");
 
-    if (copy) {
-        for (size_t i = 0; i < list.size; ++i) {
-            list_copy.elements[i] = copy(list.elements[i]);
-            list_copy.node[DOUBLE_LIST_NEXT_INDEX][i] = list.node[DOUBLE_LIST_NEXT_INDEX][i];
-            list_copy.node[DOUBLE_LIST_PREV_INDEX][i] = list.node[DOUBLE_LIST_PREV_INDEX][i];
+            replica.node[DOUBLE_LIST_PREV_INDEX] = DOUBLE_LIST_REALLOC(replica.node[DOUBLE_LIST_PREV_INDEX], expand * sizeof(size_t));
+            DOUBLE_LIST_ASSERT(replica.node[DOUBLE_LIST_PREV_INDEX] && "[ERROR] Memory allocation failed.");
         }
-    } else {
-        memcpy(list_copy.elements, list.elements, list.size * sizeof(DOUBLE_LIST_DATA_TYPE));
-        memcpy(list_copy.node[DOUBLE_LIST_NEXT_INDEX], list.node[DOUBLE_LIST_NEXT_INDEX], list.size * sizeof(size_t));
-        memcpy(list_copy.node[DOUBLE_LIST_PREV_INDEX], list.node[DOUBLE_LIST_PREV_INDEX], list.size * sizeof(size_t));
+
+        replica.elements[replica.size] = copy(list.elements[replica.size]);
+        replica.node[DOUBLE_LIST_NEXT_INDEX][replica.size] = list.node[DOUBLE_LIST_NEXT_INDEX][replica.size];
+        replica.node[DOUBLE_LIST_PREV_INDEX][replica.size] = list.node[DOUBLE_LIST_PREV_INDEX][replica.size];
     }
 
-    return list_copy;
+    return replica;
 }
 
 /// @brief Iterates over elements in list and operates on each of them based on arguments.
@@ -1573,11 +1618,7 @@ static inline void foreach_double_list(double_list_s const * list, const operate
     DOUBLE_LIST_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
 
     size_t current = list->head;
-    for (size_t i = 0; i < list->size; ++i) {
-        if (!operate(&(list->elements[current]), args)) {
-            return;
-        }
-
+    for (size_t i = 0; i < list->size && operate(list->elements + current, args); ++i) {
         current = list->node[DOUBLE_LIST_NEXT_INDEX][current];
     }
 }
@@ -1592,9 +1633,9 @@ static inline void foreach_reverse_double_list(const double_list_s * list, const
 
     size_t current = list->head;
     for (size_t i = 0; i < list->size; ++i) {
-        current = list->node[DOUBLE_LIST_PREV_INDEX][current];
+        current = list->node[DOUBLE_LIST_PREV_INDEX][current]; // first go to previous node from current
 
-        if (!operate(list->elements + current, args)) {
+        if (!operate(list->elements + current, args)) { // then operate on it
             return;
         }
     }
@@ -1604,13 +1645,34 @@ static inline void foreach_reverse_double_list(const double_list_s * list, const
 /// @param list Pointer of list to map.
 /// @param manage Function pointer to manage list as array using its size, and arguments.
 /// @param args Generic arguments to use in manage function, or can be NULL.
-static inline void map_double_list(double_list_s * list, const manage_double_list_fn manage, void * args) {}
+static inline void map_double_list(double_list_s const * list, const manage_double_list_fn manage, void * args) {
+    DOUBLE_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
+    DOUBLE_LIST_ASSERT(manage && "[ERROR] 'manage' parameter pointer is NULL.");
+
+    DOUBLE_LIST_DATA_TYPE * elements_array = DOUBLE_LIST_REALLOC(NULL, sizeof(DOUBLE_LIST_DATA_TYPE) * list->size);
+    DOUBLE_LIST_ASSERT((!(list->size) || elements_array) && "[ERROR] Memory allocation failed.");
+
+    size_t current = list->head;
+    for (size_t i = 0; i < list->size; ++i) { // copy elements in order into elements array
+        elements_array[i] = list->elements[current];
+        current = list->node[DOUBLE_LIST_NEXT_INDEX][current];
+    }
+
+    manage(elements_array, list->size, args);
+
+    for (size_t i = 0; i < list->size; ++i) { // copy elements back in order to list
+        list->elements[current] = elements_array[i];
+        current = list->node[DOUBLE_LIST_NEXT_INDEX][current];
+    }
+
+    DOUBLE_LIST_FREE(elements_array);
+}
 
 #elif DOUBLE_LIST_MODE == FINITE_PREPROCESSOR_DOUBLE_LIST
 
 #ifndef PREPROCESSOR_DOUBLE_LIST_SIZE
 
-#define PREPROCESSOR_DOUBLE_LIST_SIZE (1 << 10)
+#define PREPROCESSOR_DOUBLE_LIST_SIZE (1 << 5)
 
 #elif PREPROCESSOR_DOUBLE_LIST_SIZE == 0
 
@@ -1619,10 +1681,10 @@ static inline void map_double_list(double_list_s * list, const manage_double_lis
 #endif
 
 typedef struct list {
-    size_t size, head;
-
-    DOUBLE_LIST_DATA_TYPE elements[PREPROCESSOR_DOUBLE_LIST_SIZE];
     size_t node[DOUBLE_LIST_NODE_COUNT][PREPROCESSOR_DOUBLE_LIST_SIZE];
+    DOUBLE_LIST_DATA_TYPE elements[PREPROCESSOR_DOUBLE_LIST_SIZE];
+
+    size_t size, head;
 } double_list_s;
 
 /// @brief Creates an empty list.
@@ -1640,7 +1702,7 @@ static inline void destroy_double_list(double_list_s * list, const destroy_doubl
     DOUBLE_LIST_ASSERT(destroy && "[ERROR] 'destroy' pointer parameter is NULL.");
 
     size_t current = list->head;
-    for (size_t s = 0; destroy && (s < list->size); ++s) {
+    for (size_t i = 0; i < list->size; ++i) {
         destroy(&(list->elements[current]));
         current = list->node[DOUBLE_LIST_NEXT_INDEX][current];
     }
@@ -1651,7 +1713,18 @@ static inline void destroy_double_list(double_list_s * list, const destroy_doubl
 /// @brief Clears a list's elements using a function pointer.
 /// @param list Pointer of list to destroy.
 /// @param destroy Destroy function pointer to destroy/free each element in list.
-static inline void clear_double_list(double_list_s * list, const destroy_double_list_fn destroy) {}
+static inline void clear_double_list(double_list_s * list, const destroy_double_list_fn destroy) {
+    DOUBLE_LIST_ASSERT(list && "[ERROR] 'list' pointer parameter is NULL.");
+    DOUBLE_LIST_ASSERT(destroy && "[ERROR] 'destroy' pointer parameter is NULL.");
+
+    size_t current = list->head;
+    for (size_t i = 0; i < list->size; ++i) {
+        destroy(&(list->elements[current]));
+        current = list->node[DOUBLE_LIST_NEXT_INDEX][current];
+    }
+
+    list->size = list->head = 0;
+}
 
 /// @brief Inserts element into list based on index number.
 /// @param list Pointer of list to insert element into.
@@ -1664,21 +1737,17 @@ static inline void insert_at_double_list(double_list_s * list, const size_t inde
     DOUBLE_LIST_ASSERT(~list->size && "[ERROR] List size will overflow.");
 
     size_t current = list->head;
-
-    if (index <= (list->size >> 1)) {
-        for (size_t i = 0; i < index; ++i) {
-            current = list->node[DOUBLE_LIST_NEXT_INDEX][current];
-        }
-    } else {
-        for (size_t i = 0; i < list->size - index; ++i) {
-            current = list->node[DOUBLE_LIST_PREV_INDEX][current];
-        }
+    const size_t real_index = index <= (list->size >> 1) ? index : list->size - index;
+    const bool node_index = real_index == index ? DOUBLE_LIST_NEXT_INDEX : DOUBLE_LIST_PREV_INDEX;
+    for (size_t i = 0; i < list->size; ++i) {
+        current = list->node[node_index][current];
     }
 
     list->node[DOUBLE_LIST_NEXT_INDEX][list->size] = current;
     list->node[DOUBLE_LIST_PREV_INDEX][list->size] = list->node[DOUBLE_LIST_PREV_INDEX][current];
 
-    list->node[DOUBLE_LIST_PREV_INDEX][current] = list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][current]] = list->size;
+    list->node[DOUBLE_LIST_PREV_INDEX][current]  = list->size;
+    list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][current]] = list->size;
     if (!index) {
         list->head = list->size;
     }
@@ -1696,14 +1765,10 @@ static inline DOUBLE_LIST_DATA_TYPE get_double_list(const double_list_s list, co
     DOUBLE_LIST_ASSERT(index < list.size && "[ERROR] 'index' parameter exceeds list size.");
 
     size_t current = list.head;
-    if (index < (list.size << 2)) {
-        for (size_t i = 0; i < index; ++i) {
-            current = list.node[DOUBLE_LIST_NEXT_INDEX][current];
-        }
-    } else {
-        for (size_t i = 0; i < list.size - index; ++i) {
-            current = list.node[DOUBLE_LIST_PREV_INDEX][current];
-        }
+    const size_t real_index = index <= (list.size >> 1) ? index : list.size - index;
+    const bool node_index = real_index == index ? DOUBLE_LIST_NEXT_INDEX : DOUBLE_LIST_PREV_INDEX;
+    for (size_t i = 0; i < list.size; ++i) {
+        current = list.node[node_index][current];
     }
 
     return list.elements[current];
@@ -1720,9 +1785,8 @@ static inline DOUBLE_LIST_DATA_TYPE remove_first_double_list(double_list_s * lis
     DOUBLE_LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
 
     size_t current = list->head;
-    for (size_t s = 0; s < list->size; ++s) {
-        const int comparison = compare ? compare(&(list->elements[current]), &element) : memcmp(&(list->elements[current]), &element, sizeof(DOUBLE_LIST_DATA_TYPE));
-        if (0 != comparison) {
+    for (size_t i = 0; i < list->size; ++i) {
+        if (0 != compare(list->elements[current], element)) {
             current = list->node[DOUBLE_LIST_NEXT_INDEX][current];
             continue;
         }
@@ -1736,16 +1800,17 @@ static inline DOUBLE_LIST_DATA_TYPE remove_first_double_list(double_list_s * lis
         list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][current]] = list->node[DOUBLE_LIST_NEXT_INDEX][current];
         list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][current]] = list->node[DOUBLE_LIST_PREV_INDEX][current];
 
-        DOUBLE_LIST_DATA_TYPE found = list->elements[current];
-
+        DOUBLE_LIST_DATA_TYPE removed = list->elements[current];
         list->size--;
+
         list->node[DOUBLE_LIST_NEXT_INDEX][current] = list->node[DOUBLE_LIST_NEXT_INDEX][list->size];
         list->node[DOUBLE_LIST_PREV_INDEX][current] = list->node[DOUBLE_LIST_PREV_INDEX][list->size];
 
-        list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][list->size]] = list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][list->size]] = current;
+        list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][list->size]] = current;
+        list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][list->size]] = current;
         list->elements[current] = list->elements[list->size];
 
-        return found;
+        return removed;
     }
 
     DOUBLE_LIST_ASSERT(false && "[ERROR] Element not found in list.");
@@ -1763,11 +1828,10 @@ static inline DOUBLE_LIST_DATA_TYPE remove_last_double_list(double_list_s * list
     DOUBLE_LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
 
     size_t current = list->head;
-    for (size_t s = 0; s < list->size; ++s) {
+    for (size_t i = 0; i < list->size; ++i) {
         current = list->node[DOUBLE_LIST_PREV_INDEX][current];
 
-        const int comparison = compare ? compare(&(list->elements[current]), &element) : memcmp(&(list->elements[current]), &element, sizeof(DOUBLE_LIST_DATA_TYPE));
-        if (0 != comparison) {
+        if (0 != compare(list->elements[current], element)) {
             continue;
         }
 
@@ -1780,16 +1844,17 @@ static inline DOUBLE_LIST_DATA_TYPE remove_last_double_list(double_list_s * list
         list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][current]] = list->node[DOUBLE_LIST_NEXT_INDEX][current];
         list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][current]] = list->node[DOUBLE_LIST_PREV_INDEX][current];
 
-        DOUBLE_LIST_DATA_TYPE found = list->elements[current];
-
+        DOUBLE_LIST_DATA_TYPE removed = list->elements[current];
         list->size--;
+
         list->node[DOUBLE_LIST_NEXT_INDEX][current] = list->node[DOUBLE_LIST_NEXT_INDEX][list->size];
         list->node[DOUBLE_LIST_PREV_INDEX][current] = list->node[DOUBLE_LIST_PREV_INDEX][list->size];
 
-        list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][list->size]] = list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][list->size]] = current;
+        list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][list->size]] = current;
+        list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][list->size]] = current;
         list->elements[current] = list->elements[list->size];
 
-        return found;
+        return removed;
     }
 
     DOUBLE_LIST_ASSERT(false && "[ERROR] Element not found in double_list.");
@@ -1806,14 +1871,10 @@ static inline DOUBLE_LIST_DATA_TYPE remove_at_double_list(double_list_s * list, 
     DOUBLE_LIST_ASSERT(index < list->size && "[ERROR] Index greater than size");
 
     size_t current = list->head;
-    if (index <= (list->size >> 1)) {
-        for (size_t i = 0; i < index; ++i) {
-            current = list->node[DOUBLE_LIST_NEXT_INDEX][current];
-        }
-    } else {
-        for (size_t i = 0; i < list->size - index; ++i) {
-            current = list->node[DOUBLE_LIST_PREV_INDEX][current];
-        }
+    const size_t real_index = index <= (list->size >> 1) ? index : list->size - index;
+    const bool node_index = real_index == index ? DOUBLE_LIST_NEXT_INDEX : DOUBLE_LIST_PREV_INDEX;
+    for (size_t i = 0; i < list->size; ++i) {
+        current = list->node[node_index][current];
     }
 
     if (list->head == list->size - 1) {
@@ -1825,16 +1886,17 @@ static inline DOUBLE_LIST_DATA_TYPE remove_at_double_list(double_list_s * list, 
     list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][current]] = list->node[DOUBLE_LIST_NEXT_INDEX][current];
     list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][current]] = list->node[DOUBLE_LIST_PREV_INDEX][current];
 
-    DOUBLE_LIST_DATA_TYPE found = list->elements[current];
-
+    DOUBLE_LIST_DATA_TYPE removed = list->elements[current];
     list->size--;
+
     list->node[DOUBLE_LIST_NEXT_INDEX][current] = list->node[DOUBLE_LIST_NEXT_INDEX][list->size];
     list->node[DOUBLE_LIST_PREV_INDEX][current] = list->node[DOUBLE_LIST_PREV_INDEX][list->size];
 
-    list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][list->size]] = list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][list->size]] = current;
+    list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][list->size]] = current;
+    list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][list->size]] = current;
     list->elements[current] = list->elements[list->size];
 
-    return found;
+    return removed;
 }
 
 /// @brief Reverses list element ordering.
@@ -1843,7 +1905,7 @@ static inline void reverse_double_list(double_list_s * list) {
     DOUBLE_LIST_ASSERT(list && "[ERROR] 'list' pointer parameter is NULL.");
 
     size_t current = list->head;
-    for (size_t s = 0; s < list->size; ++s) {
+    for (size_t i = 0; i < list->size; ++i) {
         list->head = current;
 
         const size_t temp = list->node[DOUBLE_LIST_NEXT_INDEX][current];
@@ -1861,7 +1923,7 @@ static inline void shift_next_double_list(double_list_s * list, const size_t shi
     DOUBLE_LIST_ASSERT(list && "[ERROR] 'list' pointer parameter is NULL.");
     DOUBLE_LIST_ASSERT(list->size && "[ERROR] Can't shift empty list.");
 
-    for (size_t s = 0; list->size && (s < shift); ++s) {
+    for (size_t i = 0; i < shift; ++i) {
         list->head = list->node[DOUBLE_LIST_NEXT_INDEX][list->head];
     }
 }
@@ -1873,7 +1935,7 @@ static inline void shift_prev_double_list(double_list_s * list, const size_t shi
     DOUBLE_LIST_ASSERT(list && "[ERROR] 'list' pointer parameter is NULL.");
     DOUBLE_LIST_ASSERT(list->size && "[ERROR] Can't shift empty list.");
 
-    for (size_t s = 0; list->size && (s < shift); ++s) {
+    for (size_t i = 0; i < shift; ++i) {
         list->head = list->node[DOUBLE_LIST_PREV_INDEX][list->head];
     }
 }
@@ -1882,57 +1944,47 @@ static inline void shift_prev_double_list(double_list_s * list, const size_t shi
 /// @param destination Pointer of list to splice into.
 /// @param source Pointer of list to splice from.
 /// @param index Zero-based index at destination list to start splicing.
-static inline void splice_double_list(double_list_s * restrict list_one, double_list_s * restrict list_two, const size_t index) {
-    DOUBLE_LIST_ASSERT(list_one && "[ERROR] 'list_one' parameter pointer is NULL.");
-    DOUBLE_LIST_ASSERT(list_two && "[ERROR] 'list_two' parameter pointer is NULL.");
-    DOUBLE_LIST_ASSERT(list_one != list_two && "[ERROR] Lists can't be the same.");
-    DOUBLE_LIST_ASSERT(index <= list_one->size && "[ERROR] index can't exceed list_one's size");
-    DOUBLE_LIST_ASSERT(list_one->size + list_two->size <= PREPROCESSOR_DOUBLE_LIST_SIZE && "[ERROR] new list's size exceeds PREPROCESSOR_DOUBLE_LIST_SIZE");
+static inline void splice_double_list(double_list_s * restrict destination, double_list_s * restrict source, const size_t index) {
+    DOUBLE_LIST_ASSERT(destination && "[ERROR] 'list_one' parameter pointer is NULL.");
+    DOUBLE_LIST_ASSERT(source && "[ERROR] 'list_two' parameter pointer is NULL.");
+    DOUBLE_LIST_ASSERT(destination != source && "[ERROR] Lists can't be the same.");
+    DOUBLE_LIST_ASSERT(index <= destination->size && "[ERROR] index can't exceed list_one's size");
+    DOUBLE_LIST_ASSERT(destination->size + source->size <= PREPROCESSOR_DOUBLE_LIST_SIZE && "[ERROR] new list's size exceeds PREPROCESSOR_DOUBLE_LIST_SIZE");
 
-    list_two->head += list_one->size;
-    for (size_t i = 0; i < list_two->size; ++i) { // incrementing list_twos indexes since they get appended to list_one
-        list_two->node[DOUBLE_LIST_NEXT_INDEX][i] += list_one->size;
-        list_two->node[DOUBLE_LIST_PREV_INDEX][i] += list_one->size;
+    size_t current = destination->head;
+    const size_t real_index = index <= (destination->size >> 1) ? index : destination->size - index;
+    const bool node_index = real_index == index ? DOUBLE_LIST_NEXT_INDEX : DOUBLE_LIST_PREV_INDEX;
+    for (size_t i = 0; i < destination->size; ++i) {
+        current = destination->node[node_index][current];
     }
 
-    size_t current = list_one->head;
-    if (index < (list_one->size >> 1)) {
-        for (size_t i = 0; i < index; ++i) {
-            current = list_one->node[DOUBLE_LIST_NEXT_INDEX][current];
-        }
-    } else {
-        for (size_t i = 0; i < list_one->size - index; ++i) {
-            current = list_one->node[DOUBLE_LIST_PREV_INDEX][current];
-        }
+    for (size_t i = 0; i < source->size; ++i) {
+        destination->elements[destination->size + i] = source->elements[i];
+        destination->node[DOUBLE_LIST_NEXT_INDEX][destination->size + i] = source->node[DOUBLE_LIST_NEXT_INDEX][i] + destination->size;
+        destination->node[DOUBLE_LIST_PREV_INDEX][destination->size + i] = source->node[DOUBLE_LIST_PREV_INDEX][i] + destination->size;
     }
 
-    if (list_one->size && list_two->size) {
-        const size_t first_one = current;
-        const size_t last_one  = list_one->node[DOUBLE_LIST_PREV_INDEX][current];
+    if (destination->size && source->size) {
+        const size_t first_destination = current;
+        const size_t last_destination  = destination->node[DOUBLE_LIST_PREV_INDEX][current];
 
-        const size_t first_two = list_two->head;
-        const size_t last_two  = list_two->node[DOUBLE_LIST_PREV_INDEX][list_two->head];
+        const size_t first_source = source->head + destination->size;
+        const size_t last_source  = source->node[DOUBLE_LIST_PREV_INDEX][source->head] + destination->size;
 
-        list_one->node[DOUBLE_LIST_NEXT_INDEX][last_one] = first_two;
-        list_two->node[DOUBLE_LIST_PREV_INDEX][first_two] = last_one;
+        destination->node[DOUBLE_LIST_NEXT_INDEX][last_destination] = first_source;
+        destination->node[DOUBLE_LIST_PREV_INDEX][first_source] = last_destination;
 
-        list_two->node[DOUBLE_LIST_NEXT_INDEX][last_two] = first_one;
-        list_one->node[DOUBLE_LIST_PREV_INDEX][first_one] = last_two;
+        destination->node[DOUBLE_LIST_NEXT_INDEX][last_source] = first_destination;
+        destination->node[DOUBLE_LIST_PREV_INDEX][first_destination] = last_source;
     }
 
-    double_list_s list = { .head = (index || !list_two->size) ? list_one->head : list_two->head, .size = list_one->size + list_two->size, };
-    memcpy(list.elements, list_one->elements, sizeof(DOUBLE_LIST_DATA_TYPE) * list_one->size);
-    memcpy(list.node[DOUBLE_LIST_NEXT_INDEX], list_one->node[DOUBLE_LIST_NEXT_INDEX], sizeof(size_t) * list_one->size);
-    memcpy(list.node[DOUBLE_LIST_PREV_INDEX], list_one->node[DOUBLE_LIST_PREV_INDEX], sizeof(size_t) * list_one->size);
+    if (!index && source->size) { // if source isn't empty and inedx points to head node destination's make head to source's
+        destination->head = source->head + destination->size;
+    }
 
-    memcpy(list.elements + list_one->size, list_two->elements, sizeof(DOUBLE_LIST_DATA_TYPE) * list_two->size);
-    memcpy(list.node[DOUBLE_LIST_NEXT_INDEX] + list_one->size, list_two->node[DOUBLE_LIST_NEXT_INDEX], sizeof(size_t) * list_two->size);
-    memcpy(list.node[DOUBLE_LIST_PREV_INDEX] + list_one->size, list_two->node[DOUBLE_LIST_PREV_INDEX], sizeof(size_t) * list_two->size);
+    destination->size += source->size;
 
-    list_one->size = list_two->size = 0;
-    list_one->head = list_two->head = 0;
-
-    return list;
+    source->size = source->head = 0; // clear source, DON'T DESTROY IT
 }
 
 /// @brief Splits list at index and removes size parameter elements as new list.
@@ -1947,40 +1999,38 @@ static inline double_list_s split_double_list(double_list_s * list, const size_t
     DOUBLE_LIST_ASSERT(size && "[ERROR] Size parameter can't be zero");
     DOUBLE_LIST_ASSERT(size <= list->size && "[ERROR] Size parameter bigger than list size.");
 
-    if (!size) {
-        return (double_list_s) { .head = 0, .size = 0 };
+    size_t list_current = list->head;
+    const size_t real_index = index < (list->size >> 1) ? index : list->size - index;
+    const bool node_index = real_index == index ? DOUBLE_LIST_NEXT_INDEX : DOUBLE_LIST_PREV_INDEX;
+    for (size_t i = 0; i < real_index; ++i) {
+        list_current = list->node[node_index][list_current];
     }
 
-    size_t current = list->head;
-    if (index <= (list->size >> 1)) {
-        for (size_t i = 0; i < index; ++i) {
-            current = list->node[DOUBLE_LIST_NEXT_INDEX][current];
-        }
-    } else {
-        for (size_t i = 0; i < list->size - index; ++i) {
-            current = list->node[DOUBLE_LIST_PREV_INDEX][current];
-        }
-    }
+    double_list_s split = { .head = 0, .size = 0, };
 
-    double_list_s split_list = { .head = 0, .size = size, };
-
-    for (size_t i = 0; i < split_list.size; ++i) {
-        split_list.elements[i] = list->elements[current];
-        split_list.node[DOUBLE_LIST_NEXT_INDEX][i] = i + 1, split_list.node[DOUBLE_LIST_PREV_INDEX][i] = i - 1;
-
+    size_t * split_current = &(split.head);
+    for (; split.size < list->size; split.size++) {
+        split.elements[split.size] = list->elements[list_current];
+        (*split_current) = split.size; // set head and next nodes to next index
+        split.node[DOUBLE_LIST_PREV_INDEX][split.size] = split.size - 1; // set previous node indexes to one minus current
         list->size--;
-        list->elements[current] = list->elements[list->size];
-        list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][list->size]] = list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][list->size]] = current;
 
-        current = list->node[DOUBLE_LIST_NEXT_INDEX][current];
+        // swap element and node indexes at current index with last in elements and nodes arrays
+        list->elements[list_current] = list->elements[list->size];
+        list->node[DOUBLE_LIST_PREV_INDEX][list->node[DOUBLE_LIST_NEXT_INDEX][list->size]] = list_current;
+        list->node[DOUBLE_LIST_NEXT_INDEX][list->node[DOUBLE_LIST_PREV_INDEX][list->size]] = list_current;
+
+        list_current = list->node[DOUBLE_LIST_NEXT_INDEX][list_current]; // go to next list node
+        split_current = split.node[DOUBLE_LIST_NEXT_INDEX] + split.size; // go to next split list node pointer
     }
-    split_list.node[DOUBLE_LIST_NEXT_INDEX][split_list.size - 1] = 0; split_list.node[DOUBLE_LIST_PREV_INDEX][0] = split_list.size - 1;
+    split.node[DOUBLE_LIST_PREV_INDEX][0] = size - 1; // to make list circular first index in previous must point to last element
+    (*split_current) = 0;
 
-    if (!index || ((index + size) > list->size)) {
-        list->head = current;
+    if (!index || (index > list->size)) {
+        list->head = list_current;
     }
 
-    return split_list;
+    return split;
 }
 
 /// @brief Checks if list is empty.
@@ -2004,21 +2054,14 @@ static inline bool is_full_double_list(const double_list_s list) {
 static inline double_list_s copy_double_list(const double_list_s list, const copy_double_list_fn copy) {
     DOUBLE_LIST_ASSERT(copy && "[ERROR] 'copy' pointer parameter is NULL.");
 
-    double_list_s list_copy = { .head = list.head, .size = list.size, };
-
-    if (copy) {
-        for (size_t i = 0; i < list.size; ++i) {
-            list_copy.elements[i] = copy(list.elements[i]);
-            list_copy.node[DOUBLE_LIST_NEXT_INDEX][i] = list.node[DOUBLE_LIST_NEXT_INDEX][i];
-            list_copy.node[DOUBLE_LIST_PREV_INDEX][i] = list.node[DOUBLE_LIST_PREV_INDEX][i];
-        }
-    } else {
-        memcpy(list_copy.elements, list.elements, list.size * sizeof(DOUBLE_LIST_DATA_TYPE));
-        memcpy(list_copy.node[DOUBLE_LIST_NEXT_INDEX], list.node[DOUBLE_LIST_NEXT_INDEX], list.size * sizeof(size_t));
-        memcpy(list_copy.node[DOUBLE_LIST_PREV_INDEX], list.node[DOUBLE_LIST_PREV_INDEX], list.size * sizeof(size_t));
+    double_list_s replica = { .head = list.head, .size = 0, };
+    for (; replica.size < list.size; replica.size++) {
+        replica.elements[replica.size] = copy(list.elements[replica.size]);
+        replica.node[DOUBLE_LIST_NEXT_INDEX][replica.size] = list.node[DOUBLE_LIST_NEXT_INDEX][replica.size];
+        replica.node[DOUBLE_LIST_PREV_INDEX][replica.size] = list.node[DOUBLE_LIST_PREV_INDEX][replica.size];
     }
 
-    return list_copy;
+    return replica;
 }
 
 /// @brief Iterates over elements in list and operates on each of them based on arguments.
@@ -2030,11 +2073,7 @@ static inline void foreach_double_list(double_list_s * list, const operate_doubl
     DOUBLE_LIST_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
 
     size_t current = list->head;
-    for (size_t i = 0; i < list->size; ++i) {
-        if (!operate(&(list->elements[current]), args)) {
-            return;
-        }
-
+    for (size_t i = 0; i < list->size && operate(list->elements + current, args); ++i) {
         current = list->node[DOUBLE_LIST_NEXT_INDEX][current];
     }
 }
@@ -2061,8 +2100,30 @@ static inline void foreach_reverse_double_list(double_list_s * list, const opera
 /// @param list Pointer of list to map.
 /// @param manage Function pointer to manage list as array using its size, and arguments.
 /// @param args Generic arguments to use in manage function, or can be NULL.
-static inline void map_double_list(double_list_s * list, const manage_double_list_fn manage, void * args) {}
+static inline void map_double_list(double_list_s * list, const manage_double_list_fn manage, void * args) {
+    DOUBLE_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
+    DOUBLE_LIST_ASSERT(manage && "[ERROR] 'manage' parameter pointer is NULL.");
+
+    DOUBLE_LIST_DATA_TYPE elements_array[PREPROCESSOR_DOUBLE_LIST_SIZE];
+
+    size_t current = list->head;
+    for (size_t i = 0; i < list->size; ++i) {
+        elements_array[i] = list->elements[current];
+        current = list->node[DOUBLE_LIST_NEXT_INDEX][current];
+    }
+
+    manage(elements_array, list->size, args);
+
+    for (size_t i = 0; i < list->size; ++i) {
+        list->elements[current] = elements_array[i];
+        current = list->node[DOUBLE_LIST_NEXT_INDEX][current];
+    }
+}
 
 #endif
+
+#else
+
+#error Cannot include multiple headers in same unit.
 
 #endif // DOUBLE_LIST_H

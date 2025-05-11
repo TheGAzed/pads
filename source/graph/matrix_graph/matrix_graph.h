@@ -133,7 +133,7 @@ typedef bool                          (*operate_vertex_matrix_graph_fn) (MATRIX_
 /// @brief Function pointer to manage an array of graph elements based on generic arguments.
 typedef void                          (*manage_vertex_matrix_graph_fn)  (MATRIX_GRAPH_VERTEX_DATA_TYPE *, const size_t, void *);
 
-#if   FINITE_ALLOCATED_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH    == MATRIX_GRAPH_MODE
+#if   MATRIX_GRAPH_MODE == FINITE_ALLOCATED_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH
 
 typedef struct matrix_graph {
     size_t size, max;
@@ -802,7 +802,7 @@ static inline bool table_search_matrix_graph(matrix_graph_s const * graph, const
 
     size_t current_index = end_index;
     stack.array[(stack.size)++] = current_index;
-    while (table.distance[current_index]) {
+    while (table.distance[current_index] && table.distance[current_index] != MATRIX_GRAPH_TABLE_INFINITE_DISTANCE) {
         current_index = table.previous[current_index];
         stack.array[(stack.size)++] = current_index;
     }
@@ -839,11 +839,11 @@ static inline void forevery_matrix_graph(matrix_graph_s const * graph, const man
     manage(graph->vertices, graph->size, args);
 }
 
-#elif INFINITE_REALLOC_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH    == MATRIX_GRAPH_MODE
-#elif FINITE_PRERPOCESSOR_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH == MATRIX_GRAPH_MODE
-#elif FINITE_ALLOCATED_MATRIX_GRAPH                              == MATRIX_GRAPH_MODE
-#elif INFINITE_REALLOC_MATRIX_GRAPH                              == MATRIX_GRAPH_MODE
-#elif FINITE_PRERPOCESSOR_MATRIX_GRAPH                           == MATRIX_GRAPH_MODE
+#elif MATRIX_GRAPH_MODE == INFINITE_REALLOC_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH
+#elif MATRIX_GRAPH_MODE == FINITE_PRERPOCESSOR_STRICTLY_LOWER_TRIANGULAR_MATRIX_GRAPH
+#elif MATRIX_GRAPH_MODE == FINITE_ALLOCATED_MATRIX_GRAPH
+#elif MATRIX_GRAPH_MODE == INFINITE_REALLOC_MATRIX_GRAPH
+#elif MATRIX_GRAPH_MODE == FINITE_PRERPOCESSOR_MATRIX_GRAPH
 #endif
 
 #endif // MATRIX_GRAPH_H
