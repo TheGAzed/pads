@@ -1649,7 +1649,7 @@ TEST FACL_SPLIT_05(void) {
 }
 
 SUITE (finite_allocated_circular_list_test) {
-        // create
+    // create
     RUN_TEST(FACL_CREATE_01);
     // destroy
     RUN_TEST(FACL_DESTROY_01); RUN_TEST(FACL_DESTROY_02); RUN_TEST(FACL_DESTROY_03); RUN_TEST(FACL_DESTROY_04);

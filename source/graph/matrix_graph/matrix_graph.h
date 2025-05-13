@@ -129,7 +129,7 @@ typedef void                          (*destroy_vertex_matrix_graph_fn) (MATRIX_
 /// @brief Function pointer to destroy/free a vertex element for graph element.
 typedef void                          (*destroy_edge_matrix_graph_fn)   (matrix_graph_edge_s *);
 /// @brief Function pointer to operate on a single graph vertex based on generic arguments.
-typedef bool                          (*operate_vertex_matrix_graph_fn) (MATRIX_GRAPH_VERTEX_DATA_TYPE *, void *);
+typedef bool                          (*operate_matrix_graph_fn)        (MATRIX_GRAPH_VERTEX_DATA_TYPE *, void *);
 /// @brief Function pointer to manage an array of graph elements based on generic arguments.
 typedef void                          (*manage_vertex_matrix_graph_fn)  (MATRIX_GRAPH_VERTEX_DATA_TYPE *, const size_t, void *);
 
@@ -395,7 +395,7 @@ static inline matrix_graph_edge_s get_edge_matrix_graph(const matrix_graph_s gra
 /// @param start_index Index of vertex to start breadth first search.
 /// @param operate Operate function pointer to operate on vertex elements using arguments.
 /// @param args Arguments for operate function pointer.
-static inline void breadth_first_search_matrix_graph(matrix_graph_s const * graph, const size_t start_index, const operate_vertex_matrix_graph_fn operate, void * args) {
+static inline void breadth_first_search_matrix_graph(matrix_graph_s const * graph, const size_t start_index, const operate_matrix_graph_fn operate, void * args) {
     MATRIX_GRAPH_ASSERT(graph && "[ERROR] 'graph' parameter pointer is NULL.");
     MATRIX_GRAPH_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
     MATRIX_GRAPH_ASSERT(start_index < graph->size && "[ERROR] 'start_index' parameter must be less than graph size.");
@@ -435,7 +435,7 @@ static inline void breadth_first_search_matrix_graph(matrix_graph_s const * grap
 /// @param start_index Index of vertex to start depth first search.
 /// @param operate Operate function pointer to operate on vertex elements using arguments.
 /// @param args Arguments for operate function pointer.
-static inline void depth_first_search_matrix_graph(matrix_graph_s const * graph, const size_t start_index, const operate_vertex_matrix_graph_fn operate, void * args) {
+static inline void depth_first_search_matrix_graph(matrix_graph_s const * graph, const size_t start_index, const operate_matrix_graph_fn operate, void * args) {
     MATRIX_GRAPH_ASSERT(graph && "[ERROR] 'graph' parameter pointer is NULL.");
     MATRIX_GRAPH_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
     MATRIX_GRAPH_ASSERT(start_index < graph->size && "[ERROR] 'start_index' parameter must be less than graph size.");
@@ -475,7 +475,7 @@ static inline void depth_first_search_matrix_graph(matrix_graph_s const * graph,
 /// @param operate Operate function pointer to operate on vertex elements using arguments.
 /// @param args Arguments for operate function pointer.
 /// @return Table to lookup shortest distances and paths from start to any end vertex index.
-static inline matrix_graph_table_s dijkstra_matrix_graph(matrix_graph_s const * graph, const size_t start_index, const operate_vertex_matrix_graph_fn operate, void * args) {
+static inline matrix_graph_table_s dijkstra_matrix_graph(matrix_graph_s const * graph, const size_t start_index, const operate_matrix_graph_fn operate, void * args) {
     MATRIX_GRAPH_ASSERT(graph->size && "[ERROR] Graph is empty.");
     MATRIX_GRAPH_ASSERT(graph->edges && "[ERROR] Graph is empty.");
     MATRIX_GRAPH_ASSERT(graph->vertices && "[ERROR] Graph is empty.");
@@ -578,7 +578,7 @@ static inline matrix_graph_table_s bellman_ford_matrix_graph(const matrix_graph_
 /// @param operate Function pointer to operate on vertex using arguments.
 /// @param args Generci arguments for operate function.
 /// @return Table to lookup minimum spanning tree from start vertex index.
-static inline matrix_graph_table_s prim_matrix_graph(const matrix_graph_s graph, const size_t start_index, const operate_vertex_matrix_graph_fn operate, void * args) {
+static inline matrix_graph_table_s prim_matrix_graph(const matrix_graph_s graph, const size_t start_index, const operate_matrix_graph_fn operate, void * args) {
     MATRIX_GRAPH_ASSERT(start_index < graph.size && "'end_index' parameter must be less than graph size.");
 
     bool * visited_vertex_array = MATRIX_GRAPH_ALLOC(graph.size * sizeof(bool));
@@ -630,6 +630,7 @@ static inline matrix_graph_table_s prim_matrix_graph(const matrix_graph_s graph,
     return table;
 }
 
+#if 0
 /// @brief Kruskal's algorithm where the table for a minimum spanning tree is created.
 /// @param graph Graph structure.
 /// @param operate Function pointer that allows operations on all merged vertecies of the smallest edges based on arguments.
@@ -639,7 +640,7 @@ static inline matrix_graph_table_s prim_matrix_graph(const matrix_graph_s graph,
 /// @return Table to lookup minimum spanning tree from start vertex index.
 /// @note This code is based on https://github.com/OpenGenus/cosmos/blob/master/code/greedy_algorithms/src/kruskal_minimum_spanning_tree/kruskal.c,
 /// but with no recursion and
-static inline matrix_graph_table_s kruskal_matrix_graph(const matrix_graph_s graph, const operate_vertex_matrix_graph_fn operate, void * args) {
+static inline matrix_graph_table_s kruskal_matrix_graph(const matrix_graph_s graph, const operate_matrix_graph_fn operate, void * args) {
     MATRIX_GRAPH_ASSERT(graph.size && "Graph is empty.");
 
     struct kruskal_edge {
@@ -732,6 +733,7 @@ static inline matrix_graph_table_s kruskal_matrix_graph(const matrix_graph_s gra
 
     return table;
 }
+#endif
 
 /// @brief Destroys table with allocated memory.
 /// @param table Array table to lookup shortest distances and paths from start to any end vertex index.
@@ -752,7 +754,7 @@ static inline void destroy_table_matrix_graph(matrix_graph_table_s * table) {
 /// @return A subgraph of graph based on lookup table.
 /// @note Its main purpose is to create a minimum spanning tree for Prim's and Kruskal’s tables based on graph. It can also be used to generate Dijkstra's 
 /// and other table subgraphs, which might have some uses I am not aware of, idk.
-static inline matrix_graph_s create_table_subgraph_matrix_graph(const matrix_graph_s graph, const matrix_graph_table_s table, const copy_vertex_matrix_graph_fn copy) {
+static inline matrix_graph_s table_subgraph_matrix_graph(const matrix_graph_s graph, const matrix_graph_table_s table, const copy_vertex_matrix_graph_fn copy) {
     const size_t matrix_size = (graph.max * (graph.max - 1)) >> 1;
     const matrix_graph_s subgraph = {
         .max = graph.max, .size = graph.size,
@@ -788,7 +790,7 @@ static inline matrix_graph_s create_table_subgraph_matrix_graph(const matrix_gra
 /// @param operate Operate function pointer to operate on vertex elements using arguments.
 /// @param args Arguments for operate function pointer.
 /// @return true if path exists, false if not.
-static inline bool table_search_matrix_graph(matrix_graph_s const * graph, const matrix_graph_table_s table, const size_t end_index, const operate_vertex_matrix_graph_fn operate, void * args) {
+static inline bool table_search_matrix_graph(matrix_graph_s const * graph, const matrix_graph_table_s table, const size_t end_index, const operate_matrix_graph_fn operate, void * args) {
     MATRIX_GRAPH_ASSERT(graph && "[ERROR] 'graph' parameter pointer is NULL.");
     MATRIX_GRAPH_ASSERT(operate && "[ERROR] 'operator' parameter function pointer is NULL.");
     MATRIX_GRAPH_ASSERT(end_index < graph->size && "'end_index' parameter must be less than graph size.");
@@ -821,7 +823,7 @@ static inline bool table_search_matrix_graph(matrix_graph_s const * graph, const
 /// @param graph Graph structure pointer.
 /// @param operate Operate function pointer to operate on vertex elements using arguments.
 /// @param args Arguments for operate function pointer.
-static inline void foreach_matrix_graph(matrix_graph_s const * graph, const operate_vertex_matrix_graph_fn operate, void * args) {
+static inline void foreach_matrix_graph(matrix_graph_s const * graph, const operate_matrix_graph_fn operate, void * args) {
     MATRIX_GRAPH_ASSERT(graph && "[ERROR] 'graph' parameter pointer is NULL.");
     MATRIX_GRAPH_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
 
