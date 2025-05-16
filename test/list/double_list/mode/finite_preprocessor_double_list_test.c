@@ -481,12 +481,12 @@ TEST FPDL_IS_FULL_04(void) {
     PASS();
 }
 
-TEST FPDL_FOREACH_01(void) {
+TEST FPDL_FOREACH_NEXT_01(void) {
     double_list_s test = create_double_list();
     insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = 0, });
 
     int increment = 5;
-    foreach_double_list(&test, operation_int, &increment);
+    foreach_next_double_list(&test, operation_int, &increment);
 
     ASSERT_EQm("[FPDL-ERROR] Expected incremented element by 'increment'.", 0 + increment, remove_at_double_list(&test, 0).sub_one);
 
@@ -495,14 +495,14 @@ TEST FPDL_FOREACH_01(void) {
     PASS();
 }
 
-TEST FPDL_FOREACH_02(void) {
+TEST FPDL_FOREACH_NEXT_02(void) {
     double_list_s test = create_double_list();
     for (int i = 0; i < PREPROCESSOR_DOUBLE_LIST_SIZE - 1; ++i) {
         insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
     int increment = 5;
-    foreach_double_list(&test, operation_int, &increment);
+    foreach_next_double_list(&test, operation_int, &increment);
 
     for (int i = 0; i < PREPROCESSOR_DOUBLE_LIST_SIZE - 1; ++i) {
         DOUBLE_LIST_DATA_TYPE element = remove_at_double_list(&test, 0);
@@ -514,14 +514,14 @@ TEST FPDL_FOREACH_02(void) {
     PASS();
 }
 
-TEST FPDL_FOREACH_03(void) {
+TEST FPDL_FOREACH_NEXT_03(void) {
     double_list_s test = create_double_list();
     for (int i = 0; i < PREPROCESSOR_DOUBLE_LIST_SIZE; ++i) {
         insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
     int increment = 5;
-    foreach_double_list(&test, operation_int, &increment);
+    foreach_next_double_list(&test, operation_int, &increment);
 
     for (int i = 0; i < PREPROCESSOR_DOUBLE_LIST_SIZE; ++i) {
         ASSERT_EQm("[FPDL-ERROR] Expected incremented element by 'increment'.", i + increment, remove_at_double_list(&test, 0).sub_one);
@@ -532,13 +532,13 @@ TEST FPDL_FOREACH_03(void) {
     PASS();
 }
 
-TEST FPDL_FOREACH_04(void) {
+TEST FPDL_FOREACH_NEXT_04(void) {
     double_list_s test = create_double_list();
 
     insert_at_double_list(&test, test.size, copy_string((DOUBLE_LIST_DATA_TYPE) { .sub_two = TEST_STRING }));
 
     char new_string[] = "[REDACTED]";
-    foreach_double_list(&test, operation_string, new_string);
+    foreach_next_double_list(&test, operation_string, new_string);
 
     DOUBLE_LIST_DATA_TYPE element = remove_at_double_list(&test, 0);
     ASSERT_STRN_EQm("[FPDL-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
@@ -549,7 +549,7 @@ TEST FPDL_FOREACH_04(void) {
     PASS();
 }
 
-TEST FPDL_FOREACH_05(void) {
+TEST FPDL_FOREACH_NEXT_05(void) {
     double_list_s test = create_double_list();
 
     for (int i = 0; i < PREPROCESSOR_DOUBLE_LIST_SIZE - 1; ++i) {
@@ -557,7 +557,7 @@ TEST FPDL_FOREACH_05(void) {
     }
 
     char new_string[] = "[REDACTED]";
-    foreach_double_list(&test, operation_string, new_string);
+    foreach_next_double_list(&test, operation_string, new_string);
 
     for (int i = 0; i < PREPROCESSOR_DOUBLE_LIST_SIZE - 1; ++i) {
         DOUBLE_LIST_DATA_TYPE element = remove_at_double_list(&test, 0);
@@ -570,7 +570,7 @@ TEST FPDL_FOREACH_05(void) {
     PASS();
 }
 
-TEST FPDL_FOREACH_06(void) {
+TEST FPDL_FOREACH_NEXT_06(void) {
     double_list_s test = create_double_list();
 
     for (int i = 0; i < PREPROCESSOR_DOUBLE_LIST_SIZE; ++i) {
@@ -578,7 +578,7 @@ TEST FPDL_FOREACH_06(void) {
     }
 
     char new_string[] = "[REDACTED]";
-    foreach_double_list(&test, operation_string, new_string);
+    foreach_next_double_list(&test, operation_string, new_string);
 
     for (int i = 0; i < PREPROCESSOR_DOUBLE_LIST_SIZE; ++i) {
         DOUBLE_LIST_DATA_TYPE element = remove_at_double_list(&test, 0);
@@ -1588,8 +1588,8 @@ SUITE (finite_preprocessor_double_list_test) {
     // is full
     RUN_TEST(FPDL_IS_FULL_01); RUN_TEST(FPDL_IS_FULL_02); RUN_TEST(FPDL_IS_FULL_03); RUN_TEST(FPDL_IS_FULL_04);
     // foreach
-    RUN_TEST(FPDL_FOREACH_01); RUN_TEST(FPDL_FOREACH_02); RUN_TEST(FPDL_FOREACH_03); RUN_TEST(FPDL_FOREACH_04);
-    RUN_TEST(FPDL_FOREACH_05); RUN_TEST(FPDL_FOREACH_06);
+    RUN_TEST(FPDL_FOREACH_NEXT_01); RUN_TEST(FPDL_FOREACH_NEXT_02); RUN_TEST(FPDL_FOREACH_NEXT_03); RUN_TEST(FPDL_FOREACH_NEXT_04);
+    RUN_TEST(FPDL_FOREACH_NEXT_05); RUN_TEST(FPDL_FOREACH_NEXT_06);
     // map
     RUN_TEST(FPDL_MAP_01); RUN_TEST(FPDL_MAP_02); RUN_TEST(FPDL_MAP_03); RUN_TEST(FPDL_MAP_04);
     RUN_TEST(FPDL_MAP_05); RUN_TEST(FPDL_MAP_06);

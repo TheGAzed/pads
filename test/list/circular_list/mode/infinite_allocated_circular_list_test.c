@@ -7,7 +7,6 @@
 #define MAXIMUM_INFINITE_CIRCULAR_LIST (1 << 4)
 #include <list/circular_list/circular_list.h>
 
-
 TEST IACL_CREATE_01(void) {
     circular_list_s test = create_circular_list();
 
@@ -2178,10 +2177,8 @@ TEST IACL_SPLIT_07(void) {
     PASS();
 }
 
-
-
 SUITE (infinite_allocated_circular_list_test) {
-        // create
+    // create
     RUN_TEST(IACL_CREATE_01);
     // destroy
     RUN_TEST(IACL_DESTROY_01); RUN_TEST(IACL_DESTROY_02); RUN_TEST(IACL_DESTROY_03); RUN_TEST(IACL_DESTROY_04);
