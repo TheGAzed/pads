@@ -36,9 +36,9 @@ C compiler that at least supports the **C99 standard**, for example:
 ### [LIST](https://github.com/TheGAzed/pads/blob/main/source/list)
 - [STRAIGHT LIST](https://github.com/TheGAzed/pads/blob/main/source/list/straight_list)
 - [CIRCULAR LIST](https://github.com/TheGAzed/pads/blob/main/source/list/circular_list)
+- [DOUBLE LIST](https://github.com/TheGAzed/pads/blob/main/source/list/double_list)
 
 ### **In Progress:**
 
-- [DOUBLE LIST](https://github.com/TheGAzed/pads/blob/main/source/list/double_list)
 - [BINARY SET](https://github.com/TheGAzed/pads/blob/main/source/set/binary_set)
 - [MATRIX GRAPH](https://github.com/TheGAzed/pads/blob/main/source/graph/matrix_graph)

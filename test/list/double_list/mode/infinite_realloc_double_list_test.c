@@ -854,6 +854,154 @@ TEST IRDL_FOREACH_NEXT_08(void) {
     PASS();
 }
 
+TEST IRDL_FOREACH_PREV_01(void) {
+    double_list_s test = create_double_list();
+    insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = 0, });
+
+    int increment = 5;
+    foreach_prev_double_list(&test, operation_int, &increment);
+
+    ASSERT_EQm("[IRDL-ERROR] Expected incremented element by 'increment'.", 0 + increment, remove_at_double_list(&test, 0).sub_one);
+
+    destroy_double_list(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRDL_FOREACH_PREV_02(void) {
+    double_list_s test = create_double_list();
+    for (int i = 0; i < REALLOC_DOUBLE_LIST_CHUNK - 1; ++i) {
+        insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    int increment = 5;
+    foreach_prev_double_list(&test, operation_int, &increment);
+
+    for (int i = 0; i < REALLOC_DOUBLE_LIST_CHUNK - 1; ++i) {
+        ASSERT_EQm("[IRDL-ERROR] Expected incremented element by 'increment'.", i + increment, remove_at_double_list(&test, 0).sub_one);
+    }
+
+    destroy_double_list(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRDL_FOREACH_PREV_03(void) {
+    double_list_s test = create_double_list();
+    for (int i = 0; i < REALLOC_DOUBLE_LIST_CHUNK; ++i) {
+        insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    int increment = 5;
+    foreach_prev_double_list(&test, operation_int, &increment);
+
+    for (int i = 0; i < REALLOC_DOUBLE_LIST_CHUNK; ++i) {
+        ASSERT_EQm("[IRDL-ERROR] Expected incremented element by 'increment'.", i + increment, remove_at_double_list(&test, 0).sub_one);
+    }
+
+    destroy_double_list(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRDL_FOREACH_PREV_04(void) {
+    double_list_s test = create_double_list();
+    for (int i = 0; i < REALLOC_DOUBLE_LIST_CHUNK + 1; ++i) {
+        insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    int increment = 5;
+    foreach_prev_double_list(&test, operation_int, &increment);
+
+    for (int i = 0; i < REALLOC_DOUBLE_LIST_CHUNK + 1; ++i) {
+        ASSERT_EQm("[IRDL-ERROR] Expected incremented element by 'increment'.", i + increment, remove_at_double_list(&test, 0).sub_one);
+    }
+
+    destroy_double_list(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRDL_FOREACH_PREV_05(void) {
+    double_list_s test = create_double_list();
+
+    insert_at_double_list(&test, test.size, copy_string((DOUBLE_LIST_DATA_TYPE) { .sub_two = TEST_STRING }));
+
+    char new_string[] = "[REDACTED]";
+    foreach_prev_double_list(&test, operation_string, new_string);
+
+    DOUBLE_LIST_DATA_TYPE element = remove_at_double_list(&test, 0);
+    ASSERT_STRN_EQm("[IRDL-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
+    destroy_string(&element);
+
+    destroy_double_list(&test, destroy_string);
+
+    PASS();
+}
+
+TEST IRDL_FOREACH_PREV_06(void) {
+    double_list_s test = create_double_list();
+
+    for (int i = 0; i < REALLOC_DOUBLE_LIST_CHUNK - 1; ++i) {
+        insert_at_double_list(&test, test.size, copy_string((DOUBLE_LIST_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
+
+    char new_string[] = "[REDACTED]";
+    foreach_prev_double_list(&test, operation_string, new_string);
+
+    for (int i = 0; i < REALLOC_DOUBLE_LIST_CHUNK - 1; ++i) {
+        DOUBLE_LIST_DATA_TYPE element = remove_at_double_list(&test, 0);
+        ASSERT_STRN_EQm("[IRDL-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
+        destroy_string(&element);
+    }
+
+    destroy_double_list(&test, destroy_string);
+
+    PASS();
+}
+
+TEST IRDL_FOREACH_PREV_07(void) {
+    double_list_s test = create_double_list();
+
+    for (int i = 0; i < REALLOC_DOUBLE_LIST_CHUNK; ++i) {
+        insert_at_double_list(&test, test.size, copy_string((DOUBLE_LIST_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
+
+    char new_string[] = "[REDACTED]";
+    foreach_prev_double_list(&test, operation_string, new_string);
+
+    for (int i = 0; i < REALLOC_DOUBLE_LIST_CHUNK; ++i) {
+        DOUBLE_LIST_DATA_TYPE element = remove_at_double_list(&test, 0);
+        ASSERT_STRN_EQm("[IRDL-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
+        destroy_string(&element);
+    }
+
+    destroy_double_list(&test, destroy_string);
+
+    PASS();
+}
+
+TEST IRDL_FOREACH_PREV_08(void) {
+    double_list_s test = create_double_list();
+
+    for (int i = 0; i < REALLOC_DOUBLE_LIST_CHUNK + 1; ++i) {
+        insert_at_double_list(&test, test.size, copy_string((DOUBLE_LIST_DATA_TYPE) { .sub_two = TEST_STRING }));
+    }
+
+    char new_string[] = "[REDACTED]";
+    foreach_prev_double_list(&test, operation_string, new_string);
+
+    for (int i = 0; i < REALLOC_DOUBLE_LIST_CHUNK + 1; ++i) {
+        DOUBLE_LIST_DATA_TYPE element = remove_at_double_list(&test, 0);
+        ASSERT_STRN_EQm("[IRDL-ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
+        destroy_string(&element);
+    }
+
+    destroy_double_list(&test, destroy_string);
+
+    PASS();
+}
+
 TEST IRDL_MAP_01(void) {
     double_list_s test = create_double_list();
 
@@ -1369,6 +1517,121 @@ TEST IRDL_REMOVE_FIRST_07(void) {
     insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, });
 
     ASSERT_EQm("[IRDL-ERROR] Expected elements to be equal.", 42, remove_first_double_list(&test, element, compare_int).sub_one);
+
+    destroy_double_list(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRDL_REMOVE_LAST_01(void) {
+    double_list_s test = create_double_list();
+
+    DOUBLE_LIST_DATA_TYPE element = (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, };
+    insert_at_double_list(&test, test.size, element);
+
+    ASSERT_EQm("[IRDL-ERROR] Expected elements to be equal.", 42, remove_last_double_list(&test, element, compare_int).sub_one);
+
+    destroy_double_list(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRDL_REMOVE_LAST_02(void) {
+    double_list_s test = create_double_list();
+
+    DOUBLE_LIST_DATA_TYPE element = (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, };
+    insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, });
+
+    for (int i = 0; i < REALLOC_DOUBLE_LIST_CHUNK - 1; ++i) {
+        insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    ASSERT_EQm("[IRDL-ERROR] Expected elements to be equal.", 42, remove_last_double_list(&test, element, compare_int).sub_one);
+
+    destroy_double_list(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRDL_REMOVE_LAST_03(void) {
+    double_list_s test = create_double_list();
+
+    DOUBLE_LIST_DATA_TYPE element = (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, };
+    insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, });
+
+    for (int i = 0; i < REALLOC_DOUBLE_LIST_CHUNK; ++i) {
+        insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    ASSERT_EQm("[IRDL-ERROR] Expected elements to be equal.", 42, remove_last_double_list(&test, element, compare_int).sub_one);
+
+    destroy_double_list(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRDL_REMOVE_LAST_04(void) {
+    double_list_s test = create_double_list();
+
+    DOUBLE_LIST_DATA_TYPE element = (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, };
+    insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, });
+
+    for (int i = 0; i < REALLOC_DOUBLE_LIST_CHUNK + 1; ++i) {
+        insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    ASSERT_EQm("[IRDL-ERROR] Expected elements to be equal.", 42, remove_last_double_list(&test, element, compare_int).sub_one);
+
+    destroy_double_list(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRDL_REMOVE_LAST_05(void) {
+    double_list_s test = create_double_list();
+
+    for (int i = 0; i < REALLOC_DOUBLE_LIST_CHUNK - 1; ++i) {
+        insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    DOUBLE_LIST_DATA_TYPE element = (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, };
+    insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, });
+
+    ASSERT_EQm("[IRDL-ERROR] Expected elements to be equal.", 42, remove_last_double_list(&test, element, compare_int).sub_one);
+
+    destroy_double_list(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRDL_REMOVE_LAST_06(void) {
+    double_list_s test = create_double_list();
+
+    for (int i = 0; i < REALLOC_DOUBLE_LIST_CHUNK; ++i) {
+        insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    DOUBLE_LIST_DATA_TYPE element = (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, };
+    insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, });
+
+    ASSERT_EQm("[IRDL-ERROR] Expected elements to be equal.", 42, remove_last_double_list(&test, element, compare_int).sub_one);
+
+    destroy_double_list(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRDL_REMOVE_LAST_07(void) {
+    double_list_s test = create_double_list();
+
+    for (int i = 0; i < REALLOC_DOUBLE_LIST_CHUNK + 1; ++i) {
+        insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = i, });
+    }
+
+    DOUBLE_LIST_DATA_TYPE element = (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, };
+    insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, });
+
+    ASSERT_EQm("[IRDL-ERROR] Expected elements to be equal.", 42, remove_last_double_list(&test, element, compare_int).sub_one);
 
     destroy_double_list(&test, destroy_int);
 
@@ -2388,6 +2651,9 @@ SUITE (infinite_realloc_double_list_test) {
     // foreach
     RUN_TEST(IRDL_FOREACH_NEXT_01); RUN_TEST(IRDL_FOREACH_NEXT_02); RUN_TEST(IRDL_FOREACH_NEXT_03); RUN_TEST(IRDL_FOREACH_NEXT_04);
     RUN_TEST(IRDL_FOREACH_NEXT_05); RUN_TEST(IRDL_FOREACH_NEXT_06); RUN_TEST(IRDL_FOREACH_NEXT_07); RUN_TEST(IRDL_FOREACH_NEXT_08);
+    // foreach
+    RUN_TEST(IRDL_FOREACH_PREV_01); RUN_TEST(IRDL_FOREACH_PREV_02); RUN_TEST(IRDL_FOREACH_PREV_03); RUN_TEST(IRDL_FOREACH_PREV_04);
+    RUN_TEST(IRDL_FOREACH_PREV_05); RUN_TEST(IRDL_FOREACH_PREV_06); RUN_TEST(IRDL_FOREACH_PREV_07); RUN_TEST(IRDL_FOREACH_PREV_08);
     // map
     RUN_TEST(IRDL_MAP_01); RUN_TEST(IRDL_MAP_02); RUN_TEST(IRDL_MAP_03); RUN_TEST(IRDL_MAP_04);
     RUN_TEST(IRDL_MAP_05); RUN_TEST(IRDL_MAP_06); RUN_TEST(IRDL_MAP_07); RUN_TEST(IRDL_MAP_08);
@@ -2400,15 +2666,18 @@ SUITE (infinite_realloc_double_list_test) {
     // remove first
     RUN_TEST(IRDL_REMOVE_FIRST_01); RUN_TEST(IRDL_REMOVE_FIRST_02); RUN_TEST(IRDL_REMOVE_FIRST_03); RUN_TEST(IRDL_REMOVE_FIRST_04);
     RUN_TEST(IRDL_REMOVE_FIRST_05); RUN_TEST(IRDL_REMOVE_FIRST_06); RUN_TEST(IRDL_REMOVE_FIRST_07);
+    // remove last
+    RUN_TEST(IRDL_REMOVE_LAST_01); RUN_TEST(IRDL_REMOVE_LAST_02); RUN_TEST(IRDL_REMOVE_LAST_03); RUN_TEST(IRDL_REMOVE_LAST_04);
+    RUN_TEST(IRDL_REMOVE_LAST_05); RUN_TEST(IRDL_REMOVE_LAST_06); RUN_TEST(IRDL_REMOVE_LAST_07);
     // remove at
     RUN_TEST(IRDL_REMOVE_AT_01); RUN_TEST(IRDL_REMOVE_AT_02); RUN_TEST(IRDL_REMOVE_AT_03); RUN_TEST(IRDL_REMOVE_AT_04);
     RUN_TEST(IRDL_REMOVE_AT_05); RUN_TEST(IRDL_REMOVE_AT_06); RUN_TEST(IRDL_REMOVE_AT_07);
     // reverse
     RUN_TEST(IRDL_REVERSE_01); RUN_TEST(IRDL_REVERSE_02); RUN_TEST(IRDL_REVERSE_03); RUN_TEST(IRDL_REVERSE_04);
     RUN_TEST(IRDL_REVERSE_05); RUN_TEST(IRDL_REVERSE_06); RUN_TEST(IRDL_REVERSE_07);
-    // shift
+    // shift next
     RUN_TEST(IRDL_SHIFT_NEXT_01); RUN_TEST(IRDL_SHIFT_NEXT_02); RUN_TEST(IRDL_SHIFT_NEXT_03); RUN_TEST(IRDL_SHIFT_NEXT_04);
-    // shift
+    // shift prev
     RUN_TEST(IRDL_SHIFT_PREV_01); RUN_TEST(IRDL_SHIFT_PREV_02); RUN_TEST(IRDL_SHIFT_PREV_03); RUN_TEST(IRDL_SHIFT_PREV_04);
     // splice
     RUN_TEST(IRDL_SPLICE_01); RUN_TEST(IRDL_SPLICE_02); RUN_TEST(IRDL_SPLICE_03); RUN_TEST(IRDL_SPLICE_04);

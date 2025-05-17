@@ -458,10 +458,13 @@ static inline void splice_double_list(double_list_s * restrict destination, doub
         current = current->node[node_index];
     }
 
+    // if source and destination are not empty (destination isn't empty if current is not NULL)
     if (current && source->head) {
+        // destination's first and last nodes to insert source inbetween
         struct double_list_node * first_destination = current;
         struct double_list_node * last_destination  = current->node[DOUBLE_LIST_PREV];
 
+        // source's first and last nodes to repoint them with destination
         struct double_list_node * first_source = source->head;
         struct double_list_node * last_source  = source->head->node[DOUBLE_LIST_PREV];
 
@@ -472,13 +475,13 @@ static inline void splice_double_list(double_list_s * restrict destination, doub
         first_destination->node[DOUBLE_LIST_PREV] = last_source;
     }
 
-    if (!index && source->head) {
+    if (!index && source->head) { // if index is zero and source head is not empty change destination's head to source
         destination->head = source->head;
     }
 
-    destination->size += source->size;
+    destination->size += source->size; // increase destination's size with source
 
-    (*source) = (double_list_s) { 0 };
+    (*source) = (double_list_s) { 0 }; // make source empty since all its elements are in destination
 }
 
 /// @brief Splits list at index and removes size parameter elements as new list.
@@ -488,7 +491,7 @@ static inline void splice_double_list(double_list_s * restrict destination, doub
 /// @return Split list with size number of elements at index.
 /// @note Since the list is circular the function can be used to split it as a circle at any index.
 static inline double_list_s split_double_list(double_list_s * list, const size_t index, const size_t size) {
-    DOUBLE_LIST_ASSERT(list && "[ERROR] List pointer is NULL");
+    DOUBLE_LIST_ASSERT(list && "[ERROR] 'list' pointer parameter is NULL");
     DOUBLE_LIST_ASSERT(list->size && "[ERROR] Can't split empty list.");
     DOUBLE_LIST_ASSERT(index < list->size && "[ERROR] Can only split at index less than list size.");
     DOUBLE_LIST_ASSERT(size && "[ERROR] Size parameter can't be zero");
@@ -515,9 +518,11 @@ static inline double_list_s split_double_list(double_list_s * list, const size_t
         list->head = list->size ? current_size->node[DOUBLE_LIST_NEXT] : NULL; // if list becomes empty make head NULL
     }
 
+    // list's first and last nodes to stitch them together
     struct double_list_node * first_list = current_size->node[DOUBLE_LIST_NEXT];
     struct double_list_node * last_list  = current_index->node[DOUBLE_LIST_PREV];
 
+    // split's first and last nodes to stitch them together and remove from list
     struct double_list_node * first_split = current_index;
     struct double_list_node * last_split  = current_size;
 
@@ -527,7 +532,7 @@ static inline double_list_s split_double_list(double_list_s * list, const size_t
     first_split->node[DOUBLE_LIST_PREV] = last_split;
     last_split->node[DOUBLE_LIST_NEXT] = first_split;
 
-    return (double_list_s) { .head = first_split, .size = size };
+    return (double_list_s) { .head = first_split, .size = size }; // return a newly created split list
 }
 
 /// @brief Iterates over elements in list and operates on each of them based on arguments.
@@ -535,9 +540,10 @@ static inline double_list_s split_double_list(double_list_s * list, const size_t
 /// @param operate Function pointer to operate on each element in list based or arguments.
 /// @param args Generic arguments to use in operate function, or can be NULL.
 static inline void foreach_next_double_list(double_list_s const * list, const operate_double_list_fn operate, void * args) {
-    DOUBLE_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
-    DOUBLE_LIST_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list && "[ERROR] 'list' pointer parameter is NULL.");
+    DOUBLE_LIST_ASSERT(operate && "[ERROR] 'operate' pointer parameter is NULL.");
 
+    // for each element and 'operate' on element succeedes, go to next element
     struct double_list_node * current = list->head;
     for (size_t i = 0; i < list->size && operate(&current->element, args); ++i) {
         current = current->node[DOUBLE_LIST_NEXT];
@@ -552,13 +558,10 @@ static inline void foreach_prev_double_list(const double_list_s * list, const op
     DOUBLE_LIST_ASSERT(list && "[ERROR] 'list' parameter pointer is NULL.");
     DOUBLE_LIST_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
 
-    struct double_list_node * current = list->head;
-    for (size_t i = 0; i < list->size; ++i) {
+    // for each element go to previous element and if 'operate' on element succeedes continue
+    struct double_list_node const * current = list->head;
+    for (size_t i = 0; i < list->size && operate(&current->node[DOUBLE_LIST_PREV]->element, args); ++i) {
         current = current->node[DOUBLE_LIST_PREV];
-
-        if (!operate(&current->element, args)) {
-            return;
-        }
     }
 }
 
@@ -574,14 +577,14 @@ static inline void map_double_list(double_list_s const * list, const manage_doub
     DOUBLE_LIST_ASSERT((!(list->size) || elements_array) && "[ERROR] Memory allocation failed.");
 
     struct double_list_node * current = list->head;
-    for (size_t i = 0; i < list->size; ++i) {
+    for (size_t i = 0; i < list->size; ++i) { // copy elements from list into array
         elements_array[i] = current->element;
         current = current->node[DOUBLE_LIST_NEXT];
     }
 
-    manage(elements_array, list->size, args);
+    manage(elements_array, list->size, args); // call manage function on array to manage elements
 
-    for (size_t i = 0; i < list->size; ++i) {
+    for (size_t i = 0; i < list->size; ++i) { // copy back elements from array to list in index order
         current->element = elements_array[i];
         current = current->node[DOUBLE_LIST_NEXT];
     }
@@ -592,10 +595,10 @@ static inline void map_double_list(double_list_s const * list, const manage_doub
 #elif DOUBLE_LIST_MODE == FINITE_ALLOCATED_DOUBLE_LIST
 
 typedef struct list {
-    size_t size, max, head;
+    DOUBLE_LIST_DATA_TYPE * elements; // elements array
+    size_t * node[DOUBLE_LIST_NODE_COUNT]; // previous and next indexes arrays
 
-    DOUBLE_LIST_DATA_TYPE * elements;
-    size_t * node[DOUBLE_LIST_NODE_COUNT];
+    size_t size, max, head; // size, maximum size and head index
 } double_list_s;
 
 /// @brief Creates an empty list.
@@ -604,7 +607,7 @@ static inline double_list_s create_double_list(const size_t max) {
     DOUBLE_LIST_ASSERT(max && "[ERROR] Maximum size can't be zero.");
 
     const double_list_s list = {
-        .elements                     = DOUBLE_LIST_REALLOC(NULL, sizeof(DOUBLE_LIST_DATA_TYPE) * max),
+        .elements               = DOUBLE_LIST_REALLOC(NULL, sizeof(DOUBLE_LIST_DATA_TYPE) * max),
         .node[DOUBLE_LIST_NEXT] = DOUBLE_LIST_REALLOC(NULL, sizeof(size_t) * max),
         .node[DOUBLE_LIST_PREV] = DOUBLE_LIST_REALLOC(NULL, sizeof(size_t) * max),
 
@@ -633,16 +636,17 @@ static inline void destroy_double_list(double_list_s * list, const destroy_doubl
     DOUBLE_LIST_ASSERT(list->size <= list->max && "[ERROR] Invalid list state.");
 
     size_t current = list->head;
-    for (size_t i = 0; i < list->size; ++i) {
-        destroy(list->elements + current);
-        current = list->node[DOUBLE_LIST_NEXT][current];
+    for (size_t i = 0; i < list->size; ++i) { // for each destroy element
+        destroy(list->elements + current); // free element at current index
+        current = list->node[DOUBLE_LIST_NEXT][current]; // go to next node index
     }
 
+    // free elements and node indexes arrays
     DOUBLE_LIST_FREE(list->elements);
     DOUBLE_LIST_FREE(list->node[DOUBLE_LIST_NEXT]);
     DOUBLE_LIST_FREE(list->node[DOUBLE_LIST_PREV]);
 
-    (*list) = (double_list_s) { 0 };
+    (*list) = (double_list_s) { 0 }; // set list to zero
 }
 
 /// @brief Clears a list's elements using a function pointer.
@@ -659,12 +663,12 @@ static inline void clear_double_list(double_list_s * list, const destroy_double_
     DOUBLE_LIST_ASSERT(list->size <= list->max && "[ERROR] Invalid list state.");
 
     size_t current = list->head;
-    for (size_t i = 0; i < list->size; ++i) {
-        destroy(list->elements + current);
-        current = list->node[DOUBLE_LIST_NEXT][current];
+    for (size_t i = 0; i < list->size; ++i) { // for each destroy element
+        destroy(list->elements + current); // free element at current index
+        current = list->node[DOUBLE_LIST_NEXT][current]; // go to next node index
     }
 
-    list->head = list->size = 0;
+    list->head = list->size = 0; // only set head and size to zero, i.e. clear the list
 }
 
 /// @brief Creates and returns a copy of the list with all elements based on copy function poniter.
@@ -681,18 +685,19 @@ static inline double_list_s copy_double_list(const double_list_s list, const cop
     DOUBLE_LIST_ASSERT(list.size <= list.max && "[ERROR] Invalid list state.");
 
     double_list_s replica = {
-        .elements                     = DOUBLE_LIST_REALLOC(NULL, sizeof(DOUBLE_LIST_DATA_TYPE) * list.max),
+        .elements               = DOUBLE_LIST_REALLOC(NULL, sizeof(DOUBLE_LIST_DATA_TYPE) * list.max),
         .node[DOUBLE_LIST_NEXT] = DOUBLE_LIST_REALLOC(NULL, sizeof(size_t) * list.max),
         .node[DOUBLE_LIST_PREV] = DOUBLE_LIST_REALLOC(NULL, sizeof(size_t) * list.max),
-        .head = list.head, .max = list.max, .size = 0,
+        .head = list.head, .max = list.max, .size = 0, // copy head index and max size, set size to 0 to increment it
     };
 
     DOUBLE_LIST_ASSERT(replica.elements && "[ERROR] Memory allocation failed.");
     DOUBLE_LIST_ASSERT(replica.node[DOUBLE_LIST_NEXT] && "[ERROR] Memory allocation failed.");
     DOUBLE_LIST_ASSERT(replica.node[DOUBLE_LIST_PREV] && "[ERROR] Memory allocation failed.");
 
-    for (; replica.size < list.size; replica.size++) {
-        replica.elements[replica.size] = copy(list.elements[replica.size]);
+    for (; replica.size < list.size; replica.size++) { // until replica size reaches original list's size
+        replica.elements[replica.size] = copy(list.elements[replica.size]); // copy element from list
+        // copy previous and next indexes from list
         replica.node[DOUBLE_LIST_NEXT][replica.size] = list.node[DOUBLE_LIST_NEXT][replica.size];
         replica.node[DOUBLE_LIST_PREV][replica.size] = list.node[DOUBLE_LIST_PREV][replica.size];
     }
@@ -709,7 +714,6 @@ static inline bool is_empty_double_list(const double_list_s list) {
     DOUBLE_LIST_ASSERT(list.node[DOUBLE_LIST_PREV] && "[ERROR] Invalid list state.");
     DOUBLE_LIST_ASSERT(list.max && "[ERROR] Invalid list state.");
     DOUBLE_LIST_ASSERT(list.size <= list.max && "[ERROR] Invalid list state.");
-
 
     return (list.size == 0);
 }
@@ -743,27 +747,29 @@ static inline void insert_at_double_list(double_list_s * list, const size_t inde
     DOUBLE_LIST_ASSERT(list->max && "[ERROR] Invalid list state.");
     DOUBLE_LIST_ASSERT(list->size <= list->max && "[ERROR] Invalid list state.");
 
+    // calculate shortest distance to index node
     size_t current = list->head;
     const size_t real_index = index <= (list->size >> 1) ? index : list->size - index;
     const bool node_index = real_index == index ? DOUBLE_LIST_NEXT : DOUBLE_LIST_PREV;
-    for (size_t i = 0; i < real_index; ++i) {
+    for (size_t i = 0; i < real_index; ++i) { // go to node at index
         current = list->node[node_index][current];
     }
 
-    if (list->size) {
+    if (list->size) { // is list is not empty
         list->node[DOUBLE_LIST_NEXT][list->size] = current;
         list->node[DOUBLE_LIST_PREV][list->size] = list->node[DOUBLE_LIST_PREV][current];
 
         list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][current]] = list->size;
         list->node[DOUBLE_LIST_PREV][current] = list->size;
-    } else {
+
+        if (!index) { // if index is zero make last inserted element as head
+            list->head = list->size;
+        }
+    } else { // else list is empty, thus make head and indexes 0 and circular
         list->head = list->node[DOUBLE_LIST_NEXT][0] = list->node[DOUBLE_LIST_PREV][0] = 0;
     }
 
-    if (!index) {
-        list->head = list->size;
-    }
-
+    // copy and push element to list's elements array and increment list size
     memcpy(list->elements + list->size, &element, sizeof(DOUBLE_LIST_DATA_TYPE));
     list->size++;
 }
@@ -782,10 +788,11 @@ static inline DOUBLE_LIST_DATA_TYPE get_double_list(const double_list_s list, co
     DOUBLE_LIST_ASSERT(list.max && "[ERROR] Invalid list state.");
     DOUBLE_LIST_ASSERT(list.size <= list.max && "[ERROR] Invalid list state.");
 
+    // calculate shortest distance to index node
     size_t current = list.head;
     const size_t real_index = index < (list.size >> 1) ? index : list.size - index;
     const bool node_index = real_index == index ? DOUBLE_LIST_NEXT : DOUBLE_LIST_PREV;
-    for (size_t i = 0; i < real_index; ++i) {
+    for (size_t i = 0; i < real_index; ++i) { // go to node at index
         current = list.node[node_index][current];
     }
 
@@ -809,29 +816,32 @@ static inline DOUBLE_LIST_DATA_TYPE remove_first_double_list(double_list_s * lis
     DOUBLE_LIST_ASSERT(list->size <= list->max && "[ERROR] Invalid list state.");
 
     size_t current = list->head;
-    for (size_t i = 0; i < list->size; ++i) {
-        if (0 != compare(list->elements[current], element)) {
+    for (size_t i = 0; i < list->size; ++i) { // until first element equal to parameter is reached
+        if (0 != compare(list->elements[current], element)) { // if current element is not equal, go to next node
             current = list->node[DOUBLE_LIST_NEXT][current];
             continue;
-        }
+        } // else element was found and needs to be removed
 
-        DOUBLE_LIST_DATA_TYPE removed = list->elements[current];
+        DOUBLE_LIST_DATA_TYPE removed = list->elements[current]; // save element into temporary variable to return
         list->size--;
 
-        if (list->head == current) {
+        // solely there to prevent bad head index
+        if (list->head == current) { // if head is current change head to proper next node
             list->head = list->node[DOUBLE_LIST_NEXT][current] == list->size ? current : list->node[DOUBLE_LIST_NEXT][current];
-        } else if (list->head == list->size) {
+        } else if (list->head == list->size) { // else if list head is last node make head to current (where last is moved)
             list->head = current;
         }
 
+        // cut current node and stitch its previous and next nodes
         list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][current]] = list->node[DOUBLE_LIST_NEXT][current];
         list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][current]] = list->node[DOUBLE_LIST_PREV][current];
 
+        // replace element at current index with popped last element like in a stack
         list->elements[current] = list->elements[list->size];
         list->node[DOUBLE_LIST_NEXT][current] = list->node[DOUBLE_LIST_NEXT][list->size];
         list->node[DOUBLE_LIST_PREV][current] = list->node[DOUBLE_LIST_PREV][list->size];
 
-        if (current != list->size) {
+        if (current != list->size) { // if current index is not last stitch last previous and next indexes to current
             list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][list->size]] = current;
             list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][list->size]] = current;
         }
@@ -839,6 +849,7 @@ static inline DOUBLE_LIST_DATA_TYPE remove_first_double_list(double_list_s * lis
         return removed;
     }
 
+    // if element is not in list return an error
     DOUBLE_LIST_ASSERT(0 && "[ERROR] Element not found in list.");
     exit(EXIT_FAILURE);
 }
@@ -860,30 +871,33 @@ static inline DOUBLE_LIST_DATA_TYPE remove_last_double_list(double_list_s * list
     DOUBLE_LIST_ASSERT(list->size <= list->max && "[ERROR] Invalid list state.");
 
     size_t current = list->head;
-    for (size_t i = 0; i < list->size; ++i) {
-        current = list->node[DOUBLE_LIST_PREV][current];
+    for (size_t i = 0; i < list->size; ++i) { // until last element equal to parameter is reached
+        current = list->node[DOUBLE_LIST_PREV][current]; // go to previous index to start from tail node
 
-        if (0 != compare(list->elements[current], element)) {
+        if (0 != compare(list->elements[current], element)) { // if current element is not equal, go to next node
             continue;
-        }
+        } // else element was found and needs to be removed
 
-        DOUBLE_LIST_DATA_TYPE removed = list->elements[current];
+        DOUBLE_LIST_DATA_TYPE removed = list->elements[current]; // save element into temporary variable to return
         list->size--;
 
-        if (list->head == current) {
+        // solely there to prevent bad head index
+        if (list->head == current) { // if head is current change head to proper next node
             list->head = list->node[DOUBLE_LIST_NEXT][current] == list->size ? current : list->node[DOUBLE_LIST_NEXT][current];
-        } else if (list->head == list->size) {
+        } else if (list->head == list->size) { // else if list head is last node make head to current (where last is moved)
             list->head = current;
         }
 
+        // cut current node and stitch its previous and next nodes
         list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][current]] = list->node[DOUBLE_LIST_NEXT][current];
         list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][current]] = list->node[DOUBLE_LIST_PREV][current];
 
+        // replace element at current index with popped last element like in a stack
         list->elements[current] = list->elements[list->size];
         list->node[DOUBLE_LIST_NEXT][current] = list->node[DOUBLE_LIST_NEXT][list->size];
         list->node[DOUBLE_LIST_PREV][current] = list->node[DOUBLE_LIST_PREV][list->size];
 
-        if (current != list->size) {
+        if (current != list->size) { // if current index is not last stitch last previous and next indexes to current
             list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][list->size]] = current;
             list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][list->size]] = current;
         }
@@ -891,6 +905,7 @@ static inline DOUBLE_LIST_DATA_TYPE remove_last_double_list(double_list_s * list
         return removed;
     }
 
+    // if element is not in list return an error
     DOUBLE_LIST_ASSERT(0 && "[ERROR] Element not found in list.");
     exit(EXIT_FAILURE);
 }
@@ -910,30 +925,34 @@ static inline DOUBLE_LIST_DATA_TYPE remove_at_double_list(double_list_s * list, 
     DOUBLE_LIST_ASSERT(list->max && "[ERROR] Invalid list state.");
     DOUBLE_LIST_ASSERT(list->size <= list->max && "[ERROR] Invalid list state.");
 
+    // calculate shortest distance to index node
     size_t current = list->head;
     const size_t real_index = index <= (list->size >> 1) ? index : list->size - index;
     const bool node_index = real_index == index ? DOUBLE_LIST_NEXT : DOUBLE_LIST_PREV;
-    for (size_t i = 0; i < real_index; ++i) {
+    for (size_t i = 0; i < real_index; ++i) { // go to node at index
         current = list->node[node_index][current];
     }
 
-    DOUBLE_LIST_DATA_TYPE removed = list->elements[current];
+    DOUBLE_LIST_DATA_TYPE removed = list->elements[current]; // save element into temporary variable to return
     list->size--;
 
-    if (list->head == current) {
+    // solely there to prevent bad head index
+    if (list->head == current) { // if head is current change head to proper next node
         list->head = list->node[DOUBLE_LIST_NEXT][current] == list->size ? current : list->node[DOUBLE_LIST_NEXT][current];
-    } else if (list->head == list->size) {
+    } else if (list->head == list->size) { // else if list head is last node make head to current (where last is moved)
         list->head = current;
     }
 
+    // cut current node and stitch its previous and next nodes
     list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][current]] = list->node[DOUBLE_LIST_NEXT][current];
     list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][current]] = list->node[DOUBLE_LIST_PREV][current];
 
+    // replace element at current index with popped last element like in a stack
     list->elements[current] = list->elements[list->size];
     list->node[DOUBLE_LIST_NEXT][current] = list->node[DOUBLE_LIST_NEXT][list->size];
     list->node[DOUBLE_LIST_PREV][current] = list->node[DOUBLE_LIST_PREV][list->size];
 
-    if (current != list->size) {
+    if (current != list->size) { // if current index is not last stitch last previous and next indexes to current
         list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][list->size]] = current;
         list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][list->size]] = current;
     }
@@ -953,14 +972,15 @@ static inline void reverse_double_list(double_list_s * list) {
     DOUBLE_LIST_ASSERT(list->size <= list->max && "[ERROR] Invalid list state.");
 
     size_t current = list->head;
-    for (size_t i = 0; i < list->size; ++i) {
-        list->head = current;
+    for (size_t i = 0; i < list->size; ++i) { // for each element swap its next and previous pointer
+        list->head = current; // current should be pointing to last node or NULL, if list was empty
 
-        const size_t temp = list->node[DOUBLE_LIST_NEXT][current];
+        // swap previous with next pointer
+        const size_t temporary = list->node[DOUBLE_LIST_NEXT][current];
         list->node[DOUBLE_LIST_NEXT][current] = list->node[DOUBLE_LIST_PREV][current];
-        list->node[DOUBLE_LIST_PREV][current] = temp;
+        list->node[DOUBLE_LIST_PREV][current] = temporary;
 
-        current = list->node[DOUBLE_LIST_PREV][current];
+        current = temporary; // go to non-reversed next node
     }
 }
 
@@ -1025,35 +1045,45 @@ static inline void splice_double_list(double_list_s * restrict destination, doub
     DOUBLE_LIST_ASSERT(source->max && "[ERROR] Invalid list state.");
     DOUBLE_LIST_ASSERT(source->size <= source->max && "[ERROR] Invalid list state.");
 
+    // calculate shortest distance to index node
     size_t current = destination->head;
     const size_t real_index = index < (destination->size >> 1) ? index : destination->size - index;
     const bool node_index = real_index == index ? DOUBLE_LIST_NEXT : DOUBLE_LIST_PREV;
-    for (size_t i = 0; i < real_index; ++i) {
+    for (size_t i = 0; i < real_index; ++i) { // go to destination's node at index
         current = destination->node[node_index][current];
     }
 
+    // change and realloc destination's maximum size
     destination->max = max;
     destination->elements = DOUBLE_LIST_REALLOC(destination->elements, sizeof(DOUBLE_LIST_DATA_TYPE) * max);
-    destination->node[DOUBLE_LIST_NEXT] = DOUBLE_LIST_REALLOC(destination->node[DOUBLE_LIST_NEXT], sizeof(size_t) * max);
-    destination->node[DOUBLE_LIST_PREV] = DOUBLE_LIST_REALLOC(destination->node[DOUBLE_LIST_PREV], sizeof(size_t) * max);
+    DOUBLE_LIST_ASSERT(destination->elements && "[ERROR] Memory allocation failed.");
 
-    for (size_t i = 0; i < source->size; ++i) {
+    destination->node[DOUBLE_LIST_NEXT] = DOUBLE_LIST_REALLOC(destination->node[DOUBLE_LIST_NEXT], sizeof(size_t) * max);
+    DOUBLE_LIST_ASSERT(destination->node[DOUBLE_LIST_NEXT] && "[ERROR] Memory allocation failed.");
+
+    destination->node[DOUBLE_LIST_PREV] = DOUBLE_LIST_REALLOC(destination->node[DOUBLE_LIST_PREV], sizeof(size_t) * max);
+    DOUBLE_LIST_ASSERT(destination->node[DOUBLE_LIST_PREV] && "[ERROR] Memory allocation failed.");
+
+    for (size_t i = 0; i < source->size; ++i) { // add source elements and incremented node indexes to destination list
         destination->elements[destination->size + i] = source->elements[i];
         destination->node[DOUBLE_LIST_NEXT][destination->size + i] = source->node[DOUBLE_LIST_NEXT][i] + destination->size;
         destination->node[DOUBLE_LIST_PREV][destination->size + i] = source->node[DOUBLE_LIST_PREV][i] + destination->size;
     }
+
     // source elements and its nodes were copied in destination, thus source and destination are spliced only in destination
     if (destination->size && source->size) {
+        // destination's first and last nodes to insert source inbetween
         const size_t first_destination = current;
         const size_t last_destination  = destination->node[DOUBLE_LIST_PREV][current];
 
+        // source's first and last nodes to repoint them with destination
         const size_t first_source = source->head + destination->size;
         const size_t last_source  = source->node[DOUBLE_LIST_PREV][source->head] + destination->size;
 
         destination->node[DOUBLE_LIST_NEXT][last_destination] = first_source;
-        destination->node[DOUBLE_LIST_PREV][first_source] = last_destination; // source is in destination
+        destination->node[DOUBLE_LIST_PREV][first_source] = last_destination; // source copied in destination
 
-        destination->node[DOUBLE_LIST_NEXT][last_source] = first_destination; // source is in destination
+        destination->node[DOUBLE_LIST_NEXT][last_source] = first_destination; // source copied in destination
         destination->node[DOUBLE_LIST_PREV][first_destination] = last_source;
     }
 
@@ -1119,14 +1149,16 @@ static inline double_list_s split_double_list(double_list_s * list, const size_t
 
         const size_t list_next = list->node[DOUBLE_LIST_NEXT][list_current] == list->size ? list_current : list->node[DOUBLE_LIST_NEXT][list_current];
 
+        // cut current node and stitch its previous and next nodes
         list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][list_current]] = list->node[DOUBLE_LIST_NEXT][list_current];
         list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][list_current]] = list->node[DOUBLE_LIST_PREV][list_current];
 
+        // replace element at current index with popped last element like in a stack
         list->elements[list_current] = list->elements[list->size];
         list->node[DOUBLE_LIST_NEXT][list_current] = list->node[DOUBLE_LIST_NEXT][list->size];
         list->node[DOUBLE_LIST_PREV][list_current] = list->node[DOUBLE_LIST_PREV][list->size];
 
-        if (list_current != list->size) {
+        if (list_current != list->size) { // if current index is not last stitch last previous and next indexes to current
             list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][list->size]] = list_current;
             list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][list->size]] = list_current;
         }
@@ -1137,7 +1169,7 @@ static inline double_list_s split_double_list(double_list_s * list, const size_t
     split.node[DOUBLE_LIST_PREV][0] = size - 1; // to make list circular first index in previous must point to last element
     (*split_current) = 0;
 
-    if (!index || ((index + size) >= list->size)) {
+    if (!index || (index >= list->size)) {
         list->head = list_current;
     }
 
@@ -1179,12 +1211,8 @@ static inline void foreach_prev_double_list(const double_list_s * list, const op
     DOUBLE_LIST_ASSERT(list->size <= list->max && "[ERROR] Invalid list state.");
 
     size_t current = list->head;
-    for (size_t i = 0; i < list->size; ++i) {
+    for (size_t i = 0; i < list->size && operate(list->elements + list->node[DOUBLE_LIST_PREV][current], args); ++i) {
         current = list->node[DOUBLE_LIST_PREV][current];
-
-        if (!operate(list->elements + current, args)) {
-            return;
-        }
     }
 }
 
@@ -1206,14 +1234,14 @@ static inline void map_double_list(double_list_s const * list, const manage_doub
     DOUBLE_LIST_ASSERT((!(list->size) || elements_array) && "[ERROR] Memory allocation failed.");
 
     size_t current = list->head;
-    for (size_t i = 0; i < list->size; ++i) {
+    for (size_t i = 0; i < list->size; ++i) { // copy elements in order into elements array
         elements_array[i] = list->elements[current];
         current = list->node[DOUBLE_LIST_NEXT][current];
     }
 
     manage(elements_array, list->size, args);
 
-    for (size_t i = 0; i < list->size; ++i) {
+    for (size_t i = 0; i < list->size; ++i) { // copy elements back in order to list
         list->elements[current] = elements_array[i];
         current = list->node[DOUBLE_LIST_NEXT][current];
     }
@@ -1439,20 +1467,23 @@ static inline DOUBLE_LIST_DATA_TYPE remove_first_double_list(double_list_s * lis
         DOUBLE_LIST_DATA_TYPE removed = list->elements[current];
         list->size--;
 
-        if (list->head == current) {
+        // solely there to prevent bad head index
+        if (list->head == current) { // if head is current change head to proper next node
             list->head = list->node[DOUBLE_LIST_NEXT][current] == list->size ? current : list->node[DOUBLE_LIST_NEXT][current];
-        } else if (list->head == list->size) {
+        } else if (list->head == list->size) { // else if list head is last node make head to current (where last is moved)
             list->head = current;
         }
 
+        // cut current node and stitch its previous and next nodes
         list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][current]] = list->node[DOUBLE_LIST_NEXT][current];
         list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][current]] = list->node[DOUBLE_LIST_PREV][current];
 
+        // replace element at current index with popped last element like in a stack
         list->elements[current] = list->elements[list->size];
         list->node[DOUBLE_LIST_NEXT][current] = list->node[DOUBLE_LIST_NEXT][list->size];
         list->node[DOUBLE_LIST_PREV][current] = list->node[DOUBLE_LIST_PREV][list->size];
 
-        if (current != list->size) {
+        if (current != list->size) { // if current index is not last stitch last previous and next indexes to current
             list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][list->size]] = current;
             list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][list->size]] = current;
         }
@@ -1502,20 +1533,23 @@ static inline DOUBLE_LIST_DATA_TYPE remove_last_double_list(double_list_s * list
         DOUBLE_LIST_DATA_TYPE removed = list->elements[current];
         list->size--;
 
-        if (list->head == current) {
+        // solely there to prevent bad head index
+        if (list->head == current) { // if head is current change head to proper next node
             list->head = list->node[DOUBLE_LIST_NEXT][current] == list->size ? current : list->node[DOUBLE_LIST_NEXT][current];
-        } else if (list->head == list->size) {
+        } else if (list->head == list->size) { // else if list head is last node make head to current (where last is moved)
             list->head = current;
         }
 
+        // cut current node and stitch its previous and next nodes
         list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][current]] = list->node[DOUBLE_LIST_NEXT][current];
         list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][current]] = list->node[DOUBLE_LIST_PREV][current];
 
+        // replace element at current index with popped last element like in a stack
         list->elements[current] = list->elements[list->size];
         list->node[DOUBLE_LIST_NEXT][current] = list->node[DOUBLE_LIST_NEXT][list->size];
         list->node[DOUBLE_LIST_PREV][current] = list->node[DOUBLE_LIST_PREV][list->size];
 
-        if (current != list->size) {
+        if (current != list->size) { // if current index is not last stitch last previous and next indexes to current
             list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][list->size]] = current;
             list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][list->size]] = current;
         }
@@ -1562,20 +1596,23 @@ static inline DOUBLE_LIST_DATA_TYPE remove_at_double_list(double_list_s * list, 
     DOUBLE_LIST_DATA_TYPE removed = list->elements[current];
     list->size--;
 
-    if (list->head == current) {
+    // solely there to prevent bad head index
+    if (list->head == current) { // if head is current change head to proper next node
         list->head = list->node[DOUBLE_LIST_NEXT][current] == list->size ? current : list->node[DOUBLE_LIST_NEXT][current];
-    } else if (list->head == list->size) {
+    } else if (list->head == list->size) { // else if list head is last node make head to current (where last is moved)
         list->head = current;
     }
 
+    // cut current node and stitch its previous and next nodes
     list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][current]] = list->node[DOUBLE_LIST_NEXT][current];
     list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][current]] = list->node[DOUBLE_LIST_PREV][current];
 
+    // replace element at current index with popped last element like in a stack
     list->elements[current] = list->elements[list->size];
     list->node[DOUBLE_LIST_NEXT][current] = list->node[DOUBLE_LIST_NEXT][list->size];
     list->node[DOUBLE_LIST_PREV][current] = list->node[DOUBLE_LIST_PREV][list->size];
 
-    if (current != list->size) {
+    if (current != list->size) { // if current index is not last stitch last previous and next indexes to current
         list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][list->size]] = current;
         list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][list->size]] = current;
     }
@@ -1746,14 +1783,16 @@ static inline double_list_s split_double_list(double_list_s * list, const size_t
 
         const size_t list_next = list->node[DOUBLE_LIST_NEXT][list_current] == list->size ? list_current : list->node[DOUBLE_LIST_NEXT][list_current];
 
+        // cut current node and stitch its previous and next nodes
         list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][list_current]] = list->node[DOUBLE_LIST_NEXT][list_current];
         list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][list_current]] = list->node[DOUBLE_LIST_PREV][list_current];
 
+        // replace element at current index with popped last element like in a stack
         list->elements[list_current] = list->elements[list->size];
         list->node[DOUBLE_LIST_NEXT][list_current] = list->node[DOUBLE_LIST_NEXT][list->size];
         list->node[DOUBLE_LIST_PREV][list_current] = list->node[DOUBLE_LIST_PREV][list->size];
 
-        if (list_current != list->size) {
+        if (list_current != list->size) { // if current index is not last stitch last previous and next indexes to current
             list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][list->size]] = list_current;
             list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][list->size]] = list_current;
         }
@@ -1773,7 +1812,7 @@ static inline double_list_s split_double_list(double_list_s * list, const size_t
     split.node[DOUBLE_LIST_PREV][0] = size - 1; // to make list circular first index in previous must point to last element
     (*split_current) = 0; // make next index of last element in array 0 to make list circular
 
-    if (!index || ((index + size) >= list->size)) {
+    if (!index || (index >= list->size)) {
         list->head = list_current;
     }
 
@@ -1813,12 +1852,8 @@ static inline void foreach_prev_double_list(const double_list_s * list, const op
     DOUBLE_LIST_ASSERT(operate && "[ERROR] 'operate' parameter pointer is NULL.");
 
     size_t current = list->head;
-    for (size_t i = 0; i < list->size; ++i) {
-        current = list->node[DOUBLE_LIST_PREV][current]; // first go to previous node from current
-
-        if (!operate(list->elements + current, args)) { // then operate on it
-            return;
-        }
+    for (size_t i = 0; i < list->size && operate(list->elements + list->node[DOUBLE_LIST_PREV][current], args); ++i) {
+        current = list->node[DOUBLE_LIST_PREV][current];
     }
 }
 
@@ -2027,20 +2062,23 @@ static inline DOUBLE_LIST_DATA_TYPE remove_first_double_list(double_list_s * lis
         DOUBLE_LIST_DATA_TYPE removed = list->elements[current];
         list->size--;
 
-        if (list->head == current) {
+        // solely there to prevent bad head index
+        if (list->head == current) { // if head is current change head to proper next node
             list->head = list->node[DOUBLE_LIST_NEXT][current] == list->size ? current : list->node[DOUBLE_LIST_NEXT][current];
-        } else if (list->head == list->size) {
+        } else if (list->head == list->size) { // else if list head is last node make head to current (where last is moved)
             list->head = current;
         }
 
+        // cut current node and stitch its previous and next nodes
         list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][current]] = list->node[DOUBLE_LIST_NEXT][current];
         list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][current]] = list->node[DOUBLE_LIST_PREV][current];
 
+        // replace element at current index with popped last element like in a stack
         list->elements[current] = list->elements[list->size];
         list->node[DOUBLE_LIST_NEXT][current] = list->node[DOUBLE_LIST_NEXT][list->size];
         list->node[DOUBLE_LIST_PREV][current] = list->node[DOUBLE_LIST_PREV][list->size];
 
-        if (current != list->size) {
+        if (current != list->size) { // if current index is not last stitch last previous and next indexes to current
             list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][list->size]] = current;
             list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][list->size]] = current;
         }
@@ -2075,20 +2113,23 @@ static inline DOUBLE_LIST_DATA_TYPE remove_last_double_list(double_list_s * list
         DOUBLE_LIST_DATA_TYPE removed = list->elements[current];
         list->size--;
 
-        if (list->head == current) {
+        // solely there to prevent bad head index
+        if (list->head == current) { // if head is current change head to proper next node
             list->head = list->node[DOUBLE_LIST_NEXT][current] == list->size ? current : list->node[DOUBLE_LIST_NEXT][current];
         } else if (list->head == list->size) {
             list->head = current;
         }
 
+        // cut current node and stitch its previous and next nodes
         list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][current]] = list->node[DOUBLE_LIST_NEXT][current];
         list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][current]] = list->node[DOUBLE_LIST_PREV][current];
 
+        // replace element at current index with popped last element like in a stack
         list->elements[current] = list->elements[list->size];
         list->node[DOUBLE_LIST_NEXT][current] = list->node[DOUBLE_LIST_NEXT][list->size];
         list->node[DOUBLE_LIST_PREV][current] = list->node[DOUBLE_LIST_PREV][list->size];
 
-        if (current != list->size) {
+        if (current != list->size) { // if current index is not last stitch last previous and next indexes to current
             list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][list->size]] = current;
             list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][list->size]] = current;
         }
@@ -2121,20 +2162,23 @@ static inline DOUBLE_LIST_DATA_TYPE remove_at_double_list(double_list_s * list, 
     DOUBLE_LIST_DATA_TYPE removed = list->elements[current];
     list->size--;
 
-    if (list->head == current) {
+    // solely there to prevent bad head index
+    if (list->head == current) { // if head is current change head to proper next node
         list->head = list->node[DOUBLE_LIST_NEXT][current] == list->size ? current : list->node[DOUBLE_LIST_NEXT][current];
     } else if (list->head == list->size) {
         list->head = current;
     }
 
+    // cut current node and stitch its previous and next nodes
     list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][current]] = list->node[DOUBLE_LIST_NEXT][current];
     list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][current]] = list->node[DOUBLE_LIST_PREV][current];
 
+    // replace element at current index with popped last element like in a stack
     list->elements[current] = list->elements[list->size];
     list->node[DOUBLE_LIST_NEXT][current] = list->node[DOUBLE_LIST_NEXT][list->size];
     list->node[DOUBLE_LIST_PREV][current] = list->node[DOUBLE_LIST_PREV][list->size];
 
-    if (current != list->size) {
+    if (current != list->size) { // if current index is not last stitch last previous and next indexes to current
         list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][list->size]] = current;
         list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][list->size]] = current;
     }
@@ -2277,14 +2321,16 @@ static inline double_list_s split_double_list(double_list_s * list, const size_t
 
         const size_t list_next = list->node[DOUBLE_LIST_NEXT][list_current] == list->size ? list_current : list->node[DOUBLE_LIST_NEXT][list_current];
 
+        // cut current node and stitch its previous and next nodes
         list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][list_current]] = list->node[DOUBLE_LIST_NEXT][list_current];
         list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][list_current]] = list->node[DOUBLE_LIST_PREV][list_current];
 
+        // replace element at current index with popped last element like in a stack
         list->elements[list_current] = list->elements[list->size];
         list->node[DOUBLE_LIST_NEXT][list_current] = list->node[DOUBLE_LIST_NEXT][list->size];
         list->node[DOUBLE_LIST_PREV][list_current] = list->node[DOUBLE_LIST_PREV][list->size];
 
-        if (list_current != list->size) {
+        if (list_current != list->size) { // if current index is not last stitch last previous and next indexes to current
             list->node[DOUBLE_LIST_PREV][list->node[DOUBLE_LIST_NEXT][list->size]] = list_current;
             list->node[DOUBLE_LIST_NEXT][list->node[DOUBLE_LIST_PREV][list->size]] = list_current;
         }
@@ -2295,7 +2341,7 @@ static inline double_list_s split_double_list(double_list_s * list, const size_t
     split.node[DOUBLE_LIST_PREV][0] = size - 1; // to make list circular first index in previous must point to last element
     (*split_current) = 0;
 
-    if (!index || ((index + size) >= list->size)) {
+    if (!index || (index >= list->size)) {
         list->head = list_current;
     }
 
@@ -2329,12 +2375,8 @@ static inline void foreach_prev_double_list(double_list_s * list, const operate_
     DOUBLE_LIST_ASSERT(list->size <= PREPROCESSOR_DOUBLE_LIST_SIZE && "[ERROR] Invalid list state.");
 
     size_t current = list->head;
-    for (size_t i = 0; i < list->size; ++i) {
+    for (size_t i = 0; i < list->size && operate(list->elements + list->node[DOUBLE_LIST_PREV][current], args); ++i) {
         current = list->node[DOUBLE_LIST_PREV][current];
-
-        if (!operate(list->elements + current, args)) {
-            return;
-        }
     }
 }
 
@@ -2351,14 +2393,14 @@ static inline void map_double_list(double_list_s * list, const manage_double_lis
     DOUBLE_LIST_DATA_TYPE elements_array[PREPROCESSOR_DOUBLE_LIST_SIZE];
 
     size_t current = list->head;
-    for (size_t i = 0; i < list->size; ++i) {
+    for (size_t i = 0; i < list->size; ++i) { // copy elements in order into elements array
         elements_array[i] = list->elements[current];
         current = list->node[DOUBLE_LIST_NEXT][current];
     }
 
     manage(elements_array, list->size, args);
 
-    for (size_t i = 0; i < list->size; ++i) {
+    for (size_t i = 0; i < list->size; ++i) {  // copy elements back in order to list
         list->elements[current] = elements_array[i];
         current = list->node[DOUBLE_LIST_NEXT][current];
     }
