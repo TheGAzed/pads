@@ -24,7 +24,7 @@ C compiler that at least supports the **C99 standard**, for example:
 - Press ```Ctrl + Shift + s``` to download the header.
 
 > [!WARNING]
-> Only one header can be included **per executable** file. If a separate header file includes stack.h, then no other file with the 'separate header' can use stack.h. The header will generate an **error** if they collide.
+> Only one specific PADS header can be included **per executable** file. If a separate header file includes it, then no other file with the 'separate header' can use it. The headers will generate an **error** if they collide.
 
 ## **List of Data Structures:**
 

@@ -2,18 +2,9 @@
 
 The stack is a last in first out (LIFO) data structure. Here it is made in four implementation modes each defined by a special value.
 
-### List of special modes and their values:
-
-```C
-#define INFINITE_LIST_STACK_MODE       1 // infinite linked list mode
-#define FINITE_ALLOCATED_STACK_MODE    2 // finite preallocated memory mode
-#define INFINITE_REALLOC_STACK_MODE    3 // infinite re-allocatable mode
-#define FINITE_PREPROCESSOR_STACK_MODE 4 // finite preprocessor defined mode
-```
-
 The implementation also includes the following macros that can be used by other modes:
 
-### List of special stack macros:
+## List of special stack macros:
 
 > [!WARNING]
 > Each stack and mode macro mentioned below must be defined before including the stack header.
@@ -50,7 +41,16 @@ Defines the reallocate and free functions that should be called when a memory ch
 ```
 Defines the mode from the specified list of available stack modes.
 
-## 1. Infinite linked list mode
+## List of special modes and their values:
+
+```C
+#define INFINITE_LIST_STACK_MODE       1 // infinite linked list mode
+#define FINITE_ALLOCATED_STACK_MODE    2 // finite preallocated memory mode
+#define INFINITE_REALLOC_STACK_MODE    3 // infinite re-allocatable mode
+#define FINITE_PREPROCESSOR_STACK_MODE 4 // finite preprocessor defined mode
+```
+
+### **Infinite linked list mode**
 
 The infinite list mode is a mode of the stack.h file which uses a linked list of a predefined array of element nodes.
 
@@ -66,7 +66,7 @@ typedef struct stack {
 } stack_s;
 ```
 
-### List node array size
+#### List node array size
 The mode itself comes with a macro to specify the chunk size of elements to use for each list node.
 
 ```C
@@ -75,7 +75,7 @@ The mode itself comes with a macro to specify the chunk size of elements to use 
 #include "stack.h"
 ```
 
-## 2. Finite pre-allocated memory mode
+### **Finite pre-allocated memory mode**
 
 The finite pre-allocated list is a mode of the stack.h file which uses an array of elements to store them next to each other from index 0.
 
@@ -91,9 +91,9 @@ typedef struct stack {
 #include "stack.h"
 ```
 
-## 3. Infinite re-allocatable mode
+### **Infinite re-allocatable mode**
 
-The infinite pre-allocated mode is a mode of the stack.h file which uses a expandable array of elements to store them next to each other from index 0.
+The infinite pre-allocated mode is a mode of the stack.h file which uses an expandable array of elements to store them next to each other from index 0.
 
 ```C
 typedef struct stack {
@@ -102,7 +102,7 @@ typedef struct stack {
 } stack_s;
 ```
 
-### Expand array if capacity is reached macros
+#### Expand array if capacity is reached macros
 The mode comes with two macros where one can be used to check if the stack size has reached its capacity and the other to get the next capacity to reallocate and expand.
 
 ```C
@@ -112,7 +112,7 @@ The mode comes with two macros where one can be used to check if the stack size 
 #include "stack.h"
 ```
 
-### Linear expansion size
+#### Linear expansion size
 The default macros expand the stack linearly using the predefined macro value:
 ```C
 // chunk used to expand reached stack capacity size
@@ -128,7 +128,7 @@ The default macros expand the stack linearly using the predefined macro value:
 > [!WARNING]
 > If either ```IS_CAPACITY_STACK``` or ```EXPAND_CAPACITY_STACK``` is defined then the other MUST also be defined.
 
-## 4. Finite preprocessor defined mode
+### **Finite preprocessor defined mode**
 
 The finite preprocessor stack is a mode of the stack.h file which uses a predefined array of elements to store them next to each other from index 0.
 
@@ -138,7 +138,7 @@ typedef struct stack {
     size_t size;                                       // size of stack
 } stack_s;
 ```
-### Predefine size of elements array
+#### Predefine size of elements array
 
 ```C
 // predefiend size of stack's elements array
@@ -146,7 +146,7 @@ typedef struct stack {
 #define STACK_MODE FINITE_PREPROCESSOR_STACK_MODE
 #include "stack.h"
 ```
-## Main Functionality
+## Available Stack Functionality
 
 ### create_stack
 
@@ -254,11 +254,9 @@ void destroy_element(STACK_DATA_TYPE * element) {
 }
 
 STACK_DATA_TYPE copy_element(const STACK_DATA_TYPE element) {
-    STACK_DATA_TYPE copy = element;
-    
     /* create a deep or shallow copy of element */
     
-    return copy;
+    return element;
 }
 
 int main(void) {
