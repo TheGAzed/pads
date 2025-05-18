@@ -41,4 +41,3 @@ C compiler that at least supports the **C99 standard**, for example:
 ### **In Progress:**
 
 - [BINARY SET](https://github.com/TheGAzed/pads/blob/main/source/set/binary_set)
-- [MATRIX GRAPH](https://github.com/TheGAzed/pads/blob/main/source/graph/matrix_graph)
