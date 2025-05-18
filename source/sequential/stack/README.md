@@ -2,8 +2,6 @@
 
 The stack is a last in first out (LIFO) data structure. Here it is made in four implementation modes each defined by a special value.
 
-The implementation also includes the following macros that can be used by other modes:
-
 ## List of special stack macros:
 
 > [!WARNING]
