@@ -288,15 +288,21 @@ static inline void foreach_stack(stack_s const * stack, const operate_stack_fn o
     STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
     STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
 
-    const size_t modulo = stack->size % LIST_ARRAY_STACK_CHUNK; // calculate elements count at start node
-    size_t foreach_size = modulo ? modulo : LIST_ARRAY_STACK_CHUNK; // adjust start node size if modulo is zero
-    for (struct stack_list_array * current = stack->head; current; current = current->next) { // for each node
-        for (size_t i = 0; i < foreach_size; ++i) { // for each element in node
-            if (!operate(current->elements + (foreach_size - i - 1), args)) { // operate on elements until main loop ends or it returns false
+    // special head case where elements array may not be filled properly
+    const size_t head_size = stack->size % LIST_ARRAY_STACK_CHUNK; // calculate elements count at head node
+    for (size_t i = 0; i < head_size; ++i) {
+        if (!operate(stack->head->elements + (head_size - i - 1), args)) { // operate on elements until main loop ends or it returns false
+            return;
+        }
+    }
+
+    // other nodes have elements arrays full
+    for (struct stack_list_array * current = head_size ? stack->head->next : stack->head; current; current = current->next) { // for each node
+        for (size_t i = 0; i < LIST_ARRAY_STACK_CHUNK; ++i) { // for each element in node
+            if (!operate(current->elements + (LIST_ARRAY_STACK_CHUNK - i - 1), args)) { // operate on elements until main loop ends or it returns false
                 return;
             }
         }
-        foreach_size = LIST_ARRAY_STACK_CHUNK; // reset size to chunk after special start case was taken care of
     }
 }
 

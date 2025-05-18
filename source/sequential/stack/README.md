@@ -146,3 +146,362 @@ typedef struct stack {
 #define STACK_MODE FINITE_PREPROCESSOR_STACK_MODE
 #include "stack.h"
 ```
+## Main Functionality
+
+### create_stack
+
+```C
+stack_s create_stack(void);
+stack_s create_stack(size_t max); // in FINITE_ALLOCATED_STACK_MODE
+```
+
+The create stack function is used to create and return a new empty stack. It may use a maximum size parameter when in ```FINITE_ALLOCATED_STACK_MODE``` mode.
+
+```C
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+void destroy_element(STACK_DATA_TYPE * element) {
+    /* destroy or free the element */
+}
+
+int main(void) {
+    stack_s stack = create_stack();
+    
+    /* do something with created stack */
+    
+    destroy_stack(&stack, destroy_element);
+    
+    return 0;
+}
+```
+
+### destroy_stack
+
+```C
+typedef void (*destroy_stack_fn) (STACK_DATA_TYPE *);
+void destroy_stack(stack_s * stack, const destroy_stack_fn destroy);
+```
+
+The destroy stack function destroys a stack and all its elements using the ```destroy``` function pointer parameter. After the function is called the specified stack may not be used and ```create_stack()``` needs to be called again.
+
+```C
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+void destroy_element(STACK_DATA_TYPE * element) {
+    /* destroy or free the element */
+}
+
+int main(void) {
+    stack_s stack = create_stack();
+    
+    /* do something with stack */
+    
+    destroy_stack(&stack, destroy_element);
+    
+    return 0;
+}
+```
+
+### clear_stack
+
+```C
+typedef void (*destroy_stack_fn) (STACK_DATA_TYPE *);
+void clear_stack(stack_s * stack, const destroy_stack_fn destroy);
+```
+
+The clear stack function, similar to destroy counterpart, destroys a stack and all its elements using the ```destroy``` function pointer parameter. After the function is called however, the specified stack is only emptied and can still be used.
+
+```C
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+void destroy_element(STACK_DATA_TYPE * element) {
+    /* destroy or free the element */
+}
+
+int main(void) {
+    stack_s stack = create_stack();
+    
+    /* do something with stack */
+    
+    clear_stack(&stack, destroy_element);
+  
+    /* do some other thing with emptied stack */
+    
+    destroy_stack(&stack, destroy_element);
+    
+    return 0;
+}
+```
+
+### copy_stack
+
+```C
+typedef STACK_DATA_TYPE (*copy_stack_fn) (const STACK_DATA_TYPE);
+void copy_stack(const stack_s stack, const copy_stack_fn copy);
+```
+
+The copy stack function creates a replica of the specified stack and all its elements using the copy function pointer. The function pointer allows for the ability to create both deep and shallow copies of elements.
+
+```C
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+void destroy_element(STACK_DATA_TYPE * element) {
+    /* destroy or free the element */
+}
+
+STACK_DATA_TYPE copy_element(const STACK_DATA_TYPE element) {
+    STACK_DATA_TYPE copy = element;
+    
+    /* create a deep or shallow copy of element */
+    
+    return copy;
+}
+
+int main(void) {
+    stack_s stack = create_stack();
+    
+    /* do something with stack */
+    
+    stack_s copy = copy_stack(stack, copy_element);
+  
+    /* do something with both stack and its copy */
+    
+    destroy_stack(&stack, destroy_element);
+    destroy_stack(&copy, destroy_element);
+    
+    return 0;
+}
+```
+
+### foreach_stack
+
+```C
+typedef bool (*operate_stack_fn) (STACK_DATA_TYPE *, void *);
+void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args);
+```
+
+The foreach stack function simulates a for loop that iterates over each element in stack from top to bottom. It calls the ```operate``` function pointer on each element reference together with the specified generic arguments. If ```operate``` returns ```true``` the iteration continues, else it breaks.
+
+```C
+#include <stdio.h> // import printf
+
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+void destroy_element(STACK_DATA_TYPE * element) {
+    /* destroy or free the element */
+}
+
+bool print_element(STACK_DATA_TYPE * element, void * format) {
+    printf(format, (*element));
+    
+    return true;
+}
+
+int main(void) {
+    stack_s stack = create_stack();
+    
+    /* do something with stack */
+    
+    // prints stack elements from top to bottom
+    foreach_stack(&stack, print_element, "%d\n");
+    
+    destroy_stack(&stack, destroy_element);
+    
+    return 0;
+}
+```
+
+### map_stack
+
+```C
+typedef void (*manage_stack_fn) (STACK_DATA_TYPE *, const size_t, void *);
+void map_stack(stack_s const * stack, const manage_stack_fn manage, void * args);
+```
+
+The map stack function maps a stack into an array and back with top being last. It then calls a ```manage``` function pointer to manage all elements using stack's size and generic arguments. The created array gets freed at the end of the map function.
+
+```C
+#include <stdlib.h> // import qsort
+#include <string.h> // import memcmp
+
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+void destroy_element(STACK_DATA_TYPE * element) {
+    /* destroy or free the element */
+}
+
+int main(void) {
+    stack_s stack = create_stack();
+    
+    /* do something with stack */
+    
+    // sorts stack elements with top being the last one
+    map_stack(&stack, sort_elements, compare_elements);
+    
+    destroy_stack(&stack, destroy_element);
+    
+    return 0;
+}
+```
+
+### is_empty_stack
+
+```C
+bool is_empty_stack(const stack_s stack);
+```
+
+The is empty stack function checks if the stack has no elements stored.
+
+```C
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+void destroy_element(STACK_DATA_TYPE * element) {
+    /* destroy or free the element */
+}
+
+int main(void) {
+    stack_s stack = create_stack();
+
+    /* do something with stack */
+    
+    while (!is_empty_stack(stack)) {
+        /* do something with stack while it isn't empty */
+    }
+    
+    destroy_stack(&stack, destroy_element);
+    
+    return 0;
+}
+```
+
+### is_full_stack
+
+```C
+bool is_full_stack(const stack_s stack);
+```
+
+The is full stack function checks if the stack can't store any more elements. In the case of infinite mode stacks the function checks if the stack size value will overflow before push.
+
+```C
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+void destroy_element(STACK_DATA_TYPE * element) {
+    /* destroy or free the element */
+}
+
+int main(void) {
+    stack_s stack = create_stack();
+
+    /* do something with stack */
+    
+    while (!is_full_stack(stack)) {
+        /* do something with stack while it is not full */
+    }
+    
+    destroy_stack(&stack, destroy_element);
+    
+    return 0;
+}
+```
+
+### push_stack
+
+```C
+void push_stack(stack_s * stack, const STACK_DATA_TYPE element);
+```
+
+The push stack function pushes an element to the top of the specified stack.
+
+```C
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+void destroy_element(STACK_DATA_TYPE * element) {
+    /* destroy or free the element */
+}
+
+int main(void) {
+    stack_s stack = create_stack();
+
+    /* do something with stack */
+    
+    push_stack(&stack, 42);
+    
+    /* do something with stack and 42 at its top */
+        
+    destroy_stack(&stack, destroy_element);
+    
+    return 0;
+}
+```
+
+### peep_stack
+
+```C
+STACK_DATA_TYPE peep_stack(const stack_s stack);
+```
+
+The peep stack function gets the element at the top of the stack without removing it. 
+
+```C
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+void destroy_element(STACK_DATA_TYPE * element) {
+    /* destroy or free the element */
+}
+
+int main(void) {
+    stack_s stack = create_stack();
+
+    /* do something with stack */
+    
+    if (42 == peep_stack(stack)) {
+        /* do something with unchanged stack when top element is 42 */
+    }
+        
+    destroy_stack(&stack, destroy_element);
+    
+    return 0;
+}
+```
+
+### pop_stack
+
+```C
+STACK_DATA_TYPE pop_stack(stack_s * stack);
+```
+
+The pop stack function gets and removes the element at the top of the stack. 
+
+```C
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+void destroy_element(STACK_DATA_TYPE * element) {
+    /* destroy or free the element */
+}
+
+int main(void) {
+    stack_s stack = create_stack();
+
+    /* do something with stack */
+    
+    STACK_DATA_TYPE removed = pop_stack(&stack);
+    if (42 == removed) {
+        /* do something with stack when top removed element is 42 */
+    }
+        
+    destroy_stack(&stack, destroy_element);
+    
+    return 0;
+}
+```
