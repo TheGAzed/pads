@@ -106,37 +106,37 @@
 
 #endif
 
-/// @brief Function pointer to create a deep/shallow copy for forward list element.
+/// @brief Function pointer to create a deep/shallow copy for circular list element.
 typedef CIRCULAR_LIST_DATA_TYPE (*copy_circular_list_fn)    (const CIRCULAR_LIST_DATA_TYPE);
-/// @brief Function pointer to destroy/free an element for forward list element.
+/// @brief Function pointer to destroy/free an element for circular list element.
 typedef void                    (*destroy_circular_list_fn) (CIRCULAR_LIST_DATA_TYPE *);
-/// @brief Function pointer to comapre two forward list elements. Returns zero if they're equal, a negative number if
+/// @brief Function pointer to comapre two circular list elements. Returns zero if they're equal, a negative number if
 /// 'less than', else a positive number if 'more than'.
 typedef int                     (*compare_circular_list_fn) (const CIRCULAR_LIST_DATA_TYPE, const CIRCULAR_LIST_DATA_TYPE);
-/// @brief Function pointer to operate on a single forward list element based on generic arguments.
+/// @brief Function pointer to operate on a single circular list element based on generic arguments.
 typedef bool                    (*operate_circular_list_fn) (CIRCULAR_LIST_DATA_TYPE *, void *);
-/// @brief Function pointer to manage an array of forward list elements based on generic arguments.
+/// @brief Function pointer to manage an array of circular list elements based on generic arguments.
 typedef void                    (*manage_circular_list_fn)  (CIRCULAR_LIST_DATA_TYPE *, const size_t, void *);
 
 #if   CIRCULAR_LIST_MODE == INFINITE_ALLOCATED_CIRCULAR_LIST
 
-/// @brief Forward list node with element and pointer to next node.
+/// @brief Circular list node with element and pointer to next node.
 struct circular_list_node {
     CIRCULAR_LIST_DATA_TYPE element;  // current element
     struct circular_list_node * next; // pointer to next node
 };
 
-/// @brief The forward list is a circular linked list which allows appending and getting the last element without
+/// @brief The circular list is a circular linked list which allows appending and getting the last element without
 /// iterating through the entire list.
 typedef struct circular_list {
-    size_t size;                      // size of forward list
+    size_t size;                      // size of circular list
     struct circular_list_node * tail; // pointer to tail/last node
 } circular_list_s;
 
-/// @brief Creates an empty forward list of zero size.
-/// @return Forward list structure.
+/// @brief Creates an empty circular list of zero size.
+/// @return Circular list structure.
 static inline circular_list_s create_circular_list(void) {
-    return (circular_list_s) { 0 }; // sets forward list to zero
+    return (circular_list_s) { 0 }; // sets circular list to zero
 }
 
 /// @brief Destroys the list and all its elements.
@@ -188,7 +188,7 @@ static inline circular_list_s copy_circular_list(const circular_list_s list, con
     circular_list_s replica = { .tail = NULL, .size = list.size };
 
     struct circular_list_node const * previous_list = list.tail;
-    // double pointer since this also works on copying forward list
+    // double pointer since this also works on copying circular list
     struct circular_list_node ** previous_copy = &(replica.tail);
     for (size_t i = 0; i < list.size; ++i) {
         // create new node and copy element from source list based on copy function pointer parameter
@@ -224,9 +224,9 @@ static inline bool is_full_circular_list(const circular_list_s list) {
     return !(~list.size);
 }
 
-/// @brief Inserts an element to any place in the list. Forward list allows appending to the end without
+/// @brief Inserts an element to any place in the list. Circular list allows appending to the end without
 /// iterating the entire list.
-/// @param list Pointer to forward list structure.
+/// @param list Pointer to circular list structure.
 /// @param index Zero based index to insert element at.
 /// @param element Element to insert into list.
 static inline void insert_at_circular_list(circular_list_s * list, const size_t index, const CIRCULAR_LIST_DATA_TYPE element) {
@@ -412,7 +412,7 @@ static inline void splice_circular_list(circular_list_s * restrict destination, 
 /// @param index Zero based index to start split from.
 /// @param size Size to remove list by.
 /// @return New split list.
-/// @note Since forward list is circular the new list can include elements beyond old list's last node.
+/// @note Since circular list is circular the new list can include elements beyond old list's last node.
 static inline circular_list_s split_circular_list(circular_list_s * list, const size_t index, const size_t size) {
     CIRCULAR_LIST_ASSERT(list && "[ERROR] 'list' pointer parameter is NULL.");
     CIRCULAR_LIST_ASSERT(size && "[ERROR] 'size' parameter can't be zero.");
@@ -494,9 +494,9 @@ static inline void map_circular_list(circular_list_s const * list, const manage_
 /// @note The FINITE_ALLOCATED_CIRCULAR_LIST is a list that uses two stack implementations, a linked list based
 /// 'empty stack' for empty elements that make up holes in the circular_list elements' array and an array based
 /// 'load stack' with holes. When adding an element the linked list first check if it can pop from the 'empty stack'
-/// to fill in the holes, when therea are no holes (meaning 'empty stack' is empty) the forward list pushes the element
+/// to fill in the holes, when therea are no holes (meaning 'empty stack' is empty) the circular list pushes the element
 /// to the top of the array based 'loaded stack'
-/// @brief The forward list is a circular linked list which allows appending and getting the last element without
+/// @brief The circular list is a circular linked list which allows appending and getting the last element without
 /// iterating through the entire list.
 typedef struct circular_list {
     CIRCULAR_LIST_DATA_TYPE * elements;
@@ -506,9 +506,9 @@ typedef struct circular_list {
     size_t empty_size, empty_head;
 } circular_list_s;
 
-/// @brief Creates an empty forward list of zero size.
-/// @param max Maximum positive nonzero size of forward list.
-/// @return Forward list structure.
+/// @brief Creates an empty circular list of zero size.
+/// @param max Maximum positive nonzero size of circular list.
+/// @return Circular list structure.
 static inline circular_list_s create_circular_list(const size_t max) {
     CIRCULAR_LIST_ASSERT(max && "[ERROR] Maximum size can't be zero.");
 
@@ -627,9 +627,9 @@ static inline bool is_full_circular_list(const circular_list_s list) {
     return (list.size == list.max); // if size is equal to maximum size return true, else false
 }
 
-/// @brief Inserts an element to any place in the list. Forward list allows appending to the end without
+/// @brief Inserts an element to any place in the list. Circular list allows appending to the end without
 /// iterating the entire list.
-/// @param list Pointer to forward list structure.
+/// @param list Pointer to circular list structure.
 /// @param index Zero based index to insert element at.
 /// @param element Element to insert into list.
 static inline void insert_at_circular_list(circular_list_s * list, const size_t index, const CIRCULAR_LIST_DATA_TYPE element) {
@@ -887,14 +887,13 @@ static inline void splice_circular_list(circular_list_s * restrict destination, 
     source->empty_size = source->size = source->tail = 0;
 }
 
-/// @brief Splits old list and returns new list with specified elements. Since forward list is circular the new list can
-/// include elements beyond old list's last node.
-/// @param list Pointer to forward list structure.
+/// @brief Splits list and returns new list with elements in range.
+/// @param list Pointer to list structure.
 /// @param index Zero based index to start split from.
-/// @param size Size to remove list by. If size is zero an empty list is returned.
+/// @param size Size to remove list by.
 /// @param max Maximum positive nonzero size of returned split list.
 /// @return New split list.
-/// @note Splitting the list also removes its 'empty stack' holes.
+/// @note Since circular list is circular the new list can include elements beyond old list's last node.
 static inline circular_list_s split_circular_list(circular_list_s * list, const size_t index, const size_t size, const size_t max) {
     CIRCULAR_LIST_ASSERT(max && "[ERROR] Maximum size can't be zero.");
     CIRCULAR_LIST_ASSERT(list && "[ERROR] 'list' pointer parameter is NULL.");
@@ -1061,9 +1060,9 @@ static inline void map_circular_list(circular_list_s * list, const manage_circul
 /// @note The INFINITE_REALLOC_CIRCULAR_LIST is a list that uses two stack implementations, a linked list based
 /// 'empty stack' for empty elements that make up holes in the circular_list elements' array and an array based
 /// 'load stack' with holes. When adding an element the linked list first check if it can pop from the 'empty stack'
-/// to fill in the holes, when therea are no holes (meaning 'empty stack' is empty) the forward list pushes the element
+/// to fill in the holes, when therea are no holes (meaning 'empty stack' is empty) the circular list pushes the element
 /// to the top of the array based 'loaded stack'
-/// @brief The forward list is a circular linked list which allows appending and getting the last element without
+/// @brief The circular list is a circular linked list which allows appending and getting the last element without
 /// iterating through the entire list.
 typedef struct circular_list {
     CIRCULAR_LIST_DATA_TYPE * elements;
@@ -1072,8 +1071,8 @@ typedef struct circular_list {
     size_t size;
 } circular_list_s;
 
-/// @brief Creates an empty forward list of zero size.
-/// @return Forward list structure.
+/// @brief Creates an empty circular list of zero size.
+/// @return Circular list structure.
 static inline circular_list_s create_circular_list(void) {
     return (circular_list_s) { 0 };
 }
@@ -1160,9 +1159,9 @@ static inline bool is_full_circular_list(const circular_list_s list) {
     return !(~list.size);
 }
 
-/// @brief Inserts an element to any place in the list. Forward list allows appending to the end without
+/// @brief Inserts an element to any place in the list. Circular list allows appending to the end without
 /// iterating the entire list.
-/// @param list Pointer to forward list structure.
+/// @param list Pointer to circular list structure.
 /// @param index Zero based index to insert element at.
 /// @param element Element to insert into list.
 static inline void insert_at_circular_list(circular_list_s * list, const size_t index, const CIRCULAR_LIST_DATA_TYPE element) {
@@ -1454,12 +1453,12 @@ static inline void splice_circular_list(circular_list_s * restrict destination, 
     (*source) = (circular_list_s) { 0 };
 }
 
-/// @brief Splits old list and returns new list with specified elements. Since forward list is circular the new list can
-/// include elements beyond old list's last node.
-/// @param list Pointer to forward list structure.
+/// @brief Splits list and returns new list with elements in range.
+/// @param list Pointer to list structure.
 /// @param index Zero based index to start split from.
-/// @param size Size to remove list by. If size is zero an empty list is returned.
+/// @param size Size to remove list by.
 /// @return New split list.
+/// @note Since circular list is circular the new list can include elements beyond old list's last node.
 static inline circular_list_s split_circular_list(circular_list_s * list, const size_t index, const size_t size) {
     CIRCULAR_LIST_ASSERT(list && "[ERROR] 'list' pointer parameter is NULL.");
 
@@ -1601,9 +1600,9 @@ static inline void map_circular_list(circular_list_s * list, const manage_circul
 /// @note The FINITE_PRERPOCESSOR_CIRCULAR_LIST is a list that uses two stack implementations, a linked list based
 /// 'empty stack' for empty elements that make up holes in the circular_list elements' array and an array based
 /// 'load stack' with holes. When adding an element the linked list first check if it can pop from the 'empty stack'
-/// to fill in the holes, when therea are no holes (meaning 'empty stack' is empty) the forward list pushes the element
+/// to fill in the holes, when therea are no holes (meaning 'empty stack' is empty) the circular list pushes the element
 /// to the top of the array based 'loaded stack'
-/// @brief The forward list is a circular linked list which allows appending and getting the last element without
+/// @brief The circular list is a circular linked list which allows appending and getting the last element without
 /// iterating through the entire list.
 typedef struct circular_list {
     size_t size, empty_size, tail, empty_head;
@@ -1611,8 +1610,8 @@ typedef struct circular_list {
     size_t next[PREPROCESSOR_CIRCULAR_LIST_SIZE];
 } circular_list_s;
 
-/// @brief Creates an empty forward list of zero size.
-/// @return Forward list structure.
+/// @brief Creates an empty circular list of zero size.
+/// @return Circular list structure.
 static inline circular_list_s create_circular_list(void) {
     return (circular_list_s) { .tail = 0, .size = 0, .empty_head = 0, .empty_size = 0, };
 }
@@ -1698,9 +1697,9 @@ static inline bool is_full_circular_list(const circular_list_s list) {
     return (list.size == PREPROCESSOR_CIRCULAR_LIST_SIZE);
 }
 
-/// @brief Inserts an element to any place in the list. Forward list allows appending to the end without
+/// @brief Inserts an element to any place in the list. Circular list allows appending to the end without
 /// iterating the entire list.
-/// @param list Pointer to forward list structure.
+/// @param list Pointer to circular list structure.
 /// @param index Zero based index to insert element at.
 /// @param element Element to insert into list.
 static inline void insert_at_circular_list(circular_list_s * list, const size_t index, const CIRCULAR_LIST_DATA_TYPE element) {
@@ -1931,12 +1930,12 @@ static inline void splice_circular_list(circular_list_s * restrict destination, 
     source->empty_size = source->tail = source->size = 0;
 }
 
-/// @brief Splits old list and returns new list with specified elements. Since forward list is circular the new list can
-/// include elements beyond old list's last node.
-/// @param list Pointer to forward list structure.
+/// @brief Splits list and returns new list with elements in range.
+/// @param list Pointer to list structure.
 /// @param index Zero based index to start split from.
-/// @param size Size to remove list by. If size is zero an empty list is returned.
+/// @param size Size to remove list by.
 /// @return New split list.
+/// @note Since circular list is circular the new list can include elements beyond old list's last node.
 static inline circular_list_s split_circular_list(circular_list_s * list, const size_t index, const size_t size) {
     CIRCULAR_LIST_ASSERT(list && "[ERROR] 'list' pointer parameter is NULL.");
     CIRCULAR_LIST_ASSERT(size && "[ERROR] 'size' parameter can't be zero.");
