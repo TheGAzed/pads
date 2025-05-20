@@ -71,11 +71,10 @@
 //#define BINARY_SET_MODE INFINITE_REALLOC_BINARY_SET
 //#define BINARY_SET_MODE FINITE_ALLOCATED_BINARY_SET
 //#define BINARY_SET_MODE FINITE_PRERPOCESSOR_BINARY_SET
-// Set mode that can be set to INFINITE_REALLOC_BINARY_SET, FINITE_ALLOCATED_BINARY_SET or
-// FINITE_PRERPOCESSOR_BINARY_SET
-// Default: INFINITE_REALLOC_BINARY_SET
+
 #ifndef BINARY_SET_MODE
 
+/// @brief To change, use: #define BINARY_SET_MODE [mode].
 #define BINARY_SET_MODE INFINITE_REALLOC_BINARY_SET
 
 #endif
@@ -88,10 +87,9 @@
 
 #endif
 
-// Set data type to specify what datatype to set.
-// DEFAULT: void *
 #ifndef BINARY_SET_DATA_TYPE
 
+/// @brief To change, use: #define BINARY_SET_DATA_TYPE [type].
 #define BINARY_SET_DATA_TYPE void*
 
 #endif
@@ -99,6 +97,8 @@
 #ifndef BINARY_SET_ASSERT
 
 #include <assert.h>  // imports assert for debugging
+
+/// @brief To change, use: #define BINARY_SET_ASSERT [assert].
 #define BINARY_SET_ASSERT assert
 
 #endif
@@ -137,12 +137,12 @@
 typedef BINARY_SET_DATA_TYPE (*copy_binary_set_fn)    (const BINARY_SET_DATA_TYPE);
 /// @brief Function pointer to destroy/free an element for binary set element.
 typedef void                 (*destroy_binary_set_fn) (BINARY_SET_DATA_TYPE *);
-/// @brief Function pointer to comapre two binary set elements. Returns zero if they're equal, a negative number if
+/// @brief Function pointer to compare two set elements. Returns zero if they're equal, a negative number if
 /// 'less than', else a positive number if 'more than'.
 typedef int                  (*compare_binary_set_fn) (const BINARY_SET_DATA_TYPE, const BINARY_SET_DATA_TYPE);
-/// @brief Function pointer to operate on a single binary set element based on generic arguments.
+/// @brief Function pointer to operate on a single set element based on generic arguments.
 typedef bool                 (*operate_binary_set_fn) (BINARY_SET_DATA_TYPE *, void *);
-/// @brief Function pointer to manage an array of binary set elements based on generic arguments.
+/// @brief Function pointer to manage an array of set elements based on generic arguments.
 typedef void                 (*manage_binary_set_fn)  (BINARY_SET_DATA_TYPE *, const size_t, void *);
 
 #if BINARY_SET_MODE == INFINITE_REALLOC_BINARY_SET
@@ -151,6 +151,7 @@ typedef void                 (*manage_binary_set_fn)  (BINARY_SET_DATA_TYPE *, c
 
 #ifndef REALLOC_BINARY_SET_CHUNK
 
+/// @brief To change, use: #define REALLOC_BINARY_SET_CHUNK [size].
 #define REALLOC_BINARY_SET_CHUNK (1 << 5)
 
 #elif REALLOC_BINARY_SET_CHUNK <= 0
@@ -177,9 +178,9 @@ typedef void                 (*manage_binary_set_fn)  (BINARY_SET_DATA_TYPE *, c
 
 /// Binary set data structure
 typedef struct binary_set {
-    size_t size;                     // set size/number of elements
     BINARY_SET_DATA_TYPE * elements; // elements array
-    compare_binary_set_fn compare;   // comapre function pointer
+    compare_binary_set_fn compare;   // compare function pointer
+    size_t size;                     // set size/number of elements
 } binary_set_s;
 
 /// @brief Creates and returns a set with compare function poniter.
@@ -221,6 +222,7 @@ static inline void clear_binary_set(binary_set_s * set, const destroy_binary_set
     }
 
     BINARY_SET_FREE(set->elements); // free array memory that held elements
+    set->elements = NULL;
     set->size = 0;
 }
 
@@ -570,7 +572,7 @@ static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const 
         for (size_t limit = set_exclude.size - base_index; limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
 
-            const int comparison = set_exclude.compare(set_two.elements[i], (current_element));
+            const int comparison = set_exclude.compare(set_two.elements[i], (*current_element));
             if (comparison == 0) {
                 // shift left if in both
                 set_exclude.size--;
@@ -734,9 +736,9 @@ static inline bool is_disjoint_binary_set(const binary_set_s set_one, const bina
 #elif BINARY_SET_MODE == FINITE_ALLOCATED_BINARY_SET
 
 typedef struct binary_set {
-    BINARY_SET_DATA_TYPE * elements;
-    compare_binary_set_fn compare;
-    size_t size, max;
+    BINARY_SET_DATA_TYPE * elements; // elements array storing set elements in order
+    compare_binary_set_fn compare; // comapre function pointer to sort elements in order
+    size_t size, max; // size and maximum allowed element size/count
 } binary_set_s;
 
 /// @brief Creates and returns a set with compare function poniter.
@@ -749,7 +751,7 @@ static inline binary_set_s create_binary_set(const size_t max, const compare_bin
 
     const binary_set_s set =  {
         .compare = compare, .size = 0, .max = max,
-        .elements = DOUBLE_LIST_REALLOC(NULL, sizeof(BINARY_SET_DATA_TYPE) * max),
+        .elements = BINARY_SET_REALLOC(NULL, sizeof(BINARY_SET_DATA_TYPE) * max),
     };
     BINARY_SET_ASSERT(set.elements && "[ERROR] Memory allocation failed.");
 
@@ -1189,7 +1191,7 @@ static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const 
         for (size_t limit = set_exclude.size - base_index; limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
 
-            const int comparison = set_exclude.compare(set_two.elements[i], (current_element));
+            const int comparison = set_exclude.compare(set_two.elements[i], (*current_element));
             if (comparison == 0) { // if equal shift left and remove from excluded set
                 set_exclude.size--;
                 const size_t current_index = (size_t)(current_element - set_exclude.elements);
@@ -1365,9 +1367,9 @@ static inline bool is_disjoint_binary_set(const binary_set_s set_one, const bina
 #endif
 
 typedef struct binary_set {
-    size_t size;
-    BINARY_SET_DATA_TYPE elements[PREPROCESSOR_BINARY_SET_SIZE];
-    compare_binary_set_fn compare;
+    BINARY_SET_DATA_TYPE elements[PREPROCESSOR_BINARY_SET_SIZE]; // array of elements sorted based on compare
+    compare_binary_set_fn compare; // compare function pointer to sort elements by
+    size_t size; // number of elements in set
 } binary_set_s;
 
 /// @brief Creates and returns a set with compare function poniter.
