@@ -567,6 +567,1511 @@ TEST IRBS_FOREACH_05(void) {
     PASS();
 }
 
+TEST IRBS_MAP_01(void) {
+    binary_set_s test = create_binary_set(compare_int);
+
+    map_binary_set(&test, sort_int, compare_int_generic);
+
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_MAP_02(void) {
+    binary_set_s test = create_binary_set(compare_int);
+
+    insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+
+    map_binary_set(&test, sort_int, compare_int_generic);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected sorted elements to be equal.", 42, test.elements[0].sub_one);
+
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_MAP_03(void) {
+    binary_set_s test = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    map_binary_set(&test, sort_int, compare_int_generic);
+
+    for (size_t i = 0; i < test.size; ++i) {
+        ASSERT_EQm("[IRBS-ERROR] Expected sorted elements to be equal.", (int)(i), test.elements[i].sub_one);
+    }
+
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_MAP_04(void) {
+    binary_set_s test = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    map_binary_set(&test, sort_int, compare_int_generic);
+
+    for (size_t i = 0; i < test.size; ++i) {
+        ASSERT_EQm("[IRBS-ERROR] Expected sorted elements to be equal.", (int)(i), test.elements[i].sub_one);
+    }
+
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_MAP_05(void) {
+    binary_set_s test = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    map_binary_set(&test, sort_int, compare_int_generic);
+
+    for (size_t i = 0; i < test.size; ++i) {
+        ASSERT_EQm("[IRBS-ERROR] Expected sorted elements to be equal.", (int)(i), test.elements[i].sub_one);
+    }
+
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_MAP_06(void) {
+    binary_set_s test = create_binary_set(compare_int);
+
+    map_binary_set(&test, sort_int, compare_reverse_int_generic);
+
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_MAP_07(void) {
+    binary_set_s test = create_binary_set(compare_int);
+
+    insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+
+    map_binary_set(&test, sort_int, compare_reverse_int_generic);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected sorted elements to be equal.", 42, test.elements[0].sub_one);
+
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_MAP_08(void) {
+    binary_set_s test = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    map_binary_set(&test, sort_int, compare_reverse_int_generic);
+
+    for (size_t i = 0; i < test.size; ++i) {
+        const int expected = (int)(test.size) - 1 - (int)i;
+        ASSERT_EQm("[IRBS-ERROR] Expected sorted elements to be equal.", expected, test.elements[i].sub_one);
+    }
+
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_MAP_09(void) {
+    binary_set_s test = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    map_binary_set(&test, sort_int, compare_reverse_int_generic);
+
+    for (size_t i = 0; i < test.size; ++i) {
+        const int expected = (int)(test.size) - 1 - (int)i;
+        ASSERT_EQm("[IRBS-ERROR] Expected sorted elements to be equal.", expected, test.elements[i].sub_one);
+    }
+
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_MAP_10(void) {
+    binary_set_s test = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    map_binary_set(&test, sort_int, compare_reverse_int_generic);
+
+    for (size_t i = 0; i < test.size; ++i) {
+        const int expected = (int)(test.size) - 1 - (int)i;
+        ASSERT_EQm("[IRBS-ERROR] Expected sorted elements to be equal.", expected, test.elements[i].sub_one);
+    }
+
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_INSERT_01(void) {
+    binary_set_s test = create_binary_set(compare_int);
+
+    insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+
+    const BINARY_SET_DATA_TYPE element = { .sub_one = 42, };
+    ASSERTm("[IRBS-ERROR] Expected set to contain element.", contains_binary_set(test, element));
+
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_INSERT_02(void) {
+    binary_set_s test = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERTm("[IRBS-ERROR] Expected set to contain element.", contains_binary_set(test, element));
+    }
+
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_INSERT_03(void) {
+    binary_set_s test = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERTm("[IRBS-ERROR] Expected set to contain element.", contains_binary_set(test, element));
+    }
+
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_INSERT_04(void) {
+    binary_set_s test = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERTm("[IRBS-ERROR] Expected set to contain element.", contains_binary_set(test, element));
+    }
+
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_REMOVE_01(void) {
+    binary_set_s test = create_binary_set(compare_int);
+
+    insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+
+    const BINARY_SET_DATA_TYPE element = { .sub_one = 42, };
+    ASSERT_EQm("[IRBS-ERROR] Expected removed element to be valid.", 42, remove_binary_set(&test, element).sub_one);
+
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_REMOVE_02(void) {
+    binary_set_s test = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERT_EQm("[IRBS-ERROR] Expected removed element to be valid.", i, remove_binary_set(&test, element).sub_one);
+    }
+
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_REMOVE_03(void) {
+    binary_set_s test = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERT_EQm("[IRBS-ERROR] Expected removed element to be valid.", i, remove_binary_set(&test, element).sub_one);
+    }
+
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_REMOVE_04(void) {
+    binary_set_s test = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERT_EQm("[IRBS-ERROR] Expected removed element to be valid.", i, remove_binary_set(&test, element).sub_one);
+    }
+
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_UNION_01(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    binary_set_s test = union_binary_set(one, two, copy_int);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected size to be correct.", 0, test.size);
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_UNION_02(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+
+    binary_set_s test = union_binary_set(one, two, copy_int);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected size to be correct.", 1, test.size);
+
+    const BINARY_SET_DATA_TYPE element = { .sub_one = 42, };
+    ASSERTm("[IRBS-ERROR] Expected set to contain element.", contains_binary_set(test, element));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_UNION_03(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    binary_set_s test = union_binary_set(one, two, copy_int);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected size to be correct.", REALLOC_BINARY_SET_CHUNK - 1, test.size);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERTm("[IRBS-ERROR] Expected set to contain element.", contains_binary_set(test, element));
+    }
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_UNION_04(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    binary_set_s test = union_binary_set(one, two, copy_int);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected size to be correct.", REALLOC_BINARY_SET_CHUNK, test.size);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERTm("[IRBS-ERROR] Expected set to contain element.", contains_binary_set(test, element));
+    }
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_UNION_05(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    binary_set_s test = union_binary_set(one, two, copy_int);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected size to be correct.", REALLOC_BINARY_SET_CHUNK + 1, test.size);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERTm("[IRBS-ERROR] Expected set to contain element.", contains_binary_set(test, element));
+    }
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_UNION_06(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK - 1) >> 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = (REALLOC_BINARY_SET_CHUNK - 1) >> 1; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    binary_set_s test = union_binary_set(one, two, copy_int);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected size to be correct.", REALLOC_BINARY_SET_CHUNK - 1, test.size);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERTm("[IRBS-ERROR] Expected set to contain element.", contains_binary_set(test, element));
+    }
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_UNION_07(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK) >> 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = (REALLOC_BINARY_SET_CHUNK) >> 1; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    binary_set_s test = union_binary_set(one, two, copy_int);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected size to be correct.", REALLOC_BINARY_SET_CHUNK, test.size);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERTm("[IRBS-ERROR] Expected set to contain element.", contains_binary_set(test, element));
+    }
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_UNION_08(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK + 1) >> 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = (REALLOC_BINARY_SET_CHUNK + 1) >> 1; i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    binary_set_s test = union_binary_set(one, two, copy_int);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected size to be correct.", REALLOC_BINARY_SET_CHUNK + 1, test.size);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERTm("[IRBS-ERROR] Expected set to contain element.", contains_binary_set(test, element));
+    }
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_INTERSECT_01(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    binary_set_s test = intersect_binary_set(one, two, copy_int);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected size to be correct.", 0, test.size);
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_INTERSECT_02(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+
+    binary_set_s test = intersect_binary_set(one, two, copy_int);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected size to be correct.", 1, test.size);
+
+    const BINARY_SET_DATA_TYPE element = { .sub_one = 42, };
+    ASSERTm("[IRBS-ERROR] Expected set to contain element.", contains_binary_set(test, element));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_INTERSECT_03(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    binary_set_s test = intersect_binary_set(one, two, copy_int);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected size to be correct.", REALLOC_BINARY_SET_CHUNK - 1, test.size);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERTm("[IRBS-ERROR] Expected set to contain element.", contains_binary_set(test, element));
+    }
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_INTERSECT_04(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    binary_set_s test = intersect_binary_set(one, two, copy_int);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected size to be correct.", REALLOC_BINARY_SET_CHUNK, test.size);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERTm("[IRBS-ERROR] Expected set to contain element.", contains_binary_set(test, element));
+    }
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_INTERSECT_05(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    binary_set_s test = intersect_binary_set(one, two, copy_int);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected size to be correct.", REALLOC_BINARY_SET_CHUNK + 1, test.size);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERTm("[IRBS-ERROR] Expected set to contain element.", contains_binary_set(test, element));
+    }
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_INTERSECT_06(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK - 1) >> 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = (REALLOC_BINARY_SET_CHUNK - 1) >> 1; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    binary_set_s test = intersect_binary_set(one, two, copy_int);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected size to be correct.", 0, test.size);
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_INTERSECT_07(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK) >> 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = (REALLOC_BINARY_SET_CHUNK) >> 1; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    binary_set_s test = intersect_binary_set(one, two, copy_int);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected size to be correct.", 0, test.size);
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_INTERSECT_08(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK + 1) >> 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = (REALLOC_BINARY_SET_CHUNK + 1) >> 1; i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    binary_set_s test = intersect_binary_set(one, two, copy_int);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected size to be correct.", 0, test.size);
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_INTERSECT_09(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < 2 * ((REALLOC_BINARY_SET_CHUNK - 1) / 3); ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = ((REALLOC_BINARY_SET_CHUNK - 1) / 3); i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    binary_set_s test = intersect_binary_set(one, two, copy_int);
+
+    for (int i = ((REALLOC_BINARY_SET_CHUNK - 1) / 3); i < 2 * ((REALLOC_BINARY_SET_CHUNK - 1) / 3); ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERTm("[IRBS-ERROR] Expected set to contain element.", contains_binary_set(test, element));
+    }
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_INTERSECT_10(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < 2 * ((REALLOC_BINARY_SET_CHUNK) / 3); ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = ((REALLOC_BINARY_SET_CHUNK) / 3); i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    binary_set_s test = intersect_binary_set(one, two, copy_int);
+
+    for (int i = ((REALLOC_BINARY_SET_CHUNK) / 3); i < 2 * ((REALLOC_BINARY_SET_CHUNK) / 3); ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERTm("[IRBS-ERROR] Expected set to contain element.", contains_binary_set(test, element));
+    }
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_INTERSECT_11(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < 2 * ((REALLOC_BINARY_SET_CHUNK + 1) / 3); ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = ((REALLOC_BINARY_SET_CHUNK + 1) / 3); i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    binary_set_s test = intersect_binary_set(one, two, copy_int);
+
+    for (int i = ((REALLOC_BINARY_SET_CHUNK + 1) / 3); i < 2 * ((REALLOC_BINARY_SET_CHUNK + 1) / 3); ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERTm("[IRBS-ERROR] Expected set to contain element.", contains_binary_set(test, element));
+    }
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_SUBTRACT_01(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    binary_set_s test = subtract_binary_set(one, two, copy_int);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected size to be correct.", 0, test.size);
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_SUBTRACT_02(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+
+    binary_set_s test = subtract_binary_set(one, two, copy_int);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected size to be correct.", 0, test.size);
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_SUBTRACT_03(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    binary_set_s test = subtract_binary_set(one, two, copy_int);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected size to be correct.", 0, test.size);
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_SUBTRACT_04(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    binary_set_s test = subtract_binary_set(one, two, copy_int);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected size to be correct.", 0, test.size);
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_SUBTRACT_05(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    binary_set_s test = subtract_binary_set(one, two, copy_int);
+
+    ASSERT_EQm("[IRBS-ERROR] Expected size to be correct.", 0, test.size);
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_SUBTRACT_06(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK - 1) >> 1; ++i) {
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    binary_set_s test = subtract_binary_set(one, two, copy_int);
+
+    for (int i = (REALLOC_BINARY_SET_CHUNK - 1) >> 1; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERTm("[IRBS-ERROR] Expected set to contain element.", contains_binary_set(test, element));
+    }
+
+    for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK - 1) >> 1; ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERTm("[IRBS-ERROR] Expected set to NOT contain element.", !contains_binary_set(test, element));
+    }
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_SUBTRACT_07(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK) >> 1; ++i) {
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    binary_set_s test = subtract_binary_set(one, two, copy_int);
+
+    for (int i = (REALLOC_BINARY_SET_CHUNK) >> 1; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERTm("[IRBS-ERROR] Expected set to contain element.", contains_binary_set(test, element));
+    }
+
+    for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK) >> 1; ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERTm("[IRBS-ERROR] Expected set to NOT contain element.", !contains_binary_set(test, element));
+    }
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_SUBTRACT_08(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK + 1) >> 1; ++i) {
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    binary_set_s test = subtract_binary_set(one, two, copy_int);
+
+    for (int i = (REALLOC_BINARY_SET_CHUNK + 1) >> 1; i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERTm("[IRBS-ERROR] Expected set to contain element.", contains_binary_set(test, element));
+    }
+
+    for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK + 1) >> 1; ++i) {
+        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+        ASSERTm("[IRBS-ERROR] Expected set to NOT contain element.", !contains_binary_set(test, element));
+    }
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+    destroy_binary_set(&test, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_SUBSET_01(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    ASSERTm("[IRBS-ERROR] Expected sets to be equal.", is_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_SUBSET_02(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+
+    ASSERTm("[IRBS-ERROR] Expected sets to be equal.", is_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_SUBSET_03(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    ASSERTm("[IRBS-ERROR] Expected sets to be equal.", is_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_SUBSET_04(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    ASSERTm("[IRBS-ERROR] Expected sets to be equal.", is_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_SUBSET_05(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    ASSERTm("[IRBS-ERROR] Expected sets to be equal.", is_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_SUBSET_06(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1 - 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+    insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = REALLOC_BINARY_SET_CHUNK - 2, });
+
+    ASSERT_FALSEm("[IRBS-ERROR] Expected sets to be equal.", is_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_SUBSET_07(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+    insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = REALLOC_BINARY_SET_CHUNK - 1, });
+
+    ASSERT_FALSEm("[IRBS-ERROR] Expected sets to be equal.", is_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_SUBSET_08(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+    insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = REALLOC_BINARY_SET_CHUNK, });
+
+    ASSERT_FALSEm("[IRBS-ERROR] Expected sets to be equal.", is_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_SUBSET_09(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1 - 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+    insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = REALLOC_BINARY_SET_CHUNK - 2, });
+
+    ASSERTm("[IRBS-ERROR] Expected sets to be equal.", is_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_SUBSET_10(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+    insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = REALLOC_BINARY_SET_CHUNK - 1, });
+
+    ASSERTm("[IRBS-ERROR] Expected sets to be equal.", is_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_SUBSET_11(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+    insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = REALLOC_BINARY_SET_CHUNK, });
+
+    ASSERTm("[IRBS-ERROR] Expected sets to be equal.", is_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_PROPER_SUBSET_01(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    ASSERT_FALSEm("[IRBS-ERROR] Expected sets to be properly equal.", is_proper_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_PROPER_SUBSET_02(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+
+    ASSERT_FALSEm("[IRBS-ERROR] Expected sets to be properly equal.", is_proper_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_PROPER_SUBSET_03(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    ASSERT_FALSEm("[IRBS-ERROR] Expected sets to be properly equal.", is_proper_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_PROPER_SUBSET_04(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    ASSERT_FALSEm("[IRBS-ERROR] Expected sets to be properly equal.", is_proper_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_PROPER_SUBSET_05(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    ASSERT_FALSEm("[IRBS-ERROR] Expected sets to be properly equal.", is_proper_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_PROPER_SUBSET_06(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1 - 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+    insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = REALLOC_BINARY_SET_CHUNK - 2, });
+
+    ASSERT_FALSEm("[IRBS-ERROR] Expected sets to be properly equal.", is_proper_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_PROPER_SUBSET_07(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+    insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = REALLOC_BINARY_SET_CHUNK - 1, });
+
+    ASSERT_FALSEm("[IRBS-ERROR] Expected sets to be properly equal.", is_proper_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_PROPER_SUBSET_08(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+    insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = REALLOC_BINARY_SET_CHUNK, });
+
+    ASSERT_FALSEm("[IRBS-ERROR] Expected sets to be properly equal.", is_proper_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_PROPER_SUBSET_09(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1 - 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+    insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = REALLOC_BINARY_SET_CHUNK - 2, });
+
+    ASSERTm("[IRBS-ERROR] Expected sets to be properly equal.", is_proper_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_PROPER_SUBSET_10(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+    insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = REALLOC_BINARY_SET_CHUNK - 1, });
+
+    ASSERTm("[IRBS-ERROR] Expected sets to be properly equal.", is_proper_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_PROPER_SUBSET_11(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+    insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = REALLOC_BINARY_SET_CHUNK, });
+
+    ASSERTm("[IRBS-ERROR] Expected sets to be properly equal.", is_proper_subset_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_DISJOINT_01(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    ASSERTm("[IRBS-ERROR] Expected sets to be disjoint.", is_disjoint_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_DISJOINT_02(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+
+    ASSERT_FALSEm("[IRBS-ERROR] Expected sets to not be disjoint.", is_disjoint_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_DISJOINT_03(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    ASSERT_FALSEm("[IRBS-ERROR] Expected sets to not be disjoint.", is_disjoint_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_DISJOINT_04(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    ASSERT_FALSEm("[IRBS-ERROR] Expected sets to not be disjoint.", is_disjoint_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_DISJOINT_05(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    ASSERT_FALSEm("[IRBS-ERROR] Expected sets to not be disjoint.", is_disjoint_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_DISJOINT_06(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK - 1) >> 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = (REALLOC_BINARY_SET_CHUNK - 1) >> 1; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    ASSERTm("[IRBS-ERROR] Expected sets to be disjoint.", is_disjoint_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_DISJOINT_07(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK) >> 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = (REALLOC_BINARY_SET_CHUNK) >> 1; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    ASSERTm("[IRBS-ERROR] Expected sets to be disjoint.", is_disjoint_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_DISJOINT_08(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK + 1) >> 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = (REALLOC_BINARY_SET_CHUNK + 1) >> 1; i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    ASSERTm("[IRBS-ERROR] Expected sets to be disjoint.", is_disjoint_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_DISJOINT_09(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK - 1) >> 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = (REALLOC_BINARY_SET_CHUNK - 1) >> 1; i < REALLOC_BINARY_SET_CHUNK - 1; ++i) {
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+
+    ASSERT_FALSEm("[IRBS-ERROR] Expected sets to not be disjoint.", is_disjoint_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_DISJOINT_10(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK) >> 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = (REALLOC_BINARY_SET_CHUNK) >> 1; i < REALLOC_BINARY_SET_CHUNK; ++i) {
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+
+    ASSERT_FALSEm("[IRBS-ERROR] Expected sets to not be disjoint.", is_disjoint_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
+TEST IRBS_IS_DISJOINT_11(void) {
+    binary_set_s one = create_binary_set(compare_int);
+    binary_set_s two = create_binary_set(compare_int);
+
+    for (int i = 0; i < (REALLOC_BINARY_SET_CHUNK + 1) >> 1; ++i) {
+        insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    for (int i = (REALLOC_BINARY_SET_CHUNK + 1) >> 1; i < REALLOC_BINARY_SET_CHUNK + 1; ++i) {
+        insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    }
+
+    insert_binary_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_binary_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+
+    ASSERT_FALSEm("[IRBS-ERROR] Expected sets to not be disjoint.", is_disjoint_binary_set(one, two));
+
+    destroy_binary_set(&one, destroy_int);
+    destroy_binary_set(&two, destroy_int);
+
+    PASS();
+}
+
 SUITE (infinite_realloc_binary_set_test) {
     // create
     RUN_TEST(IRBS_CREATE_01);
@@ -588,4 +2093,34 @@ SUITE (infinite_realloc_binary_set_test) {
     // foreach
     RUN_TEST(IRBS_FOREACH_01); RUN_TEST(IRBS_FOREACH_02); RUN_TEST(IRBS_FOREACH_03); RUN_TEST(IRBS_FOREACH_04);
     RUN_TEST(IRBS_FOREACH_05);
+    // map
+    RUN_TEST(IRBS_MAP_01); RUN_TEST(IRBS_MAP_02); RUN_TEST(IRBS_MAP_03); RUN_TEST(IRBS_MAP_04);
+    RUN_TEST(IRBS_MAP_05); RUN_TEST(IRBS_MAP_06); RUN_TEST(IRBS_MAP_07); RUN_TEST(IRBS_MAP_08);
+    RUN_TEST(IRBS_MAP_09); RUN_TEST(IRBS_MAP_10);
+    // insert
+    RUN_TEST(IRBS_INSERT_01); RUN_TEST(IRBS_INSERT_02); RUN_TEST(IRBS_INSERT_03); RUN_TEST(IRBS_INSERT_04);
+    // remove
+    RUN_TEST(IRBS_REMOVE_01); RUN_TEST(IRBS_REMOVE_02); RUN_TEST(IRBS_REMOVE_03); RUN_TEST(IRBS_REMOVE_04);
+    // union
+    RUN_TEST(IRBS_UNION_01); RUN_TEST(IRBS_UNION_02); RUN_TEST(IRBS_UNION_03); RUN_TEST(IRBS_UNION_04);
+    RUN_TEST(IRBS_UNION_05); RUN_TEST(IRBS_UNION_06); RUN_TEST(IRBS_UNION_07); RUN_TEST(IRBS_UNION_08);
+    // intersect
+    RUN_TEST(IRBS_INTERSECT_01); RUN_TEST(IRBS_INTERSECT_02); RUN_TEST(IRBS_INTERSECT_03); RUN_TEST(IRBS_INTERSECT_04);
+    RUN_TEST(IRBS_INTERSECT_05); RUN_TEST(IRBS_INTERSECT_06); RUN_TEST(IRBS_INTERSECT_07); RUN_TEST(IRBS_INTERSECT_08);
+    RUN_TEST(IRBS_INTERSECT_09); RUN_TEST(IRBS_INTERSECT_10); RUN_TEST(IRBS_INTERSECT_11);
+    // subtract
+    RUN_TEST(IRBS_SUBTRACT_01); RUN_TEST(IRBS_SUBTRACT_02); RUN_TEST(IRBS_SUBTRACT_03); RUN_TEST(IRBS_SUBTRACT_04);
+    RUN_TEST(IRBS_SUBTRACT_05); RUN_TEST(IRBS_SUBTRACT_06); RUN_TEST(IRBS_SUBTRACT_07); RUN_TEST(IRBS_SUBTRACT_08);
+    // is subset
+    RUN_TEST(IRBS_IS_SUBSET_01); RUN_TEST(IRBS_IS_SUBSET_02); RUN_TEST(IRBS_IS_SUBSET_03); RUN_TEST(IRBS_IS_SUBSET_04);
+    RUN_TEST(IRBS_IS_SUBSET_05); RUN_TEST(IRBS_IS_SUBSET_06); RUN_TEST(IRBS_IS_SUBSET_07); RUN_TEST(IRBS_IS_SUBSET_08);
+    RUN_TEST(IRBS_IS_SUBSET_09); RUN_TEST(IRBS_IS_SUBSET_10); RUN_TEST(IRBS_IS_SUBSET_11);
+    // is proper subset
+    RUN_TEST(IRBS_IS_PROPER_SUBSET_01); RUN_TEST(IRBS_IS_PROPER_SUBSET_02); RUN_TEST(IRBS_IS_PROPER_SUBSET_03); RUN_TEST(IRBS_IS_PROPER_SUBSET_04);
+    RUN_TEST(IRBS_IS_PROPER_SUBSET_05); RUN_TEST(IRBS_IS_PROPER_SUBSET_06); RUN_TEST(IRBS_IS_PROPER_SUBSET_07); RUN_TEST(IRBS_IS_PROPER_SUBSET_08);
+    RUN_TEST(IRBS_IS_PROPER_SUBSET_09); RUN_TEST(IRBS_IS_PROPER_SUBSET_10); RUN_TEST(IRBS_IS_PROPER_SUBSET_11);
+    // is disjoint
+    RUN_TEST(IRBS_IS_DISJOINT_01); RUN_TEST(IRBS_IS_DISJOINT_02); RUN_TEST(IRBS_IS_DISJOINT_03); RUN_TEST(IRBS_IS_DISJOINT_04);
+    RUN_TEST(IRBS_IS_DISJOINT_05); RUN_TEST(IRBS_IS_DISJOINT_06); RUN_TEST(IRBS_IS_DISJOINT_07); RUN_TEST(IRBS_IS_DISJOINT_08);
+    RUN_TEST(IRBS_IS_DISJOINT_09); RUN_TEST(IRBS_IS_DISJOINT_10); RUN_TEST(IRBS_IS_DISJOINT_11);
 }

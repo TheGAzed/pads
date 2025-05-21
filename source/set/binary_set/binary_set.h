@@ -1,9 +1,9 @@
 #ifndef BINARY_SET_H
 #define BINARY_SET_H
 
-#include <stddef.h>  // imports size_t and malloc
+#include <stddef.h>  // imports size_t
 #include <stdbool.h> // imports bool
-#include <string.h>  // imports memcpy
+#include <string.h>  // imports memcpy, memmove
 
 // SOURCE AND LICENCE OF BINARY SEARCH IMPLEMENTATION
 // https://github.com/gcc-mirror/gcc/blob/master/libiberty/bsearch.c
@@ -358,7 +358,7 @@ static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const B
     for (size_t limit = set->size; limit != 0; limit >>= 1) {
         BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
 
-        const int comparison = set->compare((*current_element), element);
+        const int comparison = set->compare(element, (*current_element));
         if (comparison == 0) {
             BINARY_SET_DATA_TYPE removed = *current_element;
             set->size--;
@@ -384,7 +384,7 @@ static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const B
         }
     }
 
-    BINARY_SET_ASSERT(set->elements && "[ERROR] Set does not contain element.");
+    BINARY_SET_ASSERT(false && "[ERROR] Set does not contain element.");
     exit(EXIT_FAILURE);
 }
 
@@ -420,7 +420,7 @@ static inline binary_set_s union_binary_set(const binary_set_s set_one, const bi
         for (size_t limit = set_union.size - base_index; limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
 
-            const int comparison = set_one.compare(set_one.elements[i], (*current_element));
+            const int comparison = set_union.compare(set_two.elements[i], (*current_element));
             if (comparison == 0) {
                 found_element = true;
                 break;
@@ -638,15 +638,15 @@ static inline bool is_subset_binary_set(const binary_set_s super, const binary_s
     BINARY_SET_ASSERT(super.compare && "[ERROR] Set's compare function pointer is NULL.");
     BINARY_SET_ASSERT(sub.compare && "[ERROR] Set's compare function pointer is NULL.");
 
-    BINARY_SET_DATA_TYPE * base = sub.elements;
-    for (size_t i = 0; i < super.size; ++i) { // for each element in set one
+    BINARY_SET_DATA_TYPE * base = super.elements;
+    for (size_t i = 0; i < sub.size; ++i) { // for each element in set one
         bool found_element = false;
 
-        const size_t base_index = (size_t)(base - sub.elements);
-        for (size_t limit = sub.size - base_index; limit != 0; limit >>= 1) {
+        const size_t base_index = (size_t)(base - super.elements);
+        for (size_t limit = super.size - base_index; limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
 
-            const int comparison = super.compare((*current_element), super.elements[i]);
+            const int comparison = super.compare(sub.elements[i], (*current_element));
             if (comparison == 0) {
                 found_element = true;
                 break;
@@ -675,15 +675,15 @@ static inline bool is_proper_subset_binary_set(const binary_set_s super, const b
     BINARY_SET_ASSERT(super.compare && "[ERROR] Set's compare function pointer is NULL.");
     BINARY_SET_ASSERT(sub.compare && "[ERROR] Set's compare function pointer is NULL.");
 
-    BINARY_SET_DATA_TYPE * base = sub.elements;
-    for (size_t i = 0; i < super.size; ++i) { // for each element in set one
+    BINARY_SET_DATA_TYPE * base = super.elements;
+    for (size_t i = 0; i < sub.size; ++i) { // for each element in set one
         bool found_element = false;
 
-        const size_t base_index = (size_t)(base - sub.elements);
-        for (size_t limit = sub.size - base_index; limit != 0; limit >>= 1) {
+        const size_t base_index = (size_t)(base - super.elements);
+        for (size_t limit = super.size - base_index; limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
 
-            const int comparison = super.compare((*current_element), super.elements[i]);
+            const int comparison = super.compare(sub.elements[i], (*current_element));
             if (comparison == 0) {
                 found_element = true;
                 break;
@@ -718,7 +718,7 @@ static inline bool is_disjoint_binary_set(const binary_set_s set_one, const bina
         for (size_t limit = set_two.size - base_index; limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
 
-            const int comparison = set_one.compare((*current_element), set_one.elements[i]);
+            const int comparison = set_one.compare(set_one.elements[i], (*current_element));
             if (comparison == 0) {
                 return false;
             }
@@ -960,7 +960,7 @@ static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const B
     for (size_t limit = set->size; limit != 0; limit >>= 1) {
         BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
 
-        const int comparison = set->compare((*current_element), element);
+        const int comparison = set->compare(element, (*current_element));
         if (comparison == 0) {
             BINARY_SET_DATA_TYPE removed = *current_element;
             set->size--;
@@ -977,7 +977,7 @@ static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const B
         }
     }
 
-    BINARY_SET_ASSERT(set->elements && "[ERROR] Set does not contain element.");
+    BINARY_SET_ASSERT(false && "[ERROR] Set does not contain element.");
     exit(EXIT_FAILURE);
 }
 
@@ -1022,7 +1022,7 @@ static inline binary_set_s union_binary_set(const binary_set_s set_one, const bi
         for (size_t limit = set_union.size - base_index; limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
 
-            const int comparison = set_one.compare(set_one.elements[i], (*current_element));
+            const int comparison = set_union.compare(set_two.elements[i], (*current_element));
             if (comparison == 0) {
                 found_element = true;
                 break;
@@ -1243,15 +1243,15 @@ static inline bool is_subset_binary_set(const binary_set_s super, const binary_s
     BINARY_SET_ASSERT(sub.elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(sub.compare && "[ERROR] Set's compare function pointer is NULL.");
 
-    BINARY_SET_DATA_TYPE * base = sub.elements;
-    for (size_t i = 0; i < super.size; ++i) { // for each element in set one
+    BINARY_SET_DATA_TYPE * base = super.elements;
+    for (size_t i = 0; i < sub.size; ++i) { // for each element in set one
         bool found_element = false;
 
-        const size_t base_index = (size_t)(base - sub.elements);
-        for (size_t limit = sub.size - base_index; limit != 0; limit >>= 1) {
+        const size_t base_index = (size_t)(base - super.elements);
+        for (size_t limit = super.size - base_index; limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
 
-            const int comparison = super.compare((*current_element), super.elements[i]);
+            const int comparison = super.compare(sub.elements[i], (*current_element));
             if (comparison == 0) {
                 found_element = true;
                 break;
@@ -1288,15 +1288,15 @@ static inline bool is_proper_subset_binary_set(const binary_set_s super, const b
     BINARY_SET_ASSERT(sub.elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(sub.compare && "[ERROR] Set's compare function pointer is NULL.");
 
-    BINARY_SET_DATA_TYPE * base = sub.elements;
-    for (size_t i = 0; i < super.size; ++i) { // for each element in set one
+    BINARY_SET_DATA_TYPE * base = super.elements;
+    for (size_t i = 0; i < sub.size; ++i) { // for each element in set one
         bool found_element = false;
 
-        const size_t base_index = (size_t)(base - sub.elements);
-        for (size_t limit = sub.size - base_index; limit != 0; limit >>= 1) {
+        const size_t base_index = (size_t)(base - super.elements);
+        for (size_t limit = super.size - base_index; limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
 
-            const int comparison = super.compare((*current_element), super.elements[i]);
+            const int comparison = super.compare(sub.elements[i], (*current_element));
             if (comparison == 0) {
                 found_element = true;
                 break;
@@ -1339,7 +1339,7 @@ static inline bool is_disjoint_binary_set(const binary_set_s set_one, const bina
         for (size_t limit = set_two.size - base_index; limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
 
-            const int comparison = set_one.compare((*current_element), set_one.elements[i]);
+            const int comparison = set_one.compare(set_one.elements[i], (*current_element));
             if (comparison == 0) {
                 return false;
             }
@@ -1559,7 +1559,7 @@ static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const B
     for (size_t limit = set->size; limit != 0; limit >>= 1) {
         BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
 
-        const int comparison = set->compare((*current_element), element);
+        const int comparison = set->compare(element, (*current_element));
         if (comparison == 0) {
             BINARY_SET_DATA_TYPE removed = (*current_element);
             set->size--;
@@ -1576,7 +1576,7 @@ static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const B
         }
     }
 
-    BINARY_SET_ASSERT(set->elements && "[ERROR] Set does not contain element.");
+    BINARY_SET_ASSERT(false && "[ERROR] Set does not contain element.");
     exit(EXIT_FAILURE);
 }
 
@@ -1611,7 +1611,7 @@ static inline binary_set_s union_binary_set(const binary_set_s set_one, const bi
         for (size_t limit = set_union.size - base_index; limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
 
-            const int comparison = set_one.compare(set_one.elements[i], (*current_element));
+            const int comparison = set_union.compare(set_two.elements[i], (*current_element));
             if (comparison == 0) {
                 found_element = true;
                 break;
@@ -1799,15 +1799,15 @@ static inline bool is_subset_binary_set(const binary_set_s super, const binary_s
     BINARY_SET_ASSERT(sub.compare && "[ERROR] Set's compare function pointer is NULL.");
     BINARY_SET_ASSERT(sub.size <= PREPROCESSOR_BINARY_SET_SIZE && "[ERROR] Set's size exceeds its maximum.");
 
-    BINARY_SET_DATA_TYPE const * base = sub.elements;
-    for (size_t i = 0; i < super.size; ++i) { // for each element in set one
+    BINARY_SET_DATA_TYPE const * base = super.elements;
+    for (size_t i = 0; i < sub.size; ++i) { // for each element in set one
         bool found_element = false;
 
-        const size_t base_index = (size_t)(base - sub.elements); // convert to size_t since the result is a positive ptrdiff_t
-        for (size_t limit = sub.size - base_index; limit != 0; limit >>= 1) {
+        const size_t base_index = (size_t)(base - super.elements); // convert to size_t since the result is a positive ptrdiff_t
+        for (size_t limit = super.size - base_index; limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE const * current_element = base + (limit >> 1);
 
-            const int comparison = super.compare((*current_element), super.elements[i]);
+            const int comparison = super.compare(sub.elements[i], (*current_element));
             if (comparison == 0) {
                 found_element = true;
                 break;
@@ -1840,15 +1840,15 @@ static inline bool is_proper_subset_binary_set(const binary_set_s super, const b
     BINARY_SET_ASSERT(sub.compare && "[ERROR] Set's compare function pointer is NULL.");
     BINARY_SET_ASSERT(sub.size <= PREPROCESSOR_BINARY_SET_SIZE && "[ERROR] Set's size exceeds its maximum.");
 
-    BINARY_SET_DATA_TYPE const * base = sub.elements;
-    for (size_t i = 0; i < super.size; ++i) { // for each element in set one
+    BINARY_SET_DATA_TYPE const * base = super.elements;
+    for (size_t i = 0; i < sub.size; ++i) { // for each element in set one
         bool found_element = false;
 
-        const size_t base_index = (size_t)(base - sub.elements); // convert to size_t since the result is a positive ptrdiff_t
-        for (size_t limit = sub.size - base_index; limit != 0; limit >>= 1) {
+        const size_t base_index = (size_t)(base - super.elements); // convert to size_t since the result is a positive ptrdiff_t
+        for (size_t limit = super.size - base_index; limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE const * current_element = base + (limit >> 1);
 
-            const int comparison = super.compare((*current_element), super.elements[i]);
+            const int comparison = super.compare(sub.elements[i], (*current_element));
             if (comparison == 0) {
                 found_element = true;
                 break;
@@ -1887,7 +1887,7 @@ static inline bool is_disjoint_binary_set(const binary_set_s set_one, const bina
         for (size_t limit = set_two.size - base_index; limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE const * current_element = base + (limit >> 1);
 
-            const int comparison = set_one.compare((*current_element), set_one.elements[i]);
+            const int comparison = set_one.compare(set_one.elements[i], (*current_element));
             if (comparison == 0) {
                 return false;
             }
