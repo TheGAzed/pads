@@ -316,6 +316,7 @@ static inline bool contains_binary_set(const binary_set_s set, const BINARY_SET_
 static inline void insert_binary_set(binary_set_s * set, const BINARY_SET_DATA_TYPE element) {
     BINARY_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL");
     BINARY_SET_ASSERT(set->compare && "[ERROR] Set's compare function pointer is NULL.");
+    BINARY_SET_ASSERT(~(set.size) && "[ERROR] Set's size will overflow.");
 
     if (IS_CAPACITY_BINARY_SET(set->size)) {
         set->elements = BINARY_SET_REALLOC(set->elements, EXPAND_CAPACITY_BINARY_SET(set->size) * sizeof(BINARY_SET_DATA_TYPE));
@@ -1906,5 +1907,9 @@ static inline bool is_disjoint_binary_set(const binary_set_s set_one, const bina
 }
 
 #endif
+
+#else
+
+#error Cannot include multiple headers in same unit.
 
 #endif // BINARY_SET_H
