@@ -38,6 +38,5 @@ C compiler that at least supports the **C99 standard**, for example:
 - [CIRCULAR LIST](https://github.com/TheGAzed/pads/blob/main/source/list/circular_list)
 - [DOUBLE LIST](https://github.com/TheGAzed/pads/blob/main/source/list/double_list)
 
-### **In Progress:**
-
+### [SET](https://github.com/TheGAzed/pads/blob/main/source/set)
 - [BINARY SET](https://github.com/TheGAzed/pads/blob/main/source/set/binary_set)
