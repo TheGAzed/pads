@@ -2,7 +2,7 @@
 
 #include <functions.h>
 
-#define DOUBLE_LIST_MODE FINITE_PREPROCESSOR_DOUBLE_LIST
+#define DOUBLE_LIST_MODE FINITE_PREPROCESSOR_DOUBLE_LIST_MODE
 #define PREPROCESSOR_DOUBLE_LIST_SIZE (1 << 4)
 #define DOUBLE_LIST_DATA_TYPE DATA_TYPE
 #include <list/double_list/double_list.h>

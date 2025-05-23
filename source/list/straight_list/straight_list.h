@@ -32,27 +32,27 @@
     For more information, please refer to <https://unlicense.org>
 */
 
-#define INFINITE_ALLOCATED_STRAIGHT_LIST  1001
-#define FINITE_ALLOCATED_STRAIGHT_LIST    1002
-#define INFINITE_REALLOC_STRAIGHT_LIST    1003
-#define FINITE_PRERPOCESSOR_STRAIGHT_LIST 1004
+#define INFINITE_ALLOCATED_STRAIGHT_LIST_MODE  1001
+#define FINITE_ALLOCATED_STRAIGHT_LIST_MODE    1002
+#define INFINITE_REALLOC_STRAIGHT_LIST_MODE    1003
+#define FINITE_PRERPOCESSOR_STRAIGHT_LIST_MODE 1004
 
-//#define STRAIGHT_LIST_MODE INFINITE_ALLOCATED_STRAIGHT_LIST
-//#define STRAIGHT_LIST_MODE FINITE_ALLOCATED_STRAIGHT_LIST
-//#define STRAIGHT_LIST_MODE INFINITE_REALLOC_STRAIGHT_LIST
-//#define STRAIGHT_LIST_MODE FINITE_PRERPOCESSOR_STRAIGHT_LIST
-// List mode that can be set to INFINITE_ALLOCATED_STRAIGHT_LIST, FINITE_ALLOCATED_STRAIGHT_LIST, INFINITE_REALLOC_STRAIGHT_LIST or
-// FINITE_PRERPOCESSOR_STRAIGHT_LIST, or INFINITE_ALLOCATED_STRAIGHT_LIST or FINITE_ALLOCATED_STRAIGHT_LIST
-// Default: INFINITE_ALLOCATED_STRAIGHT_LIST
+//#define STRAIGHT_LIST_MODE INFINITE_ALLOCATED_STRAIGHT_LIST_MODE
+//#define STRAIGHT_LIST_MODE FINITE_ALLOCATED_STRAIGHT_LIST_MODE
+//#define STRAIGHT_LIST_MODE INFINITE_REALLOC_STRAIGHT_LIST_MODE
+//#define STRAIGHT_LIST_MODE FINITE_PRERPOCESSOR_STRAIGHT_LIST_MODE
+// List mode that can be set to INFINITE_ALLOCATED_STRAIGHT_LIST_MODE, FINITE_ALLOCATED_STRAIGHT_LIST_MODE, INFINITE_REALLOC_STRAIGHT_LIST_MODE or
+// FINITE_PRERPOCESSOR_STRAIGHT_LIST_MODE, or INFINITE_ALLOCATED_STRAIGHT_LIST_MODE or FINITE_ALLOCATED_STRAIGHT_LIST_MODE
+// Default: INFINITE_ALLOCATED_STRAIGHT_LIST_MODE
 #ifndef STRAIGHT_LIST_MODE
 
-#define STRAIGHT_LIST_MODE INFINITE_ALLOCATED_STRAIGHT_LIST
+#define STRAIGHT_LIST_MODE INFINITE_ALLOCATED_STRAIGHT_LIST_MODE
 
 #endif
 
 // Check to make sure a valid list mode is selected.
-#if (STRAIGHT_LIST_MODE != INFINITE_ALLOCATED_STRAIGHT_LIST) && (STRAIGHT_LIST_MODE != FINITE_ALLOCATED_STRAIGHT_LIST)    && \
-(STRAIGHT_LIST_MODE != INFINITE_REALLOC_STRAIGHT_LIST)   && (STRAIGHT_LIST_MODE != FINITE_PRERPOCESSOR_STRAIGHT_LIST)
+#if (STRAIGHT_LIST_MODE != INFINITE_ALLOCATED_STRAIGHT_LIST_MODE) && (STRAIGHT_LIST_MODE != FINITE_ALLOCATED_STRAIGHT_LIST_MODE)    && \
+(STRAIGHT_LIST_MODE != INFINITE_REALLOC_STRAIGHT_LIST_MODE)   && (STRAIGHT_LIST_MODE != FINITE_PRERPOCESSOR_STRAIGHT_LIST_MODE)
 
 #error Invalid type of list mode.
 
@@ -73,7 +73,7 @@
 
 #endif
 
-#if STRAIGHT_LIST_MODE != FINITE_PRERPOCESSOR_STRAIGHT_LIST
+#if STRAIGHT_LIST_MODE != FINITE_PRERPOCESSOR_STRAIGHT_LIST_MODE
 
 #if !defined(STRAIGHT_LIST_REALLOC) && !defined(STRAIGHT_LIST_FREE)
 
@@ -115,7 +115,7 @@ typedef bool                    (*operate_straight_list_fn) (STRAIGHT_LIST_DATA_
 /// @brief Function pointer to manage an array of straight list elements based on generic arguments.
 typedef void                    (*manage_straight_list_fn)  (STRAIGHT_LIST_DATA_TYPE *, const size_t, void *);
 
-#if   STRAIGHT_LIST_MODE == INFINITE_ALLOCATED_STRAIGHT_LIST
+#if   STRAIGHT_LIST_MODE == INFINITE_ALLOCATED_STRAIGHT_LIST_MODE
 
 // Many functions use Linus Torvalds' Tastes in code for linked lists from his TED Talk
 // at https://www.youtube.com/watch?v=o8NPllzkFhE&t=858s (yeah, this comment only applies to this straight list mode)
@@ -420,9 +420,9 @@ static inline straight_list_s split_straight_list(straight_list_s * list, const 
     return split;
 }
 
-#elif STRAIGHT_LIST_MODE == FINITE_ALLOCATED_STRAIGHT_LIST
+#elif STRAIGHT_LIST_MODE == FINITE_ALLOCATED_STRAIGHT_LIST_MODE
 
-/// @note The FINITE_ALLOCATED_STRAIGHT_LIST is a list that uses two stack implementations, a linked list based
+/// @note The FINITE_ALLOCATED_STRAIGHT_LIST_MODE is a list that uses two stack implementations, a linked list based
 /// 'empty stack' for empty elements that make up holes in the straight_list elements' array and an array based
 /// 'load stack' with holes. When adding an element the linked list first check if it can pop from the 'empty stack'
 /// to fill in the holes, when there are no holes (meaning 'empty stack' is empty) the straight list pushes the element
@@ -895,7 +895,7 @@ static inline void map_straight_list(straight_list_s * list, const manage_straig
     manage(list->elements, list->size, args);
 }
 
-#elif STRAIGHT_LIST_MODE == INFINITE_REALLOC_STRAIGHT_LIST
+#elif STRAIGHT_LIST_MODE == INFINITE_REALLOC_STRAIGHT_LIST_MODE
 
 #if !defined(IS_CAPACITY_STRAIGHT_LIST) && !defined(EXPAND_CAPACITY_STRAIGHT_LIST)
 
@@ -925,7 +925,7 @@ static inline void map_straight_list(straight_list_s * list, const manage_straig
 
 #endif
 
-/// @note The FINITE_ALLOCATED_STRAIGHT_LIST is a list that uses two stack implementations, a linked list based
+/// @note The FINITE_ALLOCATED_STRAIGHT_LIST_MODE is a list that uses two stack implementations, a linked list based
 /// 'empty stack' for empty elements that make up holes in the straight_list elements' array and an array based
 /// 'load stack' with holes. When adding an element the linked list first check if it can pop from the 'empty stack'
 /// to fill in the holes, when there are no holes (meaning 'empty stack' is empty) the straight list pushes the element
@@ -1414,7 +1414,7 @@ static inline straight_list_s split_straight_list(straight_list_s * list, const 
     return split;
 }
 
-#elif STRAIGHT_LIST_MODE == FINITE_PRERPOCESSOR_STRAIGHT_LIST
+#elif STRAIGHT_LIST_MODE == FINITE_PRERPOCESSOR_STRAIGHT_LIST_MODE
 
 #ifndef PREPROCESSOR_STRAIGHT_LIST_SIZE
 
@@ -1426,7 +1426,7 @@ static inline straight_list_s split_straight_list(straight_list_s * list, const 
 
 #endif
 
-/// @note The FINITE_ALLOCATED_STRAIGHT_LIST is a list that uses two stack implementations, a linked list based
+/// @note The FINITE_ALLOCATED_STRAIGHT_LIST_MODE is a list that uses two stack implementations, a linked list based
 /// 'empty stack' for empty elements that make up holes in the straight_list elements' array and an array based
 /// 'load stack' with holes. When adding an element the linked list first check if it can pop from the 'empty stack'
 /// to fill in the holes, when there are no holes (meaning 'empty stack' is empty) the straight list pushes the element

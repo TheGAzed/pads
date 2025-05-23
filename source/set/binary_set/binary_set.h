@@ -64,24 +64,24 @@
     For more information, please refer to <https://unlicense.org>
 */
 
-#define INFINITE_REALLOC_BINARY_SET    2001
-#define FINITE_ALLOCATED_BINARY_SET    2002
-#define FINITE_PRERPOCESSOR_BINARY_SET 2003
+#define INFINITE_REALLOC_BINARY_SET_MODE    2001
+#define FINITE_ALLOCATED_BINARY_SET_MODE    2002
+#define FINITE_PRERPOCESSOR_BINARY_SET_MODE 2003
 
-//#define BINARY_SET_MODE INFINITE_REALLOC_BINARY_SET
-//#define BINARY_SET_MODE FINITE_ALLOCATED_BINARY_SET
-//#define BINARY_SET_MODE FINITE_PRERPOCESSOR_BINARY_SET
+//#define BINARY_SET_MODE INFINITE_REALLOC_BINARY_SET_MODE
+//#define BINARY_SET_MODE FINITE_ALLOCATED_BINARY_SET_MODE
+//#define BINARY_SET_MODE FINITE_PRERPOCESSOR_BINARY_SET_MODE
 
 #ifndef BINARY_SET_MODE
 
 /// @brief To change, use: #define BINARY_SET_MODE [mode].
-#define BINARY_SET_MODE INFINITE_REALLOC_BINARY_SET
+#define BINARY_SET_MODE INFINITE_REALLOC_BINARY_SET_MODE
 
 #endif
 
 // Check to make sure a valid double_list mode is selected.
-#if (BINARY_SET_MODE != INFINITE_REALLOC_BINARY_SET) && (BINARY_SET_MODE != FINITE_ALLOCATED_BINARY_SET) && \
-    (BINARY_SET_MODE != FINITE_PRERPOCESSOR_BINARY_SET)
+#if (BINARY_SET_MODE != INFINITE_REALLOC_BINARY_SET_MODE) && (BINARY_SET_MODE != FINITE_ALLOCATED_BINARY_SET_MODE) && \
+    (BINARY_SET_MODE != FINITE_PRERPOCESSOR_BINARY_SET_MODE)
 
 #error Invalid type of list mode.
 
@@ -103,7 +103,7 @@
 
 #endif
 
-#if BINARY_SET_MODE != FINITE_PRERPOCESSOR_BINARY_SET
+#if BINARY_SET_MODE != FINITE_PRERPOCESSOR_BINARY_SET_MODE
 
 #if !defined(BINARY_SET_REALLOC) && !defined(BINARY_SET_FREE)
 
@@ -145,7 +145,7 @@ typedef bool                 (*operate_binary_set_fn) (BINARY_SET_DATA_TYPE *, v
 /// @brief Function pointer to manage an array of set elements based on generic arguments.
 typedef void                 (*manage_binary_set_fn)  (BINARY_SET_DATA_TYPE *, const size_t, void *);
 
-#if BINARY_SET_MODE == INFINITE_REALLOC_BINARY_SET
+#if BINARY_SET_MODE == INFINITE_REALLOC_BINARY_SET_MODE
 
 #if !defined(IS_CAPACITY_BINARY_SET) && !defined(EXPAND_CAPACITY_BINARY_SET)
 
@@ -552,12 +552,14 @@ static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const 
     BINARY_SET_ASSERT(set_two.compare && "[ERROR] Set's compare function pointer is NULL.");
     BINARY_SET_ASSERT(copy && "[ERROR] 'copy' pointer parameter is NULL.");
 
-    binary_set_s set_exclude = { .compare = set_one.compare, .size = set_one.size, .elements = set_one.elements, };
+    binary_set_s set_exclude = { .compare = set_one.compare, .size = set_one.size, .elements = NULL, };
 
     // shallow copy set one's elements into union set
     for (set_exclude.size = 0; set_exclude.size < set_one.size; set_exclude.size++) {
         if (IS_CAPACITY_BINARY_SET(set_exclude.size)) {
-            set_exclude.elements = BINARY_SET_REALLOC(set_exclude.elements, EXPAND_CAPACITY_BINARY_SET(set_exclude.size));
+            const size_t expand = EXPAND_CAPACITY_BINARY_SET(set_exclude.size);
+
+            set_exclude.elements = BINARY_SET_REALLOC(set_exclude.elements, expand * sizeof(BINARY_SET_DATA_TYPE));
             BINARY_SET_ASSERT(set_exclude.elements && "[ERROR] Memory allocation failed.");
         }
 
@@ -733,7 +735,7 @@ static inline bool is_disjoint_binary_set(const binary_set_s set_one, const bina
     return true;
 }
 
-#elif BINARY_SET_MODE == FINITE_ALLOCATED_BINARY_SET
+#elif BINARY_SET_MODE == FINITE_ALLOCATED_BINARY_SET_MODE
 
 typedef struct binary_set {
     BINARY_SET_DATA_TYPE * elements; // elements array storing set elements in order
@@ -766,7 +768,7 @@ static inline void destroy_binary_set(binary_set_s * set, const destroy_binary_s
     BINARY_SET_ASSERT(destroy && "[ERROR] 'destroy' pointer parameter is NULL");
 
     BINARY_SET_ASSERT(set->max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(set->max <= set->size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(set->size <= set->max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(set->elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(set->compare && "[ERROR] Set's compare function pointer is NULL.");
 
@@ -787,7 +789,7 @@ static inline void clear_binary_set(binary_set_s * set, const destroy_binary_set
     BINARY_SET_ASSERT(destroy && "[ERROR] 'destroy' pointer parameter is NULL");
 
     BINARY_SET_ASSERT(set->max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(set->max <= set->size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(set->size <= set->max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(set->elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(set->compare && "[ERROR] Set's compare function pointer is NULL.");
 
@@ -806,7 +808,7 @@ static inline binary_set_s copy_binary_set(const binary_set_s set, const copy_bi
     BINARY_SET_ASSERT(copy && "[ERROR] 'copy' pointer parameter is NULL.");
 
     BINARY_SET_ASSERT(set.max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(set.max <= set.size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(set.size <= set.max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(set.elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(set.compare && "[ERROR] Set's compare function pointer is NULL.");
 
@@ -828,7 +830,7 @@ static inline binary_set_s copy_binary_set(const binary_set_s set, const copy_bi
 /// @return 'true' if set is empty, 'false' otherwise.
 static inline bool is_empty_binary_set(const binary_set_s set) {
     BINARY_SET_ASSERT(set.max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(set.max <= set.size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(set.size <= set.max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(set.elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(set.compare && "[ERROR] Set's compare function pointer is NULL.");
 
@@ -840,7 +842,7 @@ static inline bool is_empty_binary_set(const binary_set_s set) {
 /// @return 'true' if set is full, 'false' otherwise.
 static inline bool is_full_binary_set(const binary_set_s set) {
     BINARY_SET_ASSERT(set.max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(set.max <= set.size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(set.size <= set.max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(set.elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(set.compare && "[ERROR] Set's compare function pointer is NULL.");
 
@@ -856,7 +858,7 @@ static inline void foreach_binary_set(binary_set_s const * set, const operate_bi
     BINARY_SET_ASSERT(operate && "[ERROR] 'operate' pointer parameter is NULL.");
 
     BINARY_SET_ASSERT(set->max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(set->max <= set->size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(set->size <= set->max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(set->elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(set->compare && "[ERROR] Set's compare function pointer is NULL.");
 
@@ -872,7 +874,7 @@ static inline void map_binary_set(binary_set_s const * set, const manage_binary_
     BINARY_SET_ASSERT(manage && "[ERROR] 'manage' pointer parameter is NULL.");
 
     BINARY_SET_ASSERT(set->max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(set->max <= set->size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(set->size <= set->max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(set->elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(set->compare && "[ERROR] Set's compare function pointer is NULL.");
 
@@ -885,7 +887,7 @@ static inline void map_binary_set(binary_set_s const * set, const manage_binary_
 /// @return 'true' if element is contained in set, 'false' if not.
 static inline bool contains_binary_set(const binary_set_s set, const BINARY_SET_DATA_TYPE element) {
     BINARY_SET_ASSERT(set.max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(set.max <= set.size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(set.size <= set.max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(set.elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(set.compare && "[ERROR] Set's compare function pointer is NULL.");
 
@@ -913,10 +915,10 @@ static inline bool contains_binary_set(const binary_set_s set, const BINARY_SET_
 /// @note If element is contained in set the function terminates with error.
 static inline void insert_binary_set(binary_set_s * set, const BINARY_SET_DATA_TYPE element) {
     BINARY_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL.");
-    BINARY_SET_ASSERT(set->max < set->size && "[ERROR] Can't add to full set.");
+    BINARY_SET_ASSERT(set->size < set->max && "[ERROR] Set is full.");
 
     BINARY_SET_ASSERT(set->max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(set->max <= set->size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(set->size <= set->max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(set->elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(set->compare && "[ERROR] Set's compare function pointer is NULL.");
 
@@ -952,7 +954,7 @@ static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const B
     BINARY_SET_ASSERT(set->size && "[ERROR] Can't remove from empty set.");
 
     BINARY_SET_ASSERT(set->max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(set->max <= set->size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(set->size <= set->max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(set->elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(set->compare && "[ERROR] Set's compare function pointer is NULL.");
 
@@ -993,12 +995,12 @@ static inline binary_set_s union_binary_set(const binary_set_s set_one, const bi
     BINARY_SET_ASSERT(copy && "[ERROR] 'copy' pointer parameter is NULL.");
 
     BINARY_SET_ASSERT(set_one.max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(set_one.max <= set_one.size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(set_one.size <= set_one.max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(set_one.elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(set_one.compare && "[ERROR] Set's compare function pointer is NULL.");
 
     BINARY_SET_ASSERT(set_two.max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(set_two.max <= set_two.size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(set_two.size <= set_two.max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(set_two.elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(set_two.compare && "[ERROR] Set's compare function pointer is NULL.");
 
@@ -1057,17 +1059,17 @@ static inline binary_set_s intersect_binary_set(const binary_set_s set_one, cons
     BINARY_SET_ASSERT(copy && "[ERROR] 'copy' pointer parameter is NULL.");
 
     BINARY_SET_ASSERT(set_one.max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(set_one.max <= set_one.size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(set_one.size <= set_one.max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(set_one.elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(set_one.compare && "[ERROR] Set's compare function pointer is NULL.");
 
     BINARY_SET_ASSERT(set_two.max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(set_two.max <= set_two.size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(set_two.size <= set_two.max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(set_two.elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(set_two.compare && "[ERROR] Set's compare function pointer is NULL.");
 
     binary_set_s set_intersect = {
-        .compare = set_one.compare, .size = set_one.size, .max = max,
+        .compare = set_one.compare, .size = 0, .max = max,
         .elements = BINARY_SET_REALLOC(NULL, sizeof(BINARY_SET_DATA_TYPE) * max),
     };
     BINARY_SET_ASSERT(set_intersect.elements && "[ERROR] Memory allocation failed.");
@@ -1107,17 +1109,17 @@ static inline binary_set_s subtract_binary_set(const binary_set_s set_one, const
     BINARY_SET_ASSERT(copy && "[ERROR] 'copy' pointer parameter is NULL.");
 
     BINARY_SET_ASSERT(set_one.max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(set_one.max <= set_one.size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(set_one.size <= set_one.max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(set_one.elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(set_one.compare && "[ERROR] Set's compare function pointer is NULL.");
 
     BINARY_SET_ASSERT(set_two.max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(set_two.max <= set_two.size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(set_two.size <= set_two.max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(set_two.elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(set_two.compare && "[ERROR] Set's compare function pointer is NULL.");
 
     binary_set_s set_subtract = {
-        .compare = set_one.compare, .size = set_one.size, .max = max,
+        .compare = set_one.compare, .size = 0, .max = max,
         .elements = BINARY_SET_REALLOC(NULL, max * sizeof(BINARY_SET_DATA_TYPE)),
     };
     BINARY_SET_ASSERT(set_subtract.elements && "[ERROR] Memory allocation failed.");
@@ -1126,7 +1128,7 @@ static inline binary_set_s subtract_binary_set(const binary_set_s set_one, const
     for (size_t i = 0; i < set_one.size; ++i) { // for each element in set two
         bool found_element = false;
 
-        const size_t base_index = (size_t)(base - set_one.elements);
+        const size_t base_index = (size_t)(base - set_two.elements);
         for (size_t limit = set_two.size - base_index; limit != 0; limit >>= 1) {
             BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
 
@@ -1162,12 +1164,12 @@ static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const 
     BINARY_SET_ASSERT(copy && "[ERROR] 'copy' pointer parameter is NULL.");
 
     BINARY_SET_ASSERT(set_one.max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(set_one.max <= set_one.size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(set_one.size <= set_one.max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(set_one.elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(set_one.compare && "[ERROR] Set's compare function pointer is NULL.");
 
     BINARY_SET_ASSERT(set_two.max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(set_two.max <= set_two.size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(set_two.size <= set_two.max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(set_two.elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(set_two.compare && "[ERROR] Set's compare function pointer is NULL.");
 
@@ -1234,12 +1236,12 @@ static inline bool is_subset_binary_set(const binary_set_s super, const binary_s
     BINARY_SET_ASSERT(super.compare == sub.compare && "[ERROR] Can't check subset with different compare functions.");
 
     BINARY_SET_ASSERT(super.max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(super.max <= super.size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(super.size <= super.max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(super.elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(super.compare && "[ERROR] Set's compare function pointer is NULL.");
 
     BINARY_SET_ASSERT(sub.max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(sub.max <= sub.size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(sub.size <= sub.max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(sub.elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(sub.compare && "[ERROR] Set's compare function pointer is NULL.");
 
@@ -1279,12 +1281,12 @@ static inline bool is_proper_subset_binary_set(const binary_set_s super, const b
     BINARY_SET_ASSERT(super.compare == sub.compare && "[ERROR] Can't check subset with different compare functions.");
 
     BINARY_SET_ASSERT(super.max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(super.max <= super.size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(super.size <= super.max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(super.elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(super.compare && "[ERROR] Set's compare function pointer is NULL.");
 
     BINARY_SET_ASSERT(sub.max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(sub.max <= sub.size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(sub.size <= sub.max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(sub.elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(sub.compare && "[ERROR] Set's compare function pointer is NULL.");
 
@@ -1324,12 +1326,12 @@ static inline bool is_disjoint_binary_set(const binary_set_s set_one, const bina
     BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't check disjoint sets with different compare functions.");
 
     BINARY_SET_ASSERT(set_one.max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(set_one.max <= set_one.size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(set_one.size <= set_one.max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(set_one.elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(set_one.compare && "[ERROR] Set's compare function pointer is NULL.");
 
     BINARY_SET_ASSERT(set_two.max && "[ERROR] Set's maximum size can't be zero.");
-    BINARY_SET_ASSERT(set_two.max <= set_two.size && "[ERROR] Set's maximum size can't be more than size.");
+    BINARY_SET_ASSERT(set_two.size <= set_two.max && "[ERROR] Set's maximum size can't be more than size.");
     BINARY_SET_ASSERT(set_two.elements && "[ERROR] Set's elements pointer is NULL.");
     BINARY_SET_ASSERT(set_two.compare && "[ERROR] Set's compare function pointer is NULL.");
 
@@ -1354,7 +1356,7 @@ static inline bool is_disjoint_binary_set(const binary_set_s set_one, const bina
     return true;
 }
 
-#elif BINARY_SET_MODE == FINITE_PRERPOCESSOR_BINARY_SET
+#elif BINARY_SET_MODE == FINITE_PRERPOCESSOR_BINARY_SET_MODE
 
 #ifndef PREPROCESSOR_BINARY_SET_SIZE
 
@@ -1517,6 +1519,7 @@ static inline bool contains_binary_set(const binary_set_s set, const BINARY_SET_
 /// @note If element is contained in set the function terminates with error.
 static inline void insert_binary_set(binary_set_s * set, const BINARY_SET_DATA_TYPE element) {
     BINARY_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL.");
+    BINARY_SET_ASSERT(set->size < PREPROCESSOR_BINARY_SET_SIZE && "[ERROR] Set is full.");
 
     BINARY_SET_ASSERT(set->compare && "[ERROR] Set's compare function pointer is NULL.");
     BINARY_SET_ASSERT(set->size <= PREPROCESSOR_BINARY_SET_SIZE && "[ERROR] Set's size exceeds its maximum.");
@@ -1595,7 +1598,7 @@ static inline binary_set_s union_binary_set(const binary_set_s set_one, const bi
     BINARY_SET_ASSERT(set_two.compare && "[ERROR] Set's compare function pointer is NULL.");
     BINARY_SET_ASSERT(set_two.size <= PREPROCESSOR_BINARY_SET_SIZE && "[ERROR] Set's size exceeds its maximum.");
 
-    binary_set_s set_union = { .compare = set_one.compare, .size = set_one.size, };
+    binary_set_s set_union = { .compare = set_one.compare, .size = 0, };
 
     // copy set one's elements into union set
     for (set_union.size = 0; set_union.size < set_one.size; set_union.size++) {
@@ -1651,7 +1654,7 @@ static inline binary_set_s intersect_binary_set(const binary_set_s set_one, cons
     BINARY_SET_ASSERT(set_two.compare && "[ERROR] Set's compare function pointer is NULL.");
     BINARY_SET_ASSERT(set_two.size <= PREPROCESSOR_BINARY_SET_SIZE && "[ERROR] Set's size exceeds its maximum.");
 
-    binary_set_s set_intersect = { .compare = set_one.compare, .size = set_one.size, };
+    binary_set_s set_intersect = { .compare = set_one.compare, .size = 0, };
 
     BINARY_SET_DATA_TYPE const * base = set_one.elements;
     for (size_t i = 0; i < set_two.size; ++i) { // for each element in set two
@@ -1690,7 +1693,7 @@ static inline binary_set_s subtract_binary_set(const binary_set_s set_one, const
     BINARY_SET_ASSERT(set_two.compare && "[ERROR] Set's compare function pointer is NULL.");
     BINARY_SET_ASSERT(set_two.size <= PREPROCESSOR_BINARY_SET_SIZE && "[ERROR] Set's size exceeds its maximum.");
 
-    binary_set_s set_subtract = { .compare = set_one.compare, .size = set_one.size, };
+    binary_set_s set_subtract = { .compare = set_one.compare, .size = 0, };
 
     BINARY_SET_DATA_TYPE const * base = set_two.elements;
     for (size_t i = 0; i < set_one.size; ++i) { // for each element in set two

@@ -3,7 +3,7 @@
 #include <functions.h>
 
 #define CIRCULAR_LIST_DATA_TYPE DATA_TYPE
-#define CIRCULAR_LIST_MODE INFINITE_ALLOCATED_CIRCULAR_LIST
+#define CIRCULAR_LIST_MODE INFINITE_ALLOCATED_CIRCULAR_LIST_MODE
 #define MAXIMUM_INFINITE_CIRCULAR_LIST (1 << 4)
 #include <list/circular_list/circular_list.h>
 

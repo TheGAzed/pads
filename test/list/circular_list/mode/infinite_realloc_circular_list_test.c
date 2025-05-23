@@ -3,7 +3,7 @@
 #include <functions.h>
 
 #define CIRCULAR_LIST_DATA_TYPE DATA_TYPE
-#define CIRCULAR_LIST_MODE INFINITE_REALLOC_CIRCULAR_LIST
+#define CIRCULAR_LIST_MODE INFINITE_REALLOC_CIRCULAR_LIST_MODE
 #define REALLOC_CIRCULAR_LIST_CHUNK (1 << 4)
 #include <list/circular_list/circular_list.h>
 

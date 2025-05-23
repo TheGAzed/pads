@@ -32,30 +32,30 @@
     For more information, please refer to <https://unlicense.org>
 */
 
-#define INFINITE_ALLOCATED_CIRCULAR_LIST  1100
-#define FINITE_ALLOCATED_CIRCULAR_LIST    1101
-#define INFINITE_REALLOC_CIRCULAR_LIST    1102
-#define FINITE_PRERPOCESSOR_CIRCULAR_LIST 1103
+#define INFINITE_ALLOCATED_CIRCULAR_LIST_MODE  1100
+#define FINITE_ALLOCATED_CIRCULAR_LIST_MODE    1101
+#define INFINITE_REALLOC_CIRCULAR_LIST_MODE    1102
+#define FINITE_PRERPOCESSOR_CIRCULAR_LIST_MODE 1103
 
-#define INFINITE_CIRCULAR_LIST INFINITE_ALLOCATED_CIRCULAR_LIST
-#define FINITE_CIRCULAR_LIST   FINITE_ALLOCATED_CIRCULAR_LIST
+#define INFINITE_CIRCULAR_LIST INFINITE_ALLOCATED_CIRCULAR_LIST_MODE
+#define FINITE_CIRCULAR_LIST   FINITE_ALLOCATED_CIRCULAR_LIST_MODE
 
-//#define CIRCULAR_LIST_MODE INFINITE_ALLOCATED_CIRCULAR_LIST
-//#define CIRCULAR_LIST_MODE FINITE_ALLOCATED_CIRCULAR_LIST
-//#define CIRCULAR_LIST_MODE INFINITE_REALLOC_CIRCULAR_LIST
-//#define CIRCULAR_LIST_MODE FINITE_PRERPOCESSOR_CIRCULAR_LIST
-// List mode that can be set to INFINITE_ALLOCATED_CIRCULAR_LIST, FINITE_ALLOCATED_CIRCULAR_LIST, INFINITE_REALLOC_CIRCULAR_LIST or
-// FINITE_PRERPOCESSOR_CIRCULAR_LIST, or INFINITE_ALLOCATED_CIRCULAR_LIST or FINITE_ALLOCATED_CIRCULAR_LIST
-// Default: INFINITE_ALLOCATED_CIRCULAR_LIST
+//#define CIRCULAR_LIST_MODE INFINITE_ALLOCATED_CIRCULAR_LIST_MODE
+//#define CIRCULAR_LIST_MODE FINITE_ALLOCATED_CIRCULAR_LIST_MODE
+//#define CIRCULAR_LIST_MODE INFINITE_REALLOC_CIRCULAR_LIST_MODE
+//#define CIRCULAR_LIST_MODE FINITE_PRERPOCESSOR_CIRCULAR_LIST_MODE
+// List mode that can be set to INFINITE_ALLOCATED_CIRCULAR_LIST_MODE, FINITE_ALLOCATED_CIRCULAR_LIST_MODE, INFINITE_REALLOC_CIRCULAR_LIST_MODE or
+// FINITE_PRERPOCESSOR_CIRCULAR_LIST_MODE, or INFINITE_ALLOCATED_CIRCULAR_LIST_MODE or FINITE_ALLOCATED_CIRCULAR_LIST_MODE
+// Default: INFINITE_ALLOCATED_CIRCULAR_LIST_MODE
 #ifndef CIRCULAR_LIST_MODE
 
-#define CIRCULAR_LIST_MODE INFINITE_ALLOCATED_CIRCULAR_LIST
+#define CIRCULAR_LIST_MODE INFINITE_ALLOCATED_CIRCULAR_LIST_MODE
 
 #endif
 
 // Check to make sure a valid list mode is selected.
-#if (CIRCULAR_LIST_MODE != INFINITE_ALLOCATED_CIRCULAR_LIST) && (CIRCULAR_LIST_MODE != FINITE_ALLOCATED_CIRCULAR_LIST)    && \
-(CIRCULAR_LIST_MODE != INFINITE_REALLOC_CIRCULAR_LIST)   && (CIRCULAR_LIST_MODE != FINITE_PRERPOCESSOR_CIRCULAR_LIST)
+#if (CIRCULAR_LIST_MODE != INFINITE_ALLOCATED_CIRCULAR_LIST_MODE) && (CIRCULAR_LIST_MODE != FINITE_ALLOCATED_CIRCULAR_LIST_MODE)    && \
+(CIRCULAR_LIST_MODE != INFINITE_REALLOC_CIRCULAR_LIST_MODE)   && (CIRCULAR_LIST_MODE != FINITE_PRERPOCESSOR_CIRCULAR_LIST_MODE)
 
 #error Invalid type of list mode.
 
@@ -76,7 +76,7 @@
 
 #endif
 
-#if CIRCULAR_LIST_MODE != FINITE_PRERPOCESSOR_CIRCULAR_LIST
+#if CIRCULAR_LIST_MODE != FINITE_PRERPOCESSOR_CIRCULAR_LIST_MODE
 
 #if !defined(CIRCULAR_LIST_REALLOC) && !defined(CIRCULAR_LIST_FREE)
 
@@ -118,7 +118,7 @@ typedef bool                    (*operate_circular_list_fn) (CIRCULAR_LIST_DATA_
 /// @brief Function pointer to manage an array of circular list elements based on generic arguments.
 typedef void                    (*manage_circular_list_fn)  (CIRCULAR_LIST_DATA_TYPE *, const size_t, void *);
 
-#if   CIRCULAR_LIST_MODE == INFINITE_ALLOCATED_CIRCULAR_LIST
+#if   CIRCULAR_LIST_MODE == INFINITE_ALLOCATED_CIRCULAR_LIST_MODE
 
 /// @brief Circular list node with element and pointer to next node.
 struct circular_list_node {
@@ -489,9 +489,9 @@ static inline void map_circular_list(circular_list_s const * list, const manage_
     CIRCULAR_LIST_FREE(elements_array); // free elements array
 }
 
-#elif CIRCULAR_LIST_MODE == FINITE_ALLOCATED_CIRCULAR_LIST
+#elif CIRCULAR_LIST_MODE == FINITE_ALLOCATED_CIRCULAR_LIST_MODE
 
-/// @note The FINITE_ALLOCATED_CIRCULAR_LIST is a list that uses two stack implementations, a linked list based
+/// @note The FINITE_ALLOCATED_CIRCULAR_LIST_MODE is a list that uses two stack implementations, a linked list based
 /// 'empty stack' for empty elements that make up holes in the circular_list elements' array and an array based
 /// 'load stack' with holes. When adding an element the linked list first check if it can pop from the 'empty stack'
 /// to fill in the holes, when therea are no holes (meaning 'empty stack' is empty) the circular list pushes the element
@@ -1027,7 +1027,7 @@ static inline void map_circular_list(circular_list_s * list, const manage_circul
     CIRCULAR_LIST_FREE(elements_array);
 }
 
-#elif CIRCULAR_LIST_MODE == INFINITE_REALLOC_CIRCULAR_LIST
+#elif CIRCULAR_LIST_MODE == INFINITE_REALLOC_CIRCULAR_LIST_MODE
 
 #if !defined(IS_CAPACITY_CIRCULAR_LIST) && !defined(EXPAND_CAPACITY_CIRCULAR_LIST)
 
@@ -1057,7 +1057,7 @@ static inline void map_circular_list(circular_list_s * list, const manage_circul
 
 #endif
 
-/// @note The INFINITE_REALLOC_CIRCULAR_LIST is a list that uses two stack implementations, a linked list based
+/// @note The INFINITE_REALLOC_CIRCULAR_LIST_MODE is a list that uses two stack implementations, a linked list based
 /// 'empty stack' for empty elements that make up holes in the circular_list elements' array and an array based
 /// 'load stack' with holes. When adding an element the linked list first check if it can pop from the 'empty stack'
 /// to fill in the holes, when therea are no holes (meaning 'empty stack' is empty) the circular list pushes the element
@@ -1585,7 +1585,7 @@ static inline void map_circular_list(circular_list_s * list, const manage_circul
     CIRCULAR_LIST_FREE(elements_array);
 }
 
-#elif CIRCULAR_LIST_MODE == FINITE_PRERPOCESSOR_CIRCULAR_LIST
+#elif CIRCULAR_LIST_MODE == FINITE_PRERPOCESSOR_CIRCULAR_LIST_MODE
 
 #ifndef PREPROCESSOR_CIRCULAR_LIST_SIZE
 
@@ -1597,7 +1597,7 @@ static inline void map_circular_list(circular_list_s * list, const manage_circul
 
 #endif
 
-/// @note The FINITE_PRERPOCESSOR_CIRCULAR_LIST is a list that uses two stack implementations, a linked list based
+/// @note The FINITE_PRERPOCESSOR_CIRCULAR_LIST_MODE is a list that uses two stack implementations, a linked list based
 /// 'empty stack' for empty elements that make up holes in the circular_list elements' array and an array based
 /// 'load stack' with holes. When adding an element the linked list first check if it can pop from the 'empty stack'
 /// to fill in the holes, when therea are no holes (meaning 'empty stack' is empty) the circular list pushes the element

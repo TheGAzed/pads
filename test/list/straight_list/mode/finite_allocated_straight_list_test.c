@@ -3,7 +3,7 @@
 #include <functions.h>
 
 #define STRAIGHT_LIST_DATA_TYPE DATA_TYPE
-#define STRAIGHT_LIST_MODE FINITE_ALLOCATED_STRAIGHT_LIST
+#define STRAIGHT_LIST_MODE FINITE_ALLOCATED_STRAIGHT_LIST_MODE
 #define MAXIMUM_FINITE_STRAIGHT_LIST (1 << 4)
 #include <list/straight_list/straight_list.h>
 
