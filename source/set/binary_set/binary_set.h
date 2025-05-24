@@ -703,7 +703,7 @@ static inline bool is_proper_subset_binary_set(const binary_set_s super, const b
         }
     }
 
-    return true && (super.size != sub.size);
+    return super.size != sub.size;
 }
 
 /// @brief Checks if two sets are disjoint or not, i.e. have no elements in common.
@@ -1316,7 +1316,7 @@ static inline bool is_proper_subset_binary_set(const binary_set_s super, const b
         }
     }
 
-    return true && (super.size != sub.size);
+    return super.size != sub.size;
 }
 
 /// @brief Checks if two sets are disjoint or not, i.e. have no elements in common.
@@ -1869,7 +1869,7 @@ static inline bool is_proper_subset_binary_set(const binary_set_s super, const b
         }
     }
 
-    return true && (super.size != sub.size);
+    return super.size != sub.size;
 }
 
 /// @brief Checks if two sets are disjoint or not, i.e. have no elements in common.
