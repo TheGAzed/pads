@@ -4,6 +4,6 @@ Sequential data structures are structures where the element can be inserted and 
 
 ## List of structures:
 
-- [STACK](https://github.com/TheGAzed/pads/blob/main/source/sequential/stack) : Last in first out (LIFO).
-- [QUEUE](https://github.com/TheGAzed/pads/blob/main/source/sequential/queue) : First in first out (FIFO).
-- [DEQUE](https://github.com/TheGAzed/pads/blob/main/source/sequential/deque) : Adds and removes only from front and back.
+- [STACK](https://en.wikipedia.org/wiki/Stack_(abstract_data_type)) : Last in first out (LIFO).
+- [QUEUE](https://en.wikipedia.org/wiki/Queue_(abstract_data_type)) : First in first out (FIFO).
+- [DEQUE](https://en.wikipedia.org/wiki/Double-ended_queue) : Adds and removes only from front and back.
