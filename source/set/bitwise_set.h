@@ -48,8 +48,6 @@
 
 #endif
 
-#define BITWISE_SET_BIT_COUNT (sizeof(BITWISE_SET_DATA_TYPE) * CHAR_BIT)
-
 // if either gcc or clang, and has __builtin_*ll support define POPCOUNT and CTZ
 #if defined(__GNUC__) || defined(__clang__)
 
@@ -68,11 +66,13 @@ typedef void (*manage_bitwise_set_fn)  (BITWISE_SET_DATA_TYPE *, const size_t, v
 
 #elif BITWISE_SET_SIZE == 0
 
-#error 'BITWISE_SET_SIZE' cannot be zero
+#error Size cannot be zero.
 
 #endif
 
-#define BITWISE_SET_DATA_TYPE_LENGTH (((BITWISE_SET_SIZE - (BITWISE_SET_SIZE % BITWISE_SET_BIT_COUNT)) / BITWISE_SET_BIT_COUNT) + 1)
+#define BITWISE_SET_BIT_COUNT (sizeof(BITWISE_SET_DATA_TYPE) * CHAR_BIT)
+
+#define BITWISE_SET_DATA_TYPE_LENGTH ((((BITWISE_SET_SIZE) - 1) / (BITWISE_SET_BIT_COUNT)) + 1)
 
 typedef struct bitwise_set {
     BITWISE_SET_DATA_TYPE bits[BITWISE_SET_DATA_TYPE_LENGTH];

@@ -2,7 +2,7 @@
 
 #define QUEUE_DATA_TYPE DATA_TYPE
 #define QUEUE_SIZE (1 << 4)
-#include <sequential/queue.h>
+#include <sequence/queue.h>
 
 TEST CREATE_01(void) {
     queue_s test = create_queue();

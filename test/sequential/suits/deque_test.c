@@ -4,7 +4,7 @@
 
 #define DEQUE_DATA_TYPE DATA_TYPE
 #define DEQUE_SIZE (1 << 4)
-#include <sequential/deque.h>
+#include <sequence/deque.h>
 
 TEST CREATE_01(void) {
     deque_s test = create_deque();

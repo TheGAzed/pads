@@ -2,7 +2,7 @@
 
 #define STACK_DATA_TYPE DATA_TYPE
 #define STACK_SIZE  (1 << 4)
-#include <sequential/stack.h>
+#include <sequence/stack.h>
 
 TEST CREATE_01(void) {
     stack_s test = create_stack();
