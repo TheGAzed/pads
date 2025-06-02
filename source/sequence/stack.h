@@ -132,7 +132,6 @@ static inline STACK_DATA_TYPE peep_stack(const stack_s * stack) {
 static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
     STACK_ASSERT(stack && "[ERROR] Stack pointer is NULL.");
     STACK_ASSERT((stack->size < STACK_SIZE) && "[ERROR] Stack reached maximum size.");
-    STACK_ASSERT(~(stack->size) && "[ERROR] Stack size will overflow.");
 
     STACK_ASSERT(stack->size <= STACK_SIZE && "[ERROR] Invalid stack size.");
 
