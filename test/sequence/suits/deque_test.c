@@ -1,7 +1,5 @@
 #include <suits.h>
 
-#include <helper/functions.h>
-
 #define DEQUE_DATA_TYPE DATA_TYPE
 #define DEQUE_SIZE (1 << 4)
 #include <sequence/deque.h>

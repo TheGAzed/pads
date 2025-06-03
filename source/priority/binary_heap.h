@@ -71,42 +71,67 @@ typedef void                  (*manage_binary_heap_fn)  (BINARY_HEAP_DATA_TYPE *
 #endif
 
 typedef struct binary_heap {
-    BINARY_HEAP_DATA_TYPE elements[BINARY_HEAP_SIZE];
-    compare_binary_heap_fn compare;
-    size_t size;
+    BINARY_HEAP_DATA_TYPE elements[BINARY_HEAP_SIZE]; // elements array
+    compare_binary_heap_fn compare; // compare function to push, pop and heapify heap
+    size_t size; // size of heap
 } binary_heap_s;
 
+/// Creates a binary heap data structure.
+/// @param compare Function pointer to compare elements for heap.
+/// @return New binary heap.
 static inline binary_heap_s create_binary_heap(const compare_binary_heap_fn compare) {
+    BINARY_HEAP_ASSERT(compare && "[ERROR] 'compare' parameter is NULL.");
+
     return (binary_heap_s) { .size = 0, .compare = compare };
 }
 
+/// Destroys the heap and all its elements.
+/// @param heap Binary heap data structure.
+/// @param destroy Function pointer to destroy each element in heap.
 static inline void destroy_binary_heap(binary_heap_s * heap, const destroy_binary_heap_fn destroy) {
     BINARY_HEAP_ASSERT(heap && "[ERROR] 'heap' parameter is NULL.");
     BINARY_HEAP_ASSERT(destroy && "[ERROR] 'destroy' parameter is NULL.");
 
+    BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
 
-    for (size_t i = 0; i < heap->size; ++i) {
-        destroy(heap->elements + i);
+    for (BINARY_HEAP_DATA_TYPE * e = heap->elements; e < heap->elements + heap->size; e++) {
+        destroy(e);
     }
+
+    heap->size = 0;
+    heap->compare = NULL;
 }
 
+/// Checks if binary heap is empty.
+/// @param heap Binary heap data structure.
+/// @return 'true' if heap is empty, 'false' otherwise.
 static inline bool is_empty_binary_heap(const binary_heap_s * heap) {
+    BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
 
     return !(heap->size);
 }
 
+/// Checks if binary heap is full.
+/// @param heap Binary heap data structure.
+/// @return 'true' if heap is full, 'false' otherwise.
 static inline bool is_full_binary_heap(const binary_heap_s * heap) {
+    BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
 
     return (heap->size == BINARY_HEAP_SIZE);
 }
 
+/// Creates a copy of the specified heap.
+/// @param heap Binary heap data structure.
+/// @param copy Function pointer to create a deep or shallow copy of each element in heap.
+/// @return Copy of specified heap.
 static inline binary_heap_s copy_binary_heap(const binary_heap_s * heap, const copy_binary_heap_fn copy) {
     BINARY_HEAP_ASSERT(heap && "[ERROR] 'heap' parameter is NULL.");
     BINARY_HEAP_ASSERT(copy && "[ERROR] 'copy' parameter is NULL.");
 
+    BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
 
     binary_heap_s replica = { .compare = heap->compare, .size = 0, };
@@ -117,35 +142,51 @@ static inline binary_heap_s copy_binary_heap(const binary_heap_s * heap, const c
     return replica;
 }
 
+/// Iterates over each element in heap in in array index order.
+/// @param heap Binary heap data structure.
+/// @param operate Function pointer to operate on each element in heap using generic argumenst.
+/// @param args Generic void pointer arguments for operate function pointer.
 static inline void foreach_binary_heap(binary_heap_s * heap, const operate_binary_heap_fn operate, void * args) {
     BINARY_HEAP_ASSERT(heap && "[ERROR] 'heap' parameter is NULL.");
     BINARY_HEAP_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
 
+    BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
 
-    for (size_t i = 0; i < heap->size && operate(heap->elements + i, args); i++) {}
+    // for each element in heap call operate function pointer on it until each element was operated successfully
+    for (BINARY_HEAP_DATA_TYPE * e = heap->elements; (e < heap->elements + heap->size) && operate(e, args); e++) {}
 }
 
+/// Maps heap element into array to manage.
+/// @param heap Binary heap data structure.
+/// @param manage Function pointer to manage array of heap elements using heap's size and generic arguments.
+/// @param args Generic void pointer arguments for manage function pointer.
 static inline void map_binary_heap(binary_heap_s * heap, const manage_binary_heap_fn manage, void * args) {
     BINARY_HEAP_ASSERT(heap && "[ERROR] 'heap' parameter is NULL.");
     BINARY_HEAP_ASSERT(manage && "[ERROR] 'manage' parameter is NULL.");
 
+    BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
 
     manage(heap->elements, heap->size, args);
 }
 
+/// Pushes element onto heap.
+/// @param heap Binary heap data structure.
+/// @param element Element to push into heap.
+/// @note Use to fill a heap without breaking heap integrity.
 static inline void push_binary_heap(binary_heap_s * heap, const BINARY_HEAP_DATA_TYPE element) {
     BINARY_HEAP_ASSERT(heap && "[ERROR] 'heap' parameter is NULL.");
     BINARY_HEAP_ASSERT(heap->size != BINARY_HEAP_SIZE && "[ERROR] Can't push to full heap.");
 
+    BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
 
     // push element to the top of the elements array
     memcpy(heap->elements + heap->size, &element, sizeof(BINARY_HEAP_DATA_TYPE));
 
     // while current top child index is not zero and current element is greater than its parent
-    for (size_t child = heap->size, parent = (child - 1) / 2; child && heap->compare(heap->elements[child], heap->elements[parent]) > 0;) {
+    for (size_t child = heap->size, parent = (child - 1) / 2; child && heap->compare(heap->elements[child], heap->elements[parent]) < 0;) {
         // swap current child element with parent
         BINARY_HEAP_DATA_TYPE temporary = heap->elements[child];
         heap->elements[child] = heap->elements[parent];
@@ -158,10 +199,14 @@ static inline void push_binary_heap(binary_heap_s * heap, const BINARY_HEAP_DATA
     heap->size++;
 }
 
+/// Pops and returns root element from heap.
+/// @param heap Binary heap data structure.
+/// @return Root element in heap as specified by its compare function.
 static inline BINARY_HEAP_DATA_TYPE pop_binary_heap(binary_heap_s * heap) {
     BINARY_HEAP_ASSERT(heap && "[ERROR] 'heap' parameter is NULL.");
     BINARY_HEAP_ASSERT(heap->size && "[ERROR] Can't pop from empty heap.");
 
+    BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
 
     // save root element and put last element in its place
@@ -188,13 +233,66 @@ static inline BINARY_HEAP_DATA_TYPE pop_binary_heap(binary_heap_s * heap) {
     return removed;
 }
 
+/// Returns root element in heap without removing it.
+/// @param heap Binary heap data structure.
+/// @return Root element in heap as specified by its compare function.
 static inline BINARY_HEAP_DATA_TYPE peep_binary_heap(const binary_heap_s * heap) {
     BINARY_HEAP_ASSERT(heap && "[ERROR] 'heap' parameter is NULL.");
     BINARY_HEAP_ASSERT(heap->size && "[ERROR] Can't peep from empty heap.");
 
+    BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
 
     return heap->elements[0];
+}
+
+/// Replace the element at elements array index in heap while maintaining binary heap property.
+/// @param heap Binary heap data structure.
+/// @param index Index of element to replace.
+/// @param element Element to replace and put at index.
+/// @return replaced element.
+static inline BINARY_HEAP_DATA_TYPE replace_binary_heap(binary_heap_s * heap, const size_t index, const BINARY_HEAP_DATA_TYPE element) {
+    BINARY_HEAP_ASSERT(heap && "[ERROR] 'heap' parameter is NULL.");
+    BINARY_HEAP_ASSERT(heap->size && "[ERROR] Can't change empty heap.");
+    BINARY_HEAP_ASSERT(index < heap->size && "[ERROR] Index out of heap size bounds.");
+
+    BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
+    BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
+
+    const BINARY_HEAP_DATA_TYPE replaced = element;
+    memcpy(heap->elements + index, &element, sizeof(BINARY_HEAP_DATA_TYPE));
+
+    if (heap->compare(replaced, element) > 0) { // if new element is decreased perform down-heapify
+        // while current top child index is not zero and current element is greater than its parent
+        for (size_t child = index, parent = (child - 1) / 2; child && heap->compare(heap->elements[child], heap->elements[parent]) < 0;) {
+            // swap current child element with parent
+            BINARY_HEAP_DATA_TYPE temporary = heap->elements[child];
+            heap->elements[child] = heap->elements[parent];
+            heap->elements[parent] = temporary;
+
+            // change current child to parent and parent to grand-parent
+            child = parent;
+            parent = (child - 1) / 2;
+        }
+    } else { // else the element is increased and up-heapify is performed
+        for (size_t parent = index, child = (2 * parent) + 1; child < heap->size; parent = child, child = (2 * parent) + 1) {
+            // if right child is a valid index and it is smaller than left child change left child to right one
+            if ((child + 1) < heap->size && heap->compare(heap->elements[child], heap->elements[child + 1]) > 0) {
+                child++;
+            }
+            // if child is greater, then parent is properly set and thus break from loop
+            if (heap->compare(heap->elements[child], heap->elements[parent]) > 0) {
+                break;
+            }
+
+            // swap current parent element with greatest child
+            BINARY_HEAP_DATA_TYPE temporary = heap->elements[child];
+            heap->elements[child] = heap->elements[parent];
+            heap->elements[parent] = temporary;
+        }
+    }
+
+    return replaced;
 }
 
 #else
