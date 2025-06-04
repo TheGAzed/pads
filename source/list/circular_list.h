@@ -48,16 +48,16 @@
 #endif
 
 /// @brief Function pointer to create a deep/shallow copy for circular list element.
-typedef CIRCULAR_LIST_DATA_TYPE (*copy_circular_list_fn)    (const CIRCULAR_LIST_DATA_TYPE);
+typedef CIRCULAR_LIST_DATA_TYPE (*copy_circular_list_fn)    (const CIRCULAR_LIST_DATA_TYPE element);
 /// @brief Function pointer to destroy/free an element for circular list element.
-typedef void                    (*destroy_circular_list_fn) (CIRCULAR_LIST_DATA_TYPE *);
+typedef void                    (*destroy_circular_list_fn) (CIRCULAR_LIST_DATA_TYPE * element);
 /// @brief Function pointer to comapre two circular list elements. Returns zero if they're equal, a negative number if
 /// 'less than', else a positive number if 'more than'.
-typedef int                     (*compare_circular_list_fn) (const CIRCULAR_LIST_DATA_TYPE, const CIRCULAR_LIST_DATA_TYPE);
+typedef int                     (*compare_circular_list_fn) (const CIRCULAR_LIST_DATA_TYPE one, const CIRCULAR_LIST_DATA_TYPE two);
 /// @brief Function pointer to operate on a single circular list element based on generic arguments.
-typedef bool                    (*operate_circular_list_fn) (CIRCULAR_LIST_DATA_TYPE *, void *);
+typedef bool                    (*operate_circular_list_fn) (CIRCULAR_LIST_DATA_TYPE * element, void * args);
 /// @brief Function pointer to manage an array of circular list elements based on generic arguments.
-typedef void                    (*manage_circular_list_fn)  (CIRCULAR_LIST_DATA_TYPE *, const size_t, void *);
+typedef void                    (*manage_circular_list_fn)  (CIRCULAR_LIST_DATA_TYPE * array, const size_t size, void * args);
 
 #ifndef CIRCULAR_LIST_SIZE
 

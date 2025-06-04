@@ -48,13 +48,13 @@
 #endif
 
 /// Function pointer that creates a deep element copy.
-typedef DEQUE_DATA_TYPE (*copy_deque_fn)    (const DEQUE_DATA_TYPE);
+typedef DEQUE_DATA_TYPE (*copy_deque_fn)    (const DEQUE_DATA_TYPE element);
 /// Function pointer that destroys a deep element.
-typedef void            (*destroy_deque_fn) (DEQUE_DATA_TYPE *);
+typedef void            (*destroy_deque_fn) (DEQUE_DATA_TYPE * element);
 /// Function pointer that changes an element pointer using void pointer arguments if needed.
-typedef bool            (*operate_deque_fn) (DEQUE_DATA_TYPE *, void *);
+typedef bool            (*operate_deque_fn) (DEQUE_DATA_TYPE * element, void * args);
 /// @brief Function pointer to manage an array of graph elements based on generic arguments.
-typedef void            (*manage_deque_fn)  (DEQUE_DATA_TYPE *, const size_t, void *);
+typedef void            (*manage_deque_fn)  (DEQUE_DATA_TYPE * array, const size_t size, void * args);
 
 #ifndef DEQUE_SIZE
 

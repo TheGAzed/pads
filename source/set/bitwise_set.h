@@ -55,10 +55,10 @@
 
 #endif
 
-/// @brief Function pointer to operate on a single set element based on generic arguments.
-typedef bool (*operate_bitwise_set_fn) (BITWISE_SET_DATA_TYPE *, void *);
+/// @brief Function pointer to operate on a single set index based on generic arguments.
+typedef bool (*operate_bitwise_set_fn) (const size_t index, void * args);
 /// @brief Function pointer to manage an array of set elements based on generic arguments.
-typedef void (*manage_bitwise_set_fn)  (BITWISE_SET_DATA_TYPE *, const size_t, void *);
+typedef void (*manage_bitwise_set_fn)  (BITWISE_SET_DATA_TYPE * array, const size_t size, void * args);
 
 #ifndef BITWISE_SET_SIZE
 
@@ -133,11 +133,19 @@ static inline bool is_full_bitwise_set(const bitwise_set_s * set) {
 /// @param set Set to iterate over.
 /// @param operate Function pointer to call on each element reference using generic arguments.
 /// @param args Generic void pointer arguments used in 'operate' function.
-static inline void foreach_bitwise_set(bitwise_set_s * set, const operate_bitwise_set_fn operate, void * args) {
+static inline void foreach_bitwise_set(const bitwise_set_s * set, const operate_bitwise_set_fn operate, void * args) {
     BITWISE_SET_ASSERT(set && "[ERROR] 'set' parameter is NULL.");
     BITWISE_SET_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
 
-    for (size_t i = 0; i < BITWISE_SET_DATA_TYPE_LENGTH && operate(set->bits + i, args); ++i) {}
+    for (size_t i = 0; i < BITWISE_SET_DATA_TYPE_LENGTH; ++i) {
+        for (size_t j = 0; j < BITWISE_SET_SIZE; ++j) {
+            const size_t bitwise_index = BITWISE_SET_BIT_COUNT - j - 1;
+
+            if (set->bits[i] & ((size_t)(1) << bitwise_index) && !operate(j, args)) {
+                return;
+            }
+        }
+    }
 }
 
 /// @brief Maps elements in set into array and calls manage function on it using set's size and generic arguments.

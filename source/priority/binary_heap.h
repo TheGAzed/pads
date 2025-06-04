@@ -50,15 +50,15 @@
 #endif
 
 /// Function pointer that creates a deep element copy.
-typedef BINARY_HEAP_DATA_TYPE (*copy_binary_heap_fn)    (const BINARY_HEAP_DATA_TYPE);
+typedef BINARY_HEAP_DATA_TYPE (*copy_binary_heap_fn)    (const BINARY_HEAP_DATA_TYPE element);
 /// Function pointer that destroys a deep element.
-typedef void                  (*destroy_binary_heap_fn) (BINARY_HEAP_DATA_TYPE *);
+typedef void                  (*destroy_binary_heap_fn) (BINARY_HEAP_DATA_TYPE * element);
 /// 'less than', else a positive number if 'more than'.
-typedef int                   (*compare_binary_heap_fn) (const BINARY_HEAP_DATA_TYPE, const BINARY_HEAP_DATA_TYPE);
+typedef int                   (*compare_binary_heap_fn) (const BINARY_HEAP_DATA_TYPE one, const BINARY_HEAP_DATA_TYPE two);
 /// Function pointer that changes an element pointer using void pointer arguments if needed. Returns true if operation should continue.
-typedef bool                  (*operate_binary_heap_fn) (BINARY_HEAP_DATA_TYPE *, void *);
+typedef bool                  (*operate_binary_heap_fn) (BINARY_HEAP_DATA_TYPE * element, void * args);
 /// @brief Function pointer to manage an array of graph elements based on generic arguments.
-typedef void                  (*manage_binary_heap_fn)  (BINARY_HEAP_DATA_TYPE *, const size_t, void *);
+typedef void                  (*manage_binary_heap_fn)  (BINARY_HEAP_DATA_TYPE * array, const size_t size, void * args);
 
 #ifndef BINARY_HEAP_SIZE
 
@@ -293,6 +293,47 @@ static inline BINARY_HEAP_DATA_TYPE replace_binary_heap(binary_heap_s * heap, co
     }
 
     return replaced;
+}
+
+/// Melds the source heap into the destination while keeping heap property.
+/// @param destination Destination binary heap data structure.
+/// @param source Source binary heap data structure.
+static inline void meld_binary_heap(binary_heap_s * restrict destination, binary_heap_s * restrict source) {
+    BINARY_HEAP_ASSERT(destination && "[ERROR] 'destination' parameter is NULL.");
+    BINARY_HEAP_ASSERT(source && "[ERROR] 'source' parameter is NULL.");
+    BINARY_HEAP_ASSERT(destination != source && "[ERROR] Heaps can't be the same.");
+    BINARY_HEAP_ASSERT(destination->size + source->size <= BINARY_HEAP_SIZE && "[ERROR] Merge will exceed maximum size.");
+    BINARY_HEAP_ASSERT(destination->compare == source->compare && "[ERROR] Compare functions must be the same.");
+
+    BINARY_HEAP_ASSERT(destination->compare && "[ERROR] Invalid compare function pointer.");
+    BINARY_HEAP_ASSERT(destination->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
+
+    BINARY_HEAP_ASSERT(source->compare && "[ERROR] Invalid compare function pointer.");
+    BINARY_HEAP_ASSERT(source->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
+
+    memcpy(destination->elements + destination->size, source->elements, sizeof(BINARY_HEAP_DATA_TYPE) * source->size);
+    destination->size += source->size;
+    source->size = 0;
+
+    const size_t start_index = (destination->size / 2) - 1;
+    for (size_t i = 0; i <= start_index; ++i) {
+        const size_t reverse_index = start_index - i;
+        for (size_t parent = reverse_index, child = (2 * parent) + 1; child < destination->size; parent = child, child = (2 * parent) + 1) {
+            // if right child is a valid index and it is smaller than left child change left child to right one
+            if ((child + 1) < destination->size && destination->compare(destination->elements[child], destination->elements[child + 1]) > 0) {
+                child++;
+            }
+            // if child is greater, then parent is properly set and thus break from loop
+            if (destination->compare(destination->elements[child], destination->elements[parent]) > 0) {
+                break;
+            }
+
+            // swap current parent element with greatest child
+            BINARY_HEAP_DATA_TYPE temporary = destination->elements[child];
+            destination->elements[child] = destination->elements[parent];
+            destination->elements[parent] = temporary;
+        }
+    }
 }
 
 #else

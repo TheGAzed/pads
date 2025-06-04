@@ -48,13 +48,13 @@
 #endif
 
 /// Function pointer that creates a deep element copy.
-typedef QUEUE_DATA_TYPE (*copy_queue_fn)    (const QUEUE_DATA_TYPE);
+typedef QUEUE_DATA_TYPE (*copy_queue_fn)    (const QUEUE_DATA_TYPE element);
 /// Function pointer that destroys a deep element.
-typedef void            (*destroy_queue_fn) (QUEUE_DATA_TYPE *);
+typedef void            (*destroy_queue_fn) (QUEUE_DATA_TYPE * element);
 /// Function pointer that changes an element pointer using void pointer arguments if needed.
-typedef bool            (*operate_queue_fn) (QUEUE_DATA_TYPE *, void *);
+typedef bool            (*operate_queue_fn) (QUEUE_DATA_TYPE * element, void * args);
 /// @brief Function pointer to manage an array of graph elements based on generic arguments.
-typedef void            (*manage_queue_fn)  (QUEUE_DATA_TYPE *, const size_t, void *);
+typedef void            (*manage_queue_fn)  (QUEUE_DATA_TYPE * array, const size_t size, void * args);
 
 #ifndef QUEUE_SIZE
 

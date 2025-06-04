@@ -48,15 +48,15 @@
 #endif
 
 /// @brief Function pointer to copy an element and return new one.
-typedef DOUBLE_LIST_DATA_TYPE (*copy_double_list_fn)    (const DOUBLE_LIST_DATA_TYPE);
+typedef DOUBLE_LIST_DATA_TYPE (*copy_double_list_fn)    (const DOUBLE_LIST_DATA_TYPE element);
 /// @brief Function pointer to destroy or free an element.
-typedef void                  (*destroy_double_list_fn) (DOUBLE_LIST_DATA_TYPE *);
+typedef void                  (*destroy_double_list_fn) (DOUBLE_LIST_DATA_TYPE * element);
 /// @brief Function pointer to compare two elements, returns 0 if equal, positive if more than and negative otherwise
-typedef int                   (*compare_double_list_fn) (const DOUBLE_LIST_DATA_TYPE, const DOUBLE_LIST_DATA_TYPE);
+typedef int                   (*compare_double_list_fn) (const DOUBLE_LIST_DATA_TYPE one, const DOUBLE_LIST_DATA_TYPE two);
 /// @brief Function pointer to operate on a pointer to an element in data structure usign generic arguments.
-typedef bool                  (*operate_double_list_fn) (DOUBLE_LIST_DATA_TYPE *, void *);
+typedef bool                  (*operate_double_list_fn) (DOUBLE_LIST_DATA_TYPE * elements, void * args);
 /// @brief Function pointer to manage an array of elements in data structure usign generic arguments.
-typedef void                  (*manage_double_list_fn)  (DOUBLE_LIST_DATA_TYPE *, size_t, void *);
+typedef void                  (*manage_double_list_fn)  (DOUBLE_LIST_DATA_TYPE * array, const size_t size, void * args);
 
 /// @brief Number of node directions for node array, i.e. one 'next' plus one 'previous'.
 #define DOUBLE_LIST_NODE_COUNT 2

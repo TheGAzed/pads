@@ -81,16 +81,16 @@
 #endif
 
 /// @brief Function pointer to create a deep/shallow copy for binary set element.
-typedef BINARY_SET_DATA_TYPE (*copy_binary_set_fn)    (const BINARY_SET_DATA_TYPE);
+typedef BINARY_SET_DATA_TYPE (*copy_binary_set_fn)    (const BINARY_SET_DATA_TYPE element);
 /// @brief Function pointer to destroy/free an element for binary set element.
-typedef void                 (*destroy_binary_set_fn) (BINARY_SET_DATA_TYPE *);
+typedef void                 (*destroy_binary_set_fn) (BINARY_SET_DATA_TYPE * element);
 /// @brief Function pointer to compare two set elements. Returns zero if they're equal, a negative number if
 /// 'less than', else a positive number if 'more than'.
-typedef int                  (*compare_binary_set_fn) (const BINARY_SET_DATA_TYPE, const BINARY_SET_DATA_TYPE);
+typedef int                  (*compare_binary_set_fn) (const BINARY_SET_DATA_TYPE one, const BINARY_SET_DATA_TYPE two);
 /// @brief Function pointer to operate on a single set element based on generic arguments.
-typedef bool                 (*operate_binary_set_fn) (BINARY_SET_DATA_TYPE *, void *);
+typedef bool                 (*operate_binary_set_fn) (BINARY_SET_DATA_TYPE * element, void * args);
 /// @brief Function pointer to manage an array of set elements based on generic arguments.
-typedef void                 (*manage_binary_set_fn)  (BINARY_SET_DATA_TYPE *, const size_t, void *);
+typedef void                 (*manage_binary_set_fn)  (BINARY_SET_DATA_TYPE * array, const size_t size, void * args);
 
 #ifndef BINARY_SET_SIZE
 
