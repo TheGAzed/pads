@@ -56,7 +56,9 @@
 #endif
 
 /// @brief Function pointer to operate on a single set index based on generic arguments.
-typedef bool (*operate_bitwise_set_fn) (const size_t index, void * args);
+typedef bool (*operate_index_bitwise_set_fn) (const size_t index, void * args);
+/// @brief Function pointer to operate on a single set bits based on generic arguments.
+typedef bool (*operate_bits_bitwise_set_fn) (BITWISE_SET_DATA_TYPE * bits, void * args);
 /// @brief Function pointer to manage an array of set elements based on generic arguments.
 typedef void (*manage_bitwise_set_fn)  (BITWISE_SET_DATA_TYPE * array, const size_t size, void * args);
 
@@ -133,7 +135,7 @@ static inline bool is_full_bitwise_set(const bitwise_set_s * set) {
 /// @param set Set to iterate over.
 /// @param operate Function pointer to call on each element reference using generic arguments.
 /// @param args Generic void pointer arguments used in 'operate' function.
-static inline void foreach_bitwise_set(const bitwise_set_s * set, const operate_bitwise_set_fn operate, void * args) {
+static inline void foreach_index_bitwise_set(const bitwise_set_s * set, const operate_index_bitwise_set_fn operate, void * args) {
     BITWISE_SET_ASSERT(set && "[ERROR] 'set' parameter is NULL.");
     BITWISE_SET_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
 
@@ -146,6 +148,17 @@ static inline void foreach_bitwise_set(const bitwise_set_s * set, const operate_
             }
         }
     }
+}
+
+/// @brief Iterates over each element in set calling operate function on it using generic arguments.
+/// @param set Set to iterate over.
+/// @param operate Function pointer to call on each element reference using generic arguments.
+/// @param args Generic void pointer arguments used in 'operate' function.
+static inline void foreach_bits_bitwise_set(bitwise_set_s * set, const operate_bits_bitwise_set_fn operate, void * args) {
+    BITWISE_SET_ASSERT(set && "[ERROR] 'set' parameter is NULL.");
+    BITWISE_SET_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
+
+    for (BITWISE_SET_DATA_TYPE * e = set->bits; e < set->bits + BITWISE_SET_DATA_TYPE_LENGTH && operate(e, args); ++e) {}
 }
 
 /// @brief Maps elements in set into array and calls manage function on it using set's size and generic arguments.

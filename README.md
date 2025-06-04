@@ -27,6 +27,9 @@ C compiler that at least supports the **C99 standard**, for example:
 - QUEUE
 - DEQUE
 
+### [PRIORITY](https://github.com/TheGAzed/pads/blob/main/source/priority)
+- BINARY HEAP
+
 ### [LIST](https://github.com/TheGAzed/pads/blob/main/source/list)
 - STRAIGHT LIST
 - CIRCULAR LIST
