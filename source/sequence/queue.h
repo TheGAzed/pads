@@ -99,6 +99,27 @@ static inline void destroy_queue(queue_s * queue, const destroy_queue_fn destroy
     queue->current = 0;
 }
 
+/// @brief Clears queue and all elements in it.
+/// @param queue Queue structure pointer to destroy.
+/// @param destroy Function pointer to destroy (or free) elements in queue.
+static inline void clear_queue(queue_s * queue, const destroy_queue_fn destroy) {
+    QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter is NULL.");
+    QUEUE_ASSERT(destroy && "[ERROR] 'destroy' parameter is NULL.");
+
+    QUEUE_ASSERT(queue->size <= QUEUE_SIZE && "[ERROR] Invalid queue size.");
+
+    const size_t right_size = (queue->current + queue->size) > QUEUE_SIZE ? QUEUE_SIZE - queue->current : queue->size;
+    for (size_t i = 0; i < right_size; ++i) {
+        destroy(queue->elements + queue->current + i);
+    }
+    queue->size -= right_size;
+    for (; queue->size; queue->size--) {
+        destroy(queue->elements + (queue->size - 1));
+    }
+
+    queue->current = 0;
+}
+
 /// @brief Checks if queue is empty.
 /// @param queue Queue structure to check.
 /// @return true if queue size is zero, false otherwise.

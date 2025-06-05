@@ -103,6 +103,23 @@ static inline void destroy_binary_heap(binary_heap_s * heap, const destroy_binar
     heap->compare = NULL;
 }
 
+/// Clears the heap and all its elements.
+/// @param heap Binary heap data structure.
+/// @param destroy Function pointer to destroy each element in heap.
+static inline void clear_binary_heap(binary_heap_s * heap, const destroy_binary_heap_fn destroy) {
+    BINARY_HEAP_ASSERT(heap && "[ERROR] 'heap' parameter is NULL.");
+    BINARY_HEAP_ASSERT(destroy && "[ERROR] 'destroy' parameter is NULL.");
+
+    BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
+    BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
+
+    for (BINARY_HEAP_DATA_TYPE * e = heap->elements; e < heap->elements + heap->size; e++) {
+        destroy(e);
+    }
+
+    heap->size = 0;
+}
+
 /// Checks if binary heap is empty.
 /// @param heap Binary heap data structure.
 /// @return 'true' if heap is empty, 'false' otherwise.

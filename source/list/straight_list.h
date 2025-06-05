@@ -88,10 +88,28 @@ static inline straight_list_s create_straight_list(void) {
     return (straight_list_s) { .empty_head = 0, .empty_size = 0, .head = 0, .size = 0, };
 }
 
-/// @brief Destroys the straight list with all its elements and sets size to zero.
+/// @brief Destroys the straight list with all its elements.
 /// @param list Pointer to straight list structure.
 /// @param destroy Readonly function pointer to destroy/free each element in straight list.
 static inline void destroy_straight_list(straight_list_s * list, const destroy_straight_list_fn destroy) {
+    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+    STRAIGHT_LIST_ASSERT(destroy && "[ERROR] 'destroy' parameter is NULL.");
+
+    STRAIGHT_LIST_ASSERT(list->size <= STRAIGHT_LIST_SIZE && "[ERROR] List size exceeds maximum size.");
+
+    size_t current = list->head; // pointer to tail since ordering does not matter while destroying list
+    for (size_t s = 0; s < list->size; ++s) { // check if destroy function is specified to destroy elements
+        destroy(list->elements + current); // destroy element at current index
+        current = list->next[current]; // go to next index
+    }
+
+    list->empty_head = list->empty_size = list->head = list->size = 0; // list and its empty stack to zero
+}
+
+/// @brief Clears the straight list with all its elements.
+/// @param list Pointer to straight list structure.
+/// @param destroy Readonly function pointer to destroy/free each element in straight list.
+static inline void clear_straight_list(straight_list_s * list, const destroy_straight_list_fn destroy) {
     STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
     STRAIGHT_LIST_ASSERT(destroy && "[ERROR] 'destroy' parameter is NULL.");
 

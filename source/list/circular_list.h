@@ -107,6 +107,24 @@ static inline void destroy_circular_list(circular_list_s * list, const destroy_c
     list->empty_head = list->empty_size = list->size = list->tail = 0;
 }
 
+/// @brief Clears the list and all its elements.
+/// @param list Pointer to list structure.
+/// @param destroy Function pointer to destroy each element in list.
+static inline void clear_circular_list(circular_list_s * list, const destroy_circular_list_fn destroy) {
+    CIRCULAR_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+    CIRCULAR_LIST_ASSERT(destroy && "[ERROR] 'destroy' parameter is NULL.");
+
+    CIRCULAR_LIST_ASSERT(list->size <= CIRCULAR_LIST_SIZE && "[ERROR] Invalid list size.");
+
+    size_t previous = list->tail;
+    for (size_t s = 0; s < list->size; ++s) {
+        destroy(list->elements + previous);
+        previous = list->next[previous];
+    }
+
+    list->empty_head = list->empty_size = list->size = list->tail = 0;
+}
+
 /// @brief Creates a deep or shallow copy of a list based on copy function pointer.
 /// @param list List structure.
 /// @param copy Function pointer to create a copy of an element.

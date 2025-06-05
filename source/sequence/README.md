@@ -6,9 +6,7 @@ Sequential data structures are structures where the element can be inserted and 
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">
-STACK
-</summary>
+<summary style="font-size: 1.25em; font-weight: bold">STACK</summary>
 
 The stack is a last element in and first out data structure that can be customized using the preprocessor.
 
@@ -333,6 +331,342 @@ int main() {
     map_stack(&stack, sort_int, compare_int);
     
     // do something with sorted stack elements
+
+    return 0;
+}
+```
+
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">QUEUE</summary>
+
+The queue is a first element in and first out data structure that can be customized using the preprocessor.
+
+```c++
+// macro settings to define queue properties before including library
+#define QUEUE_DATA_TYPE [type]   // defines the data type to store
+#define QUEUE_SIZE      [size]   // defines the maximum positive array size
+#define QUEUE_ASSERT    [assert] // defines the assert function for invalid states
+#include "queue.h"
+```
+
+The queue structure is made out of the array that stores the elements, a size variable to get the current element count and a current index to retrieve the first added element. The structure relies on a circular array mechanism.
+
+```c++
+typedef struct queue {
+    QUEUE_DATA_TYPE elements[QUEUE_SIZE]; // elements array
+    size_t size;                          // size of structure
+    size_t current;                       // current index of first element
+} queue_s;
+
+```
+
+### Create
+
+Creates an empty queue structure.
+
+```c++
+queue_s create_queue(void);
+```
+
+```c++
+#define QUEUE_DATA_TYPE int
+#include "queue.h"
+
+int main() {
+    queue_s queue = create_queue();
+    
+    // do something
+    
+    return 0;
+}
+```
+
+### Destroy
+
+Destroys queue and all elements in it.
+
+```c++
+typedef void (*destroy_queue_fn) (QUEUE_DATA_TYPE * element);
+void destroy_queue(queue_s * queue, const destroy_queue_fn destroy);
+```
+
+```c++
+#define QUEUE_DATA_TYPE char*
+#include "queue.h"
+
+#include <stdlib.h>
+
+void destroy_string(QUEUE_DATA_TYPE * string) {
+    free(*string);
+    (*string) = NULL;
+}
+
+int main() {
+    queue_s queue = create_queue();
+    
+    // do something
+    
+    destroy_queue(&queue, destroy_string);
+    
+    return 0;
+}
+```
+
+### Clear
+
+Clears all elements in queue.
+
+```c++
+typedef void (*destroy_queue_fn) (QUEUE_DATA_TYPE * element);
+void clear_queue(queue_s * queue, const destroy_queue_fn destroy);
+```
+
+```c++
+#define QUEUE_DATA_TYPE char*
+#include "queue.h"
+
+#include <stdlib.h>
+
+void destroy_string(QUEUE_DATA_TYPE * string) {
+    free(*string);
+    (*string) = NULL;
+}
+
+int main() {
+    queue_s queue = create_queue();
+    
+    // do something
+    
+    clear_queue(&queue, destroy_string);
+    
+    // do something anew
+    
+    destroy_queue(&queue, destroy_string);
+    
+    return 0;
+}
+```
+
+### Is empty
+
+Checks if queue is empty.
+
+```c++
+bool is_empty_queue(const queue_s * queue);
+```
+
+```c++
+#define QUEUE_DATA_TYPE int
+#include "queue.h"
+
+int main() {
+    queue_s queue = create_queue();
+    
+    // do something
+    
+    while (!is_empty_queue(&queue)) {
+        // do something while queue is not empty
+    }
+
+    return 0;
+}
+```
+
+### Is full
+
+Checks if queue is full.
+
+```c++
+bool is_full_queue(const queue_s * queue);
+```
+
+```c++
+#define QUEUE_DATA_TYPE int
+#include "queue.h"
+
+int main() {
+    queue_s queue = create_queue();
+        
+    while (!is_full_queue(&queue)) {
+        // do something while queue is not full
+    }
+
+    return 0;
+}
+```
+
+### Peek
+
+Gets element at the beginning of the queue without removing it.
+
+```c++
+QUEUE_DATA_TYPE peek_queue(const queue_s * queue);
+```
+
+```c++
+#define QUEUE_DATA_TYPE int
+#include "queue.h"
+
+int main() {
+    queue_s queue = create_queue();
+    
+    // do something
+    
+    QUEUE_DATA_TYPE element = peek_queue(&queue);
+    
+    // do something with top element
+
+    return 0;
+}
+```
+
+### Enqueue
+
+Enqueues the element to the end of the queue.
+
+```c++
+void enqueue_queue(queue_s * queue, const QUEUE_DATA_TYPE element);
+```
+
+```c++
+#define QUEUE_DATA_TYPE int
+#include "queue.h"
+
+int main() {
+    queue_s queue = create_queue();
+    
+    QUEUE_DATA_TYPE element = { 0 };
+    enqueue_queue(&queue, element);
+    
+    // do something
+
+    return 0;
+}
+```
+
+### Dequeue
+
+Dequeues and removes the element at the beginning of the queue.
+
+```c++
+QUEUE_DATA_TYPE dequeue_queue(queue_s * queue);
+```
+
+```c++
+#define QUEUE_DATA_TYPE int
+#include "queue.h"
+
+int main() {
+    queue_s queue = create_queue();
+    
+    // do something
+    
+    QUEUE_DATA_TYPE element = dequeue_queue(&queue);
+    
+    // do something with removed element
+
+    return 0;
+}
+```
+
+### Copy
+
+Copies the queue and all its elements into a new structure.
+
+```c++
+typedef QUEUE_DATA_TYPE (*copy_queue_fn) (const QUEUE_DATA_TYPE element);
+queue_s copy_queue(const queue_s * queue, const copy_queue_fn copy);
+```
+
+```c++
+#define QUEUE_DATA_TYPE int
+#include "queue.h"
+
+QUEUE_DATA_TYPE copy_int(const QUEUE_DATA_TYPE integer) {
+    return integer;
+}
+
+int main() {
+    queue_s queue = create_queue();
+    
+    // do something
+    
+    queue_s copy = copy_queue(&queue, copy_int);
+    
+    // do something with queue and copy
+
+    return 0;
+}
+```
+
+### Foreach
+
+Iterates over and operates on each element in structure using generic arguments.
+
+```c++
+typedef bool (*operate_queue_fn) (QUEUE_DATA_TYPE * element, void * args);
+void foreach_queue(queue_s * queue, const operate_queue_fn operate, void * args);
+```
+
+```c++
+#define QUEUE_DATA_TYPE int
+#include "queue.h"
+
+bool increment(QUEUE_DATA_TYPE * integer, void * value) {
+    int * true_value = value;
+    (*integer) += (*true_value);
+    
+    return true; // to iterate over each element
+}
+
+int main() {
+    queue_s queue = create_queue();
+    
+    // do something
+    
+    int value = 42;
+    foreach_queue(&queue, increment, &value);
+    
+    // do something with incremented queue elements
+
+    return 0;
+}
+```
+
+### Map
+
+Map function that maps elements into array and manages it using size and args.
+
+```c++
+void (*manage_queue_fn) (QUEUE_DATA_TYPE * array, const size_t size, void * args);
+void map_queue(queue_s * queue, const manage_queue_fn manage, void * args);
+```
+
+```c++
+#define QUEUE_DATA_TYPE int
+#include "queue.h"
+
+#include <stdlib.h>
+
+int compare_int(const void * a, const void * b) {
+    return (*(QUEUE_DATA_TYPE*)(a)) - (*(QUEUE_DATA_TYPE*)(b));
+}
+
+void sort_int(QUEUE_DATA_TYPE * array, const size_t size, void * compare) {
+    qsort(array, size, sizeof(QUEUE_DATA_TYPE), compare);
+}
+
+int main() {
+    queue_s queue = create_queue();
+    
+    // do something
+    
+    map_queue(&queue, sort_int, compare_int);
+    
+    // do something with sorted queue elements
 
     return 0;
 }

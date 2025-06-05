@@ -119,7 +119,7 @@ static inline binary_set_s create_binary_set(const compare_binary_set_fn compare
     };
 }
 
-/// @brief Destroys the set and all its elements using destroy function pointer.
+/// @brief Destroys the set and all its elements.
 /// @param set Set to destroy together with its elements.
 /// @param destroy Function pointer to destroy each element in set.
 static inline void destroy_binary_set(binary_set_s * set, const destroy_binary_set_fn destroy) {
@@ -129,11 +129,28 @@ static inline void destroy_binary_set(binary_set_s * set, const destroy_binary_s
     BINARY_SET_ASSERT(set->compare && "[ERROR] Set's compare function pointer is NULL.");
     BINARY_SET_ASSERT(set->size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
 
-    for (size_t i = 0; i < set->size; ++i) {
-        destroy(set->elements + i);
+    for (BINARY_SET_DATA_TYPE * e = set->elements; e < set->elements + set->size; e++) {
+        destroy(e);
     }
 
     set->compare = NULL;
+    set->size = 0;
+}
+
+/// @brief Clears the set and all its elements.
+/// @param set Set to destroy together with its elements.
+/// @param destroy Function pointer to destroy each element in set.
+static inline void clear_binary_set(binary_set_s * set, const destroy_binary_set_fn destroy) {
+    BINARY_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL");
+    BINARY_SET_ASSERT(destroy && "[ERROR] 'destroy' pointer parameter is NULL");
+
+    BINARY_SET_ASSERT(set->compare && "[ERROR] Set's compare function pointer is NULL.");
+    BINARY_SET_ASSERT(set->size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
+
+    for (BINARY_SET_DATA_TYPE * e = set->elements; e < set->elements + set->size; e++) {
+        destroy(e);
+    }
+
     set->size = 0;
 }
 

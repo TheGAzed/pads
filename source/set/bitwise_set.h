@@ -87,14 +87,25 @@ static inline bitwise_set_s create_bitwise_set(void) {
     return (bitwise_set_s) { 0 }; // needs to be all zero to also mabe bits empty
 }
 
-
-/// @brief Destroys the set and all its elements using destroy function pointer.
+/// @brief Destroys the set and all its elements.
 /// @param set Set to destroy together with its elements.
 static inline void destroy_bitwise_set(bitwise_set_s * set) {
     BITWISE_SET_ASSERT(set && "[ERROR] 'set' parameter is NULL.");
 
     BITWISE_SET_ASSERT(set->size <= BITWISE_SET_SIZE && "[ERROR] Set's size can't be more than maximum size.");
 
+    memset(set->bits, 0, BITWISE_SET_DATA_TYPE_LENGTH * sizeof(BITWISE_SET_DATA_TYPE));
+    set->size = 0;
+}
+
+/// @brief Clears the set and all its elements.
+/// @param set Set to destroy together with its elements.
+static inline void clear_bitwise_set(bitwise_set_s * set) {
+    BITWISE_SET_ASSERT(set && "[ERROR] 'set' parameter is NULL.");
+
+    BITWISE_SET_ASSERT(set->size <= BITWISE_SET_SIZE && "[ERROR] Set's size can't be more than maximum size.");
+
+    memset(set->bits, 0, BITWISE_SET_DATA_TYPE_LENGTH * sizeof(BITWISE_SET_DATA_TYPE));
     set->size = 0;
 }
 

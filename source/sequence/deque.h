@@ -67,8 +67,8 @@ typedef void            (*manage_deque_fn)  (DEQUE_DATA_TYPE * array, const size
 #endif
 
 typedef struct deque {
-    size_t current, size;
     DEQUE_DATA_TYPE elements[DEQUE_SIZE];
+    size_t current, size;
 } deque_s;
 
 /// @brief Creates an empty deque.
@@ -77,7 +77,7 @@ static inline deque_s create_deque(void) {
     return (deque_s) { .current = DEQUE_SIZE >> 1, .size = 0, }; // return empty deque with current set to middle
 }
 
-/// @brief Destroys deque with all its elements using a destroy function pointer.
+/// @brief Destroys deque with all its elements.
 /// @param deque Deque structure to destroy.
 /// @param destroy Function pointer to destroy each element in deque.
 /// @note Deque needs to be created again after destroying it.
@@ -97,7 +97,30 @@ static inline void destroy_deque(deque_s * deque, const destroy_deque_fn destroy
         destroy(deque->elements + i);
     }
 
-    deque->size = 0;
+    deque->size = deque->current = 0;
+}
+
+/// @brief Clears deque and all elements in it.
+/// @param deque Deque structure to destroy.
+/// @param destroy Function pointer to destroy each element in deque.
+/// @note Deque needs to be created again after destroying it.
+static inline void clear_deque(deque_s * deque, const destroy_deque_fn destroy) {
+    DEQUE_ASSERT(deque && "[ERROR] 'deque' parameter is NULL.");
+    DEQUE_ASSERT(destroy && "[ERROR] 'destroy' parameter is NULL.");
+
+    DEQUE_ASSERT(deque->size <= DEQUE_SIZE && "[ERROR] Deque's size can't exceed its maximum size.");
+    DEQUE_ASSERT(deque->current < DEQUE_SIZE && "[ERROR] Deque's current index must be less than maximum size.");
+
+    // calculate size of elements to the right of current index
+    const size_t right_size = (deque->current + deque->size) > DEQUE_SIZE ? DEQUE_SIZE - deque->current : deque->size;
+    for (size_t i = deque->current; i < right_size; ++i) { // for each element from current to right size destroy it
+        destroy(deque->elements + i);
+    }
+    for (size_t i = 0; i < deque->size - right_size; ++i) { // for each element from 0 to left size destroy it
+        destroy(deque->elements + i);
+    }
+
+    deque->size = deque->current = 0;
 }
 
 /// @brief Copies the deque and all its elements into a new structure.

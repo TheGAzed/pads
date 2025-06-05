@@ -99,7 +99,25 @@ static inline void destroy_double_list(double_list_s * list, const destroy_doubl
 
     size_t current = list->head;
     for (size_t i = 0; i < list->size; ++i) {
-        destroy(&(list->elements[current]));
+        destroy(list->elements + current);
+        current = list->node[DOUBLE_LIST_NEXT][current];
+    }
+
+    list->size = list->head = 0;
+}
+
+/// @brief Destroys a list and its elements using a function pointer.
+/// @param list Pointer of list to destroy.
+/// @param destroy Destroy function pointer to destroy/free each element in list.
+static inline void clear_double_list(double_list_s * list, const destroy_double_list_fn destroy) {
+    DOUBLE_LIST_ASSERT(list && "[ERROR] 'list' pointer parameter is NULL.");
+    DOUBLE_LIST_ASSERT(destroy && "[ERROR] 'destroy' pointer parameter is NULL.");
+
+    DOUBLE_LIST_ASSERT(list->size <= DOUBLE_LIST_SIZE && "[ERROR] Invalid list state.");
+
+    size_t current = list->head;
+    for (size_t i = 0; i < list->size; ++i) {
+        destroy(list->elements + current);
         current = list->node[DOUBLE_LIST_NEXT][current];
     }
 
