@@ -673,3 +673,447 @@ int main() {
 ```
 
 </details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">DEQUE</summary>
+
+The deque is a double ended queue that allows elements to be added and removed from its front and rear. It can be customized using the preprocessor.
+
+```c++
+// macro settings to define deque properties before including library
+#define DEQUE_DATA_TYPE [type]   // defines the data type to store
+#define DEQUE_SIZE      [size]   // defines the maximum positive array size
+#define DEQUE_ASSERT    [assert] // defines the assert function for invalid states
+#include "deque.h"
+```
+
+The deque structure is made out of the array that stores the elements, a size variable to get the element count and a current index to retrieve the rear element. The structure relies on a circular array mechanism.
+
+```c++
+typedef struct deque {
+    DEQUE_DATA_TYPE elements[DEQUE_SIZE]; // elements array
+    size_t size;                          // size of structure
+    size_t current;                       // current index of first element
+} deque_s;
+
+```
+
+### Create
+
+Creates an empty deque structure.
+
+```c++
+deque_s create_deque(void);
+```
+
+```c++
+#define DEQUE_DATA_TYPE int
+#include "deque.h"
+
+int main() {
+    deque_s deque = create_deque();
+    
+    // do something
+    
+    return 0;
+}
+```
+
+### Destroy
+
+Destroys deque and all elements in it.
+
+```c++
+typedef void (*destroy_deque_fn) (DEQUE_DATA_TYPE * element);
+void destroy_deque(deque_s * deque, const destroy_deque_fn destroy);
+```
+
+```c++
+#define DEQUE_DATA_TYPE char*
+#include "deque.h"
+
+#include <stdlib.h>
+
+void destroy_string(DEQUE_DATA_TYPE * string) {
+    free(*string);
+    (*string) = NULL;
+}
+
+int main() {
+    deque_s deque = create_deque();
+    
+    // do something
+    
+    destroy_deque(&deque, destroy_string);
+    
+    return 0;
+}
+```
+
+### Clear
+
+Clears all elements in deque.
+
+```c++
+typedef void (*destroy_deque_fn) (DEQUE_DATA_TYPE * element);
+void clear_deque(deque_s * deque, const destroy_deque_fn destroy);
+```
+
+```c++
+#define DEQUE_DATA_TYPE char*
+#include "deque.h"
+
+#include <stdlib.h>
+
+void destroy_string(DEQUE_DATA_TYPE * string) {
+    free(*string);
+    (*string) = NULL;
+}
+
+int main() {
+    deque_s deque = create_deque();
+    
+    // do something
+    
+    clear_deque(&deque, destroy_string);
+    
+    // do something anew
+    
+    destroy_deque(&deque, destroy_string);
+    
+    return 0;
+}
+```
+
+### Is empty
+
+Checks if deque is empty.
+
+```c++
+bool is_empty_deque(const deque_s * deque);
+```
+
+```c++
+#define DEQUE_DATA_TYPE int
+#include "deque.h"
+
+int main() {
+    deque_s deque = create_deque();
+    
+    // do something
+    
+    while (!is_empty_deque(&deque)) {
+        // do something while deque is not empty
+    }
+
+    return 0;
+}
+```
+
+### Is full
+
+Checks if deque is full.
+
+```c++
+bool is_full_deque(const deque_s * deque);
+```
+
+```c++
+#define DEQUE_DATA_TYPE int
+#include "deque.h"
+
+int main() {
+    deque_s deque = create_deque();
+        
+    while (!is_full_deque(&deque)) {
+        // do something while deque is not full
+    }
+
+    return 0;
+}
+```
+
+### Peek front
+
+Gets element at the front of the deque without removing it.
+
+```c++
+DEQUE_DATA_TYPE peek_front_deque(const deque_s * deque);
+```
+
+```c++
+#define DEQUE_DATA_TYPE int
+#include "deque.h"
+
+int main() {
+    deque_s deque = create_deque();
+    
+    // do something
+    
+    DEQUE_DATA_TYPE element = peek_front_deque(&deque);
+    
+    // do something with top element
+
+    return 0;
+}
+```
+
+### Peek rear
+
+Gets element at the rear of the deque without removing it.
+
+```c++
+DEQUE_DATA_TYPE peek_rear_deque(const deque_s * deque);
+```
+
+```c++
+#define DEQUE_DATA_TYPE int
+#include "deque.h"
+
+int main() {
+    deque_s deque = create_deque();
+    
+    // do something
+    
+    DEQUE_DATA_TYPE element = peek_rear_deque(&deque);
+    
+    // do something with top element
+
+    return 0;
+}
+```
+
+### Enqueue front
+
+Enqueue the element to the front of the deque.
+
+```c++
+void enqueue_front_deque(deque_s * deque, const DEQUE_DATA_TYPE element);
+```
+
+```c++
+#define DEQUE_DATA_TYPE int
+#include "deque.h"
+
+int main() {
+    deque_s deque = create_deque();
+    
+    DEQUE_DATA_TYPE element = { 0 };
+    enqueue_front_deque(&deque, element);
+    
+    // do something
+
+    return 0;
+}
+```
+
+### Enqueue rear
+
+Enqueue the element to the rear of the deque.
+
+```c++
+void enqueue_rear_deque(deque_s * deque, const DEQUE_DATA_TYPE element);
+```
+
+```c++
+#define DEQUE_DATA_TYPE int
+#include "deque.h"
+
+int main() {
+    deque_s deque = create_deque();
+    
+    DEQUE_DATA_TYPE element = { 0 };
+    enqueue_rear_deque(&deque, element);
+    
+    // do something
+
+    return 0;
+}
+```
+
+### Dequeue front
+
+Dequeues and removes the element at the front of the deque.
+
+```c++
+DEQUE_DATA_TYPE dequeue_front_deque(deque_s * deque);
+```
+
+```c++
+#define DEQUE_DATA_TYPE int
+#include "deque.h"
+
+int main() {
+    deque_s deque = create_deque();
+    
+    // do something
+    
+    DEQUE_DATA_TYPE element = dequeue_front_deque(&deque);
+    
+    // do something with removed element
+
+    return 0;
+}
+```
+
+### Dequeue rear
+
+Dequeues and removes the element at the rear of the deque.
+
+```c++
+DEQUE_DATA_TYPE dequeue_rear_deque(deque_s * deque);
+```
+
+```c++
+#define DEQUE_DATA_TYPE int
+#include "deque.h"
+
+int main() {
+    deque_s deque = create_deque();
+    
+    // do something
+    
+    DEQUE_DATA_TYPE element = dequeue_rear_deque(&deque);
+    
+    // do something with removed element
+
+    return 0;
+}
+```
+
+### Copy
+
+Copies the deque and all its elements into a new structure.
+
+```c++
+typedef DEQUE_DATA_TYPE (*copy_deque_fn) (const DEQUE_DATA_TYPE element);
+deque_s copy_deque(const deque_s * deque, const copy_deque_fn copy);
+```
+
+```c++
+#define DEQUE_DATA_TYPE int
+#include "deque.h"
+
+DEQUE_DATA_TYPE copy_int(const DEQUE_DATA_TYPE integer) {
+    return integer;
+}
+
+int main() {
+    deque_s deque = create_deque();
+    
+    // do something
+    
+    deque_s copy = copy_deque(&deque, copy_int);
+    
+    // do something with deque and copy
+
+    return 0;
+}
+```
+
+### Foreach front
+
+Iterates over and operates on each element in structure using generic arguments from the front.
+
+```c++
+typedef bool (*operate_deque_fn) (DEQUE_DATA_TYPE * element, void * args);
+void foreach_front_deque(deque_s * deque, const operate_deque_fn operate, void * args);
+```
+
+```c++
+#define DEQUE_DATA_TYPE int
+#include "deque.h"
+
+bool increment(DEQUE_DATA_TYPE * integer, void * value) {
+    int * true_value = value;
+    (*integer) += (*true_value);
+    
+    return true; // to iterate over each element
+}
+
+int main() {
+    deque_s deque = create_deque();
+    
+    // do something
+    
+    int value = 42;
+    foreach_front_deque(&deque, increment, &value);
+    
+    // do something with incremented deque elements
+
+    return 0;
+}
+```
+
+### Foreach rear
+
+Iterates over and operates on each element in structure using generic arguments from the rear.
+
+```c++
+typedef bool (*operate_deque_fn) (DEQUE_DATA_TYPE * element, void * args);
+void foreach_rear_deque(deque_s * deque, const operate_deque_fn operate, void * args);
+```
+
+```c++
+#define DEQUE_DATA_TYPE int
+#include "deque.h"
+
+bool increment(DEQUE_DATA_TYPE * integer, void * value) {
+    int * true_value = value;
+    (*integer) += (*true_value);
+    
+    return true; // to iterate over each element
+}
+
+int main() {
+    deque_s deque = create_deque();
+    
+    // do something
+    
+    int value = 42;
+    foreach_rear_deque(&deque, increment, &value);
+    
+    // do something with incremented deque elements
+
+    return 0;
+}
+```
+
+### Map
+
+Map function that maps elements into array and manages it using size and args.
+
+```c++
+void (*manage_deque_fn) (DEQUE_DATA_TYPE * array, const size_t size, void * args);
+void map_deque(deque_s * deque, const manage_deque_fn manage, void * args);
+```
+
+```c++
+#define DEQUE_DATA_TYPE int
+#include "deque.h"
+
+#include <stdlib.h>
+
+int compare_int(const void * a, const void * b) {
+    return (*(DEQUE_DATA_TYPE*)(a)) - (*(DEQUE_DATA_TYPE*)(b));
+}
+
+void sort_int(DEQUE_DATA_TYPE * array, const size_t size, void * compare) {
+    qsort(array, size, sizeof(DEQUE_DATA_TYPE), compare);
+}
+
+int main() {
+    deque_s deque = create_deque();
+    
+    // do something
+    
+    map_deque(&deque, sort_int, compare_int);
+    
+    // do something with sorted deque elements
+
+    return 0;
+}
+```
+
+</details>
