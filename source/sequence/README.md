@@ -1,9 +1,341 @@
 # SEQUENTIAL DATA STRUCTURES
 
-Sequential data structures are structures where the element can be inserted and removed in a sequence. This category is made up of three data structures.
+Sequential data structures are structures where the element can be inserted and removed in a sequence.
 
 ## List of structures:
 
-- [STACK](https://en.wikipedia.org/wiki/Stack_(abstract_data_type)) : Last in first out (LIFO).
-- [QUEUE](https://en.wikipedia.org/wiki/Queue_(abstract_data_type)) : First in first out (FIFO).
-- [DEQUE](https://en.wikipedia.org/wiki/Double-ended_queue) : Adds and removes only from front and back.
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">
+STACK
+</summary>
+
+The stack is a last element in and first out data structure that can be customized using the preprocessor.
+
+```c++
+// macro settings to define stack properties before including library
+#define STACK_DATA_TYPE [type]   // defines the data type to store
+#define STACK_SIZE      [size]   // defines the maximum positive array size
+#define STACK_ASSERT    [assert] // defines the assert function for invalid states
+#include "stack.h"
+```
+
+The stack structure is made out of the array that stores the elements and a size variable to get the current element count.
+
+```c++
+typedef struct stack {
+    STACK_DATA_TYPE elements[STACK_SIZE]; // elements array
+    size_t size;                          // size of stack
+} stack_s;
+```
+
+### Create
+
+Creates an empty stack structure.
+
+```c++
+stack_s create_stack(void);
+```
+
+```c++
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+int main() {
+    stack_s stack = create_stack();
+    
+    // do something
+    
+    return 0;
+}
+```
+
+### Destroy
+
+Destroys stack and all elements in it.
+
+```c++
+typedef void (*destroy_stack_fn) (STACK_DATA_TYPE * element);
+void destroy_stack(stack_s * stack, const destroy_stack_fn destroy);
+```
+
+```c++
+#define STACK_DATA_TYPE char*
+#include "stack.h"
+
+#include <stdlib.h>
+
+void destroy_string(STACK_DATA_TYPE * string) {
+    free(*string);
+    (*string) = NULL;
+}
+
+int main() {
+    stack_s stack = create_stack();
+    
+    // do something
+    
+    destroy_stack(&stack, destroy_string);
+    
+    return 0;
+}
+```
+
+### Clear
+
+Clears all elements in stack.
+
+```c++
+typedef void (*destroy_stack_fn) (STACK_DATA_TYPE * element);
+void clear_stack(stack_s * stack, const destroy_stack_fn destroy);
+```
+
+```c++
+#define STACK_DATA_TYPE char*
+#include "stack.h"
+
+#include <stdlib.h>
+
+void destroy_string(STACK_DATA_TYPE * string) {
+    free(*string);
+    (*string) = NULL;
+}
+
+int main() {
+    stack_s stack = create_stack();
+    
+    // do something
+    
+    clear_stack(&stack, destroy_string);
+    
+    // do something anew
+    
+    destroy_stack(&stack, destroy_string);
+    
+    return 0;
+}
+```
+
+### Is empty
+
+Checks if stack is empty.
+
+```c++
+bool is_empty_stack(const stack_s * stack);
+```
+
+```c++
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+int main() {
+    stack_s stack = create_stack();
+    
+    // do something
+    
+    while (!is_empty_stack(&stack)) {
+        // do something while stack is not empty
+    }
+
+    return 0;
+}
+```
+
+### Is full
+
+Checks if stack is full.
+
+```c++
+bool is_full_stack(const stack_s * stack);
+```
+
+```c++
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+int main() {
+    stack_s stack = create_stack();
+        
+    while (!is_full_stack(&stack)) {
+        // do something while stack is not full
+    }
+
+    return 0;
+}
+```
+
+### Peep
+
+Gets element at the top of the stack without removing it.
+
+```c++
+STACK_DATA_TYPE peep_stack(const stack_s * stack);
+```
+
+```c++
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+int main() {
+    stack_s stack = create_stack();
+    
+    // do something
+    
+    STACK_DATA_TYPE element = peep_stack(&stack);
+    
+    // do something with top element
+
+    return 0;
+}
+```
+
+### Push
+
+Pushes the element to the top of the stack.
+
+```c++
+void push_stack(stack_s * stack, const STACK_DATA_TYPE element);
+```
+
+```c++
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+int main() {
+    stack_s stack = create_stack();
+    
+    STACK_DATA_TYPE element = { 0 };
+    push_stack(&stack, element);
+    
+    // do something
+
+    return 0;
+}
+```
+
+### Pop
+
+Pops and removes the element at the top of the stack.
+
+```c++
+STACK_DATA_TYPE pop_stack(stack_s * stack);
+```
+
+```c++
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+int main() {
+    stack_s stack = create_stack();
+    
+    // do something
+    
+    STACK_DATA_TYPE element = pop_stack(&stack);
+    
+    // do something with removed element
+
+    return 0;
+}
+```
+
+### Copy
+
+Copies the stack and all its elements into a new structure.
+
+```c++
+typedef STACK_DATA_TYPE (*copy_stack_fn) (const STACK_DATA_TYPE element);
+stack_s copy_stack(const stack_s * stack, const copy_stack_fn copy);
+```
+
+```c++
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+STACK_DATA_TYPE copy_int(const STACK_DATA_TYPE integer) {
+    return integer;
+}
+
+int main() {
+    stack_s stack = create_stack();
+    
+    // do something
+    
+    stack_s copy = copy_stack(&stack, copy_int);
+    
+    // do something with stack and copy
+
+    return 0;
+}
+```
+
+### Foreach
+
+Iterates over and operates on each element in structure using generic arguments.
+
+```c++
+typedef bool (*operate_stack_fn) (STACK_DATA_TYPE * element, void * args);
+void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args);
+```
+
+```c++
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+bool increment(STACK_DATA_TYPE * integer, void * value) {
+    int * true_value = value;
+    (*integer) += (*true_value);
+    
+    return true; // to iterate over each element
+}
+
+int main() {
+    stack_s stack = create_stack();
+    
+    // do something
+    
+    int value = 42;
+    foreach_stack(&stack, increment, &value);
+    
+    // do something with incremented stack elements
+
+    return 0;
+}
+```
+
+### Map
+
+Map function that maps elements into array and manages it using size and args.
+
+```c++
+void (*manage_stack_fn) (STACK_DATA_TYPE * array, const size_t size, void * args);
+void map_stack(stack_s * stack, const manage_stack_fn manage, void * args);
+```
+
+```c++
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+#include <stdlib.h>
+
+int compare_int(const void * a, const void * b) {
+    return (*(STACK_DATA_TYPE*)(a)) - (*(STACK_DATA_TYPE*)(b));
+}
+
+void sort_int(STACK_DATA_TYPE * array, const size_t size, void * compare) {
+    qsort(array, size, sizeof(STACK_DATA_TYPE), compare);
+}
+
+int main() {
+    stack_s stack = create_stack();
+    
+    // do something
+    
+    map_stack(&stack, sort_int, compare_int);
+    
+    // do something with sorted stack elements
+
+    return 0;
+}
+```
+
+</details>
