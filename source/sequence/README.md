@@ -27,7 +27,9 @@ typedef struct stack {
 } stack_s;
 ```
 
-### create
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">create</summary>
 
 Creates an empty stack structure.
 
@@ -48,7 +50,11 @@ int main() {
 }
 ```
 
-### destroy
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">destroy</summary>
 
 Destroys stack and all elements in it.
 
@@ -79,7 +85,11 @@ int main() {
 }
 ```
 
-### clear
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">clear</summary>
 
 Clears all elements in stack.
 
@@ -114,7 +124,11 @@ int main() {
 }
 ```
 
-### copy
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">copy</summary>
 
 Copies the stack and all its elements into a new structure.
 
@@ -144,7 +158,11 @@ int main() {
 }
 ```
 
-### is empty
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">is empty</summary>
 
 Checks if stack is empty.
 
@@ -169,7 +187,11 @@ int main() {
 }
 ```
 
-### is full
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">is full</summary>
 
 Checks if stack is full.
 
@@ -192,7 +214,11 @@ int main() {
 }
 ```
 
-### foreach
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">foreach</summary>
 
 Iterates over and operates on each element in structure using generic arguments.
 
@@ -226,7 +252,11 @@ int main() {
 }
 ```
 
-### map
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">map</summary>
 
 Map function that maps elements into array and manages it using size and args.
 
@@ -262,7 +292,11 @@ int main() {
 }
 ```
 
-### peep
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">peep</summary>
 
 Gets element at the top of the stack without removing it.
 
@@ -287,7 +321,11 @@ int main() {
 }
 ```
 
-### push
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">push</summary>
 
 Pushes the element to the top of the stack.
 
@@ -311,7 +349,11 @@ int main() {
 }
 ```
 
-### pop
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">pop</summary>
 
 Pops and removes the element at the top of the stack.
 
@@ -335,6 +377,8 @@ int main() {
     return 0;
 }
 ```
+
+</details>
 
 </details>
 
@@ -363,7 +407,9 @@ typedef struct queue {
 
 ```
 
-### create
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">create</summary>
 
 Creates an empty queue structure.
 
@@ -384,7 +430,11 @@ int main() {
 }
 ```
 
-### destroy
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">destroy</summary>
 
 Destroys queue and all elements in it.
 
@@ -415,7 +465,11 @@ int main() {
 }
 ```
 
-### clear
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">clear</summary>
 
 Clears all elements in queue.
 
@@ -450,7 +504,11 @@ int main() {
 }
 ```
 
-### copy
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">copy</summary>
 
 Copies the queue and all its elements into a new structure.
 
@@ -480,7 +538,11 @@ int main() {
 }
 ```
 
-### is empty
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">is empty</summary>
 
 Checks if queue is empty.
 
@@ -505,7 +567,11 @@ int main() {
 }
 ```
 
-### is full
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">is full</summary>
 
 Checks if queue is full.
 
@@ -528,7 +594,11 @@ int main() {
 }
 ```
 
-### foreach
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">foreach</summary>
 
 Iterates over and operates on each element in structure using generic arguments.
 
@@ -562,7 +632,11 @@ int main() {
 }
 ```
 
-### map
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">map</summary>
 
 Map function that maps elements into array and manages it using size and args.
 
@@ -598,7 +672,11 @@ int main() {
 }
 ```
 
-### peek
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">peek</summary>
 
 Gets element at the beginning of the queue without removing it.
 
@@ -623,7 +701,11 @@ int main() {
 }
 ```
 
-### enqueue
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">enqueue</summary>
 
 Enqueues the element to the end of the queue.
 
@@ -647,7 +729,11 @@ int main() {
 }
 ```
 
-### dequeue
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">dequeue</summary>
 
 Dequeues and removes the element at the beginning of the queue.
 
@@ -671,6 +757,8 @@ int main() {
     return 0;
 }
 ```
+
+</details>
 
 </details>
 
@@ -699,7 +787,9 @@ typedef struct deque {
 
 ```
 
-### create
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">create</summary>
 
 Creates an empty deque structure.
 
@@ -720,7 +810,11 @@ int main() {
 }
 ```
 
-### destroy
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">destroy</summary>
 
 Destroys deque and all elements in it.
 
@@ -751,7 +845,11 @@ int main() {
 }
 ```
 
-### clear
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">clear</summary>
 
 Clears all elements in deque.
 
@@ -786,7 +884,11 @@ int main() {
 }
 ```
 
-### copy
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">copy</summary>
 
 Copies the deque and all its elements into a new structure.
 
@@ -816,7 +918,11 @@ int main() {
 }
 ```
 
-### is empty
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">is empty</summary>
 
 Checks if deque is empty.
 
@@ -841,7 +947,11 @@ int main() {
 }
 ```
 
-### is full
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">is full</summary>
 
 Checks if deque is full.
 
@@ -864,7 +974,11 @@ int main() {
 }
 ```
 
-### foreach front
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">foreach front</summary>
 
 Iterates over and operates on each element in structure using generic arguments from the front.
 
@@ -898,7 +1012,11 @@ int main() {
 }
 ```
 
-### foreach rear
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">foreach rear</summary>
 
 Iterates over and operates on each element in structure using generic arguments from the rear.
 
@@ -932,7 +1050,11 @@ int main() {
 }
 ```
 
-### map
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">map</summary>
 
 Map function that maps elements into array and manages it using size and args.
 
@@ -968,7 +1090,11 @@ int main() {
 }
 ```
 
-### peek front
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">peek front</summary>
 
 Gets element at the front of the deque without removing it.
 
@@ -993,7 +1119,11 @@ int main() {
 }
 ```
 
-### peek rear
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">peek rear</summary>
 
 Gets element at the rear of the deque without removing it.
 
@@ -1018,7 +1148,11 @@ int main() {
 }
 ```
 
-### enqueue front
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">enqueue front</summary>
 
 Enqueue the element to the front of the deque.
 
@@ -1042,7 +1176,11 @@ int main() {
 }
 ```
 
-### enqueue rear
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">enqueue rear</summary>
 
 Enqueue the element to the rear of the deque.
 
@@ -1066,7 +1204,11 @@ int main() {
 }
 ```
 
-### dequeue front
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">dequeue front</summary>
 
 Dequeues and removes the element at the front of the deque.
 
@@ -1091,7 +1233,11 @@ int main() {
 }
 ```
 
-### dequeue rear
+</details>
+
+<details>
+
+<summary style="font-size: 1.25em; font-weight: bold">dequeue rear</summary>
 
 Dequeues and removes the element at the rear of the deque.
 
@@ -1115,5 +1261,7 @@ int main() {
     return 0;
 }
 ```
+
+</details>
 
 </details>
