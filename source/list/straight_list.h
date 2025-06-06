@@ -61,7 +61,7 @@ typedef void                    (*manage_straight_list_fn)  (STRAIGHT_LIST_DATA_
 
 #ifndef STRAIGHT_LIST_SIZE
 
-#define STRAIGHT_LIST_SIZE (1 << 5)
+#define STRAIGHT_LIST_SIZE (1 << 10)
 
 #elif STRAIGHT_LIST_SIZE <= 0
 
@@ -76,13 +76,13 @@ typedef void                    (*manage_straight_list_fn)  (STRAIGHT_LIST_DATA_
 /// to the top of the array based 'loaded stack'
 /// @brief The straight list is a linked list.
 typedef struct straight_list {
-    size_t next[STRAIGHT_LIST_SIZE]; // array to store next indexes
     STRAIGHT_LIST_DATA_TYPE elements[STRAIGHT_LIST_SIZE]; // array to store elements
+    size_t next[STRAIGHT_LIST_SIZE]; // array to store next indexes
     size_t size, head; // list size and head index parameter
     size_t empty_size, empty_head; // empty stack's size and head
 } straight_list_s;
 
-/// @brief Creates an empty straight list of zero size.
+/// @brief Creates an empty straight list.
 /// @return Straight list structure.
 static inline straight_list_s create_straight_list(void) {
     return (straight_list_s) { .empty_head = 0, .empty_size = 0, .head = 0, .size = 0, };
@@ -212,7 +212,7 @@ static inline void map_straight_list(straight_list_s * list, const manage_straig
     manage(list->elements, list->size, args);
 }
 
-/// @brief Inserts an element at any index in the list.
+/// @brief Inserts element at index position less than or equal to list's size.
 /// @param list Pointer to straight list structure.
 /// @param index Readonly zeero based index to insert element at.
 /// @param element Readonly element to insert into list.
@@ -241,7 +241,7 @@ static inline void insert_at_straight_list(straight_list_s * list, const size_t 
     list->size++;
 }
 
-/// @brief Gets element at any index in the list.
+/// @brief Gets element at index position less than list's size without removing it.
 /// @param list Readonly straight list structure.
 /// @param index Readonly zero based index of element in list.
 /// @return Element at index in list.
@@ -260,11 +260,12 @@ static inline STRAIGHT_LIST_DATA_TYPE get_straight_list(const straight_list_s * 
     return list->elements[current];
 }
 
-/// @brief Removes first element in straight list that matches parameter element comparison.
-/// @param list Pointer to straight list structure.
-/// @param element Readonly element to compare and remove from list.
-/// @param compare Readonly function pointer that compares element parameter to elements in list. Returns zero if equal.
+/// @brief Removes first instance of element based on zero equal comparison.
+/// @param list Straight list structure.
+/// @param element Element to compare and remove from list.
+/// @param compare Function pointer that compares element parameter to elements in list. Returns zero if equal.
 /// @return Removed element from list.
+/// @note Returns false assertion and exit failure if no element is found.
 static inline STRAIGHT_LIST_DATA_TYPE remove_first_straight_list(straight_list_s * list, const STRAIGHT_LIST_DATA_TYPE element, const compare_straight_list_fn compare) {
     STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
     STRAIGHT_LIST_ASSERT(compare && "[ERROR] 'compare' parameter is NULL.");
@@ -303,7 +304,7 @@ static inline STRAIGHT_LIST_DATA_TYPE remove_first_straight_list(straight_list_s
     exit(EXIT_FAILURE);
 }
 
-/// @brief Removes element at index in list.
+/// @brief Removes element at index less than list's size.
 /// @param list Pointer to straight list structure.
 /// @param index Readonly zero based index to remove element at.
 /// @return Removed element from list.
@@ -395,7 +396,7 @@ static inline void splice_straight_list(straight_list_s * restrict destination, 
     source->empty_size = source->head = 0;
 }
 
-/// @brief Splits list and returns new list with specified elements.
+/// @brief Splits list and returns smaller list based on index less than list's size and new size.
 /// @param list Pointer to straight list structure.
 /// @param index Zero based index to start split from.
 /// @param size Non-zero size of new split list.

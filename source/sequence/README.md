@@ -27,7 +27,7 @@ typedef struct stack {
 } stack_s;
 ```
 
-### Create
+### create
 
 Creates an empty stack structure.
 
@@ -48,7 +48,7 @@ int main() {
 }
 ```
 
-### Destroy
+### destroy
 
 Destroys stack and all elements in it.
 
@@ -79,7 +79,7 @@ int main() {
 }
 ```
 
-### Clear
+### clear
 
 Clears all elements in stack.
 
@@ -114,129 +114,7 @@ int main() {
 }
 ```
 
-### Is empty
-
-Checks if stack is empty.
-
-```c++
-bool is_empty_stack(const stack_s * stack);
-```
-
-```c++
-#define STACK_DATA_TYPE int
-#include "stack.h"
-
-int main() {
-    stack_s stack = create_stack();
-    
-    // do something
-    
-    while (!is_empty_stack(&stack)) {
-        // do something while stack is not empty
-    }
-
-    return 0;
-}
-```
-
-### Is full
-
-Checks if stack is full.
-
-```c++
-bool is_full_stack(const stack_s * stack);
-```
-
-```c++
-#define STACK_DATA_TYPE int
-#include "stack.h"
-
-int main() {
-    stack_s stack = create_stack();
-        
-    while (!is_full_stack(&stack)) {
-        // do something while stack is not full
-    }
-
-    return 0;
-}
-```
-
-### Peep
-
-Gets element at the top of the stack without removing it.
-
-```c++
-STACK_DATA_TYPE peep_stack(const stack_s * stack);
-```
-
-```c++
-#define STACK_DATA_TYPE int
-#include "stack.h"
-
-int main() {
-    stack_s stack = create_stack();
-    
-    // do something
-    
-    STACK_DATA_TYPE element = peep_stack(&stack);
-    
-    // do something with top element
-
-    return 0;
-}
-```
-
-### Push
-
-Pushes the element to the top of the stack.
-
-```c++
-void push_stack(stack_s * stack, const STACK_DATA_TYPE element);
-```
-
-```c++
-#define STACK_DATA_TYPE int
-#include "stack.h"
-
-int main() {
-    stack_s stack = create_stack();
-    
-    STACK_DATA_TYPE element = { 0 };
-    push_stack(&stack, element);
-    
-    // do something
-
-    return 0;
-}
-```
-
-### Pop
-
-Pops and removes the element at the top of the stack.
-
-```c++
-STACK_DATA_TYPE pop_stack(stack_s * stack);
-```
-
-```c++
-#define STACK_DATA_TYPE int
-#include "stack.h"
-
-int main() {
-    stack_s stack = create_stack();
-    
-    // do something
-    
-    STACK_DATA_TYPE element = pop_stack(&stack);
-    
-    // do something with removed element
-
-    return 0;
-}
-```
-
-### Copy
+### copy
 
 Copies the stack and all its elements into a new structure.
 
@@ -266,7 +144,55 @@ int main() {
 }
 ```
 
-### Foreach
+### is empty
+
+Checks if stack is empty.
+
+```c++
+bool is_empty_stack(const stack_s * stack);
+```
+
+```c++
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+int main() {
+    stack_s stack = create_stack();
+    
+    // do something
+    
+    while (!is_empty_stack(&stack)) {
+        // do something while stack is not empty
+    }
+
+    return 0;
+}
+```
+
+### is full
+
+Checks if stack is full.
+
+```c++
+bool is_full_stack(const stack_s * stack);
+```
+
+```c++
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+int main() {
+    stack_s stack = create_stack();
+        
+    while (!is_full_stack(&stack)) {
+        // do something while stack is not full
+    }
+
+    return 0;
+}
+```
+
+### foreach
 
 Iterates over and operates on each element in structure using generic arguments.
 
@@ -300,7 +226,7 @@ int main() {
 }
 ```
 
-### Map
+### map
 
 Map function that maps elements into array and manages it using size and args.
 
@@ -336,6 +262,80 @@ int main() {
 }
 ```
 
+### peep
+
+Gets element at the top of the stack without removing it.
+
+```c++
+STACK_DATA_TYPE peep_stack(const stack_s * stack);
+```
+
+```c++
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+int main() {
+    stack_s stack = create_stack();
+    
+    // do something
+    
+    STACK_DATA_TYPE element = peep_stack(&stack);
+    
+    // do something with top element
+
+    return 0;
+}
+```
+
+### push
+
+Pushes the element to the top of the stack.
+
+```c++
+void push_stack(stack_s * stack, const STACK_DATA_TYPE element);
+```
+
+```c++
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+int main() {
+    stack_s stack = create_stack();
+    
+    STACK_DATA_TYPE element = { 0 };
+    push_stack(&stack, element);
+    
+    // do something
+
+    return 0;
+}
+```
+
+### pop
+
+Pops and removes the element at the top of the stack.
+
+```c++
+STACK_DATA_TYPE pop_stack(stack_s * stack);
+```
+
+```c++
+#define STACK_DATA_TYPE int
+#include "stack.h"
+
+int main() {
+    stack_s stack = create_stack();
+    
+    // do something
+    
+    STACK_DATA_TYPE element = pop_stack(&stack);
+    
+    // do something with removed element
+
+    return 0;
+}
+```
+
 </details>
 
 <details>
@@ -363,7 +363,7 @@ typedef struct queue {
 
 ```
 
-### Create
+### create
 
 Creates an empty queue structure.
 
@@ -384,7 +384,7 @@ int main() {
 }
 ```
 
-### Destroy
+### destroy
 
 Destroys queue and all elements in it.
 
@@ -415,7 +415,7 @@ int main() {
 }
 ```
 
-### Clear
+### clear
 
 Clears all elements in queue.
 
@@ -450,129 +450,7 @@ int main() {
 }
 ```
 
-### Is empty
-
-Checks if queue is empty.
-
-```c++
-bool is_empty_queue(const queue_s * queue);
-```
-
-```c++
-#define QUEUE_DATA_TYPE int
-#include "queue.h"
-
-int main() {
-    queue_s queue = create_queue();
-    
-    // do something
-    
-    while (!is_empty_queue(&queue)) {
-        // do something while queue is not empty
-    }
-
-    return 0;
-}
-```
-
-### Is full
-
-Checks if queue is full.
-
-```c++
-bool is_full_queue(const queue_s * queue);
-```
-
-```c++
-#define QUEUE_DATA_TYPE int
-#include "queue.h"
-
-int main() {
-    queue_s queue = create_queue();
-        
-    while (!is_full_queue(&queue)) {
-        // do something while queue is not full
-    }
-
-    return 0;
-}
-```
-
-### Peek
-
-Gets element at the beginning of the queue without removing it.
-
-```c++
-QUEUE_DATA_TYPE peek_queue(const queue_s * queue);
-```
-
-```c++
-#define QUEUE_DATA_TYPE int
-#include "queue.h"
-
-int main() {
-    queue_s queue = create_queue();
-    
-    // do something
-    
-    QUEUE_DATA_TYPE element = peek_queue(&queue);
-    
-    // do something with top element
-
-    return 0;
-}
-```
-
-### Enqueue
-
-Enqueues the element to the end of the queue.
-
-```c++
-void enqueue_queue(queue_s * queue, const QUEUE_DATA_TYPE element);
-```
-
-```c++
-#define QUEUE_DATA_TYPE int
-#include "queue.h"
-
-int main() {
-    queue_s queue = create_queue();
-    
-    QUEUE_DATA_TYPE element = { 0 };
-    enqueue_queue(&queue, element);
-    
-    // do something
-
-    return 0;
-}
-```
-
-### Dequeue
-
-Dequeues and removes the element at the beginning of the queue.
-
-```c++
-QUEUE_DATA_TYPE dequeue_queue(queue_s * queue);
-```
-
-```c++
-#define QUEUE_DATA_TYPE int
-#include "queue.h"
-
-int main() {
-    queue_s queue = create_queue();
-    
-    // do something
-    
-    QUEUE_DATA_TYPE element = dequeue_queue(&queue);
-    
-    // do something with removed element
-
-    return 0;
-}
-```
-
-### Copy
+### copy
 
 Copies the queue and all its elements into a new structure.
 
@@ -602,7 +480,55 @@ int main() {
 }
 ```
 
-### Foreach
+### is empty
+
+Checks if queue is empty.
+
+```c++
+bool is_empty_queue(const queue_s * queue);
+```
+
+```c++
+#define QUEUE_DATA_TYPE int
+#include "queue.h"
+
+int main() {
+    queue_s queue = create_queue();
+    
+    // do something
+    
+    while (!is_empty_queue(&queue)) {
+        // do something while queue is not empty
+    }
+
+    return 0;
+}
+```
+
+### is full
+
+Checks if queue is full.
+
+```c++
+bool is_full_queue(const queue_s * queue);
+```
+
+```c++
+#define QUEUE_DATA_TYPE int
+#include "queue.h"
+
+int main() {
+    queue_s queue = create_queue();
+        
+    while (!is_full_queue(&queue)) {
+        // do something while queue is not full
+    }
+
+    return 0;
+}
+```
+
+### foreach
 
 Iterates over and operates on each element in structure using generic arguments.
 
@@ -636,7 +562,7 @@ int main() {
 }
 ```
 
-### Map
+### map
 
 Map function that maps elements into array and manages it using size and args.
 
@@ -672,6 +598,80 @@ int main() {
 }
 ```
 
+### peek
+
+Gets element at the beginning of the queue without removing it.
+
+```c++
+QUEUE_DATA_TYPE peek_queue(const queue_s * queue);
+```
+
+```c++
+#define QUEUE_DATA_TYPE int
+#include "queue.h"
+
+int main() {
+    queue_s queue = create_queue();
+    
+    // do something
+    
+    QUEUE_DATA_TYPE element = peek_queue(&queue);
+    
+    // do something with top element
+
+    return 0;
+}
+```
+
+### enqueue
+
+Enqueues the element to the end of the queue.
+
+```c++
+void enqueue_queue(queue_s * queue, const QUEUE_DATA_TYPE element);
+```
+
+```c++
+#define QUEUE_DATA_TYPE int
+#include "queue.h"
+
+int main() {
+    queue_s queue = create_queue();
+    
+    QUEUE_DATA_TYPE element = { 0 };
+    enqueue_queue(&queue, element);
+    
+    // do something
+
+    return 0;
+}
+```
+
+### dequeue
+
+Dequeues and removes the element at the beginning of the queue.
+
+```c++
+QUEUE_DATA_TYPE dequeue_queue(queue_s * queue);
+```
+
+```c++
+#define QUEUE_DATA_TYPE int
+#include "queue.h"
+
+int main() {
+    queue_s queue = create_queue();
+    
+    // do something
+    
+    QUEUE_DATA_TYPE element = dequeue_queue(&queue);
+    
+    // do something with removed element
+
+    return 0;
+}
+```
+
 </details>
 
 <details>
@@ -699,7 +699,7 @@ typedef struct deque {
 
 ```
 
-### Create
+### create
 
 Creates an empty deque structure.
 
@@ -720,7 +720,7 @@ int main() {
 }
 ```
 
-### Destroy
+### destroy
 
 Destroys deque and all elements in it.
 
@@ -751,7 +751,7 @@ int main() {
 }
 ```
 
-### Clear
+### clear
 
 Clears all elements in deque.
 
@@ -786,203 +786,7 @@ int main() {
 }
 ```
 
-### Is empty
-
-Checks if deque is empty.
-
-```c++
-bool is_empty_deque(const deque_s * deque);
-```
-
-```c++
-#define DEQUE_DATA_TYPE int
-#include "deque.h"
-
-int main() {
-    deque_s deque = create_deque();
-    
-    // do something
-    
-    while (!is_empty_deque(&deque)) {
-        // do something while deque is not empty
-    }
-
-    return 0;
-}
-```
-
-### Is full
-
-Checks if deque is full.
-
-```c++
-bool is_full_deque(const deque_s * deque);
-```
-
-```c++
-#define DEQUE_DATA_TYPE int
-#include "deque.h"
-
-int main() {
-    deque_s deque = create_deque();
-        
-    while (!is_full_deque(&deque)) {
-        // do something while deque is not full
-    }
-
-    return 0;
-}
-```
-
-### Peek front
-
-Gets element at the front of the deque without removing it.
-
-```c++
-DEQUE_DATA_TYPE peek_front_deque(const deque_s * deque);
-```
-
-```c++
-#define DEQUE_DATA_TYPE int
-#include "deque.h"
-
-int main() {
-    deque_s deque = create_deque();
-    
-    // do something
-    
-    DEQUE_DATA_TYPE element = peek_front_deque(&deque);
-    
-    // do something with top element
-
-    return 0;
-}
-```
-
-### Peek rear
-
-Gets element at the rear of the deque without removing it.
-
-```c++
-DEQUE_DATA_TYPE peek_rear_deque(const deque_s * deque);
-```
-
-```c++
-#define DEQUE_DATA_TYPE int
-#include "deque.h"
-
-int main() {
-    deque_s deque = create_deque();
-    
-    // do something
-    
-    DEQUE_DATA_TYPE element = peek_rear_deque(&deque);
-    
-    // do something with top element
-
-    return 0;
-}
-```
-
-### Enqueue front
-
-Enqueue the element to the front of the deque.
-
-```c++
-void enqueue_front_deque(deque_s * deque, const DEQUE_DATA_TYPE element);
-```
-
-```c++
-#define DEQUE_DATA_TYPE int
-#include "deque.h"
-
-int main() {
-    deque_s deque = create_deque();
-    
-    DEQUE_DATA_TYPE element = { 0 };
-    enqueue_front_deque(&deque, element);
-    
-    // do something
-
-    return 0;
-}
-```
-
-### Enqueue rear
-
-Enqueue the element to the rear of the deque.
-
-```c++
-void enqueue_rear_deque(deque_s * deque, const DEQUE_DATA_TYPE element);
-```
-
-```c++
-#define DEQUE_DATA_TYPE int
-#include "deque.h"
-
-int main() {
-    deque_s deque = create_deque();
-    
-    DEQUE_DATA_TYPE element = { 0 };
-    enqueue_rear_deque(&deque, element);
-    
-    // do something
-
-    return 0;
-}
-```
-
-### Dequeue front
-
-Dequeues and removes the element at the front of the deque.
-
-```c++
-DEQUE_DATA_TYPE dequeue_front_deque(deque_s * deque);
-```
-
-```c++
-#define DEQUE_DATA_TYPE int
-#include "deque.h"
-
-int main() {
-    deque_s deque = create_deque();
-    
-    // do something
-    
-    DEQUE_DATA_TYPE element = dequeue_front_deque(&deque);
-    
-    // do something with removed element
-
-    return 0;
-}
-```
-
-### Dequeue rear
-
-Dequeues and removes the element at the rear of the deque.
-
-```c++
-DEQUE_DATA_TYPE dequeue_rear_deque(deque_s * deque);
-```
-
-```c++
-#define DEQUE_DATA_TYPE int
-#include "deque.h"
-
-int main() {
-    deque_s deque = create_deque();
-    
-    // do something
-    
-    DEQUE_DATA_TYPE element = dequeue_rear_deque(&deque);
-    
-    // do something with removed element
-
-    return 0;
-}
-```
-
-### Copy
+### copy
 
 Copies the deque and all its elements into a new structure.
 
@@ -1012,7 +816,55 @@ int main() {
 }
 ```
 
-### Foreach front
+### is empty
+
+Checks if deque is empty.
+
+```c++
+bool is_empty_deque(const deque_s * deque);
+```
+
+```c++
+#define DEQUE_DATA_TYPE int
+#include "deque.h"
+
+int main() {
+    deque_s deque = create_deque();
+    
+    // do something
+    
+    while (!is_empty_deque(&deque)) {
+        // do something while deque is not empty
+    }
+
+    return 0;
+}
+```
+
+### is full
+
+Checks if deque is full.
+
+```c++
+bool is_full_deque(const deque_s * deque);
+```
+
+```c++
+#define DEQUE_DATA_TYPE int
+#include "deque.h"
+
+int main() {
+    deque_s deque = create_deque();
+        
+    while (!is_full_deque(&deque)) {
+        // do something while deque is not full
+    }
+
+    return 0;
+}
+```
+
+### foreach front
 
 Iterates over and operates on each element in structure using generic arguments from the front.
 
@@ -1046,7 +898,7 @@ int main() {
 }
 ```
 
-### Foreach rear
+### foreach rear
 
 Iterates over and operates on each element in structure using generic arguments from the rear.
 
@@ -1080,7 +932,7 @@ int main() {
 }
 ```
 
-### Map
+### map
 
 Map function that maps elements into array and manages it using size and args.
 
@@ -1111,6 +963,154 @@ int main() {
     map_deque(&deque, sort_int, compare_int);
     
     // do something with sorted deque elements
+
+    return 0;
+}
+```
+
+### peek front
+
+Gets element at the front of the deque without removing it.
+
+```c++
+DEQUE_DATA_TYPE peek_front_deque(const deque_s * deque);
+```
+
+```c++
+#define DEQUE_DATA_TYPE int
+#include "deque.h"
+
+int main() {
+    deque_s deque = create_deque();
+    
+    // do something
+    
+    DEQUE_DATA_TYPE element = peek_front_deque(&deque);
+    
+    // do something with top element
+
+    return 0;
+}
+```
+
+### peek rear
+
+Gets element at the rear of the deque without removing it.
+
+```c++
+DEQUE_DATA_TYPE peek_rear_deque(const deque_s * deque);
+```
+
+```c++
+#define DEQUE_DATA_TYPE int
+#include "deque.h"
+
+int main() {
+    deque_s deque = create_deque();
+    
+    // do something
+    
+    DEQUE_DATA_TYPE element = peek_rear_deque(&deque);
+    
+    // do something with top element
+
+    return 0;
+}
+```
+
+### enqueue front
+
+Enqueue the element to the front of the deque.
+
+```c++
+void enqueue_front_deque(deque_s * deque, const DEQUE_DATA_TYPE element);
+```
+
+```c++
+#define DEQUE_DATA_TYPE int
+#include "deque.h"
+
+int main() {
+    deque_s deque = create_deque();
+    
+    DEQUE_DATA_TYPE element = { 0 };
+    enqueue_front_deque(&deque, element);
+    
+    // do something
+
+    return 0;
+}
+```
+
+### enqueue rear
+
+Enqueue the element to the rear of the deque.
+
+```c++
+void enqueue_rear_deque(deque_s * deque, const DEQUE_DATA_TYPE element);
+```
+
+```c++
+#define DEQUE_DATA_TYPE int
+#include "deque.h"
+
+int main() {
+    deque_s deque = create_deque();
+    
+    DEQUE_DATA_TYPE element = { 0 };
+    enqueue_rear_deque(&deque, element);
+    
+    // do something
+
+    return 0;
+}
+```
+
+### dequeue front
+
+Dequeues and removes the element at the front of the deque.
+
+```c++
+DEQUE_DATA_TYPE dequeue_front_deque(deque_s * deque);
+```
+
+```c++
+#define DEQUE_DATA_TYPE int
+#include "deque.h"
+
+int main() {
+    deque_s deque = create_deque();
+    
+    // do something
+    
+    DEQUE_DATA_TYPE element = dequeue_front_deque(&deque);
+    
+    // do something with removed element
+
+    return 0;
+}
+```
+
+### dequeue rear
+
+Dequeues and removes the element at the rear of the deque.
+
+```c++
+DEQUE_DATA_TYPE dequeue_rear_deque(deque_s * deque);
+```
+
+```c++
+#define DEQUE_DATA_TYPE int
+#include "deque.h"
+
+int main() {
+    deque_s deque = create_deque();
+    
+    // do something
+    
+    DEQUE_DATA_TYPE element = dequeue_rear_deque(&deque);
+    
+    // do something with removed element
 
     return 0;
 }
