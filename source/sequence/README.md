@@ -6,7 +6,7 @@ Sequential data structures are structures where the element can be inserted and 
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">STACK</summary>
+<summary style="font-size: 1.5em; font-weight: bold">STACK</summary>
 
 The stack is a last element in and first out data structure that can be customized using the preprocessor.
 
@@ -384,7 +384,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">QUEUE</summary>
+<summary style="font-size: 1.5em; font-weight: bold">QUEUE</summary>
 
 The queue is a first element in and first out data structure that can be customized using the preprocessor.
 
@@ -764,7 +764,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">DEQUE</summary>
+<summary style="font-size: 1.5em; font-weight: bold">DEQUE</summary>
 
 The deque is a double ended queue that allows elements to be added and removed from its front and rear. It can be customized using the preprocessor.
 
