@@ -29,7 +29,7 @@ typedef struct straight_list {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">create</summary>
+<summary style="font-size: 1.5em;">create</summary>
 
 Creates an empty list structure.
 
@@ -54,7 +54,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">destroy</summary>
+<summary style="font-size: 1.5em;">destroy</summary>
 
 Destroys list and all elements in it.
 
@@ -89,7 +89,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">clear</summary>
+<summary style="font-size: 1.5em;">clear</summary>
 
 Clears all elements in list.
 
@@ -128,7 +128,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">copy</summary>
+<summary style="font-size: 1.5em;">copy</summary>
 
 Copies the list and all its elements into a new structure.
 
@@ -162,7 +162,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">is empty</summary>
+<summary style="font-size: 1.5em;">is empty</summary>
 
 Checks if list is empty.
 
@@ -191,7 +191,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">is full</summary>
+<summary style="font-size: 1.5em;">is full</summary>
 
 Checks if list is full.
 
@@ -218,7 +218,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">foreach</summary>
+<summary style="font-size: 1.5em;">foreach</summary>
 
 Iterates over and operates on each element in structure using generic arguments.
 
@@ -256,7 +256,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">map</summary>
+<summary style="font-size: 1.5em;">map</summary>
 
 Map function that maps elements into array and manages it using size and args.
 
@@ -296,7 +296,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">insert at</summary>
+<summary style="font-size: 1.5em;">insert at</summary>
 
 Inserts element at index position less than or equal to list's size.
 
@@ -324,7 +324,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">get</summary>
+<summary style="font-size: 1.5em;">get</summary>
 
 Gets element at index position less than list's size without removing it.
 
@@ -353,7 +353,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">remove first</summary>
+<summary style="font-size: 1.5em;">remove first</summary>
 
 Removes first instance of element based on zero equal comparison.
 Returns false assertion and exit failure if no element is found.
@@ -389,7 +389,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">remove at</summary>
+<summary style="font-size: 1.5em;">remove at</summary>
 
 Removes element at index less than list's size.
 
@@ -418,7 +418,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">reverse</summary>
+<summary style="font-size: 1.5em;">reverse</summary>
 
 Reverses list (I mean, yeah).
 
@@ -447,7 +447,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">splice</summary>
+<summary style="font-size: 1.5em;">splice</summary>
 
 Splices source into destination list while clearing source list.
 
@@ -477,7 +477,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">split</summary>
+<summary style="font-size: 1.5em;">split</summary>
 
 Splits list and returns smaller list based on index less than list's size and new size.
 
@@ -533,7 +533,7 @@ typedef struct circular_list {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">create</summary>
+<summary style="font-size: 1.5em;">create</summary>
 
 Creates an empty list structure.
 
@@ -558,7 +558,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">destroy</summary>
+<summary style="font-size: 1.5em;">destroy</summary>
 
 Destroys list and all elements in it.
 
@@ -593,7 +593,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">clear</summary>
+<summary style="font-size: 1.5em;">clear</summary>
 
 Clears all elements in list.
 
@@ -632,7 +632,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">copy</summary>
+<summary style="font-size: 1.5em;">copy</summary>
 
 Copies the list and all its elements into a new structure.
 
@@ -666,7 +666,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">is empty</summary>
+<summary style="font-size: 1.5em;">is empty</summary>
 
 Checks if list is empty.
 
@@ -695,7 +695,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">is full</summary>
+<summary style="font-size: 1.5em;">is full</summary>
 
 Checks if list is full.
 
@@ -722,7 +722,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">foreach</summary>
+<summary style="font-size: 1.5em;">foreach</summary>
 
 Iterates over and operates on each element in structure using generic arguments.
 
@@ -760,7 +760,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">map</summary>
+<summary style="font-size: 1.5em;">map</summary>
 
 Map function that maps elements into array and manages it using size and args.
 
@@ -800,7 +800,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">insert at</summary>
+<summary style="font-size: 1.5em;">insert at</summary>
 
 Inserts element at index position less than or equal to list's size.
 
@@ -828,7 +828,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">get</summary>
+<summary style="font-size: 1.5em;">get</summary>
 
 Gets element at index position less than list's size without removing it.
 
@@ -857,7 +857,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">remove first</summary>
+<summary style="font-size: 1.5em;">remove first</summary>
 
 Removes first instance of element based on zero equal comparison.
 Returns false assertion and exit failure if no element is found.
@@ -893,7 +893,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">remove at</summary>
+<summary style="font-size: 1.5em;">remove at</summary>
 
 Removes element at index less than list's size.
 
@@ -922,7 +922,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">reverse</summary>
+<summary style="font-size: 1.5em;">reverse</summary>
 
 Reverses list (I mean, yeah).
 
@@ -951,7 +951,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">shift</summary>
+<summary style="font-size: 1.5em;">shift</summary>
 
 Shifts list to next number of elements.
 
@@ -980,7 +980,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">splice</summary>
+<summary style="font-size: 1.5em;">splice</summary>
 
 Splices source into destination list while clearing source list.
 
@@ -1010,7 +1010,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">split</summary>
+<summary style="font-size: 1.5em;">split</summary>
 
 Splits list and returns smaller list based on index less than list's size and new size.
 
@@ -1065,7 +1065,7 @@ typedef struct double_list {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">create</summary>
+<summary style="font-size: 1.5em;">create</summary>
 
 Creates an empty list structure.
 
@@ -1090,7 +1090,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">destroy</summary>
+<summary style="font-size: 1.5em;">destroy</summary>
 
 Destroys list and all elements in it.
 
@@ -1125,7 +1125,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">clear</summary>
+<summary style="font-size: 1.5em;">clear</summary>
 
 Clears all elements in list.
 
@@ -1164,7 +1164,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">copy</summary>
+<summary style="font-size: 1.5em;">copy</summary>
 
 Copies the list and all its elements into a new structure.
 
@@ -1198,7 +1198,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">is empty</summary>
+<summary style="font-size: 1.5em;">is empty</summary>
 
 Checks if list is empty.
 
@@ -1227,7 +1227,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">is full</summary>
+<summary style="font-size: 1.5em;">is full</summary>
 
 Checks if list is full.
 
@@ -1254,7 +1254,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">foreach next</summary>
+<summary style="font-size: 1.5em;">foreach next</summary>
 
 Iterates over and operates on each element in structure using generic arguments, in proper order.
 
@@ -1292,7 +1292,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">foreach previous</summary>
+<summary style="font-size: 1.5em;">foreach previous</summary>
 
 Iterates over and operates on each element in structure using generic arguments, but in reverse order.
 
@@ -1330,7 +1330,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">map</summary>
+<summary style="font-size: 1.5em;">map</summary>
 
 Map function that maps elements into array and manages it using size and args.
 
@@ -1370,7 +1370,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">insert at</summary>
+<summary style="font-size: 1.5em;">insert at</summary>
 
 Inserts element at index position less than or equal to list's size.
 
@@ -1398,7 +1398,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">get</summary>
+<summary style="font-size: 1.5em;">get</summary>
 
 Gets element at index position less than list's size without removing it.
 
@@ -1427,7 +1427,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">remove first</summary>
+<summary style="font-size: 1.5em;">remove first</summary>
 
 Removes first instance of element based on zero equal comparison.
 Returns false assertion and exit failure if no element is found.
@@ -1463,7 +1463,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">remove last</summary>
+<summary style="font-size: 1.5em;">remove last</summary>
 
 Removes Last instance of element based on zero equal comparison.
 Returns false assertion and exit failure if no element is found.
@@ -1499,7 +1499,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">remove at</summary>
+<summary style="font-size: 1.5em;">remove at</summary>
 
 Removes element at index less than list's size.
 
@@ -1528,7 +1528,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">reverse</summary>
+<summary style="font-size: 1.5em;">reverse</summary>
 
 Reverses list (I mean, yeah).
 
@@ -1557,7 +1557,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">shift next</summary>
+<summary style="font-size: 1.5em;">shift next</summary>
 
 Shifts list to next number of elements starting from head.
 
@@ -1586,7 +1586,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">shift previous</summary>
+<summary style="font-size: 1.5em;">shift previous</summary>
 
 Shifts list to previous number of elements starting from head.
 
@@ -1615,7 +1615,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">splice</summary>
+<summary style="font-size: 1.5em;">splice</summary>
 
 Splices source into destination list while clearing source list.
 
@@ -1645,7 +1645,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">split</summary>
+<summary style="font-size: 1.5em;">split</summary>
 
 Splits list and returns smaller list based on index less than list's size and new size.
 
