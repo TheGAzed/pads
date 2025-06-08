@@ -75,11 +75,10 @@ typedef void                  (*manage_double_list_fn)  (DOUBLE_LIST_DATA_TYPE *
 
 #endif
 
-typedef struct list {
+typedef struct double_list {
     size_t node[DOUBLE_LIST_NODE_COUNT][DOUBLE_LIST_SIZE];
-    DOUBLE_LIST_DATA_TYPE elements[DOUBLE_LIST_SIZE];
-
     size_t size, head;
+    DOUBLE_LIST_DATA_TYPE elements[DOUBLE_LIST_SIZE];
 } double_list_s;
 
 /// @brief Creates an empty list.
@@ -532,7 +531,7 @@ static inline double_list_s split_double_list(double_list_s * list, const size_t
     return split;
 }
 
-/// @brief Iterates over elements in list and operates on each of them based on arguments.
+/// @brief Iterates over elements in list and operates on each of them based on arguments, in proper order.
 /// @param list Pointer of list to iterate over.
 /// @param operate Function pointer to operate on each element in list based or arguments.
 /// @param args Generic arguments to use in operate function, or can be NULL.

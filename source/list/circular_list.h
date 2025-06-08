@@ -78,9 +78,9 @@ typedef void                    (*manage_circular_list_fn)  (CIRCULAR_LIST_DATA_
 /// iterating through the entire list.
 typedef struct circular_list {
     size_t next[CIRCULAR_LIST_SIZE];
-    CIRCULAR_LIST_DATA_TYPE elements[CIRCULAR_LIST_SIZE];
     size_t size, tail; // list size and tail index parameter
     size_t empty_size, empty_head; // empty stack's size and head
+    CIRCULAR_LIST_DATA_TYPE elements[CIRCULAR_LIST_SIZE];
 } circular_list_s;
 
 /// @brief Creates an empty circular list of zero size.

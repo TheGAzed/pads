@@ -2,11 +2,9 @@
 
 Sequential data structures are structures where the element can be inserted and removed in a sequence.
 
-## List of structures:
-
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">STACK</summary>
+<summary style="font-size: 2em; font-weight: bold">STACK</summary>
 
 The stack is a last element in and first out data structure that can be customized using the preprocessor.
 
@@ -29,7 +27,7 @@ typedef struct stack {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">create</summary>
+<summary style="font-size: 1.5em; font-weight: bold">create</summary>
 
 Creates an empty stack structure.
 
@@ -54,7 +52,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">destroy</summary>
+<summary style="font-size: 1.5em; font-weight: bold">destroy</summary>
 
 Destroys stack and all elements in it.
 
@@ -89,7 +87,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">clear</summary>
+<summary style="font-size: 1.5em; font-weight: bold">clear</summary>
 
 Clears all elements in stack.
 
@@ -128,7 +126,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">copy</summary>
+<summary style="font-size: 1.5em; font-weight: bold">copy</summary>
 
 Copies the stack and all its elements into a new structure.
 
@@ -162,7 +160,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">is empty</summary>
+<summary style="font-size: 1.5em; font-weight: bold">is empty</summary>
 
 Checks if stack is empty.
 
@@ -191,7 +189,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">is full</summary>
+<summary style="font-size: 1.5em; font-weight: bold">is full</summary>
 
 Checks if stack is full.
 
@@ -218,7 +216,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">foreach</summary>
+<summary style="font-size: 1.5em; font-weight: bold">foreach</summary>
 
 Iterates over and operates on each element in structure using generic arguments.
 
@@ -256,7 +254,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">map</summary>
+<summary style="font-size: 1.5em; font-weight: bold">map</summary>
 
 Map function that maps elements into array and manages it using size and args.
 
@@ -296,7 +294,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">peep</summary>
+<summary style="font-size: 1.5em; font-weight: bold">peep</summary>
 
 Gets element at the top of the stack without removing it.
 
@@ -325,7 +323,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">push</summary>
+<summary style="font-size: 1.5em; font-weight: bold">push</summary>
 
 Pushes the element to the top of the stack.
 
@@ -353,7 +351,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">pop</summary>
+<summary style="font-size: 1.5em; font-weight: bold">pop</summary>
 
 Pops and removes the element at the top of the stack.
 
@@ -384,7 +382,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">QUEUE</summary>
+<summary style="font-size: 2em; font-weight: bold">QUEUE</summary>
 
 The queue is a first element in and first out data structure that can be customized using the preprocessor.
 
@@ -409,7 +407,7 @@ typedef struct queue {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">create</summary>
+<summary style="font-size: 1.5em; font-weight: bold">create</summary>
 
 Creates an empty queue structure.
 
@@ -434,7 +432,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">destroy</summary>
+<summary style="font-size: 1.5em; font-weight: bold">destroy</summary>
 
 Destroys queue and all elements in it.
 
@@ -469,7 +467,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">clear</summary>
+<summary style="font-size: 1.5em; font-weight: bold">clear</summary>
 
 Clears all elements in queue.
 
@@ -508,7 +506,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">copy</summary>
+<summary style="font-size: 1.5em; font-weight: bold">copy</summary>
 
 Copies the queue and all its elements into a new structure.
 
@@ -542,7 +540,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">is empty</summary>
+<summary style="font-size: 1.5em; font-weight: bold">is empty</summary>
 
 Checks if queue is empty.
 
@@ -571,7 +569,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">is full</summary>
+<summary style="font-size: 1.5em; font-weight: bold">is full</summary>
 
 Checks if queue is full.
 
@@ -598,7 +596,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">foreach</summary>
+<summary style="font-size: 1.5em; font-weight: bold">foreach</summary>
 
 Iterates over and operates on each element in structure using generic arguments.
 
@@ -636,7 +634,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">map</summary>
+<summary style="font-size: 1.5em; font-weight: bold">map</summary>
 
 Map function that maps elements into array and manages it using size and args.
 
@@ -676,7 +674,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">peek</summary>
+<summary style="font-size: 1.5em; font-weight: bold">peek</summary>
 
 Gets element at the beginning of the queue without removing it.
 
@@ -705,7 +703,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">enqueue</summary>
+<summary style="font-size: 1.5em; font-weight: bold">enqueue</summary>
 
 Enqueues the element to the end of the queue.
 
@@ -733,7 +731,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">dequeue</summary>
+<summary style="font-size: 1.5em; font-weight: bold">dequeue</summary>
 
 Dequeues and removes the element at the beginning of the queue.
 
@@ -764,7 +762,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.5em; font-weight: bold">DEQUE</summary>
+<summary style="font-size: 2em; font-weight: bold">DEQUE</summary>
 
 The deque is a double ended queue that allows elements to be added and removed from its front and rear. It can be customized using the preprocessor.
 
@@ -789,7 +787,7 @@ typedef struct deque {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">create</summary>
+<summary style="font-size: 1.5em; font-weight: bold">create</summary>
 
 Creates an empty deque structure.
 
@@ -814,7 +812,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">destroy</summary>
+<summary style="font-size: 1.5em; font-weight: bold">destroy</summary>
 
 Destroys deque and all elements in it.
 
@@ -849,7 +847,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">clear</summary>
+<summary style="font-size: 1.5em; font-weight: bold">clear</summary>
 
 Clears all elements in deque.
 
@@ -888,7 +886,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">copy</summary>
+<summary style="font-size: 1.5em; font-weight: bold">copy</summary>
 
 Copies the deque and all its elements into a new structure.
 
@@ -922,7 +920,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">is empty</summary>
+<summary style="font-size: 1.5em; font-weight: bold">is empty</summary>
 
 Checks if deque is empty.
 
@@ -951,7 +949,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">is full</summary>
+<summary style="font-size: 1.5em; font-weight: bold">is full</summary>
 
 Checks if deque is full.
 
@@ -978,7 +976,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">foreach front</summary>
+<summary style="font-size: 1.5em; font-weight: bold">foreach front</summary>
 
 Iterates over and operates on each element in structure using generic arguments from the front.
 
@@ -1016,7 +1014,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">foreach rear</summary>
+<summary style="font-size: 1.5em; font-weight: bold">foreach rear</summary>
 
 Iterates over and operates on each element in structure using generic arguments from the rear.
 
@@ -1054,7 +1052,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">map</summary>
+<summary style="font-size: 1.5em; font-weight: bold">map</summary>
 
 Map function that maps elements into array and manages it using size and args.
 
@@ -1094,7 +1092,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">peek front</summary>
+<summary style="font-size: 1.5em; font-weight: bold">peek front</summary>
 
 Gets element at the front of the deque without removing it.
 
@@ -1123,7 +1121,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">peek rear</summary>
+<summary style="font-size: 1.5em; font-weight: bold">peek rear</summary>
 
 Gets element at the rear of the deque without removing it.
 
@@ -1152,7 +1150,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">enqueue front</summary>
+<summary style="font-size: 1.5em; font-weight: bold">enqueue front</summary>
 
 Enqueue the element to the front of the deque.
 
@@ -1180,7 +1178,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">enqueue rear</summary>
+<summary style="font-size: 1.5em; font-weight: bold">enqueue rear</summary>
 
 Enqueue the element to the rear of the deque.
 
@@ -1208,7 +1206,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">dequeue front</summary>
+<summary style="font-size: 1.5em; font-weight: bold">dequeue front</summary>
 
 Dequeues and removes the element at the front of the deque.
 
@@ -1237,7 +1235,7 @@ int main() {
 
 <details>
 
-<summary style="font-size: 1.25em; font-weight: bold">dequeue rear</summary>
+<summary style="font-size: 1.5em; font-weight: bold">dequeue rear</summary>
 
 Dequeues and removes the element at the rear of the deque.
 
