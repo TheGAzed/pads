@@ -39,7 +39,6 @@
 
 #endif
 
-
 #ifndef BINARY_HEAP_ASSERT
 
 #include <assert.h>  // imports assert for debugging
@@ -120,7 +119,7 @@ static inline void clear_binary_heap(binary_heap_s * heap, const destroy_binary_
     heap->size = 0;
 }
 
-/// Checks if binary heap is empty.
+/// Checks if heap is empty.
 /// @param heap Binary heap data structure.
 /// @return 'true' if heap is empty, 'false' otherwise.
 static inline bool is_empty_binary_heap(const binary_heap_s * heap) {
@@ -130,7 +129,7 @@ static inline bool is_empty_binary_heap(const binary_heap_s * heap) {
     return !(heap->size);
 }
 
-/// Checks if binary heap is full.
+/// Checks if heap is full.
 /// @param heap Binary heap data structure.
 /// @return 'true' if heap is full, 'false' otherwise.
 static inline bool is_full_binary_heap(const binary_heap_s * heap) {
@@ -191,7 +190,6 @@ static inline void map_binary_heap(binary_heap_s * heap, const manage_binary_hea
 /// Pushes element onto heap.
 /// @param heap Binary heap data structure.
 /// @param element Element to push into heap.
-/// @note Use to fill a heap without breaking heap integrity.
 static inline void push_binary_heap(binary_heap_s * heap, const BINARY_HEAP_DATA_TYPE element) {
     BINARY_HEAP_ASSERT(heap && "[ERROR] 'heap' parameter is NULL.");
     BINARY_HEAP_ASSERT(heap->size != BINARY_HEAP_SIZE && "[ERROR] Can't push to full heap.");
