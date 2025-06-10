@@ -29,6 +29,7 @@ C compiler that at least supports the **C99 standard**, for example:
 
 ### [PRIORITY](https://github.com/TheGAzed/pads/blob/main/source/priority)
 - BINARY HEAP
+- SORT HEAP
 
 ### [LIST](https://github.com/TheGAzed/pads/blob/main/source/list)
 - STRAIGHT LIST
