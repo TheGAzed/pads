@@ -1,5 +1,6 @@
 add_executable(priority_test main.c
         suits/binary_heap_test.c
+        suits/sort_heap_test.c
 )
 
 target_include_directories(priority_test PUBLIC .)

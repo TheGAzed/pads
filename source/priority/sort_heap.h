@@ -230,7 +230,7 @@ static inline SORT_HEAP_DATA_TYPE pop_sort_heap(sort_heap_s * heap) {
 
     heap->valid = true; // validate that the heap is sorted
     heap->size--;
-    return heap->elements[heap->current++]; // return removed head element by incrrementing current after returning it
+    return heap->elements[heap->current++]; // return removed head element by incrementing current after returning it
 }
 
 /// Returns root element in heap without removing it.
@@ -303,6 +303,7 @@ static inline void meld_sort_heap(sort_heap_s * restrict destination, sort_heap_
 
     // then append the remaining source elements into destination if source isn't empty
     memcpy(destination->elements + destination->current + destination->size, source->elements + source->current, source->size * sizeof(SORT_HEAP_DATA_TYPE));
+    destination->size += source->size;
     destination->valid = false; // invalidate destination since elements were added orderless
 
     // clear source
