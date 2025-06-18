@@ -63,7 +63,7 @@ typedef void                  (*manage_binary_heap_fn)  (BINARY_HEAP_DATA_TYPE *
 
 #define BINARY_HEAP_SIZE (1 << 10)
 
-#elif BINARY_HEAP_SIZE == 0
+#elif BINARY_HEAP_SIZE <= 0
 
 #error Size cannot be zero.
 

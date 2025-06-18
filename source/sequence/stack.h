@@ -61,7 +61,7 @@ typedef void            (*manage_stack_fn)  (STACK_DATA_TYPE * array, const size
 
 #define STACK_SIZE (1 << 10)
 
-#elif STACK_SIZE == 0
+#elif STACK_SIZE <= 0
 
 #error Size cannot be zero.
 

@@ -58,7 +58,7 @@ typedef void            (*manage_deque_fn)  (DEQUE_DATA_TYPE * array, const size
 
 #ifndef DEQUE_SIZE
 
-#define DEQUE_SIZE (1 << 5)
+#define DEQUE_SIZE (1 << 10)
 
 #elif DEQUE_SIZE <= 0
 

@@ -4,6 +4,7 @@
 #include <stddef.h>  // imports size_t
 #include <stdbool.h> // imports bool
 #include <string.h>  // imports memcpy
+#include <stdlib.h>  // imports exit
 
 /*
     This is free and unencumbered software released into the public domain.
@@ -67,9 +68,9 @@ typedef void                  (*manage_double_list_fn)  (DOUBLE_LIST_DATA_TYPE *
 
 #ifndef DOUBLE_LIST_SIZE
 
-#define DOUBLE_LIST_SIZE (1 << 5)
+#define DOUBLE_LIST_SIZE (1 << 10)
 
-#elif DOUBLE_LIST_SIZE == 0
+#elif DOUBLE_LIST_SIZE <= 0
 
 #error 'DOUBLE_LIST_SIZE' cannot be zero
 

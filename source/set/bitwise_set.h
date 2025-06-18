@@ -64,9 +64,9 @@ typedef void (*manage_bitwise_set_fn)  (BITWISE_SET_DATA_TYPE * array, const siz
 
 #ifndef BITWISE_SET_SIZE
 
-#define BITWISE_SET_SIZE (1 << 5)
+#define BITWISE_SET_SIZE (1 << 10)
 
-#elif BITWISE_SET_SIZE == 0
+#elif BITWISE_SET_SIZE <= 0
 
 #error Size cannot be zero.
 

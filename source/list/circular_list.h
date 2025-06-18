@@ -4,6 +4,7 @@
 #include <stddef.h>  // imports size_t
 #include <stdbool.h> // imports bool
 #include <string.h>  // imports memcpy
+#include <stdlib.h>  // imports exit
 
 /*
     This is free and unencumbered software released into the public domain.

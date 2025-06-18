@@ -63,7 +63,7 @@ typedef void                (*manage_sort_heap_fn)  (SORT_HEAP_DATA_TYPE * array
 
 #define SORT_HEAP_SIZE (1 << 10)
 
-#elif SORT_HEAP_SIZE == 0
+#elif SORT_HEAP_SIZE <= 0
 
 #error Size cannot be zero.
 

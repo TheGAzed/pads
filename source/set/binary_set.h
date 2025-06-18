@@ -4,6 +4,7 @@
 #include <stddef.h>  // imports size_t
 #include <stdbool.h> // imports bool
 #include <string.h>  // imports memcpy, memmove
+#include <stdlib.h>  // imports exit
 
 // SOURCE AND LICENCE OF BINARY SEARCH IMPLEMENTATION
 // https://github.com/gcc-mirror/gcc/blob/master/libiberty/bsearch.c
@@ -94,9 +95,9 @@ typedef void                 (*manage_binary_set_fn)  (BINARY_SET_DATA_TYPE * ar
 
 #ifndef BINARY_SET_SIZE
 
-#define BINARY_SET_SIZE (1 << 5)
+#define BINARY_SET_SIZE (1 << 10)
 
-#elif BINARY_SET_SIZE == 0
+#elif BINARY_SET_SIZE <= 0
 
 #error 'BINARY_SET_SIZE' cannot be zero
 
@@ -271,7 +272,6 @@ static inline void insert_binary_set(binary_set_s * set, const BINARY_SET_DATA_T
         const int comparison = set->compare(element, (*current_element));
         if (comparison == 0) {
             BINARY_SET_ASSERT(false && "[ERROR] Set already contains element.");
-            exit(EXIT_FAILURE);
         }
 
         if (comparison > 0) {
