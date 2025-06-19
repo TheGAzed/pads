@@ -320,7 +320,7 @@ static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const B
     }
 
     BINARY_SET_ASSERT(false && "[ERROR] Set does not contain element.");
-    exit(EXIT_FAILURE);
+    exit(EXIT_FAILURE); // to have function return
 }
 
 /// @brief Creates and returns a union of two sets whose elements are copied into the new set.

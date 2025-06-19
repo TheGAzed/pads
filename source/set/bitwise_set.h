@@ -32,13 +32,6 @@
     For more information, please refer to <https://unlicense.org>
 */
 
-#ifndef BITWISE_SET_DATA_TYPE
-
-/// @brief To change, use: #define BITWISE_SET_DATA_TYPE [type].
-#define BITWISE_SET_DATA_TYPE unsigned long long
-
-#endif
-
 #ifndef BITWISE_SET_ASSERT
 
 #include <assert.h>  // imports assert for debugging
@@ -51,16 +44,16 @@
 // if either gcc or clang, and has __builtin_*ll support define POPCOUNT and CTZ
 #if defined(__GNUC__) || defined(__clang__)
 
-#define POPCOUNT_BITWISE_SET(bits) ((size_t)__builtin_popcountll((unsigned long long)(bits)))
+#define POPCOUNT_BITWISE_SET(bits) ((size_t)__builtin_popcount((unsigned)(bits)))
 
 #endif
 
 /// @brief Function pointer to operate on a single set index based on generic arguments.
 typedef bool (*operate_index_bitwise_set_fn) (const size_t index, void * args);
 /// @brief Function pointer to operate on a single set bits based on generic arguments.
-typedef bool (*operate_bits_bitwise_set_fn) (BITWISE_SET_DATA_TYPE * bits, void * args);
+typedef bool (*operate_bits_bitwise_set_fn) (unsigned * bits, void * args);
 /// @brief Function pointer to manage an array of set elements based on generic arguments.
-typedef void (*manage_bitwise_set_fn)  (BITWISE_SET_DATA_TYPE * array, const size_t size, void * args);
+typedef void (*manage_bitwise_set_fn)  (unsigned * array, const size_t size, void * args);
 
 #ifndef BITWISE_SET_SIZE
 
@@ -72,12 +65,12 @@ typedef void (*manage_bitwise_set_fn)  (BITWISE_SET_DATA_TYPE * array, const siz
 
 #endif
 
-#define BITWISE_SET_BIT_COUNT (sizeof(BITWISE_SET_DATA_TYPE) * CHAR_BIT)
+#define BITWISE_SET_BIT_COUNT (sizeof(unsigned) * CHAR_BIT)
 
-#define BITWISE_SET_DATA_TYPE_LENGTH ((((BITWISE_SET_SIZE) - 1) / (BITWISE_SET_BIT_COUNT)) + 1)
+#define BITWISE_SET_LENGTH ((((BITWISE_SET_SIZE) - 1) / (BITWISE_SET_BIT_COUNT)) + 1)
 
 typedef struct bitwise_set {
-    BITWISE_SET_DATA_TYPE bits[BITWISE_SET_DATA_TYPE_LENGTH];
+    unsigned bits[BITWISE_SET_LENGTH];
     size_t size;
 } bitwise_set_s;
 
@@ -94,7 +87,7 @@ static inline void destroy_bitwise_set(bitwise_set_s * set) {
 
     BITWISE_SET_ASSERT(set->size <= BITWISE_SET_SIZE && "[ERROR] Set's size can't be more than maximum size.");
 
-    memset(set->bits, 0, BITWISE_SET_DATA_TYPE_LENGTH * sizeof(BITWISE_SET_DATA_TYPE));
+    memset(set->bits, 0, BITWISE_SET_LENGTH * sizeof(unsigned));
     set->size = 0;
 }
 
@@ -105,7 +98,7 @@ static inline void clear_bitwise_set(bitwise_set_s * set) {
 
     BITWISE_SET_ASSERT(set->size <= BITWISE_SET_SIZE && "[ERROR] Set's size can't be more than maximum size.");
 
-    memset(set->bits, 0, BITWISE_SET_DATA_TYPE_LENGTH * sizeof(BITWISE_SET_DATA_TYPE));
+    memset(set->bits, 0, BITWISE_SET_LENGTH * sizeof(unsigned));
     set->size = 0;
 }
 
@@ -150,7 +143,7 @@ static inline void foreach_index_bitwise_set(const bitwise_set_s * set, const op
     BITWISE_SET_ASSERT(set && "[ERROR] 'set' parameter is NULL.");
     BITWISE_SET_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
 
-    for (size_t i = 0; i < BITWISE_SET_DATA_TYPE_LENGTH; ++i) {
+    for (size_t i = 0; i < BITWISE_SET_LENGTH; ++i) {
         for (size_t j = 0; j < BITWISE_SET_SIZE; ++j) {
             const size_t bitwise_index = BITWISE_SET_BIT_COUNT - j - 1;
 
@@ -169,7 +162,7 @@ static inline void foreach_bits_bitwise_set(bitwise_set_s * set, const operate_b
     BITWISE_SET_ASSERT(set && "[ERROR] 'set' parameter is NULL.");
     BITWISE_SET_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
 
-    for (BITWISE_SET_DATA_TYPE * e = set->bits; e < set->bits + BITWISE_SET_DATA_TYPE_LENGTH && operate(e, args); ++e) {}
+    for (unsigned * e = set->bits; e < set->bits + BITWISE_SET_LENGTH && operate(e, args); ++e) {}
 }
 
 /// @brief Maps elements in set into array and calls manage function on it using set's size and generic arguments.
@@ -180,7 +173,7 @@ static inline void manage_bitwise_set(bitwise_set_s * set, const manage_bitwise_
     BITWISE_SET_ASSERT(set && "[ERROR] 'set' parameter is NULL.");
     BITWISE_SET_ASSERT(manage && "[ERROR] 'operate' parameter is NULL.");
 
-    manage(set->bits, BITWISE_SET_DATA_TYPE_LENGTH, args);
+    manage(set->bits, BITWISE_SET_LENGTH, args);
 }
 
 /// @brief Checks if set contains the specified element.
@@ -195,8 +188,8 @@ static inline bool contains_bitwise_set(const bitwise_set_s * set, const size_t 
     BITWISE_SET_ASSERT(set->size <= BITWISE_SET_SIZE && "[ERROR] Set's size can't be more than maximum size.");
 
     const size_t type_index = index / BITWISE_SET_BIT_COUNT;
-    const size_t true_index = index % BITWISE_SET_BIT_COUNT;
-    const size_t element_bit = (size_t)(1) << (BITWISE_SET_BIT_COUNT - true_index - 1);
+    const unsigned true_index = (unsigned)(index % BITWISE_SET_BIT_COUNT);
+    const unsigned element_bit = (unsigned)(1) << (BITWISE_SET_BIT_COUNT - true_index - 1);
 
     return (bool)(set->bits[type_index] & element_bit);
 }
@@ -213,8 +206,8 @@ static inline void insert_bitwise_set(bitwise_set_s * set, const size_t index) {
     BITWISE_SET_ASSERT(set->size <= BITWISE_SET_SIZE && "[ERROR] Set's size can't be more than maximum size.");
 
     const size_t type_index = index / BITWISE_SET_BIT_COUNT;
-    const size_t true_index = index % BITWISE_SET_BIT_COUNT;
-    const size_t element_bit = (size_t)(1) << (BITWISE_SET_BIT_COUNT - true_index - 1);
+    const unsigned true_index = (unsigned)(index % BITWISE_SET_BIT_COUNT);
+    const unsigned element_bit = (unsigned)(1) << (BITWISE_SET_BIT_COUNT - true_index - 1);
 
     BITWISE_SET_ASSERT(!(set->bits[type_index] & element_bit) && "[ERROR] Set already contains element.");
 
@@ -235,8 +228,8 @@ static inline void remove_bitwise_set(bitwise_set_s * set, const size_t index) {
     BITWISE_SET_ASSERT(set->size <= BITWISE_SET_SIZE && "[ERROR] Set's size can't be more than maximum size.");
 
     const size_t type_index = index / BITWISE_SET_BIT_COUNT;
-    const size_t true_index = index % BITWISE_SET_BIT_COUNT;
-    const size_t element_bit = (size_t)(1) << (BITWISE_SET_BIT_COUNT - true_index - 1);
+    const unsigned true_index = (unsigned)(index % BITWISE_SET_BIT_COUNT);
+    const unsigned element_bit = (unsigned)(1) << (BITWISE_SET_BIT_COUNT - true_index - 1);
 
     BITWISE_SET_ASSERT((set->bits[type_index] & element_bit) && "[ERROR] Set does not contain element.");
 
@@ -257,15 +250,15 @@ static inline bitwise_set_s union_bitwise_set(const bitwise_set_s * set_one, con
     bitwise_set_s union_set = { .size = 0, };
 
 #ifdef POPCOUNT_BITWISE_SET
-    for (size_t i = 0; i < BITWISE_SET_DATA_TYPE_LENGTH; ++i) { // for each bits type use OR and popcount to count bits
+    for (size_t i = 0; i < BITWISE_SET_LENGTH; ++i) { // for each bits type use OR and popcount to count bits
         union_set.bits[i] = set_one->bits[i] | set_two->bits[i];
         union_set.size += POPCOUNT_BITWISE_SET(union_set.bits[i]);
     }
 #else
-    for (size_t i = 0; i < BITWISE_SET_DATA_TYPE_LENGTH; ++i) { // for each bits type use increment and remove to count bits
+    for (size_t i = 0; i < BITWISE_SET_LENGTH; ++i) { // for each bits type use increment and remove to count bits
         union_set.bits[i] = set_one->bits[i] | set_two->bits[i];
 
-        BITWISE_SET_DATA_TYPE current = union_set.bits[i];
+        unsigned current = union_set.bits[i];
         while (current) { // while current is not 0 increment union set size and remove rightmost bit from current
             union_set.size++;
             current ^= current & (~current + 1); // extract and remove rightmost bit
@@ -289,15 +282,15 @@ static inline bitwise_set_s intersect_bitwise_set(const bitwise_set_s * set_one,
     bitwise_set_s intersect_set = { .size = 0, };
 
 #ifdef POPCOUNT_BITWISE_SET
-    for (size_t i = 0; i < BITWISE_SET_DATA_TYPE_LENGTH; ++i) { // for each bits type use OR and popcount to count bits
+    for (size_t i = 0; i < BITWISE_SET_LENGTH; ++i) { // for each bits type use OR and popcount to count bits
         intersect_set.bits[i] = set_one->bits[i] & set_two->bits[i];
         intersect_set.size += POPCOUNT_BITWISE_SET(intersect_set.bits[i]);
     }
 #else
-    for (size_t i = 0; i < BITWISE_SET_DATA_TYPE_LENGTH; ++i) { // for each bits type use increment and remove to count bits
+    for (size_t i = 0; i < BITWISE_SET_LENGTH; ++i) { // for each bits type use increment and remove to count bits
         intersect_set.bits[i] = set_one->bits[i] & set_two->bits[i];
 
-        BITWISE_SET_DATA_TYPE current = intersect_set.bits[i];
+        unsigned current = intersect_set.bits[i];
         while (current) { // while current is not 0 increment union set size and remove rightmost bit from current
             intersect_set.size++;
             current ^= current & (~current + 1); // extract and remove rightmost bit
@@ -321,15 +314,15 @@ static inline bitwise_set_s subtract_bitwise_set(const bitwise_set_s * set_one, 
     bitwise_set_s subtract_set = { .size = 0, };
 
 #ifdef POPCOUNT_BITWISE_SET
-    for (size_t i = 0; i < BITWISE_SET_DATA_TYPE_LENGTH; ++i) { // for each bits type use OR and popcount to count bits
+    for (size_t i = 0; i < BITWISE_SET_LENGTH; ++i) { // for each bits type use OR and popcount to count bits
         subtract_set.bits[i] = set_one->bits[i] & ~(set_two->bits[i]);
         subtract_set.size += POPCOUNT_BITWISE_SET(subtract_set.bits[i]);
     }
 #else
-    for (size_t i = 0; i < BITWISE_SET_DATA_TYPE_LENGTH; ++i) { // for each bits type use increment and remove to count bits
+    for (size_t i = 0; i < BITWISE_SET_LENGTH; ++i) { // for each bits type use increment and remove to count bits
         subtract_set.bits[i] = set_one->bits[i] & ~(set_two->bits[i]);
 
-        BITWISE_SET_DATA_TYPE current = subtract_set.bits[i];
+        unsigned current = subtract_set.bits[i];
         while (current) { // while current is not 0 increment union set size and remove rightmost bit from current
             subtract_set.size++;
             current ^= current & (~current + 1); // extract and remove rightmost bit
@@ -353,15 +346,15 @@ static inline bitwise_set_s exclude_bitwise_set(const bitwise_set_s * set_one, c
     bitwise_set_s exclude_set = { .size = 0, };
 
 #ifdef POPCOUNT_BITWISE_SET
-    for (size_t i = 0; i < BITWISE_SET_DATA_TYPE_LENGTH; ++i) { // for each bits type use OR and popcount to count bits
+    for (size_t i = 0; i < BITWISE_SET_LENGTH; ++i) { // for each bits type use OR and popcount to count bits
         exclude_set.bits[i] = set_one->bits[i] ^ set_two->bits[i];
         exclude_set.size += POPCOUNT_BITWISE_SET(exclude_set.bits[i]);
     }
 #else
-    for (size_t i = 0; i < BITWISE_SET_DATA_TYPE_LENGTH; ++i) { // for each bits type use increment and remove to count bits
+    for (size_t i = 0; i < BITWISE_SET_LENGTH; ++i) { // for each bits type use increment and remove to count bits
         exclude_set.bits[i] = set_one->bits[i] ^ set_two->bits[i];
 
-        BITWISE_SET_DATA_TYPE current = exclude_set.bits[i];
+        unsigned current = exclude_set.bits[i];
         while (current) { // while current is not 0 increment union set size and remove rightmost bit from current
             exclude_set.size++;
             current ^= current & (~current + 1); // extract and remove rightmost bit
@@ -382,7 +375,7 @@ static inline bool is_subset_bitwise_set(const bitwise_set_s * super, const bitw
     BITWISE_SET_ASSERT(super->size <= BITWISE_SET_SIZE && "[ERROR] Set's size can't be more than maximum size.");
     BITWISE_SET_ASSERT(sub->size <= BITWISE_SET_SIZE && "[ERROR] Set's size can't be more than maximum size.");
 
-    for (size_t i = 0; i < BITWISE_SET_DATA_TYPE_LENGTH; ++i) {
+    for (size_t i = 0; i < BITWISE_SET_LENGTH; ++i) {
         if (sub->bits[i] != (sub->bits[i] & super->bits[i])) {
             return false;
         }
@@ -402,7 +395,7 @@ static inline bool is_proper_subset_bitwise_set(const bitwise_set_s * super, con
     BITWISE_SET_ASSERT(super->size <= BITWISE_SET_SIZE && "[ERROR] Set's size can't be more than maximum size.");
     BITWISE_SET_ASSERT(sub->size <= BITWISE_SET_SIZE && "[ERROR] Set's size can't be more than maximum size.");
 
-    for (size_t i = 0; i < BITWISE_SET_DATA_TYPE_LENGTH; ++i) {
+    for (size_t i = 0; i < BITWISE_SET_LENGTH; ++i) {
         if (sub->bits[i] != (sub->bits[i] & super->bits[i])) {
             return false;
         }
@@ -422,7 +415,7 @@ static inline bool is_disjoint_bitwise_set(const bitwise_set_s * set_one, const 
     BITWISE_SET_ASSERT(set_one->size <= BITWISE_SET_SIZE && "[ERROR] Set's size can't be more than maximum size.");
     BITWISE_SET_ASSERT(set_two->size <= BITWISE_SET_SIZE && "[ERROR] Set's size can't be more than maximum size.");
 
-    for (size_t i = 0; i < BITWISE_SET_DATA_TYPE_LENGTH; ++i) {
+    for (size_t i = 0; i < BITWISE_SET_LENGTH; ++i) {
         if (set_one->bits[i] & set_two->bits[i]) {
             return false;
         }

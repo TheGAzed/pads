@@ -468,8 +468,8 @@ TEST INTERSECT_02(void) {
     bitwise_set_s one = create_bitwise_set();
     bitwise_set_s two = create_bitwise_set();
 
-    insert_bitwise_set(&one, (BITWISE_SET_DATA_TYPE) 0);
-    insert_bitwise_set(&two, (BITWISE_SET_DATA_TYPE) 0);
+    insert_bitwise_set(&one, 0);
+    insert_bitwise_set(&two, 0);
 
     bitwise_set_s test = intersect_bitwise_set(&one, &two);
 
