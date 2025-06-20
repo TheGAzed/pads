@@ -487,7 +487,8 @@ TEST FOREACH_06(void) {
 TEST MAP_01(void) {
     straight_list_s test = create_straight_list();
 
-    map_straight_list(&test, sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    map_straight_list(&test, sort_int, &cmp);
 
     destroy_straight_list(&test, destroy_int);
 
@@ -505,7 +506,8 @@ TEST MAP_02(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    map_straight_list(&test, sort_int, &cmp);
 
     for (size_t i = 0; i < STRAIGHT_LIST_SIZE - 1; ++i) {
         ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(&test, i).sub_one);
@@ -527,7 +529,8 @@ TEST MAP_03(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    map_straight_list(&test, sort_int, &cmp);
 
     for (size_t i = 0; i < STRAIGHT_LIST_SIZE; ++i) {
         ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (int)i, get_straight_list(&test, i).sub_one);
@@ -541,7 +544,8 @@ TEST MAP_03(void) {
 TEST MAP_04(void) {
     straight_list_s test = create_straight_list();
 
-    map_straight_list(&test, sort_int, compare_reverse_int_generic);
+    struct compare cmp = { .function = compare_reverse_int_generic, };
+    map_straight_list(&test, sort_int, &cmp);
 
     destroy_straight_list(&test, destroy_int);
 
@@ -559,7 +563,8 @@ TEST MAP_05(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_reverse_int_generic);
+    struct compare cmp = { .function = compare_reverse_int_generic, };
+    map_straight_list(&test, sort_int, &cmp);
 
     for (size_t i = 0; i < STRAIGHT_LIST_SIZE - 1; ++i) {
         ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (STRAIGHT_LIST_SIZE - 1 - 1) - (int)i, get_straight_list(&test, i).sub_one);
@@ -581,7 +586,8 @@ TEST MAP_06(void) {
         insert_at_straight_list(&test, test.size, (STRAIGHT_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_straight_list(&test, sort_int, compare_reverse_int_generic);
+    struct compare cmp = { .function = compare_reverse_int_generic, };
+    map_straight_list(&test, sort_int, &cmp);
 
     for (size_t i = 0; i < STRAIGHT_LIST_SIZE; ++i) {
         ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (STRAIGHT_LIST_SIZE - 1) - (int)i, get_straight_list(&test, i).sub_one);

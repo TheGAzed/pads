@@ -286,6 +286,12 @@ static inline HASH_SET_DATA_TYPE remove_hash_set(hash_set_s * set, const HASH_SE
             set->empty = temp;
         }
 
+        // if set is empty reset empty stack and list heads to invalid index
+        for (size_t i = 0, * heads = &(set->empty); !set->size && i < (HASH_SET_SIZE + 1); ++i) {
+            (*heads) = HASH_SET_SIZE; // set empty stack head and other heads to invalid index
+            heads = set->head + i; // go to next head index
+        }
+
         return removed;
     }
 

@@ -562,7 +562,8 @@ TEST FOREACH_06(void) {
 TEST MAP_01(void) {
     stack_s test = create_stack();
 
-    map_stack(&test, sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    map_stack(&test, sort_int, &cmp);
 
     destroy_stack(&test, destroy_int);
     PASS();
@@ -573,7 +574,8 @@ TEST MAP_02(void) {
 
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
 
-    map_stack(&test, sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    map_stack(&test, sort_int, &cmp);
 
     destroy_stack(&test, destroy_int);
     PASS();
@@ -590,7 +592,8 @@ TEST MAP_03(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
     }
 
-    map_stack(&test, sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    map_stack(&test, sort_int, &cmp);
 
     for (int i = STACK_SIZE - 2; i >= 0; --i) {
         ASSERT_EQm("[ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
@@ -611,7 +614,8 @@ TEST MAP_04(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
     }
 
-    map_stack(&test, sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    map_stack(&test, sort_int, &cmp);
 
     for (int i = STACK_SIZE - 1; i >= 0; --i) {
         ASSERT_EQm("[ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
@@ -632,7 +636,8 @@ TEST MAP_05(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
     }
 
-    map_stack(&test, sort_int, compare_reverse_int_generic);
+    struct compare cmp = { .function = compare_reverse_int_generic, };
+    map_stack(&test, sort_int, &cmp);
 
     for (int i = 0; i < STACK_SIZE - 1; ++i) {
         ASSERT_EQm("[ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
@@ -653,7 +658,8 @@ TEST MAP_06(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i });
     }
 
-    map_stack(&test, sort_int, compare_reverse_int_generic);
+    struct compare cmp = { .function = compare_reverse_int_generic, };
+    map_stack(&test, sort_int, &cmp);
 
     for (int i = 0; i < STACK_SIZE; ++i) {
         ASSERT_EQm("[ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);

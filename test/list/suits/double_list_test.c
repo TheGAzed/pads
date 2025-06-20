@@ -585,7 +585,8 @@ TEST FOREACH_PREV_06(void) {
 TEST MAP_01(void) {
     double_list_s test = create_double_list();
 
-    map_double_list(&test, sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    map_double_list(&test, sort_int, &cmp);
 
     destroy_double_list(&test, destroy_int);
 
@@ -603,7 +604,8 @@ TEST MAP_02(void) {
         insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_double_list(&test, sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    map_double_list(&test, sort_int, &cmp);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE - 1; ++i) {
         ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (int)i, get_double_list(&test, i).sub_one);
@@ -625,7 +627,8 @@ TEST MAP_03(void) {
         insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_double_list(&test, sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    map_double_list(&test, sort_int, &cmp);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE; ++i) {
         ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (int)i, get_double_list(&test, i).sub_one);
@@ -639,7 +642,8 @@ TEST MAP_03(void) {
 TEST MAP_04(void) {
     double_list_s test = create_double_list();
 
-    map_double_list(&test, sort_int, compare_reverse_int_generic);
+    struct compare cmp = { .function = compare_reverse_int_generic, };
+    map_double_list(&test, sort_int, &cmp);
 
     destroy_double_list(&test, destroy_int);
 
@@ -657,7 +661,8 @@ TEST MAP_05(void) {
         insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_double_list(&test, sort_int, compare_reverse_int_generic);
+    struct compare cmp = { .function = compare_reverse_int_generic, };
+    map_double_list(&test, sort_int, &cmp);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE - 1; ++i) {
         ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (DOUBLE_LIST_SIZE - 1 - 1) - (int)i, get_double_list(&test, i).sub_one);
@@ -679,7 +684,8 @@ TEST MAP_06(void) {
         insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_double_list(&test, sort_int, compare_reverse_int_generic);
+    struct compare cmp = { .function = compare_reverse_int_generic, };
+    map_double_list(&test, sort_int, &cmp);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE; ++i) {
         ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (DOUBLE_LIST_SIZE - 1) - (int)i, get_double_list(&test, i).sub_one);

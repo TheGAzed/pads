@@ -1089,7 +1089,8 @@ TEST FOREACH_REVERSE_06(void) {
 TEST MAP_01(void) {
     deque_s test = create_deque();
 
-    map_deque(&test, sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    map_deque(&test, sort_int, &cmp);
 
     destroy_deque(&test, destroy_int);
     PASS();
@@ -1100,7 +1101,8 @@ TEST MAP_02(void) {
 
     enqueue_rear(&test, (DEQUE_DATA_TYPE) { .sub_one = 42 });
 
-    map_deque(&test, sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    map_deque(&test, sort_int, &cmp);
 
     destroy_deque(&test, destroy_int);
     PASS();
@@ -1117,7 +1119,8 @@ TEST MAP_03(void) {
         enqueue_rear(&test, (DEQUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_deque(&test, sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    map_deque(&test, sort_int, &cmp);
 
     for (int i = 0; i < DEQUE_SIZE - 1; ++i) {
         ASSERT_EQm("[ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);
@@ -1138,7 +1141,8 @@ TEST MAP_04(void) {
         enqueue_rear(&test, (DEQUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_deque(&test, sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    map_deque(&test, sort_int, &cmp);
 
     for (int i = 0; i < DEQUE_SIZE; ++i) {
         ASSERT_EQm("[ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);
@@ -1159,7 +1163,8 @@ TEST MAP_05(void) {
         enqueue_rear(&test, (DEQUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_deque(&test, sort_int, compare_reverse_int_generic);
+    struct compare cmp = { .function = compare_reverse_int_generic, };
+    map_deque(&test, sort_int, &cmp);
 
     for (int i = DEQUE_SIZE - 2; i >= 0; --i) {
         ASSERT_EQm("[ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);
@@ -1180,7 +1185,8 @@ TEST MAP_06(void) {
         enqueue_rear(&test, (DEQUE_DATA_TYPE) { .sub_one = i });
     }
 
-    map_deque(&test, sort_int, compare_reverse_int_generic);
+    struct compare cmp = { .function = compare_reverse_int_generic, };
+    map_deque(&test, sort_int, &cmp);
 
     for (int i = DEQUE_SIZE - 1; i >= 0; --i) {
         ASSERT_EQm("[ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);

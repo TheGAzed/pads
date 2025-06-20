@@ -1,7 +1,7 @@
 if (MSVC)
     add_compile_options(/W2 /WX /Zi)
 else ()
-    add_compile_options(-std=c99 -O0 -g -Wall -Wextra -Wconversion -Werror)
+    add_compile_options(-std=c99 -O0 -g -Wall -Wextra -Wconversion -Werror -Wpedantic)
 endif ()
 
 add_library(functions helper/functions.c)

@@ -356,7 +356,8 @@ TEST FOREACH_04(void) {
 TEST MAP_01(void) {
     binary_set_s test = create_binary_set(compare_int);
 
-    map_binary_set(&test, sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    map_binary_set(&test, sort_int, &cmp);
 
     destroy_binary_set(&test, destroy_int);
 
@@ -368,7 +369,8 @@ TEST MAP_02(void) {
 
     insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
 
-    map_binary_set(&test, sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    map_binary_set(&test, sort_int, &cmp);
 
     ASSERT_EQm("[ERROR] Expected sorted elements to be equal.", 42, test.elements[0].sub_one);
 
@@ -384,7 +386,8 @@ TEST MAP_03(void) {
         insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_binary_set(&test, sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    map_binary_set(&test, sort_int, &cmp);
 
     for (size_t i = 0; i < test.size; ++i) {
         ASSERT_EQm("[ERROR] Expected sorted elements to be equal.", (int)(i), test.elements[i].sub_one);
@@ -402,7 +405,8 @@ TEST MAP_04(void) {
         insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_binary_set(&test, sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    map_binary_set(&test, sort_int, &cmp);
 
     for (size_t i = 0; i < test.size; ++i) {
         ASSERT_EQm("[ERROR] Expected sorted elements to be equal.", (int)(i), test.elements[i].sub_one);
@@ -416,7 +420,8 @@ TEST MAP_04(void) {
 TEST MAP_05(void) {
     binary_set_s test = create_binary_set(compare_int);
 
-    map_binary_set(&test, sort_int, compare_reverse_int_generic);
+    struct compare cmp = { .function = compare_reverse_int_generic, };
+    map_binary_set(&test, sort_int, &cmp);
 
     destroy_binary_set(&test, destroy_int);
 
@@ -428,7 +433,8 @@ TEST MAP_06(void) {
 
     insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
 
-    map_binary_set(&test, sort_int, compare_reverse_int_generic);
+    struct compare cmp = { .function = compare_reverse_int_generic, };
+    map_binary_set(&test, sort_int, &cmp);
 
     ASSERT_EQm("[ERROR] Expected sorted elements to be equal.", 42, test.elements[0].sub_one);
 
@@ -444,7 +450,8 @@ TEST MAP_07(void) {
         insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_binary_set(&test, sort_int, compare_reverse_int_generic);
+    struct compare cmp = { .function = compare_reverse_int_generic, };
+    map_binary_set(&test, sort_int, &cmp);
 
     for (int i = 0; i < (int)(test.size); ++i) {
         const int expected = (int)(test.size) - 1 - i;
@@ -463,7 +470,8 @@ TEST MAP_08(void) {
         insert_binary_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    map_binary_set(&test, sort_int, compare_reverse_int_generic);
+    struct compare cmp = { .function = compare_reverse_int_generic, };
+    map_binary_set(&test, sort_int, &cmp);
 
     for (int i = 0; i < (int)(test.size); ++i) {
         const int expected = (int)(test.size) - 1 - i;

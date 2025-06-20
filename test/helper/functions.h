@@ -1,5 +1,5 @@
-#ifndef TEST_DEFINES_H
-#define TEST_DEFINES_H
+#ifndef FUNCTIONS_H
+#define FUNCTIONS_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -8,6 +8,10 @@ typedef union type_dst {
     int    sub_one;
     char * sub_two;
 } type_dst_u;
+
+struct compare {
+    int (*function) (const void * a, const void * b);
+};
 
 #define DATA_TYPE type_dst_u
 
@@ -39,4 +43,8 @@ int compare_reverse_string_generic(const void * a, const void * b);
 
 void sort_int(DATA_TYPE * elements, const size_t size, void * args);
 
-#endif //TEST_DEFINES_H
+size_t hash_int(const DATA_TYPE element);
+
+size_t hash_string(const DATA_TYPE element);
+
+#endif // FUNCTIONS_H

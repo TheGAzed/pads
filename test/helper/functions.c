@@ -62,28 +62,37 @@ int compare_reverse_string(const DATA_TYPE a, const DATA_TYPE b) {
     return strcmp(b.sub_two, a.sub_two);
 }
 
-
 int compare_int_generic(const void * a, const void * b) {
-    //return memcmp(a, b, sizeof(int));
     return ((DATA_TYPE*)(a))->sub_one - ((DATA_TYPE*)(b))->sub_one;
 }
 
 int compare_reverse_int_generic(const void * a, const void * b) {
-    //return memcmp(b, a, sizeof(int));
     return ((DATA_TYPE*)(b))->sub_one - ((DATA_TYPE*)(a))->sub_one;
 }
 
 int compare_string_generic(const void * a, const void * b) {
-    // return strcmp(a, b);
     return strcmp(((DATA_TYPE*)(a))->sub_two, ((DATA_TYPE*)(b))->sub_two);
 }
 
 int compare_reverse_string_generic(const void * a, const void * b) {
-    // return strcmp(b, a);
     return strcmp(((DATA_TYPE*)(b))->sub_two, ((DATA_TYPE*)(a))->sub_two);
 }
 
-
 void sort_int(DATA_TYPE * elements, const size_t size, void * args) {
-    qsort(elements, size, sizeof(DATA_TYPE), args);
+    struct compare const * cmp = args;
+    qsort(elements, size, sizeof(DATA_TYPE), cmp->function);
+}
+
+size_t hash_int(const DATA_TYPE element) {
+    return (size_t)(element.sub_one);
+}
+
+size_t hash_string(const DATA_TYPE element) {
+    // http://www.cse.yorku.ca/~oz/hash.html
+    size_t hash = 5381;
+    for (size_t i = 0; element.sub_two[i]; ++i) {
+        hash = ((hash << 5) + hash) ^ (size_t)(element.sub_two[i]); // hash * 33 ^ c
+    }
+
+    return hash;
 }

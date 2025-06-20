@@ -5,7 +5,8 @@
 #include <priority/sort_heap.h>
 
 TEST CREATE_01(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     ASSERT_EQm("[ERROR] Expected size to be zero.", 0, test.size);
     ASSERT_NEQm("[ERROR] Expected function pointer to not be NULL.", NULL, test.sort);
@@ -16,7 +17,8 @@ TEST CREATE_01(void) {
 }
 
 TEST DESTROY_01(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     destroy_sort_heap(&test, destroy_int);
 
@@ -27,7 +29,8 @@ TEST DESTROY_01(void) {
 }
 
 TEST DESTROY_02(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = 42, });
 
@@ -40,7 +43,8 @@ TEST DESTROY_02(void) {
 }
 
 TEST DESTROY_03(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     for (int i = 0; i < SORT_HEAP_SIZE - 1; ++i) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });
@@ -55,7 +59,8 @@ TEST DESTROY_03(void) {
 }
 
 TEST DESTROY_04(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     for (int i = 0; i < SORT_HEAP_SIZE; ++i) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });
@@ -70,7 +75,8 @@ TEST DESTROY_04(void) {
 }
 
 TEST IS_EMPTY_01(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     ASSERTm("[ERROR] Expected heap to be empty.", is_empty_sort_heap(&test));
 
@@ -80,7 +86,8 @@ TEST IS_EMPTY_01(void) {
 }
 
 TEST IS_EMPTY_02(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = 42, });
 
@@ -92,7 +99,8 @@ TEST IS_EMPTY_02(void) {
 }
 
 TEST IS_EMPTY_03(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     for (int i = 0; i < SORT_HEAP_SIZE - 1; ++i) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });
@@ -106,7 +114,8 @@ TEST IS_EMPTY_03(void) {
 }
 
 TEST IS_EMPTY_04(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     for (int i = 0; i < SORT_HEAP_SIZE; ++i) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });
@@ -120,7 +129,8 @@ TEST IS_EMPTY_04(void) {
 }
 
 TEST IS_FULL_01(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     ASSERT_FALSEm("[ERROR] Expected heap to be empty.", is_full_sort_heap(&test));
 
@@ -130,7 +140,8 @@ TEST IS_FULL_01(void) {
 }
 
 TEST IS_FULL_02(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = 42, });
 
@@ -142,7 +153,8 @@ TEST IS_FULL_02(void) {
 }
 
 TEST IS_FULL_03(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     for (int i = 0; i < SORT_HEAP_SIZE - 1; ++i) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });
@@ -156,7 +168,8 @@ TEST IS_FULL_03(void) {
 }
 
 TEST IS_FULL_04(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     for (int i = 0; i < SORT_HEAP_SIZE; ++i) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });
@@ -170,7 +183,8 @@ TEST IS_FULL_04(void) {
 }
 
 TEST COPY_01(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     sort_heap_s copy = copy_sort_heap(&test, copy_int);
 
@@ -184,7 +198,8 @@ TEST COPY_01(void) {
 }
 
 TEST COPY_02(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = 42, });
 
@@ -204,7 +219,8 @@ TEST COPY_02(void) {
 }
 
 TEST COPY_03(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     for (int i = 0; i < SORT_HEAP_SIZE - 1; ++i) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });
@@ -228,7 +244,8 @@ TEST COPY_03(void) {
 }
 
 TEST COPY_04(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     for (int i = 0; i < SORT_HEAP_SIZE; ++i) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });
@@ -252,7 +269,8 @@ TEST COPY_04(void) {
 }
 
 TEST PUSH_01(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = 42, });
 
@@ -266,7 +284,8 @@ TEST PUSH_01(void) {
 }
 
 TEST PUSH_02(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     for (int i = 0; i < SORT_HEAP_SIZE - 1; ++i) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });
@@ -283,7 +302,8 @@ TEST PUSH_02(void) {
 }
 
 TEST PUSH_03(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     for (int i = 0; i < SORT_HEAP_SIZE; ++i) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });
@@ -300,7 +320,8 @@ TEST PUSH_03(void) {
 }
 
 TEST POP_01(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = 42, });
 
@@ -313,7 +334,8 @@ TEST POP_01(void) {
 }
 
 TEST POP_02(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     for (int i = 0; i < SORT_HEAP_SIZE - 1; ++i) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });
@@ -330,7 +352,8 @@ TEST POP_02(void) {
 }
 
 TEST POP_03(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     for (int i = 0; i < SORT_HEAP_SIZE; ++i) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });
@@ -347,7 +370,8 @@ TEST POP_03(void) {
 }
 
 TEST PEEP_01(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_reverse_int_generic);
+    struct compare cmp = { .function = compare_reverse_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = SORT_HEAP_SIZE, });
 
@@ -360,7 +384,8 @@ TEST PEEP_01(void) {
 }
 
 TEST PEEP_02(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_reverse_int_generic);
+    struct compare cmp = { .function = compare_reverse_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     for (int i = 0; i < SORT_HEAP_SIZE - 2; ++i) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });
@@ -376,7 +401,8 @@ TEST PEEP_02(void) {
 }
 
 TEST PEEP_03(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_reverse_int_generic);
+    struct compare cmp = { .function = compare_reverse_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     for (int i = 0; i < SORT_HEAP_SIZE - 1; ++i) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });
@@ -392,7 +418,8 @@ TEST PEEP_03(void) {
 }
 
 TEST REPLACE_01(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = 1, });
 
@@ -410,7 +437,8 @@ TEST REPLACE_01(void) {
 }
 
 TEST REPLACE_02(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = 1, });
 
@@ -428,7 +456,8 @@ TEST REPLACE_02(void) {
 }
 
 TEST REPLACE_03(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     for (int i = 0; i < SORT_HEAP_SIZE - 1; ++i) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i + 1, });
@@ -448,7 +477,8 @@ TEST REPLACE_03(void) {
 }
 
 TEST REPLACE_04(void) {
-    sort_heap_s test = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
     for (int i = 0; i < SORT_HEAP_SIZE; ++i) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i + 1, });
@@ -468,8 +498,9 @@ TEST REPLACE_04(void) {
 }
 
 TEST MELD_01(void) {
-    sort_heap_s one = create_sort_heap(sort_int, compare_int_generic);
-    sort_heap_s two = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s one = create_sort_heap(sort_int, &cmp);
+    sort_heap_s two = create_sort_heap(sort_int, &cmp);
 
     for (int i = 0; i < SORT_HEAP_SIZE - 1; i += 2) {
         push_sort_heap(&one, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });
@@ -493,8 +524,9 @@ TEST MELD_01(void) {
 }
 
 TEST MELD_02(void) {
-    sort_heap_s one = create_sort_heap(sort_int, compare_int_generic);
-    sort_heap_s two = create_sort_heap(sort_int, compare_int_generic);
+    struct compare cmp = { .function = compare_int_generic, };
+    sort_heap_s one = create_sort_heap(sort_int, &cmp);
+    sort_heap_s two = create_sort_heap(sort_int, &cmp);
 
     for (int i = 0; i < SORT_HEAP_SIZE; i += 2) {
         push_sort_heap(&one, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });

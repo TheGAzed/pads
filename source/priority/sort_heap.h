@@ -102,7 +102,8 @@ static inline void destroy_sort_heap(sort_heap_s * heap, const destroy_sort_heap
         destroy(e);
     }
 
-    heap->args = heap->sort = NULL;
+    heap->args = NULL;
+    heap->sort = NULL;
     heap->current = heap->size = 0;
     heap->valid = false;
 }
