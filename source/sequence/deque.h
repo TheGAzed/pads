@@ -1,10 +1,6 @@
 #ifndef DEQUE_H
 #define DEQUE_H
 
-#include <stddef.h>  // imports size_t and NULL
-#include <stdbool.h> // imports bool
-#include <string.h>  // imports memcpy
-
 /*
     This is free and unencumbered software released into the public domain.
 
@@ -32,19 +28,35 @@
     For more information, please refer to <https://unlicense.org>
 */
 
+#include <stddef.h>  // imports size_t and NULL
+#include <stdbool.h> // imports bool
+#include <string.h>  // imports memcpy
+
 // Deque data type to specify what datatype to deque.
 // DEFAULT: void *
 #ifndef DEQUE_DATA_TYPE
-
-#define DEQUE_DATA_TYPE void*
-
+#   define DEQUE_DATA_TYPE void*
 #endif
 
 #ifndef DEQUE_ASSERT
+#   include <assert.h>  // imports assert for debugging
+#   define DEQUE_ASSERT assert
+#endif
 
-#include <assert.h>  // imports assert for debugging
-#define DEQUE_ASSERT assert
+#if !defined(DEQUE_ALLOC) && !defined(DEQUE_FREE)
+#   include <stdlib.h>
+#   define DEQUE_ALLOC malloc
+#   define DEQUE_FREE free
+#elif !defined(DEQUE_ALLOC)
+#   error Must also define DEQUE_ALLOC.
+#elif !defined(DEQUE_FREE)
+#   error Must also define DEQUE_FREE.
+#endif
 
+#ifndef DEQUE_SIZE
+#   define DEQUE_SIZE (1 << 10)
+#elif DEQUE_SIZE <= 0
+#   error 'DEQUE_SIZE' cannot be less than or equal to zero
 #endif
 
 /// Function pointer that creates a deep element copy.
@@ -56,25 +68,21 @@ typedef bool            (*operate_deque_fn) (DEQUE_DATA_TYPE * element, void * a
 /// @brief Function pointer to manage an array of graph elements based on generic arguments.
 typedef void            (*manage_deque_fn)  (DEQUE_DATA_TYPE * array, const size_t size, void * args);
 
-#ifndef DEQUE_SIZE
-
-#define DEQUE_SIZE (1 << 10)
-
-#elif DEQUE_SIZE <= 0
-
-#error 'DEQUE_SIZE' cannot be less than or equal to zero
-
-#endif
-
 typedef struct deque {
-    DEQUE_DATA_TYPE elements[DEQUE_SIZE];
+    DEQUE_DATA_TYPE * elements;
     size_t current, size;
 } deque_s;
 
 /// @brief Creates an empty deque.
 /// @return Empty deque.
 static inline deque_s create_deque(void) {
-    return (deque_s) { .current = DEQUE_SIZE >> 1, .size = 0, }; // return empty deque with current set to middle
+    const deque_s deque = {
+        .elements = DEQUE_ALLOC(DEQUE_SIZE * sizeof(DEQUE_DATA_TYPE)),
+        .current = DEQUE_SIZE >> 1, .size = 0,
+    };
+    DEQUE_ASSERT(deque.elements && "[ERROR] Memory allocation failed.");
+
+    return deque; // return empty deque with current set to middle
 }
 
 /// @brief Destroys deque with all its elements.
@@ -87,6 +95,7 @@ static inline void destroy_deque(deque_s * deque, const destroy_deque_fn destroy
 
     DEQUE_ASSERT(deque->size <= DEQUE_SIZE && "[ERROR] Deque's size can't exceed its maximum size.");
     DEQUE_ASSERT(deque->current < DEQUE_SIZE && "[ERROR] Deque's current index must be less than maximum size.");
+    DEQUE_ASSERT(deque->elements && "[ERROR] 'elements' pointer is NULL.");
 
     // calculate size of elements to the right of current index
     const size_t right_size = (deque->current + deque->size) > DEQUE_SIZE ? DEQUE_SIZE - deque->current : deque->size;
@@ -98,6 +107,7 @@ static inline void destroy_deque(deque_s * deque, const destroy_deque_fn destroy
     }
 
     deque->size = deque->current = 0;
+    DEQUE_FREE(deque->elements);
 }
 
 /// @brief Clears deque and all elements in it.
@@ -110,6 +120,7 @@ static inline void clear_deque(deque_s * deque, const destroy_deque_fn destroy) 
 
     DEQUE_ASSERT(deque->size <= DEQUE_SIZE && "[ERROR] Deque's size can't exceed its maximum size.");
     DEQUE_ASSERT(deque->current < DEQUE_SIZE && "[ERROR] Deque's current index must be less than maximum size.");
+    DEQUE_ASSERT(deque->elements && "[ERROR] 'elements' pointer is NULL.");
 
     // calculate size of elements to the right of current index
     const size_t right_size = (deque->current + deque->size) > DEQUE_SIZE ? DEQUE_SIZE - deque->current : deque->size;
@@ -133,18 +144,23 @@ static inline deque_s copy_deque(const deque_s * deque, const copy_deque_fn copy
 
     DEQUE_ASSERT(deque->size <= DEQUE_SIZE && "[ERROR] Deque's size can't exceed its maximum size.");
     DEQUE_ASSERT(deque->current < DEQUE_SIZE && "[ERROR] Deque's current index must be less than maximum size.");
+    DEQUE_ASSERT(deque->elements && "[ERROR] 'elements' pointer is NULL.");
 
-    deque_s replika = { .current = deque->current, .size = deque->size, };
+    const deque_s replica = {
+        .elements = DEQUE_ALLOC(DEQUE_SIZE * sizeof(DEQUE_DATA_TYPE)),
+        .size = deque->size, .current = deque->current,
+    };
+    DEQUE_ASSERT(replica.elements && "[ERROR] Memory allocation failed.");
 
     const size_t right_size = (deque->current + deque->size) > DEQUE_SIZE ? DEQUE_SIZE - deque->current : deque->size;
     for (size_t i = deque->current; i < right_size + deque->current; ++i) { // for each element from current to right size destroy it
-        replika.elements[i] = copy(deque->elements[i]);
+        replica.elements[i] = copy(deque->elements[i]);
     }
     for (size_t i = 0; i < deque->size - right_size; ++i) { // for each element from 0 to left size destroy it
-        replika.elements[i] = copy(deque->elements[i]);
+        replica.elements[i] = copy(deque->elements[i]);
     }
 
-    return replika;
+    return replica;
 }
 
 /// Checks if deque is empty.
@@ -178,6 +194,7 @@ static inline void enqueue_front(deque_s * deque, const DEQUE_DATA_TYPE element)
 
     DEQUE_ASSERT(deque->size <= DEQUE_SIZE && "[ERROR] Deque's size can't exceed its maximum size.");
     DEQUE_ASSERT(deque->current < DEQUE_SIZE && "[ERROR] Deque's current index must be less than maximum size.");
+    DEQUE_ASSERT(deque->elements && "[ERROR] 'elements' pointer is NULL.");
 
     // if current underflows then circle it to max
     if (!(deque->current)) {
@@ -197,6 +214,7 @@ static inline void enqueue_rear(deque_s * deque, const DEQUE_DATA_TYPE element) 
 
     DEQUE_ASSERT(deque->size <= DEQUE_SIZE && "[ERROR] Deque's size can't exceed its maximum size.");
     DEQUE_ASSERT(deque->current < DEQUE_SIZE && "[ERROR] Deque's current index must be less than maximum size.");
+    DEQUE_ASSERT(deque->elements && "[ERROR] 'elements' pointer is NULL.");
 
     const size_t next_index = (deque->current + deque->size) % DEQUE_SIZE;
     deque->size++;
@@ -212,6 +230,7 @@ static inline DEQUE_DATA_TYPE peek_front(const deque_s * deque) {
 
     DEQUE_ASSERT(deque->size <= DEQUE_SIZE && "[ERROR] Deque's size can't exceed its maximum size.");
     DEQUE_ASSERT(deque->current < DEQUE_SIZE && "[ERROR] Deque's current index must be less than maximum size.");
+    DEQUE_ASSERT(deque->elements && "[ERROR] 'elements' pointer is NULL.");
 
     return deque->elements[deque->current];
 }
@@ -239,6 +258,7 @@ static inline DEQUE_DATA_TYPE dequeue_front(deque_s * deque) {
 
     DEQUE_ASSERT(deque->size <= DEQUE_SIZE && "[ERROR] Deque's size can't exceed its maximum size.");
     DEQUE_ASSERT(deque->current < DEQUE_SIZE && "[ERROR] Deque's current index must be less than maximum size.");
+    DEQUE_ASSERT(deque->elements && "[ERROR] 'elements' pointer is NULL.");
 
     DEQUE_DATA_TYPE removed = deque->elements[deque->current++];
     deque->size--;
@@ -259,6 +279,7 @@ static inline DEQUE_DATA_TYPE dequeue_rear(deque_s * deque) {
 
     DEQUE_ASSERT(deque->size <= DEQUE_SIZE && "[ERROR] Deque's size can't exceed its maximum size.");
     DEQUE_ASSERT(deque->current < DEQUE_SIZE && "[ERROR] Deque's current index must be less than maximum size.");
+    DEQUE_ASSERT(deque->elements && "[ERROR] 'elements' pointer is NULL.");
 
     const size_t current_index = (deque->current + deque->size - 1) % DEQUE_SIZE;
     DEQUE_DATA_TYPE removed = deque->elements[current_index];
@@ -273,12 +294,13 @@ static inline DEQUE_DATA_TYPE dequeue_rear(deque_s * deque) {
 /// @param operate Operate function pointer to operate on each of deque's elements until it returns false or each
 /// element was operated on.
 /// @param args Generic void pointer arguments for operate funtion pointer, can be NULL.
-static inline void foreach_front_deque(deque_s * deque, const operate_deque_fn operate, void * args) {
+static inline void foreach_front_deque(const deque_s * deque, const operate_deque_fn operate, void * args) {
     DEQUE_ASSERT(deque && "[ERROR] 'deque' parameter is NULL.");
     DEQUE_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
 
     DEQUE_ASSERT(deque->size <= DEQUE_SIZE && "[ERROR] Deque's size can't exceed its maximum size.");
     DEQUE_ASSERT(deque->current < DEQUE_SIZE && "[ERROR] Deque's current index must be less than maximum size.");
+    DEQUE_ASSERT(deque->elements && "[ERROR] 'elements' pointer is NULL.");
 
     const size_t right_size = (deque->current + deque->size) > DEQUE_SIZE ? DEQUE_SIZE - deque->current : deque->size;
     for (size_t i = deque->current; i < right_size + deque->current; ++i) {
@@ -299,12 +321,13 @@ static inline void foreach_front_deque(deque_s * deque, const operate_deque_fn o
 /// @param operate Operate function pointer to operate on each of deque's elements until it returns false or each
 /// element was operated on.
 /// @param args Generic void pointer arguments for operate funtion pointer, can be NULL.
-static inline void foreach_rear_deque(deque_s * deque, const operate_deque_fn operate, void * args) {
+static inline void foreach_rear_deque(const deque_s * deque, const operate_deque_fn operate, void * args) {
     DEQUE_ASSERT(deque && "[ERROR] 'deque' parameter is NULL.");
     DEQUE_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
 
     DEQUE_ASSERT(deque->size <= DEQUE_SIZE && "[ERROR] Deque's size can't exceed its maximum size.");
     DEQUE_ASSERT(deque->current < DEQUE_SIZE && "[ERROR] Deque's current index must be less than maximum size.");
+    DEQUE_ASSERT(deque->elements && "[ERROR] 'elements' pointer is NULL.");
 
     const size_t right_size = (deque->current + deque->size) > DEQUE_SIZE ? DEQUE_SIZE - deque->current : deque->size;
     const size_t left_size = deque->size - right_size;
@@ -330,8 +353,10 @@ static inline void map_deque(deque_s * deque, const manage_deque_fn manage, void
 
     DEQUE_ASSERT(deque->size <= DEQUE_SIZE && "[ERROR] Deque's size can't exceed its maximum size.");
     DEQUE_ASSERT(deque->current < DEQUE_SIZE && "[ERROR] Deque's current index must be less than maximum size.");
+    DEQUE_ASSERT(deque->elements && "[ERROR] 'elements' pointer is NULL.");
 
-    DEQUE_DATA_TYPE elements_array[DEQUE_SIZE];
+    DEQUE_DATA_TYPE * elements_array = DEQUE_ALLOC(DEQUE_SIZE * sizeof(DEQUE_DATA_TYPE));
+    DEQUE_ASSERT(elements_array && "[ERROR] Memory allocation failed.");
 
     const size_t right_size = (deque->current + deque->size) > DEQUE_SIZE ? DEQUE_SIZE - deque->current : deque->size;
 
@@ -342,6 +367,8 @@ static inline void map_deque(deque_s * deque, const manage_deque_fn manage, void
 
     memcpy(deque->elements, elements_array, deque->size * sizeof(DEQUE_DATA_TYPE));
     deque->current = 0;
+
+    DEQUE_FREE(elements_array);
 }
 
 #else

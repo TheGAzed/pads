@@ -39,3 +39,4 @@ C compiler that at least supports the **C99 standard**, for example:
 ### [SET](https://github.com/TheGAzed/pads/blob/main/source/set)
 - BINARY SET
 - BITWISE SET
+- HASH SET

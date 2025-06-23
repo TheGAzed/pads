@@ -1,10 +1,6 @@
 #ifndef BINARY_HEAP_H
 #define BINARY_HEAP_H
 
-#include <stddef.h>  // imports size_t
-#include <stdbool.h> // imports bool
-#include <string.h>  // imports memcpy
-
 /*
     This is free and unencumbered software released into the public domain.
 
@@ -32,20 +28,35 @@
     For more information, please refer to <https://unlicense.org>
 */
 
+#include <stddef.h>  // imports size_t
+#include <stdbool.h> // imports bool
+#include <string.h>  // imports memcpy
+
 #ifndef BINARY_HEAP_DATA_TYPE
-
 // redefine using #define BINARY_HEAP_DATA_TYPE [type]
-#define BINARY_HEAP_DATA_TYPE void*
-
+#   define BINARY_HEAP_DATA_TYPE void*
 #endif
 
 #ifndef BINARY_HEAP_ASSERT
-
-#include <assert.h>  // imports assert for debugging
-
+#   include <assert.h>  // imports assert for debugging
 // redefine using #define BINARY_HEAP_DATA_TYPE [assert]
-#define BINARY_HEAP_ASSERT assert
+#   define BINARY_HEAP_ASSERT assert
+#endif
 
+#if !defined(BINARY_HEAP_ALLOC) && !defined(BINARY_HEAP_FREE)
+#   include <stdlib.h>
+#   define BINARY_HEAP_ALLOC malloc
+#   define BINARY_HEAP_FREE free
+#elif !defined(BINARY_HEAP_ALLOC)
+#   error Must also define BINARY_HEAP_ALLOC.
+#elif !defined(BINARY_HEAP_FREE)
+#   error Must also define BINARY_HEAP_FREE.
+#endif
+
+#ifndef BINARY_HEAP_SIZE
+#   define BINARY_HEAP_SIZE (1 << 10)
+#elif BINARY_HEAP_SIZE <= 0
+#   error Size cannot be zero.
 #endif
 
 /// Function pointer that creates a deep element copy.
@@ -59,18 +70,8 @@ typedef bool                  (*operate_binary_heap_fn) (BINARY_HEAP_DATA_TYPE *
 /// @brief Function pointer to manage an array of graph elements based on generic arguments.
 typedef void                  (*manage_binary_heap_fn)  (BINARY_HEAP_DATA_TYPE * array, const size_t size, void * args);
 
-#ifndef BINARY_HEAP_SIZE
-
-#define BINARY_HEAP_SIZE (1 << 10)
-
-#elif BINARY_HEAP_SIZE <= 0
-
-#error Size cannot be zero.
-
-#endif
-
 typedef struct binary_heap {
-    BINARY_HEAP_DATA_TYPE elements[BINARY_HEAP_SIZE]; // elements array
+    BINARY_HEAP_DATA_TYPE * elements; // elements array
     compare_binary_heap_fn compare; // compare function to push, pop and heapify heap
     size_t size; // size of heap
 } binary_heap_s;
@@ -81,7 +82,12 @@ typedef struct binary_heap {
 static inline binary_heap_s create_binary_heap(const compare_binary_heap_fn compare) {
     BINARY_HEAP_ASSERT(compare && "[ERROR] 'compare' parameter is NULL.");
 
-    return (binary_heap_s) { .size = 0, .compare = compare };
+    const binary_heap_s heap = {
+        .elements = BINARY_HEAP_ALLOC(BINARY_HEAP_SIZE * sizeof(BINARY_HEAP_DATA_TYPE)), .size = 0, .compare = compare,
+    };
+    BINARY_HEAP_ASSERT(heap.elements && "[ERROR] Memory allocation failed.");
+
+    return heap;
 }
 
 /// Destroys the heap and all its elements.
@@ -93,6 +99,7 @@ static inline void destroy_binary_heap(binary_heap_s * heap, const destroy_binar
 
     BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    BINARY_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
     for (BINARY_HEAP_DATA_TYPE * e = heap->elements; e < heap->elements + heap->size; e++) {
         destroy(e);
@@ -100,6 +107,7 @@ static inline void destroy_binary_heap(binary_heap_s * heap, const destroy_binar
 
     heap->size = 0;
     heap->compare = NULL;
+    BINARY_HEAP_FREE(heap->elements);
 }
 
 /// Clears the heap and all its elements.
@@ -111,6 +119,7 @@ static inline void clear_binary_heap(binary_heap_s * heap, const destroy_binary_
 
     BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    BINARY_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
     for (BINARY_HEAP_DATA_TYPE * e = heap->elements; e < heap->elements + heap->size; e++) {
         destroy(e);
@@ -123,8 +132,11 @@ static inline void clear_binary_heap(binary_heap_s * heap, const destroy_binary_
 /// @param heap Binary heap data structure.
 /// @return 'true' if heap is empty, 'false' otherwise.
 static inline bool is_empty_binary_heap(const binary_heap_s * heap) {
+    BINARY_HEAP_ASSERT(heap && "[ERROR] 'heap' parameter is NULL.");
+
     BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    BINARY_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
     return !(heap->size);
 }
@@ -133,8 +145,11 @@ static inline bool is_empty_binary_heap(const binary_heap_s * heap) {
 /// @param heap Binary heap data structure.
 /// @return 'true' if heap is full, 'false' otherwise.
 static inline bool is_full_binary_heap(const binary_heap_s * heap) {
+    BINARY_HEAP_ASSERT(heap && "[ERROR] 'heap' parameter is NULL.");
+
     BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    BINARY_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
     return (heap->size == BINARY_HEAP_SIZE);
 }
@@ -149,8 +164,14 @@ static inline binary_heap_s copy_binary_heap(const binary_heap_s * heap, const c
 
     BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    BINARY_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
-    binary_heap_s replica = { .compare = heap->compare, .size = 0, };
+    binary_heap_s replica = {
+        .elements = BINARY_HEAP_ALLOC(BINARY_HEAP_SIZE * sizeof(BINARY_HEAP_DATA_TYPE)),
+        .compare = heap->compare, .size = 0,
+    };
+    BINARY_HEAP_ASSERT(replica.elements && "[ERROR] Memory allocation failed.");
+
     for (replica.size = 0; replica.size < heap->size; replica.size++) {
         replica.elements[replica.size] = copy(heap->elements[replica.size]);
     }
@@ -162,12 +183,13 @@ static inline binary_heap_s copy_binary_heap(const binary_heap_s * heap, const c
 /// @param heap Binary heap data structure.
 /// @param operate Function pointer to operate on each element in heap using generic argumenst.
 /// @param args Generic void pointer arguments for operate function pointer.
-static inline void foreach_binary_heap(binary_heap_s * heap, const operate_binary_heap_fn operate, void * args) {
+static inline void foreach_binary_heap(const binary_heap_s * heap, const operate_binary_heap_fn operate, void * args) {
     BINARY_HEAP_ASSERT(heap && "[ERROR] 'heap' parameter is NULL.");
     BINARY_HEAP_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
 
     BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    BINARY_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
     // for each element in heap call operate function pointer on it until each element was operated successfully
     for (BINARY_HEAP_DATA_TYPE * e = heap->elements; (e < heap->elements + heap->size) && operate(e, args); e++) {}
@@ -177,12 +199,13 @@ static inline void foreach_binary_heap(binary_heap_s * heap, const operate_binar
 /// @param heap Binary heap data structure.
 /// @param manage Function pointer to manage array of heap elements using heap's size and generic arguments.
 /// @param args Generic void pointer arguments for manage function pointer.
-static inline void map_binary_heap(binary_heap_s * heap, const manage_binary_heap_fn manage, void * args) {
+static inline void map_binary_heap(const binary_heap_s * heap, const manage_binary_heap_fn manage, void * args) {
     BINARY_HEAP_ASSERT(heap && "[ERROR] 'heap' parameter is NULL.");
     BINARY_HEAP_ASSERT(manage && "[ERROR] 'manage' parameter is NULL.");
 
     BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    BINARY_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
     manage(heap->elements, heap->size, args);
 }
@@ -196,6 +219,7 @@ static inline void push_binary_heap(binary_heap_s * heap, const BINARY_HEAP_DATA
 
     BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    BINARY_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
     // push element to the top of the elements array
     memcpy(heap->elements + heap->size, &element, sizeof(BINARY_HEAP_DATA_TYPE));
@@ -223,6 +247,7 @@ static inline BINARY_HEAP_DATA_TYPE pop_binary_heap(binary_heap_s * heap) {
 
     BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    BINARY_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
     // save root element and put last element in its place
     BINARY_HEAP_DATA_TYPE removed = heap->elements[0];
@@ -257,6 +282,7 @@ static inline BINARY_HEAP_DATA_TYPE peep_binary_heap(const binary_heap_s * heap)
 
     BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    BINARY_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
     return heap->elements[0];
 }
@@ -266,13 +292,14 @@ static inline BINARY_HEAP_DATA_TYPE peep_binary_heap(const binary_heap_s * heap)
 /// @param index Index of element to replace.
 /// @param element Element to replace and put at index.
 /// @return replaced element.
-static inline BINARY_HEAP_DATA_TYPE replace_binary_heap(binary_heap_s * heap, const size_t index, const BINARY_HEAP_DATA_TYPE element) {
+static inline BINARY_HEAP_DATA_TYPE replace_binary_heap(const binary_heap_s * heap, const size_t index, const BINARY_HEAP_DATA_TYPE element) {
     BINARY_HEAP_ASSERT(heap && "[ERROR] 'heap' parameter is NULL.");
     BINARY_HEAP_ASSERT(heap->size && "[ERROR] Can't change empty heap.");
     BINARY_HEAP_ASSERT(index < heap->size && "[ERROR] Index out of heap size bounds.");
 
     BINARY_HEAP_ASSERT(heap->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(heap->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    BINARY_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
     const BINARY_HEAP_DATA_TYPE replaced = element;
     memcpy(heap->elements + index, &element, sizeof(BINARY_HEAP_DATA_TYPE));
@@ -322,9 +349,11 @@ static inline void meld_binary_heap(binary_heap_s * restrict destination, binary
 
     BINARY_HEAP_ASSERT(destination->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(destination->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    BINARY_HEAP_ASSERT(destination->elements && "[ERROR] 'elements' pointer is NULL.");
 
     BINARY_HEAP_ASSERT(source->compare && "[ERROR] Invalid compare function pointer.");
     BINARY_HEAP_ASSERT(source->size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    BINARY_HEAP_ASSERT(source->elements && "[ERROR] 'elements' pointer is NULL.");
 
     memcpy(destination->elements + destination->size, source->elements, sizeof(BINARY_HEAP_DATA_TYPE) * source->size);
     destination->size += source->size;

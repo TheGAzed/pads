@@ -1,11 +1,6 @@
 #ifndef DOUBLE_LIST_H
 #define DOUBLE_LIST_H
 
-#include <stddef.h>  // imports size_t
-#include <stdbool.h> // imports bool
-#include <string.h>  // imports memcpy
-#include <stdlib.h>  // imports exit
-
 /*
     This is free and unencumbered software released into the public domain.
 
@@ -33,19 +28,35 @@
     For more information, please refer to <https://unlicense.org>
 */
 
+#include <stddef.h>  // imports size_t
+#include <stdbool.h> // imports bool
+#include <string.h>  // imports memcpy
+#include <stdlib.h>  // imports exit
+
 #ifndef DOUBLE_LIST_DATA_TYPE
-
 /// @brief redefine using #define DOUBLE_LIST_DATA_TYPE [type] (default: void*)
-#define DOUBLE_LIST_DATA_TYPE void*
-
+#   define DOUBLE_LIST_DATA_TYPE void*
 #endif
 
 #ifndef DOUBLE_LIST_ASSERT
-
-#include <assert.h>  // imports assert for debugging
+#   include <assert.h>  // imports assert for debugging
 /// @brief redefine using #define DOUBLE_LIST_ASSERT [asserter] (default: assert)
-#define DOUBLE_LIST_ASSERT assert
+#   define DOUBLE_LIST_ASSERT assert
+#endif
 
+#if !defined(DOUBLE_LIST_ALLOC) && !defined(DOUBLE_LIST_FREE)
+#   define DOUBLE_LIST_ALLOC malloc
+#   define DOUBLE_LIST_FREE free
+#elif !defined(DOUBLE_LIST_ALLOC)
+#   error Must also define DOUBLE_LIST_ALLOC.
+#elif !defined(DOUBLE_LIST_FREE)
+#   error Must also define DOUBLE_LIST_FREE.
+#endif
+
+#ifndef DOUBLE_LIST_SIZE
+#   define DOUBLE_LIST_SIZE (1 << 10)
+#elif DOUBLE_LIST_SIZE <= 0
+#   error 'DOUBLE_LIST_SIZE' cannot be zero
 #endif
 
 /// @brief Function pointer to copy an element and return new one.
@@ -66,26 +77,27 @@ typedef void                  (*manage_double_list_fn)  (DOUBLE_LIST_DATA_TYPE *
 /// @brief Index to previous pointer/index.
 #define DOUBLE_LIST_PREV 1
 
-#ifndef DOUBLE_LIST_SIZE
-
-#define DOUBLE_LIST_SIZE (1 << 10)
-
-#elif DOUBLE_LIST_SIZE <= 0
-
-#error 'DOUBLE_LIST_SIZE' cannot be zero
-
-#endif
-
 typedef struct double_list {
-    size_t node[DOUBLE_LIST_NODE_COUNT][DOUBLE_LIST_SIZE];
+    size_t * node[DOUBLE_LIST_NODE_COUNT];
     size_t size, head;
-    DOUBLE_LIST_DATA_TYPE elements[DOUBLE_LIST_SIZE];
+    DOUBLE_LIST_DATA_TYPE * elements;
 } double_list_s;
 
 /// @brief Creates an empty list.
 /// @return Empty list.
 static inline double_list_s create_double_list(void) {
-    return (double_list_s) { .size = 0, .head = 0, };
+    const double_list_s list = {
+        .elements = DOUBLE_LIST_ALLOC(DOUBLE_LIST_SIZE * sizeof(DOUBLE_LIST_DATA_TYPE)),
+        .node[DOUBLE_LIST_NEXT] = DOUBLE_LIST_ALLOC(DOUBLE_LIST_SIZE * sizeof(size_t)),
+        .node[DOUBLE_LIST_PREV] = DOUBLE_LIST_ALLOC(DOUBLE_LIST_SIZE * sizeof(size_t)),
+
+        .head = 0, .size = 0,
+    };
+    DOUBLE_LIST_ASSERT(list.elements && "[ERROR] Memory allocation failed.");
+    DOUBLE_LIST_ASSERT(list.node[DOUBLE_LIST_NEXT] && "[ERROR] Memory allocation failed.");
+    DOUBLE_LIST_ASSERT(list.node[DOUBLE_LIST_PREV] && "[ERROR] Memory allocation failed.");
+
+    return list;
 }
 
 /// @brief Destroys a list and its elements using a function pointer.
@@ -96,6 +108,9 @@ static inline void destroy_double_list(double_list_s * list, const destroy_doubl
     DOUBLE_LIST_ASSERT(destroy && "[ERROR] 'destroy' pointer parameter is NULL.");
 
     DOUBLE_LIST_ASSERT(list->size <= DOUBLE_LIST_SIZE && "[ERROR] Invalid list state.");
+    DOUBLE_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_NEXT] && "[ERROR] 'node[DOUBLE_LIST_NEXT]' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_PREV] && "[ERROR] 'node[DOUBLE_LIST_PREV]' pointer is NULL.");
 
     size_t current = list->head;
     for (size_t i = 0; i < list->size; ++i) {
@@ -104,6 +119,9 @@ static inline void destroy_double_list(double_list_s * list, const destroy_doubl
     }
 
     list->size = list->head = 0;
+    DOUBLE_LIST_FREE(list->elements);
+    DOUBLE_LIST_FREE(list->node[DOUBLE_LIST_NEXT]);
+    DOUBLE_LIST_FREE(list->node[DOUBLE_LIST_PREV]);
 }
 
 /// @brief Destroys a list and its elements using a function pointer.
@@ -114,6 +132,9 @@ static inline void clear_double_list(double_list_s * list, const destroy_double_
     DOUBLE_LIST_ASSERT(destroy && "[ERROR] 'destroy' pointer parameter is NULL.");
 
     DOUBLE_LIST_ASSERT(list->size <= DOUBLE_LIST_SIZE && "[ERROR] Invalid list state.");
+    DOUBLE_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_NEXT] && "[ERROR] 'node[DOUBLE_LIST_NEXT]' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_PREV] && "[ERROR] 'node[DOUBLE_LIST_PREV]' pointer is NULL.");
 
     size_t current = list->head;
     for (size_t i = 0; i < list->size; ++i) {
@@ -133,8 +154,21 @@ static inline double_list_s copy_double_list(const double_list_s * list, const c
     DOUBLE_LIST_ASSERT(copy && "[ERROR] 'copy' pointer parameter is NULL.");
 
     DOUBLE_LIST_ASSERT(list->size <= DOUBLE_LIST_SIZE && "[ERROR] Invalid list state.");
+    DOUBLE_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_NEXT] && "[ERROR] 'node[DOUBLE_LIST_NEXT]' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_PREV] && "[ERROR] 'node[DOUBLE_LIST_PREV]' pointer is NULL.");
 
-    double_list_s replica = { .head = list->head, .size = 0, };
+    double_list_s replica = {
+        .elements = DOUBLE_LIST_ALLOC(DOUBLE_LIST_SIZE * sizeof(DOUBLE_LIST_DATA_TYPE)),
+        .node[DOUBLE_LIST_NEXT] = DOUBLE_LIST_ALLOC(DOUBLE_LIST_SIZE * sizeof(size_t)),
+        .node[DOUBLE_LIST_PREV] = DOUBLE_LIST_ALLOC(DOUBLE_LIST_SIZE * sizeof(size_t)),
+
+        .head = list->head, .size = 0,
+    };
+    DOUBLE_LIST_ASSERT(replica.elements && "[ERROR] Memory allocation failed.");
+    DOUBLE_LIST_ASSERT(replica.node[DOUBLE_LIST_NEXT] && "[ERROR] Memory allocation failed.");
+    DOUBLE_LIST_ASSERT(replica.node[DOUBLE_LIST_PREV] && "[ERROR] Memory allocation failed.");
+
     for (; replica.size < list->size; replica.size++) {
         replica.elements[replica.size] = copy(list->elements[replica.size]);
         replica.node[DOUBLE_LIST_NEXT][replica.size] = list->node[DOUBLE_LIST_NEXT][replica.size];
@@ -151,6 +185,9 @@ static inline bool is_empty_double_list(const double_list_s * list) {
     DOUBLE_LIST_ASSERT(list && "[ERROR] 'list' pointer parameter is NULL.");
 
     DOUBLE_LIST_ASSERT(list->size <= DOUBLE_LIST_SIZE && "[ERROR] Invalid list state.");
+    DOUBLE_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_NEXT] && "[ERROR] 'node[DOUBLE_LIST_NEXT]' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_PREV] && "[ERROR] 'node[DOUBLE_LIST_PREV]' pointer is NULL.");
 
     return (list->size == 0);
 }
@@ -162,6 +199,9 @@ static inline bool is_full_double_list(const double_list_s * list) {
     DOUBLE_LIST_ASSERT(list && "[ERROR] 'list' pointer parameter is NULL.");
 
     DOUBLE_LIST_ASSERT(list->size <= DOUBLE_LIST_SIZE && "[ERROR] Invalid list state.");
+    DOUBLE_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_NEXT] && "[ERROR] 'node[DOUBLE_LIST_NEXT]' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_PREV] && "[ERROR] 'node[DOUBLE_LIST_PREV]' pointer is NULL.");
 
     return (list->size == DOUBLE_LIST_SIZE);
 }
@@ -177,6 +217,9 @@ static inline void insert_at_double_list(double_list_s * list, const size_t inde
     DOUBLE_LIST_ASSERT(~list->size && "[ERROR] List size will overflow.");
 
     DOUBLE_LIST_ASSERT(list->size <= DOUBLE_LIST_SIZE && "[ERROR] Invalid list state.");
+    DOUBLE_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_NEXT] && "[ERROR] 'node[DOUBLE_LIST_NEXT]' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_PREV] && "[ERROR] 'node[DOUBLE_LIST_PREV]' pointer is NULL.");
 
     size_t current = list->head;
     const size_t real_index = index <= (list->size >> 1) ? index : list->size - index;
@@ -213,6 +256,9 @@ static inline DOUBLE_LIST_DATA_TYPE get_double_list(const double_list_s * list, 
     DOUBLE_LIST_ASSERT(index < list->size && "[ERROR] 'index' parameter exceeds list size.");
 
     DOUBLE_LIST_ASSERT(list->size <= DOUBLE_LIST_SIZE && "[ERROR] Invalid list state.");
+    DOUBLE_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_NEXT] && "[ERROR] 'node[DOUBLE_LIST_NEXT]' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_PREV] && "[ERROR] 'node[DOUBLE_LIST_PREV]' pointer is NULL.");
 
     size_t current = list->head;
     const size_t real_index = index <= (list->size >> 1) ? index : list->size - index;
@@ -235,6 +281,9 @@ static inline DOUBLE_LIST_DATA_TYPE remove_first_double_list(double_list_s * lis
     DOUBLE_LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
 
     DOUBLE_LIST_ASSERT(list->size <= DOUBLE_LIST_SIZE && "[ERROR] Invalid list state.");
+    DOUBLE_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_NEXT] && "[ERROR] 'node[DOUBLE_LIST_NEXT]' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_PREV] && "[ERROR] 'node[DOUBLE_LIST_PREV]' pointer is NULL.");
 
     size_t current = list->head;
     for (size_t i = 0; i < list->size; ++i) {
@@ -285,6 +334,9 @@ static inline DOUBLE_LIST_DATA_TYPE remove_last_double_list(double_list_s * list
     DOUBLE_LIST_ASSERT(list->size && "[ERROR] Can't remove from empty list.");
 
     DOUBLE_LIST_ASSERT(list->size <= DOUBLE_LIST_SIZE && "[ERROR] Invalid list state.");
+    DOUBLE_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_NEXT] && "[ERROR] 'node[DOUBLE_LIST_NEXT]' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_PREV] && "[ERROR] 'node[DOUBLE_LIST_PREV]' pointer is NULL.");
 
     size_t current = list->head;
     for (size_t i = 0; i < list->size; ++i) {
@@ -335,6 +387,9 @@ static inline DOUBLE_LIST_DATA_TYPE remove_at_double_list(double_list_s * list, 
     DOUBLE_LIST_ASSERT(index < list->size && "[ERROR] Index greater than size");
 
     DOUBLE_LIST_ASSERT(list->size <= DOUBLE_LIST_SIZE && "[ERROR] Invalid list state.");
+    DOUBLE_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_NEXT] && "[ERROR] 'node[DOUBLE_LIST_NEXT]' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_PREV] && "[ERROR] 'node[DOUBLE_LIST_PREV]' pointer is NULL.");
 
     size_t current = list->head;
     const size_t real_index = index <= (list->size >> 1) ? index : list->size - index;
@@ -376,6 +431,9 @@ static inline void reverse_double_list(double_list_s * list) {
     DOUBLE_LIST_ASSERT(list && "[ERROR] 'list' pointer parameter is NULL.");
 
     DOUBLE_LIST_ASSERT(list->size <= DOUBLE_LIST_SIZE && "[ERROR] Invalid list state.");
+    DOUBLE_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_NEXT] && "[ERROR] 'node[DOUBLE_LIST_NEXT]' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_PREV] && "[ERROR] 'node[DOUBLE_LIST_PREV]' pointer is NULL.");
 
     size_t current = list->head;
     for (size_t i = 0; i < list->size; ++i) {
@@ -397,6 +455,9 @@ static inline void shift_next_double_list(double_list_s * list, const size_t shi
     DOUBLE_LIST_ASSERT(list->size && "[ERROR] Can't shift empty list.");
 
     DOUBLE_LIST_ASSERT(list->size <= DOUBLE_LIST_SIZE && "[ERROR] Invalid list state.");
+    DOUBLE_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_NEXT] && "[ERROR] 'node[DOUBLE_LIST_NEXT]' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_PREV] && "[ERROR] 'node[DOUBLE_LIST_PREV]' pointer is NULL.");
 
     for (size_t i = 0; i < shift; ++i) {
         list->head = list->node[DOUBLE_LIST_NEXT][list->head];
@@ -411,6 +472,9 @@ static inline void shift_prev_double_list(double_list_s * list, const size_t shi
     DOUBLE_LIST_ASSERT(list->size && "[ERROR] Can't shift empty list.");
 
     DOUBLE_LIST_ASSERT(list->size <= DOUBLE_LIST_SIZE && "[ERROR] Invalid list state.");
+    DOUBLE_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_NEXT] && "[ERROR] 'node[DOUBLE_LIST_NEXT]' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_PREV] && "[ERROR] 'node[DOUBLE_LIST_PREV]' pointer is NULL.");
 
     for (size_t i = 0; i < shift; ++i) {
         list->head = list->node[DOUBLE_LIST_PREV][list->head];
@@ -429,8 +493,14 @@ static inline void splice_double_list(double_list_s * restrict destination, doub
     DOUBLE_LIST_ASSERT(destination->size + source->size <= DOUBLE_LIST_SIZE && "[ERROR] new list's size exceeds DOUBLE_LIST_SIZE");
 
     DOUBLE_LIST_ASSERT(destination->size <= DOUBLE_LIST_SIZE && "[ERROR] Invalid list state.");
+    DOUBLE_LIST_ASSERT(destination->elements && "[ERROR] 'elements' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(destination->node[DOUBLE_LIST_NEXT] && "[ERROR] 'node[DOUBLE_LIST_NEXT]' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(destination->node[DOUBLE_LIST_PREV] && "[ERROR] 'node[DOUBLE_LIST_PREV]' pointer is NULL.");
 
     DOUBLE_LIST_ASSERT(source->size <= DOUBLE_LIST_SIZE && "[ERROR] Invalid list state.");
+    DOUBLE_LIST_ASSERT(source->elements && "[ERROR] 'elements' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(source->node[DOUBLE_LIST_NEXT] && "[ERROR] 'node[DOUBLE_LIST_NEXT]' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(source->node[DOUBLE_LIST_PREV] && "[ERROR] 'node[DOUBLE_LIST_PREV]' pointer is NULL.");
 
     size_t current = destination->head;
     const size_t real_index = index <= (destination->size >> 1) ? index : destination->size - index;
@@ -473,7 +543,7 @@ static inline void splice_double_list(double_list_s * restrict destination, doub
 /// @param index Zero-based index at list to start splitting.
 /// @param size Number of elements to split and return as new list.
 /// @return Split list with size number of elements at index.
-/// @note Since the list is circular the function can be used to split it as a circle at any index.
+/// @note Since the list is double the function can be used to split it as a circle at any index.
 static inline double_list_s split_double_list(double_list_s * list, const size_t index, const size_t size) {
     DOUBLE_LIST_ASSERT(list && "[ERROR] List pointer is NULL");
     DOUBLE_LIST_ASSERT(list->size && "[ERROR] Can't split empty list.");
@@ -482,6 +552,9 @@ static inline double_list_s split_double_list(double_list_s * list, const size_t
     DOUBLE_LIST_ASSERT(size <= list->size && "[ERROR] Size parameter bigger than list size.");
 
     DOUBLE_LIST_ASSERT(list->size <= DOUBLE_LIST_SIZE && "[ERROR] Invalid list state.");
+    DOUBLE_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_NEXT] && "[ERROR] 'node[DOUBLE_LIST_NEXT]' pointer is NULL.");
+    DOUBLE_LIST_ASSERT(list->node[DOUBLE_LIST_PREV] && "[ERROR] 'node[DOUBLE_LIST_PREV]' pointer is NULL.");
 
     size_t list_current = list->head;
     const size_t real_index = index < (list->size >> 1) ? index : list->size - index;
@@ -490,7 +563,16 @@ static inline double_list_s split_double_list(double_list_s * list, const size_t
         list_current = list->node[node_index][list_current];
     }
 
-    double_list_s split = { .head = 0, .size = 0, };
+    double_list_s split = {
+        .elements = DOUBLE_LIST_ALLOC(DOUBLE_LIST_SIZE * sizeof(DOUBLE_LIST_DATA_TYPE)),
+        .node[DOUBLE_LIST_NEXT] = DOUBLE_LIST_ALLOC(DOUBLE_LIST_SIZE * sizeof(size_t)),
+        .node[DOUBLE_LIST_PREV] = DOUBLE_LIST_ALLOC(DOUBLE_LIST_SIZE * sizeof(size_t)),
+
+        .head = 0, .size = 0,
+    };
+    DOUBLE_LIST_ASSERT(split.elements && "[ERROR] Memory allocation failed.");
+    DOUBLE_LIST_ASSERT(split.node[DOUBLE_LIST_NEXT] && "[ERROR] Memory allocation failed.");
+    DOUBLE_LIST_ASSERT(split.node[DOUBLE_LIST_PREV] && "[ERROR] Memory allocation failed.");
 
     size_t * split_current = &(split.head);
     for (; split.size < size; split.size++) {
@@ -522,7 +604,7 @@ static inline double_list_s split_double_list(double_list_s * list, const size_t
         list_current = list_next; // go to next list node
         split_current = split.node[DOUBLE_LIST_NEXT] + split.size; // go to next split list node pointer
     }
-    split.node[DOUBLE_LIST_PREV][0] = size - 1; // to make list circular first index in previous must point to last element
+    split.node[DOUBLE_LIST_PREV][0] = size - 1; // to make list double first index in previous must point to last element
     (*split_current) = 0;
 
     if (!index || (index >= list->size)) {
@@ -536,7 +618,7 @@ static inline double_list_s split_double_list(double_list_s * list, const size_t
 /// @param list Pointer of list to iterate over.
 /// @param operate Function pointer to operate on each element in list based or arguments.
 /// @param args Generic arguments to use in operate function, or can be NULL.
-static inline void foreach_next_double_list(double_list_s * list, const operate_double_list_fn operate, void * args) {
+static inline void foreach_next_double_list(const double_list_s * list, const operate_double_list_fn operate, void * args) {
     DOUBLE_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
     DOUBLE_LIST_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
 
@@ -552,7 +634,7 @@ static inline void foreach_next_double_list(double_list_s * list, const operate_
 /// @param list Pointer of list to iterate over.
 /// @param operate Function pointer to operate on each element in list based or arguments.
 /// @param args Generic arguments to use in operate function, or can be NULL.
-static inline void foreach_prev_double_list(double_list_s * list, const operate_double_list_fn operate, void * args) {
+static inline void foreach_prev_double_list(const double_list_s * list, const operate_double_list_fn operate, void * args) {
     DOUBLE_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
     DOUBLE_LIST_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
 
@@ -568,13 +650,14 @@ static inline void foreach_prev_double_list(double_list_s * list, const operate_
 /// @param list Pointer of list to map.
 /// @param manage Function pointer to manage list as array using its size, and arguments.
 /// @param args Generic arguments to use in manage function, or can be NULL.
-static inline void map_double_list(double_list_s * list, const manage_double_list_fn manage, void * args) {
+static inline void map_double_list(const double_list_s * list, const manage_double_list_fn manage, void * args) {
     DOUBLE_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
     DOUBLE_LIST_ASSERT(manage && "[ERROR] 'manage' parameter is NULL.");
 
     DOUBLE_LIST_ASSERT(list->size <= DOUBLE_LIST_SIZE && "[ERROR] Invalid list state.");
 
-    DOUBLE_LIST_DATA_TYPE elements_array[DOUBLE_LIST_SIZE];
+    DOUBLE_LIST_DATA_TYPE * elements_array = DOUBLE_LIST_ALLOC(DOUBLE_LIST_SIZE * sizeof(DOUBLE_LIST_DATA_TYPE));
+    DOUBLE_LIST_ASSERT(elements_array && "[ERROR] Memory allocation failed.");
 
     size_t current = list->head;
     for (size_t i = 0; i < list->size; ++i) { // copy elements in order into elements array
@@ -588,6 +671,8 @@ static inline void map_double_list(double_list_s * list, const manage_double_lis
         list->elements[current] = elements_array[i];
         current = list->node[DOUBLE_LIST_NEXT][current];
     }
+
+    DOUBLE_LIST_FREE(elements_array);
 }
 
 #else

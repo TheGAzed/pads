@@ -1,10 +1,6 @@
 #ifndef SORT_HEAP_H
 #define SORT_HEAP_H
 
-#include <stddef.h>  // imports size_t
-#include <stdbool.h> // imports bool
-#include <string.h>  // imports memcpy
-
 /*
     This is free and unencumbered software released into the public domain.
 
@@ -32,20 +28,35 @@
     For more information, please refer to <https://unlicense.org>
 */
 
+#include <stddef.h>  // imports size_t
+#include <stdbool.h> // imports bool
+#include <string.h>  // imports memcpy
+
 #ifndef SORT_HEAP_DATA_TYPE
-
 // redefine using #define SORT_HEAP_DATA_TYPE [type]
-#define SORT_HEAP_DATA_TYPE void*
-
+#   define SORT_HEAP_DATA_TYPE void*
 #endif
 
 #ifndef SORT_HEAP_ASSERT
-
-#include <assert.h>  // imports assert for debugging
-
+#   include <assert.h>  // imports assert for debugging
 // redefine using #define SORT_HEAP_DATA_TYPE [assert]
-#define SORT_HEAP_ASSERT assert
+#   define SORT_HEAP_ASSERT assert
+#endif
 
+#if !defined(SORT_HEAP_ALLOC) && !defined(SORT_HEAP_FREE)
+#   include <stdlib.h>
+#   define SORT_HEAP_ALLOC malloc
+#   define SORT_HEAP_FREE free
+#elif !defined(SORT_HEAP_ALLOC)
+#   error Must also define SORT_HEAP_ALLOC.
+#elif !defined(SORT_HEAP_FREE)
+#   error Must also define SORT_HEAP_FREE.
+#endif
+
+#ifndef SORT_HEAP_SIZE
+#   define SORT_HEAP_SIZE (1 << 10)
+#elif SORT_HEAP_SIZE <= 0
+#   error Size cannot be zero.
 #endif
 
 /// Function pointer that creates a deep element copy.
@@ -59,21 +70,11 @@ typedef bool                (*operate_sort_heap_fn) (SORT_HEAP_DATA_TYPE * eleme
 /// @brief Function pointer to manage an array of elements based on generic arguments.
 typedef void                (*manage_sort_heap_fn)  (SORT_HEAP_DATA_TYPE * array, const size_t size, void * args);
 
-#ifndef SORT_HEAP_SIZE
-
-#define SORT_HEAP_SIZE (1 << 10)
-
-#elif SORT_HEAP_SIZE <= 0
-
-#error Size cannot be zero.
-
-#endif
-
 typedef struct sort_heap {
+    SORT_HEAP_DATA_TYPE * elements; // elements array
     manage_sort_heap_fn sort; // sorts the elements array when needed
     void * args; // compare function pointer parameters for sort, if needed
     size_t size, current; // size and current first element index
-    SORT_HEAP_DATA_TYPE elements[SORT_HEAP_SIZE]; // elements array
     bool valid;
 } sort_heap_s;
 
@@ -82,9 +83,15 @@ typedef struct sort_heap {
 /// @param args Generic void pointer arguments for sort function.
 /// @return New sort heap.
 static inline sort_heap_s create_sort_heap(const manage_sort_heap_fn sort, void * args) {
-    SORT_HEAP_ASSERT(args && "[ERROR] 'sort' parameter is NULL.");
+    SORT_HEAP_ASSERT(sort && "[ERROR] 'sort' parameter is NULL.");
 
-    return (sort_heap_s) { .sort = sort, .args = args, .current = 0, .size = 0, .valid = true, };
+    const sort_heap_s heap = {
+        .elements = SORT_HEAP_ALLOC(SORT_HEAP_SIZE * sizeof(SORT_HEAP_DATA_TYPE)),
+        .sort = sort, .args = args, .size = 0, .current = 0, .valid = true,
+    };
+    SORT_HEAP_ASSERT(heap.elements && "[ERROR] Memory allocation failed.");
+
+    return heap;
 }
 
 /// Destroys the heap and all its elements.
@@ -96,6 +103,7 @@ static inline void destroy_sort_heap(sort_heap_s * heap, const destroy_sort_heap
 
     SORT_HEAP_ASSERT(heap->sort && "[ERROR] Invalid sort function pointer.");
     SORT_HEAP_ASSERT(heap->size <= SORT_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    SORT_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
     // for each element in heap array destroy it, and increment it until last is reached
     for (SORT_HEAP_DATA_TYPE * e = heap->elements + heap->current; e < heap->elements + (heap->size + heap->current); e++) {
@@ -105,7 +113,8 @@ static inline void destroy_sort_heap(sort_heap_s * heap, const destroy_sort_heap
     heap->args = NULL;
     heap->sort = NULL;
     heap->current = heap->size = 0;
-    heap->valid = false;
+    heap->valid = true;
+    SORT_HEAP_FREE(heap->elements);
 }
 
 /// Clears the heap and all its elements.
@@ -117,11 +126,14 @@ static inline void clear_sort_heap(sort_heap_s * heap, const destroy_sort_heap_f
 
     SORT_HEAP_ASSERT(heap->sort && "[ERROR] Invalid sort function pointer.");
     SORT_HEAP_ASSERT(heap->size <= SORT_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    SORT_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
     // for each element in heap array destroy it, and increment it until last is reached
     for (SORT_HEAP_DATA_TYPE * e = heap->elements + heap->current; e < heap->elements + (heap->size + heap->current); e++) {
         destroy(e);
     }
+    heap->current = heap->size = 0;
+    heap->valid = true;
 }
 
 /// Checks if heap is empty.
@@ -132,6 +144,7 @@ static inline bool is_empty_sort_heap(const sort_heap_s * heap) {
 
     SORT_HEAP_ASSERT(heap->sort && "[ERROR] Invalid sort function pointer.");
     SORT_HEAP_ASSERT(heap->size <= SORT_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    SORT_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
     return !(heap->size);
 }
@@ -144,6 +157,7 @@ static inline bool is_full_sort_heap(const sort_heap_s * heap) {
 
     SORT_HEAP_ASSERT(heap->sort && "[ERROR] Invalid sort function pointer.");
     SORT_HEAP_ASSERT(heap->size <= SORT_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    SORT_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
     return (heap->size == SORT_HEAP_SIZE);
 }
@@ -158,8 +172,13 @@ static inline sort_heap_s copy_sort_heap(const sort_heap_s * heap, const copy_so
 
     SORT_HEAP_ASSERT(heap->sort && "[ERROR] Invalid sort function pointer.");
     SORT_HEAP_ASSERT(heap->size <= SORT_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    SORT_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
-    sort_heap_s replica = { .args = heap->args, .sort = heap->sort, .current = 0, .size = 0, .valid = heap->valid};
+    sort_heap_s replica = {
+        .elements = SORT_HEAP_ALLOC(SORT_HEAP_SIZE * sizeof(SORT_HEAP_DATA_TYPE)),
+        .sort = heap->sort, .args = heap->args, .size = 0, .current = 0, .valid = heap->valid,
+    };
+    SORT_HEAP_ASSERT(replica.elements && "[ERROR] Memory allocation failed.");
 
     // copy elements from heap into replica, but starting from replica's zeroth element in array
     for (replica.size = 0; replica.size < heap->size; replica.size++) {
@@ -173,12 +192,13 @@ static inline sort_heap_s copy_sort_heap(const sort_heap_s * heap, const copy_so
 /// @param heap Sort heap data structure.
 /// @param operate Function pointer to operate on each element in heap using generic argumenst.
 /// @param args Generic void pointer arguments for operate function pointer.
-static inline void foreach_sort_heap(sort_heap_s * heap, const operate_sort_heap_fn operate, void * args) {
+static inline void foreach_sort_heap(const sort_heap_s * heap, const operate_sort_heap_fn operate, void * args) {
     SORT_HEAP_ASSERT(heap && "[ERROR] 'heap' parameter is NULL.");
     SORT_HEAP_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
 
     SORT_HEAP_ASSERT(heap->sort && "[ERROR] Invalid sort function pointer.");
     SORT_HEAP_ASSERT(heap->size <= SORT_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    SORT_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
     // for each element in heap array destroy it, and increment it until last is reached
     for (SORT_HEAP_DATA_TYPE * e = heap->elements + heap->current; e < heap->elements + (heap->size + heap->current) && operate(e, args); e++) {}
@@ -188,12 +208,13 @@ static inline void foreach_sort_heap(sort_heap_s * heap, const operate_sort_heap
 /// @param heap Sort heap data structure.
 /// @param manage Function pointer to manage array of heap elements using heap's size and generic arguments.
 /// @param args Generic void pointer arguments for manage function pointer.
-static inline void map_sort_heap(sort_heap_s * heap, const manage_sort_heap_fn manage, void * args) {
+static inline void map_sort_heap(const sort_heap_s * heap, const manage_sort_heap_fn manage, void * args) {
     SORT_HEAP_ASSERT(heap && "[ERROR] 'heap' parameter is NULL.");
     SORT_HEAP_ASSERT(manage && "[ERROR] 'manage' parameter is NULL.");
 
     SORT_HEAP_ASSERT(heap->sort && "[ERROR] Invalid sort function pointer.");
     SORT_HEAP_ASSERT(heap->size <= SORT_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    SORT_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
     manage(heap->elements + heap->current, heap->size, args);
 }
@@ -207,6 +228,7 @@ static inline void push_sort_heap(sort_heap_s * heap, const SORT_HEAP_DATA_TYPE 
 
     SORT_HEAP_ASSERT(heap->sort && "[ERROR] Invalid sort function pointer.");
     SORT_HEAP_ASSERT(heap->size <= SORT_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    SORT_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
     SORT_HEAP_DATA_TYPE * current_element = heap->current ? heap->elements + (--(heap->current)) : heap->elements + heap->size;
     memcpy(current_element, &element, sizeof(SORT_HEAP_DATA_TYPE));
@@ -224,6 +246,7 @@ static inline SORT_HEAP_DATA_TYPE pop_sort_heap(sort_heap_s * heap) {
 
     SORT_HEAP_ASSERT(heap->sort && "[ERROR] Invalid sort function pointer.");
     SORT_HEAP_ASSERT(heap->size <= SORT_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    SORT_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
     if (!heap->valid) { // if heap is not sorted then sort it
         heap->sort(heap->elements + heap->current, heap->size, heap->args);
@@ -243,6 +266,7 @@ static inline SORT_HEAP_DATA_TYPE peep_sort_heap(sort_heap_s * heap) {
 
     SORT_HEAP_ASSERT(heap->sort && "[ERROR] Invalid sort function pointer.");
     SORT_HEAP_ASSERT(heap->size <= SORT_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    SORT_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
     if (!heap->valid) { // if heap is not sorted then sort it
         heap->sort(heap->elements + heap->current, heap->size, heap->args);
@@ -264,6 +288,7 @@ static inline SORT_HEAP_DATA_TYPE replace_sort_heap(sort_heap_s * heap, const si
 
     SORT_HEAP_ASSERT(heap->sort && "[ERROR] Invalid sort function pointer.");
     SORT_HEAP_ASSERT(heap->size <= SORT_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    SORT_HEAP_ASSERT(heap->elements && "[ERROR] 'elements' pointer is NULL.");
 
     if (!heap->valid) { // if heap is not sorted then sort it
         heap->sort(heap->elements + heap->current, heap->size, heap->args);
@@ -292,9 +317,11 @@ static inline void meld_sort_heap(sort_heap_s * restrict destination, sort_heap_
 
     SORT_HEAP_ASSERT(destination->sort && "[ERROR] Invalid sort function pointer.");
     SORT_HEAP_ASSERT(destination->size <= SORT_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    SORT_HEAP_ASSERT(destination->elements && "[ERROR] 'elements' pointer is NULL.");
 
     SORT_HEAP_ASSERT(source->sort && "[ERROR] Invalid sort function pointer.");
     SORT_HEAP_ASSERT(source->size <= SORT_HEAP_SIZE && "[ERROR] Invalid heap size.");
+    SORT_HEAP_ASSERT(source->elements && "[ERROR] 'elements' pointer is NULL.");
 
     // first add elements from source to destionation to the front until source isn't empty or destination's current index isn't 0
     for (; destination->current && source->size; source->size--, destination->size++) {

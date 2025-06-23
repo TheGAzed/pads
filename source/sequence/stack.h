@@ -1,10 +1,6 @@
 #ifndef STACK_H
 #define STACK_H
 
-#include <stddef.h>  // imports size_t
-#include <stdbool.h> // imports bool
-#include <string.h>  // imports memcpy
-
 /*
     This is free and unencumbered software released into the public domain.
 
@@ -32,20 +28,35 @@
     For more information, please refer to <https://unlicense.org>
 */
 
+#include <stddef.h>  // imports size_t
+#include <stdbool.h> // imports bool
+#include <string.h>  // imports memcpy
+
 #ifndef STACK_DATA_TYPE
-
 // redefine using #define STACK_DATA_TYPE [type]
-#define STACK_DATA_TYPE void*
-
+#   define STACK_DATA_TYPE void*
 #endif
 
 #ifndef STACK_ASSERT
-
-#include <assert.h>  // imports assert for debugging
-
+#   include <assert.h>  // imports assert for debugging
 // redefine using #define STACK_DATA_TYPE [assert]
-#define STACK_ASSERT assert
+#   define STACK_ASSERT assert
+#endif
 
+#if !defined(STACK_ALLOC) && !defined(STACK_FREE)
+#   include <stdlib.h>
+#   define STACK_ALLOC malloc
+#   define STACK_FREE free
+#elif !defined(STACK_ALLOC)
+#   error Must also define STACK_ALLOC.
+#elif !defined(STACK_FREE)
+#   error Must also define STACK_FREE.
+#endif
+
+#ifndef STACK_SIZE
+#   define STACK_SIZE (1 << 10)
+#elif STACK_SIZE <= 0
+#   error Size cannot be zero.
 #endif
 
 /// Function pointer that creates a deep element copy.
@@ -57,25 +68,20 @@ typedef bool            (*operate_stack_fn) (STACK_DATA_TYPE * element, void * a
 /// @brief Function pointer to manage an array of graph elements based on generic arguments.
 typedef void            (*manage_stack_fn)  (STACK_DATA_TYPE * array, const size_t size, void * args);
 
-#ifndef STACK_SIZE
-
-#define STACK_SIZE (1 << 10)
-
-#elif STACK_SIZE <= 0
-
-#error Size cannot be zero.
-
-#endif
-
 typedef struct stack {
-    STACK_DATA_TYPE elements[STACK_SIZE]; // elements array
+    STACK_DATA_TYPE * elements; // elements array
     size_t size;                          // size of stack
 } stack_s;
 
 /// @brief Creates an empty stack structure.
 /// @return Stack structure.
 static inline stack_s create_stack(void) {
-    return (stack_s) { .size = 0, }; // only needs to initialize size == 0
+    const stack_s stack = {
+        .elements = STACK_ALLOC(STACK_SIZE * sizeof(STACK_DATA_TYPE)), .size = 0,
+    };
+    STACK_ASSERT(stack.elements && "[ERROR] Memory allocation failed.");
+
+    return stack;
 }
 
 /// @brief Destroys stack and all elements in it.
@@ -86,10 +92,12 @@ static inline void destroy_stack(stack_s * stack, const destroy_stack_fn destroy
     STACK_ASSERT(destroy && "[ERROR] 'destroy' parameter pointer is NULL.");
 
     STACK_ASSERT(stack->size <= STACK_SIZE && "[ERROR] Invalid stack size.");
+    STACK_ASSERT(stack->elements && "[ERROR] 'elements' pointer is NULL.");
 
     for (; stack->size; stack->size--) {
         destroy(stack->elements + (stack->size - 1));
     }
+    STACK_FREE(stack->elements);
 }
 
 /// @brief Clears all elements in stack.
@@ -100,6 +108,7 @@ static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) 
     STACK_ASSERT(destroy && "[ERROR] 'destroy' parameter pointer is NULL.");
 
     STACK_ASSERT(stack->size <= STACK_SIZE && "[ERROR] Invalid stack size.");
+    STACK_ASSERT(stack->elements && "[ERROR] 'elements' pointer is NULL.");
 
     for (; stack->size; stack->size--) {
         destroy(stack->elements + (stack->size - 1));
@@ -113,6 +122,7 @@ static inline bool is_empty_stack(const stack_s * stack) {
     STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
 
     STACK_ASSERT(stack->size <= STACK_SIZE && "[ERROR] Invalid stack size.");
+    STACK_ASSERT(stack->elements && "[ERROR] 'elements' pointer is NULL.");
 
     return !(stack->size);
 }
@@ -124,6 +134,7 @@ static inline bool is_full_stack(const stack_s * stack) {
     STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
 
     STACK_ASSERT(stack->size <= STACK_SIZE && "[ERROR] Invalid stack size.");
+    STACK_ASSERT(stack->elements && "[ERROR] 'elements' pointer is NULL.");
 
     return (stack->size == STACK_SIZE);
 }
@@ -136,6 +147,7 @@ static inline STACK_DATA_TYPE peep_stack(const stack_s * stack) {
     STACK_ASSERT(stack->size && "[ERROR] Can't peek empty stack");
 
     STACK_ASSERT(stack->size <= STACK_SIZE && "[ERROR] Invalid stack size.");
+    STACK_ASSERT(stack->elements && "[ERROR] 'elements' pointer is NULL.");
 
     return stack->elements[stack->size - 1];
 }
@@ -148,6 +160,7 @@ static inline void push_stack(stack_s * stack, const STACK_DATA_TYPE element) {
     STACK_ASSERT((stack->size < STACK_SIZE) && "[ERROR] Stack reached maximum size.");
 
     STACK_ASSERT(stack->size <= STACK_SIZE && "[ERROR] Invalid stack size.");
+    STACK_ASSERT(stack->elements && "[ERROR] 'elements' pointer is NULL.");
 
     // treat size as next index, add element and increment size
     memcpy(stack->elements + (stack->size++), &element, sizeof(STACK_DATA_TYPE));
@@ -161,6 +174,7 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
     STACK_ASSERT(stack->size && "[ERROR] Can't pop empty stack.");
 
     STACK_ASSERT(stack->size <= STACK_SIZE && "[ERROR] Invalid stack size.");
+    STACK_ASSERT(stack->elements && "[ERROR] 'elements' pointer is NULL.");
 
     return stack->elements[--(stack->size)]; // treat decremented size as current index
 }
@@ -174,25 +188,28 @@ static inline stack_s copy_stack(const stack_s * stack, const copy_stack_fn copy
     STACK_ASSERT(copy && "[ERROR] 'copy' parameter pointer is NULL.");
 
     STACK_ASSERT(stack->size <= STACK_SIZE && "[ERROR] Invalid stack size.");
+    STACK_ASSERT(stack->elements && "[ERROR] 'elements' pointer is NULL.");
 
-    stack_s stack_copy = { .size = stack->size, };
+    const stack_s replica = { .size = stack->size, .elements = STACK_ALLOC(STACK_SIZE * sizeof(STACK_DATA_TYPE)), };
+    STACK_ASSERT(replica.elements && "[ERROR] Memory allocation failed.");
 
     for (size_t i = 0; i < stack->size; i++) {
-        stack_copy.elements[i] = copy(stack->elements[i]);
+        replica.elements[i] = copy(stack->elements[i]);
     }
 
-    return stack_copy;
+    return replica;
 }
 
 /// @brief Iterates over and operates on each element in structure using generic arguments.
 /// @param stack Stack structure pointer.
 /// @param operate Function pointer that takes an element pointer and generic arguments as parameters.
 /// @param args Generic void pointer arguments for operation function pointer.
-static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate, void * args) {
+static inline void foreach_stack(const stack_s * stack, const operate_stack_fn operate, void * args) {
     STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
     STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
 
     STACK_ASSERT(stack->size <= STACK_SIZE && "[ERROR] Invalid stack size.");
+    STACK_ASSERT(stack->elements && "[ERROR] 'elements' pointer is NULL.");
 
     for (size_t i = 0; i < stack->size && operate(stack->elements + (stack->size - i - 1), args); ++i) {}
 }
@@ -202,11 +219,12 @@ static inline void foreach_stack(stack_s * stack, const operate_stack_fn operate
 /// @param manage Function pointer that takes an array of stack elements, the number of elements and other arguments
 /// in the form of a 'args' void pointer.
 /// @param args Generic arguments for manage function pointer.
-static inline void map_stack(stack_s * stack, const manage_stack_fn manage, void * args) {
+static inline void map_stack(stack_s const * stack, const manage_stack_fn manage, void * args) {
     STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
     STACK_ASSERT(manage && "[ERROR] 'manage' parameter is NULL.");
 
     STACK_ASSERT(stack->size <= STACK_SIZE && "[ERROR] Invalid stack size.");
+    STACK_ASSERT(stack->elements && "[ERROR] 'elements' pointer is NULL.");
 
     manage(stack->elements, stack->size, args);
 }

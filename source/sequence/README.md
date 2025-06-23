@@ -13,6 +13,8 @@ The stack is a last element in and first out data structure that can be customiz
 #define STACK_DATA_TYPE [type]   // defines the data type to store
 #define STACK_SIZE      [size]   // defines the maximum positive array size
 #define STACK_ASSERT    [assert] // defines the assert function for invalid states
+#define STACK_ALLOC     [malloc] // defines the memory allocation function
+#define STACK_FREE      [free]   // defines the memory free function
 #include "stack.h"
 ```
 
@@ -20,8 +22,8 @@ The stack structure is made out of the array that stores the elements and a size
 
 ```c++
 typedef struct stack {
-    STACK_DATA_TYPE elements[STACK_SIZE]; // elements array
-    size_t size;                          // size of stack
+    STACK_DATA_TYPE * elements; // elements array
+    size_t size;                // size of stack
 } stack_s;
 ```
 
@@ -391,6 +393,8 @@ The queue is a first element in and first out data structure that can be customi
 #define QUEUE_DATA_TYPE [type]   // defines the data type to store
 #define QUEUE_SIZE      [size]   // defines the maximum positive array size
 #define QUEUE_ASSERT    [assert] // defines the assert function for invalid states
+#define QUEUE_ALLOC     [malloc] // defines the memory allocation function
+#define QUEUE_FREE      [free]   // defines the memory free function
 #include "queue.h"
 ```
 
@@ -398,9 +402,9 @@ The queue structure is made out of the array that stores the elements, a size va
 
 ```c++
 typedef struct queue {
-    QUEUE_DATA_TYPE elements[QUEUE_SIZE]; // elements array
-    size_t size;                          // size of structure
-    size_t current;                       // current index of first element
+    QUEUE_DATA_TYPE * elements; // elements array
+    size_t size;                // size of structure
+    size_t current;             // current index of first element
 } queue_s;
 
 ```
@@ -771,6 +775,8 @@ The deque is a double ended queue that allows elements to be added and removed f
 #define DEQUE_DATA_TYPE [type]   // defines the data type to store
 #define DEQUE_SIZE      [size]   // defines the maximum positive array size
 #define DEQUE_ASSERT    [assert] // defines the assert function for invalid states
+#define DEQUE_ALLOC     [malloc] // defines the memory allocation function
+#define DEQUE_FREE      [free]   // defines the memory free function
 #include "deque.h"
 ```
 
@@ -778,9 +784,9 @@ The deque structure is made out of the array that stores the elements, a size va
 
 ```c++
 typedef struct deque {
-    DEQUE_DATA_TYPE elements[DEQUE_SIZE]; // elements array
-    size_t size;                          // size of structure
-    size_t current;                       // current index of first element
+    DEQUE_DATA_TYPE * elements; // elements array
+    size_t size;                // size of structure
+    size_t current;             // current index of first element
 } deque_s;
 
 ```

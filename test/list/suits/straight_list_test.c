@@ -8,7 +8,6 @@ TEST CREATE_01(void) {
     straight_list_s test = create_straight_list();
 
     ASSERT_EQm("[ERROR] Expected size to be 0.", 0, test.size);
-    ASSERT_EQm("[ERROR] Expected size to be 0.", 0, test.empty_size);
 
     destroy_straight_list(&test, destroy_int);
 
@@ -21,7 +20,6 @@ TEST DESTROY_01(void) {
     destroy_straight_list(&test, destroy_int);
 
     ASSERT_EQm("[ERROR] Expected size to be 0.", 0, test.size);
-    ASSERT_EQm("[ERROR] Expected size to be 0.", 0, test.empty_size);
 
     PASS();
 }
@@ -34,7 +32,6 @@ TEST DESTROY_02(void) {
     destroy_straight_list(&test, destroy_int);
 
     ASSERT_EQm("[ERROR] Expected size to be 0.", 0, test.size);
-    ASSERT_EQm("[ERROR] Expected size to be 0.", 0, test.empty_size);
 
     PASS();
 }
@@ -49,7 +46,6 @@ TEST DESTROY_03(void) {
     destroy_straight_list(&test, destroy_int);
 
     ASSERT_EQm("[ERROR] Expected size to be 0.", 0, test.size);
-    ASSERT_EQm("[ERROR] Expected size to be 0.", 0, test.empty_size);
 
     PASS();
 }
@@ -64,7 +60,6 @@ TEST DESTROY_04(void) {
     destroy_straight_list(&test, destroy_int);
 
     ASSERT_EQm("[ERROR] Expected size to be 0.", 0, test.size);
-    ASSERT_EQm("[ERROR] Expected size to be 0.", 0, test.empty_size);
 
     PASS();
 }
@@ -75,7 +70,6 @@ TEST DESTROY_05(void) {
     destroy_straight_list(&test, destroy_string);
 
     ASSERT_EQm("[ERROR] Expected size to be 0.", 0, test.size);
-    ASSERT_EQm("[ERROR] Expected size to be 0.", 0, test.empty_size);
 
     PASS();
 }
@@ -88,7 +82,6 @@ TEST DESTROY_06(void) {
     destroy_straight_list(&test, destroy_string);
 
     ASSERT_EQm("[ERROR] Expected size to be 0.", 0, test.size);
-    ASSERT_EQm("[ERROR] Expected size to be 0.", 0, test.empty_size);
 
     PASS();
 }
@@ -103,7 +96,6 @@ TEST DESTROY_07(void) {
     destroy_straight_list(&test, destroy_string);
 
     ASSERT_EQm("[ERROR] Expected size to be 0.", 0, test.size);
-    ASSERT_EQm("[ERROR] Expected size to be 0.", 0, test.empty_size);
 
     PASS();
 }
@@ -118,7 +110,6 @@ TEST DESTROY_08(void) {
     destroy_straight_list(&test, destroy_string);
 
     ASSERT_EQm("[ERROR] Expected size to be 0.", 0, test.size);
-    ASSERT_EQm("[ERROR] Expected size to be 0.", 0, test.empty_size);
 
     PASS();
 }
@@ -128,7 +119,6 @@ TEST COPY_01(void) {
     straight_list_s copy = copy_straight_list(&test, copy_int);
 
     ASSERT_EQm("[ERROR] Expected size to be 0.", 0, test.size);
-    ASSERT_EQm("[ERROR] Expected size to be 0.", 0, test.empty_size);
 
     destroy_straight_list(&test, destroy_int);
     destroy_straight_list(&copy, destroy_int);

@@ -1,11 +1,11 @@
 #include <suits.h>
 
-#define BINARY_SET_SIZE (1 << 4)
-#define BINARY_SET_DATA_TYPE DATA_TYPE
+#define HASH_SET_SIZE (1 << 4)
+#define HASH_SET_DATA_TYPE DATA_TYPE
 #include <set/hash_set.h>
 
 TEST CREATE_01(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
     ASSERT_EQm("[ERROR] Expected size to be zero.", 0, test.size);
 
@@ -15,88 +15,88 @@ TEST CREATE_01(void) {
 }
 
 TEST DESTROY_01(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
     destroy_hash_set(&test, destroy_int);
 
-    ASSERT_EQm("[ERROR] Expected compare to be NULL.", NULL, test.compare);
+    ASSERT_EQm("[ERROR] Expected compare to be NULL.", NULL, test.hash);
     ASSERT_EQm("[ERROR] Expected size to be zero.", 0, test.size);
 
     PASS();
 }
 
 TEST DESTROY_02(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
-    insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&test, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
 
     destroy_hash_set(&test, destroy_int);
 
-    ASSERT_EQm("[ERROR] Expected compare to be NULL.", NULL, test.compare);
+    ASSERT_EQm("[ERROR] Expected compare to be NULL.", NULL, test.hash);
     ASSERT_EQm("[ERROR] Expected size to be zero.", 0, test.size);
 
     PASS();
 }
 
 TEST DESTROY_03(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&test, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     destroy_hash_set(&test, destroy_int);
 
-    ASSERT_EQm("[ERROR] Expected compare to be NULL.", NULL, test.compare);
+    ASSERT_EQm("[ERROR] Expected compare to be NULL.", NULL, test.hash);
     ASSERT_EQm("[ERROR] Expected size to be zero.", 0, test.size);
 
     PASS();
 }
 
 TEST DESTROY_04(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE; ++i) {
+        insert_hash_set(&test, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     destroy_hash_set(&test, destroy_int);
 
-    ASSERT_EQm("[ERROR] Expected compare to be NULL.", NULL, test.compare);
+    ASSERT_EQm("[ERROR] Expected compare to be NULL.", NULL, test.hash);
     ASSERT_EQm("[ERROR] Expected size to be zero.", 0, test.size);
 
     PASS();
 }
 
 TEST DESTROY_05(void) {
-    hash_set_s test = create_hash_set(compare_string);
+    hash_set_s test = create_hash_set(hash_string);
 
     destroy_hash_set(&test, destroy_string);
 
-    ASSERT_EQm("[ERROR] Expected compare to be NULL.", NULL, test.compare);
+    ASSERT_EQm("[ERROR] Expected compare to be NULL.", NULL, test.hash);
     ASSERT_EQm("[ERROR] Expected size to be zero.", 0, test.size);
 
     PASS();
 }
 
 TEST DESTROY_06(void) {
-    hash_set_s test = create_hash_set(compare_string);
+    hash_set_s test = create_hash_set(hash_string);
 
-    insert_hash_set(&test, copy_string((BINARY_SET_DATA_TYPE) { .sub_two = TEST_STRING, }));
+    insert_hash_set(&test, copy_string((HASH_SET_DATA_TYPE) { .sub_two = TEST_STRING, }));
 
     destroy_hash_set(&test, destroy_string);
 
-    ASSERT_EQm("[ERROR] Expected compare to be NULL.", NULL, test.compare);
+    ASSERT_EQm("[ERROR] Expected compare to be NULL.", NULL, test.hash);
     ASSERT_EQm("[ERROR] Expected size to be zero.", 0, test.size);
 
     PASS();
 }
 
 TEST COPY_01(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
     hash_set_s copy = copy_hash_set(&test, copy_int);
 
-    ASSERT_EQm("[ERROR] Expected compare to be equal.", test.compare, copy.compare);
+    ASSERT_EQm("[ERROR] Expected compare to be equal.", test.hash, copy.hash);
     ASSERT_EQm("[ERROR] Expected size to be equal.", copy.size, test.size);
 
     destroy_hash_set(&test, destroy_int);
@@ -106,13 +106,13 @@ TEST COPY_01(void) {
 }
 
 TEST COPY_02(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
-    insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&test, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
 
     hash_set_s copy = copy_hash_set(&test, copy_int);
 
-    ASSERT_EQm("[ERROR] Expected compare to be equal.", test.compare, copy.compare);
+    ASSERT_EQm("[ERROR] Expected compare to be equal.", test.hash, copy.hash);
     ASSERT_EQm("[ERROR] Expected size to be equal.", copy.size, test.size);
 
     destroy_hash_set(&test, destroy_int);
@@ -122,15 +122,15 @@ TEST COPY_02(void) {
 }
 
 TEST COPY_03(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&test, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     hash_set_s copy = copy_hash_set(&test, copy_int);
 
-    ASSERT_EQm("[ERROR] Expected compare to be equal.", test.compare, copy.compare);
+    ASSERT_EQm("[ERROR] Expected compare to be equal.", test.hash, copy.hash);
     ASSERT_EQm("[ERROR] Expected size to be equal.", copy.size, test.size);
 
     destroy_hash_set(&test, destroy_int);
@@ -140,15 +140,15 @@ TEST COPY_03(void) {
 }
 
 TEST COPY_04(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE; ++i) {
+        insert_hash_set(&test, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     hash_set_s copy = copy_hash_set(&test, copy_int);
 
-    ASSERT_EQm("[ERROR] Expected compare to be equal.", test.compare, copy.compare);
+    ASSERT_EQm("[ERROR] Expected compare to be equal.", test.hash, copy.hash);
     ASSERT_EQm("[ERROR] Expected size to be equal.", copy.size, test.size);
 
     destroy_hash_set(&test, destroy_int);
@@ -158,10 +158,10 @@ TEST COPY_04(void) {
 }
 
 TEST COPY_05(void) {
-    hash_set_s test = create_hash_set(compare_string);
+    hash_set_s test = create_hash_set(hash_string);
     hash_set_s copy = copy_hash_set(&test, copy_string);
 
-    ASSERT_EQm("[ERROR] Expected compare to be equal.", test.compare, copy.compare);
+    ASSERT_EQm("[ERROR] Expected compare to be equal.", test.hash, copy.hash);
     ASSERT_EQm("[ERROR] Expected size to be equal.", copy.size, test.size);
 
     destroy_hash_set(&test, destroy_string);
@@ -171,13 +171,13 @@ TEST COPY_05(void) {
 }
 
 TEST COPY_06(void) {
-    hash_set_s test = create_hash_set(compare_string);
+    hash_set_s test = create_hash_set(hash_string);
 
-    insert_hash_set(&test, copy_string((BINARY_SET_DATA_TYPE) { .sub_two = TEST_STRING, }));
+    insert_hash_set(&test, copy_string((HASH_SET_DATA_TYPE) { .sub_two = TEST_STRING, }));
 
     hash_set_s copy = copy_hash_set(&test, copy_string);
 
-    ASSERT_EQm("[ERROR] Expected compare to be equal.", test.compare, copy.compare);
+    ASSERT_EQm("[ERROR] Expected compare to be equal.", test.hash, copy.hash);
     ASSERT_EQm("[ERROR] Expected size to be equal.", copy.size, test.size);
 
     destroy_hash_set(&test, destroy_string);
@@ -187,7 +187,7 @@ TEST COPY_06(void) {
 }
 
 TEST IS_EMPTY_01(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
     ASSERTm("[ERROR] Expected set to be empty.", is_empty_hash_set(&test));
 
@@ -197,9 +197,9 @@ TEST IS_EMPTY_01(void) {
 }
 
 TEST IS_EMPTY_02(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
-    insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&test, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
 
     ASSERT_FALSEm("[ERROR] Expected set to not be empty.", is_empty_hash_set(&test));
 
@@ -209,10 +209,10 @@ TEST IS_EMPTY_02(void) {
 }
 
 TEST IS_EMPTY_03(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&test, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_FALSEm("[ERROR] Expected set to not be empty.", is_empty_hash_set(&test));
@@ -223,10 +223,10 @@ TEST IS_EMPTY_03(void) {
 }
 
 TEST IS_EMPTY_04(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE; ++i) {
+        insert_hash_set(&test, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_FALSEm("[ERROR] Expected set to not be empty.", is_empty_hash_set(&test));
@@ -237,7 +237,7 @@ TEST IS_EMPTY_04(void) {
 }
 
 TEST IS_FULL_01(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
     ASSERT_FALSEm("[ERROR] Expected set to not be full.", is_full_hash_set(&test));
 
@@ -247,9 +247,9 @@ TEST IS_FULL_01(void) {
 }
 
 TEST IS_FULL_02(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
-    insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&test, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
 
     ASSERT_FALSEm("[ERROR] Expected set to not be full.", is_full_hash_set(&test));
 
@@ -259,10 +259,10 @@ TEST IS_FULL_02(void) {
 }
 
 TEST IS_FULL_03(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&test, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_FALSEm("[ERROR] Expected set to not be full.", is_full_hash_set(&test));
@@ -273,10 +273,10 @@ TEST IS_FULL_03(void) {
 }
 
 TEST IS_FULL_04(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE; ++i) {
+        insert_hash_set(&test, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERTm("[ERROR] Expected set to be full.", is_full_hash_set(&test));
@@ -286,201 +286,12 @@ TEST IS_FULL_04(void) {
     PASS();
 }
 
-TEST FOREACH_01(void) {
-    hash_set_s test = create_hash_set(compare_int);
-
-    int increment = 5;
-    foreach_hash_set(&test, operation_int, &increment);
-
-    destroy_hash_set(&test, destroy_int);
-
-    PASS();
-}
-
-TEST FOREACH_02(void) {
-    hash_set_s test = create_hash_set(compare_int);
-
-    insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
-
-    int increment = 5;
-    foreach_hash_set(&test, operation_int, &increment);
-
-    const BINARY_SET_DATA_TYPE element = (BINARY_SET_DATA_TYPE) { .sub_one = 42 + increment, };
-    ASSERTm("[ERROR] Expected value to be incremented.", contains_hash_set(&test, element));
-
-    destroy_hash_set(&test, destroy_int);
-
-    PASS();
-}
-
-TEST FOREACH_03(void) {
-    hash_set_s test = create_hash_set(compare_int);
-
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-    }
-
-    int increment = 5;
-    foreach_hash_set(&test, operation_int, &increment);
-
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        const BINARY_SET_DATA_TYPE element = (BINARY_SET_DATA_TYPE) { .sub_one = i + increment, };
-        ASSERTm("[ERROR] Expected value to be incremented.", contains_hash_set(&test, element));
-    }
-
-    destroy_hash_set(&test, destroy_int);
-
-    PASS();
-}
-
-TEST FOREACH_04(void) {
-    hash_set_s test = create_hash_set(compare_int);
-
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-    }
-
-    int increment = 5;
-    foreach_hash_set(&test, operation_int, &increment);
-
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        const BINARY_SET_DATA_TYPE element = (BINARY_SET_DATA_TYPE) { .sub_one = i + increment, };
-        ASSERTm("[ERROR] Expected value to be incremented.", contains_hash_set(&test, element));
-    }
-
-    destroy_hash_set(&test, destroy_int);
-
-    PASS();
-}
-
-TEST MAP_01(void) {
-    hash_set_s test = create_hash_set(compare_int);
-
-    map_hash_set(&test, sort_int, compare_int_generic);
-
-    destroy_hash_set(&test, destroy_int);
-
-    PASS();
-}
-
-TEST MAP_02(void) {
-    hash_set_s test = create_hash_set(compare_int);
-
-    insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
-
-    map_hash_set(&test, sort_int, compare_int_generic);
-
-    ASSERT_EQm("[ERROR] Expected sorted elements to be equal.", 42, test.elements[0].sub_one);
-
-    destroy_hash_set(&test, destroy_int);
-
-    PASS();
-}
-
-TEST MAP_03(void) {
-    hash_set_s test = create_hash_set(compare_int);
-
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_hash_set(&test, sort_int, compare_int_generic);
-
-    for (size_t i = 0; i < test.size; ++i) {
-        ASSERT_EQm("[ERROR] Expected sorted elements to be equal.", (int)(i), test.elements[i].sub_one);
-    }
-
-    destroy_hash_set(&test, destroy_int);
-
-    PASS();
-}
-
-TEST MAP_04(void) {
-    hash_set_s test = create_hash_set(compare_int);
-
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_hash_set(&test, sort_int, compare_int_generic);
-
-    for (size_t i = 0; i < test.size; ++i) {
-        ASSERT_EQm("[ERROR] Expected sorted elements to be equal.", (int)(i), test.elements[i].sub_one);
-    }
-
-    destroy_hash_set(&test, destroy_int);
-
-    PASS();
-}
-
-TEST MAP_05(void) {
-    hash_set_s test = create_hash_set(compare_int);
-
-    map_hash_set(&test, sort_int, compare_reverse_int_generic);
-
-    destroy_hash_set(&test, destroy_int);
-
-    PASS();
-}
-
-TEST MAP_06(void) {
-    hash_set_s test = create_hash_set(compare_int);
-
-    insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
-
-    map_hash_set(&test, sort_int, compare_reverse_int_generic);
-
-    ASSERT_EQm("[ERROR] Expected sorted elements to be equal.", 42, test.elements[0].sub_one);
-
-    destroy_hash_set(&test, destroy_int);
-
-    PASS();
-}
-
-TEST MAP_07(void) {
-    hash_set_s test = create_hash_set(compare_int);
-
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_hash_set(&test, sort_int, compare_reverse_int_generic);
-
-    for (int i = 0; i < (int)(test.size); ++i) {
-        const int expected = (int)(test.size) - 1 - i;
-        ASSERT_EQm("[ERROR] Expected sorted elements to be equal.", expected, test.elements[i].sub_one);
-    }
-
-    destroy_hash_set(&test, destroy_int);
-
-    PASS();
-}
-
-TEST MAP_08(void) {
-    hash_set_s test = create_hash_set(compare_int);
-
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-    }
-
-    map_hash_set(&test, sort_int, compare_reverse_int_generic);
-
-    for (int i = 0; i < (int)(test.size); ++i) {
-        const int expected = (int)(test.size) - 1 - i;
-        ASSERT_EQm("[ERROR] Expected sorted elements to be equal.", expected, test.elements[i].sub_one);
-    }
-
-    destroy_hash_set(&test, destroy_int);
-
-    PASS();
-}
-
 TEST INSERT_01(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
-    insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&test, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
 
-    const BINARY_SET_DATA_TYPE element = { .sub_one = 42, };
+    const HASH_SET_DATA_TYPE element = { .sub_one = 42, };
     ASSERTm("[ERROR] Expected set to contain element.", contains_hash_set(&test, element));
 
     destroy_hash_set(&test, destroy_int);
@@ -489,14 +300,14 @@ TEST INSERT_01(void) {
 }
 
 TEST INSERT_02(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&test, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        const HASH_SET_DATA_TYPE element = { .sub_one = i, };
         ASSERTm("[ERROR] Expected set to contain element.", contains_hash_set(&test, element));
     }
 
@@ -506,14 +317,14 @@ TEST INSERT_02(void) {
 }
 
 TEST INSERT_03(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE; ++i) {
+        insert_hash_set(&test, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+    for (int i = 0; i < HASH_SET_SIZE; ++i) {
+        const HASH_SET_DATA_TYPE element = { .sub_one = i, };
         ASSERTm("[ERROR] Expected set to contain element.", contains_hash_set(&test, element));
     }
 
@@ -523,11 +334,11 @@ TEST INSERT_03(void) {
 }
 
 TEST REMOVE_01(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
-    insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&test, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
 
-    const BINARY_SET_DATA_TYPE element = { .sub_one = 42, };
+    const HASH_SET_DATA_TYPE element = { .sub_one = 42, };
     ASSERT_EQm("[ERROR] Expected removed element to be valid.", 42, remove_hash_set(&test, element).sub_one);
 
     destroy_hash_set(&test, destroy_int);
@@ -536,14 +347,14 @@ TEST REMOVE_01(void) {
 }
 
 TEST REMOVE_02(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&test, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        const HASH_SET_DATA_TYPE element = { .sub_one = i, };
         ASSERT_EQm("[ERROR] Expected removed element to be valid.", i, remove_hash_set(&test, element).sub_one);
     }
 
@@ -553,14 +364,14 @@ TEST REMOVE_02(void) {
 }
 
 TEST REMOVE_03(void) {
-    hash_set_s test = create_hash_set(compare_int);
+    hash_set_s test = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&test, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE; ++i) {
+        insert_hash_set(&test, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+    for (int i = 0; i < HASH_SET_SIZE; ++i) {
+        const HASH_SET_DATA_TYPE element = { .sub_one = i, };
         ASSERT_EQm("[ERROR] Expected removed element to be valid.", i, remove_hash_set(&test, element).sub_one);
     }
 
@@ -570,8 +381,8 @@ TEST REMOVE_03(void) {
 }
 
 TEST UNION_01(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
     hash_set_s test = union_hash_set(&one, &two, copy_int);
 
@@ -585,17 +396,17 @@ TEST UNION_01(void) {
 }
 
 TEST UNION_02(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
-    insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
 
     hash_set_s test = union_hash_set(&one, &two, copy_int);
 
     ASSERT_EQm("[ERROR] Expected size to be correct.", 1, test.size);
 
-    const BINARY_SET_DATA_TYPE element = { .sub_one = 42, };
+    const HASH_SET_DATA_TYPE element = { .sub_one = 42, };
     ASSERTm("[ERROR] Expected set to contain element.", contains_hash_set(&test, element));
 
     destroy_hash_set(&one, destroy_int);
@@ -606,20 +417,20 @@ TEST UNION_02(void) {
 }
 
 TEST UNION_03(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     hash_set_s test = union_hash_set(&one, &two, copy_int);
 
-    ASSERT_EQm("[ERROR] Expected size to be correct.", BINARY_SET_SIZE - 1, test.size);
+    ASSERT_EQm("[ERROR] Expected size to be correct.", HASH_SET_SIZE - 1, test.size);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        const HASH_SET_DATA_TYPE element = { .sub_one = i, };
         ASSERTm("[ERROR] Expected set to contain element.", contains_hash_set(&test, element));
     }
 
@@ -631,20 +442,20 @@ TEST UNION_03(void) {
 }
 
 TEST UNION_04(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     hash_set_s test = union_hash_set(&one, &two, copy_int);
 
-    ASSERT_EQm("[ERROR] Expected size to be correct.", BINARY_SET_SIZE, test.size);
+    ASSERT_EQm("[ERROR] Expected size to be correct.", HASH_SET_SIZE, test.size);
 
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+    for (int i = 0; i < HASH_SET_SIZE; ++i) {
+        const HASH_SET_DATA_TYPE element = { .sub_one = i, };
         ASSERTm("[ERROR] Expected set to contain element.", contains_hash_set(&test, element));
     }
 
@@ -656,23 +467,23 @@ TEST UNION_04(void) {
 }
 
 TEST UNION_05(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < (BINARY_SET_SIZE - 1) >> 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < (HASH_SET_SIZE - 1) >> 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = (BINARY_SET_SIZE - 1) >> 1; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = (HASH_SET_SIZE - 1) >> 1; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     hash_set_s test = union_hash_set(&one, &two, copy_int);
 
-    ASSERT_EQm("[ERROR] Expected size to be correct.", BINARY_SET_SIZE - 1, test.size);
+    ASSERT_EQm("[ERROR] Expected size to be correct.", HASH_SET_SIZE - 1, test.size);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        const HASH_SET_DATA_TYPE element = { .sub_one = i, };
         ASSERTm("[ERROR] Expected set to contain element.", contains_hash_set(&test, element));
     }
 
@@ -684,23 +495,23 @@ TEST UNION_05(void) {
 }
 
 TEST UNION_06(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < (BINARY_SET_SIZE) >> 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < (HASH_SET_SIZE) >> 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = (BINARY_SET_SIZE) >> 1; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = (HASH_SET_SIZE) >> 1; i < HASH_SET_SIZE; ++i) {
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     hash_set_s test = union_hash_set(&one, &two, copy_int);
 
-    ASSERT_EQm("[ERROR] Expected size to be correct.", BINARY_SET_SIZE, test.size);
+    ASSERT_EQm("[ERROR] Expected size to be correct.", HASH_SET_SIZE, test.size);
 
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+    for (int i = 0; i < HASH_SET_SIZE; ++i) {
+        const HASH_SET_DATA_TYPE element = { .sub_one = i, };
         ASSERTm("[ERROR] Expected set to contain element.", contains_hash_set(&test, element));
     }
 
@@ -712,8 +523,8 @@ TEST UNION_06(void) {
 }
 
 TEST INTERSECT_01(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
     hash_set_s test = intersect_hash_set(&one, &two, copy_int);
 
@@ -727,17 +538,17 @@ TEST INTERSECT_01(void) {
 }
 
 TEST INTERSECT_02(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
-    insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
 
     hash_set_s test = intersect_hash_set(&one, &two, copy_int);
 
     ASSERT_EQm("[ERROR] Expected size to be correct.", 1, test.size);
 
-    const BINARY_SET_DATA_TYPE element = { .sub_one = 42, };
+    const HASH_SET_DATA_TYPE element = { .sub_one = 42, };
     ASSERTm("[ERROR] Expected set to contain element.", contains_hash_set(&test, element));
 
     destroy_hash_set(&one, destroy_int);
@@ -748,20 +559,20 @@ TEST INTERSECT_02(void) {
 }
 
 TEST INTERSECT_03(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     hash_set_s test = intersect_hash_set(&one, &two, copy_int);
 
-    ASSERT_EQm("[ERROR] Expected size to be correct.", BINARY_SET_SIZE - 1, test.size);
+    ASSERT_EQm("[ERROR] Expected size to be correct.", HASH_SET_SIZE - 1, test.size);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        const HASH_SET_DATA_TYPE element = { .sub_one = i, };
         ASSERTm("[ERROR] Expected set to contain element.", contains_hash_set(&test, element));
     }
 
@@ -773,20 +584,20 @@ TEST INTERSECT_03(void) {
 }
 
 TEST INTERSECT_04(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     hash_set_s test = intersect_hash_set(&one, &two, copy_int);
 
-    ASSERT_EQm("[ERROR] Expected size to be correct.", BINARY_SET_SIZE, test.size);
+    ASSERT_EQm("[ERROR] Expected size to be correct.", HASH_SET_SIZE, test.size);
 
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+    for (int i = 0; i < HASH_SET_SIZE; ++i) {
+        const HASH_SET_DATA_TYPE element = { .sub_one = i, };
         ASSERTm("[ERROR] Expected set to contain element.", contains_hash_set(&test, element));
     }
 
@@ -798,15 +609,15 @@ TEST INTERSECT_04(void) {
 }
 
 TEST INTERSECT_05(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < (BINARY_SET_SIZE - 1) >> 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < (HASH_SET_SIZE - 1) >> 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = (BINARY_SET_SIZE - 1) >> 1; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = (HASH_SET_SIZE - 1) >> 1; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     hash_set_s test = intersect_hash_set(&one, &two, copy_int);
@@ -821,15 +632,15 @@ TEST INTERSECT_05(void) {
 }
 
 TEST INTERSECT_06(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < (BINARY_SET_SIZE) >> 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < (HASH_SET_SIZE) >> 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = (BINARY_SET_SIZE) >> 1; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = (HASH_SET_SIZE) >> 1; i < HASH_SET_SIZE; ++i) {
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     hash_set_s test = intersect_hash_set(&one, &two, copy_int);
@@ -844,21 +655,21 @@ TEST INTERSECT_06(void) {
 }
 
 TEST INTERSECT_07(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < 2 * ((BINARY_SET_SIZE - 1) / 3); ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < 2 * ((HASH_SET_SIZE - 1) / 3); ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = ((BINARY_SET_SIZE - 1) / 3); i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = ((HASH_SET_SIZE - 1) / 3); i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     hash_set_s test = intersect_hash_set(&one, &two, copy_int);
 
-    for (int i = ((BINARY_SET_SIZE - 1) / 3); i < 2 * ((BINARY_SET_SIZE - 1) / 3); ++i) {
-        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+    for (int i = ((HASH_SET_SIZE - 1) / 3); i < 2 * ((HASH_SET_SIZE - 1) / 3); ++i) {
+        const HASH_SET_DATA_TYPE element = { .sub_one = i, };
         ASSERTm("[ERROR] Expected set to contain element.", contains_hash_set(&test, element));
     }
 
@@ -870,21 +681,21 @@ TEST INTERSECT_07(void) {
 }
 
 TEST INTERSECT_08(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < 2 * ((BINARY_SET_SIZE) / 3); ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < 2 * ((HASH_SET_SIZE) / 3); ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = ((BINARY_SET_SIZE) / 3); i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = ((HASH_SET_SIZE) / 3); i < HASH_SET_SIZE; ++i) {
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     hash_set_s test = intersect_hash_set(&one, &two, copy_int);
 
-    for (int i = ((BINARY_SET_SIZE) / 3); i < 2 * ((BINARY_SET_SIZE) / 3); ++i) {
-        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+    for (int i = ((HASH_SET_SIZE) / 3); i < 2 * ((HASH_SET_SIZE) / 3); ++i) {
+        const HASH_SET_DATA_TYPE element = { .sub_one = i, };
         ASSERTm("[ERROR] Expected set to contain element.", contains_hash_set(&test, element));
     }
 
@@ -896,8 +707,8 @@ TEST INTERSECT_08(void) {
 }
 
 TEST SUBTRACT_01(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
     hash_set_s test = subtract_hash_set(&one, &two, copy_int);
 
@@ -911,11 +722,11 @@ TEST SUBTRACT_01(void) {
 }
 
 TEST SUBTRACT_02(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
-    insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
 
     hash_set_s test = subtract_hash_set(&one, &two, copy_int);
 
@@ -929,12 +740,12 @@ TEST SUBTRACT_02(void) {
 }
 
 TEST SUBTRACT_03(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     hash_set_s test = subtract_hash_set(&one, &two, copy_int);
@@ -949,12 +760,12 @@ TEST SUBTRACT_03(void) {
 }
 
 TEST SUBTRACT_04(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     hash_set_s test = subtract_hash_set(&one, &two, copy_int);
@@ -969,26 +780,26 @@ TEST SUBTRACT_04(void) {
 }
 
 TEST SUBTRACT_05(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = 0; i < (BINARY_SET_SIZE - 1) >> 1; ++i) {
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < (HASH_SET_SIZE - 1) >> 1; ++i) {
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     hash_set_s test = subtract_hash_set(&one, &two, copy_int);
 
-    for (int i = (BINARY_SET_SIZE - 1) >> 1; i < BINARY_SET_SIZE - 1; ++i) {
-        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+    for (int i = (HASH_SET_SIZE - 1) >> 1; i < HASH_SET_SIZE - 1; ++i) {
+        const HASH_SET_DATA_TYPE element = { .sub_one = i, };
         ASSERTm("[ERROR] Expected set to contain element.", contains_hash_set(&test, element));
     }
 
-    for (int i = 0; i < (BINARY_SET_SIZE - 1) >> 1; ++i) {
-        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+    for (int i = 0; i < (HASH_SET_SIZE - 1) >> 1; ++i) {
+        const HASH_SET_DATA_TYPE element = { .sub_one = i, };
         ASSERTm("[ERROR] Expected set to NOT contain element.", !contains_hash_set(&test, element));
     }
 
@@ -1000,26 +811,26 @@ TEST SUBTRACT_05(void) {
 }
 
 TEST SUBTRACT_06(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = 0; i < (BINARY_SET_SIZE) >> 1; ++i) {
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < (HASH_SET_SIZE) >> 1; ++i) {
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     hash_set_s test = subtract_hash_set(&one, &two, copy_int);
 
-    for (int i = (BINARY_SET_SIZE) >> 1; i < BINARY_SET_SIZE; ++i) {
-        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+    for (int i = (HASH_SET_SIZE) >> 1; i < HASH_SET_SIZE; ++i) {
+        const HASH_SET_DATA_TYPE element = { .sub_one = i, };
         ASSERTm("[ERROR] Expected set to contain element.", contains_hash_set(&test, element));
     }
 
-    for (int i = 0; i < (BINARY_SET_SIZE) >> 1; ++i) {
-        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+    for (int i = 0; i < (HASH_SET_SIZE) >> 1; ++i) {
+        const HASH_SET_DATA_TYPE element = { .sub_one = i, };
         ASSERTm("[ERROR] Expected set to NOT contain element.", !contains_hash_set(&test, element));
     }
 
@@ -1031,8 +842,8 @@ TEST SUBTRACT_06(void) {
 }
 
 TEST EXCLUDE_01(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
     hash_set_s test = exclude_hash_set(&one, &two, copy_int);
 
@@ -1046,11 +857,11 @@ TEST EXCLUDE_01(void) {
 }
 
 TEST EXCLUDE_02(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
-    insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
 
     hash_set_s test = exclude_hash_set(&one, &two, copy_int);
 
@@ -1064,12 +875,12 @@ TEST EXCLUDE_02(void) {
 }
 
 TEST EXCLUDE_03(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     hash_set_s test = exclude_hash_set(&one, &two, copy_int);
@@ -1084,12 +895,12 @@ TEST EXCLUDE_03(void) {
 }
 
 TEST EXCLUDE_04(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     hash_set_s test = exclude_hash_set(&one, &two, copy_int);
@@ -1104,21 +915,21 @@ TEST EXCLUDE_04(void) {
 }
 
 TEST EXCLUDE_05(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < (BINARY_SET_SIZE - 1) >> 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < (HASH_SET_SIZE - 1) >> 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = (BINARY_SET_SIZE - 1) >> 1; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = (HASH_SET_SIZE - 1) >> 1; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     hash_set_s test = exclude_hash_set(&one, &two, copy_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        const HASH_SET_DATA_TYPE element = { .sub_one = i, };
         ASSERTm("[ERROR] Expected elements to be contained.", contains_hash_set(&test, element));
     }
 
@@ -1130,21 +941,21 @@ TEST EXCLUDE_05(void) {
 }
 
 TEST EXCLUDE_06(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < (BINARY_SET_SIZE) >> 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < (HASH_SET_SIZE) >> 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = (BINARY_SET_SIZE) >> 1; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = (HASH_SET_SIZE) >> 1; i < HASH_SET_SIZE; ++i) {
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     hash_set_s test = exclude_hash_set(&one, &two, copy_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        const BINARY_SET_DATA_TYPE element = { .sub_one = i, };
+    for (int i = 0; i < HASH_SET_SIZE; ++i) {
+        const HASH_SET_DATA_TYPE element = { .sub_one = i, };
         ASSERTm("[ERROR] Expected elements to be contained.", contains_hash_set(&test, element));
     }
 
@@ -1156,18 +967,18 @@ TEST EXCLUDE_06(void) {
 }
 
 TEST EXCLUDE_07(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < (BINARY_SET_SIZE - 1) >> 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < (HASH_SET_SIZE - 1) >> 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = (BINARY_SET_SIZE - 1) >> 1; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = (HASH_SET_SIZE - 1) >> 1; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    const BINARY_SET_DATA_TYPE element = { .sub_one = 42, };
+    const HASH_SET_DATA_TYPE element = { .sub_one = 42, };
 
     if (!contains_hash_set(&one, element)) {
         insert_hash_set(&one, element);
@@ -1189,18 +1000,18 @@ TEST EXCLUDE_07(void) {
 }
 
 TEST EXCLUDE_08(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < (BINARY_SET_SIZE) >> 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < (HASH_SET_SIZE) >> 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = (BINARY_SET_SIZE) >> 1; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = (HASH_SET_SIZE) >> 1; i < HASH_SET_SIZE; ++i) {
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    const BINARY_SET_DATA_TYPE element = { .sub_one = 42, };
+    const HASH_SET_DATA_TYPE element = { .sub_one = 42, };
 
     if (!contains_hash_set(&one, element)) {
         insert_hash_set(&one, element);
@@ -1222,8 +1033,8 @@ TEST EXCLUDE_08(void) {
 }
 
 TEST IS_SUBSET_01(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
     ASSERTm("[ERROR] Expected sets to be equal.", is_subset_hash_set(&one, &two));
 
@@ -1234,11 +1045,11 @@ TEST IS_SUBSET_01(void) {
 }
 
 TEST IS_SUBSET_02(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
-    insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
 
     ASSERTm("[ERROR] Expected sets to be equal.", is_subset_hash_set(&one, &two));
 
@@ -1249,12 +1060,12 @@ TEST IS_SUBSET_02(void) {
 }
 
 TEST IS_SUBSET_03(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERTm("[ERROR] Expected sets to be equal.", is_subset_hash_set(&one, &two));
@@ -1266,12 +1077,12 @@ TEST IS_SUBSET_03(void) {
 }
 
 TEST IS_SUBSET_04(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERTm("[ERROR] Expected sets to be equal.", is_subset_hash_set(&one, &two));
@@ -1283,14 +1094,14 @@ TEST IS_SUBSET_04(void) {
 }
 
 TEST IS_SUBSET_05(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1 - 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1 - 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
-    insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = BINARY_SET_SIZE - 2, });
+    insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = HASH_SET_SIZE - 2, });
 
     ASSERT_FALSEm("[ERROR] Expected sets to be equal.", is_subset_hash_set(&one, &two));
 
@@ -1301,14 +1112,14 @@ TEST IS_SUBSET_05(void) {
 }
 
 TEST IS_SUBSET_06(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
-    insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = BINARY_SET_SIZE - 1, });
+    insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = HASH_SET_SIZE - 1, });
 
     ASSERT_FALSEm("[ERROR] Expected sets to be equal.", is_subset_hash_set(&one, &two));
 
@@ -1319,14 +1130,14 @@ TEST IS_SUBSET_06(void) {
 }
 
 TEST IS_SUBSET_07(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1 - 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1 - 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
-    insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = BINARY_SET_SIZE - 2, });
+    insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = HASH_SET_SIZE - 2, });
 
     ASSERTm("[ERROR] Expected sets to be equal.", is_subset_hash_set(&one, &two));
 
@@ -1337,14 +1148,14 @@ TEST IS_SUBSET_07(void) {
 }
 
 TEST IS_SUBSET_08(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
-    insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = BINARY_SET_SIZE - 1, });
+    insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = HASH_SET_SIZE - 1, });
 
     ASSERTm("[ERROR] Expected sets to be equal.", is_subset_hash_set(&one, &two));
 
@@ -1355,8 +1166,8 @@ TEST IS_SUBSET_08(void) {
 }
 
 TEST IS_PROPER_SUBSET_01(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
     ASSERT_FALSEm("[ERROR] Expected sets to be properly equal.", is_proper_subset_hash_set(&one, &two));
 
@@ -1367,11 +1178,11 @@ TEST IS_PROPER_SUBSET_01(void) {
 }
 
 TEST IS_PROPER_SUBSET_02(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
-    insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
 
     ASSERT_FALSEm("[ERROR] Expected sets to be properly equal.", is_proper_subset_hash_set(&one, &two));
 
@@ -1382,12 +1193,12 @@ TEST IS_PROPER_SUBSET_02(void) {
 }
 
 TEST IS_PROPER_SUBSET_03(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_FALSEm("[ERROR] Expected sets to be properly equal.", is_proper_subset_hash_set(&one, &two));
@@ -1399,12 +1210,12 @@ TEST IS_PROPER_SUBSET_03(void) {
 }
 
 TEST IS_PROPER_SUBSET_04(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_FALSEm("[ERROR] Expected sets to be properly equal.", is_proper_subset_hash_set(&one, &two));
@@ -1416,14 +1227,14 @@ TEST IS_PROPER_SUBSET_04(void) {
 }
 
 TEST IS_PROPER_SUBSET_05(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1 - 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1 - 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
-    insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = BINARY_SET_SIZE - 2, });
+    insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = HASH_SET_SIZE - 2, });
 
     ASSERT_FALSEm("[ERROR] Expected sets to be properly equal.", is_proper_subset_hash_set(&one, &two));
 
@@ -1434,14 +1245,14 @@ TEST IS_PROPER_SUBSET_05(void) {
 }
 
 TEST IS_PROPER_SUBSET_06(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
-    insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = BINARY_SET_SIZE - 1, });
+    insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = HASH_SET_SIZE - 1, });
 
     ASSERT_FALSEm("[ERROR] Expected sets to be properly equal.", is_proper_subset_hash_set(&one, &two));
 
@@ -1452,14 +1263,14 @@ TEST IS_PROPER_SUBSET_06(void) {
 }
 
 TEST IS_PROPER_SUBSET_07(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1 - 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1 - 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
-    insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = BINARY_SET_SIZE - 2, });
+    insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = HASH_SET_SIZE - 2, });
 
     ASSERTm("[ERROR] Expected sets to be properly equal.", is_proper_subset_hash_set(&one, &two));
 
@@ -1470,14 +1281,14 @@ TEST IS_PROPER_SUBSET_07(void) {
 }
 
 TEST IS_PROPER_SUBSET_08(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
-    insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = BINARY_SET_SIZE - 1, });
+    insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = HASH_SET_SIZE - 1, });
 
     ASSERTm("[ERROR] Expected sets to be properly equal.", is_proper_subset_hash_set(&one, &two));
 
@@ -1488,8 +1299,8 @@ TEST IS_PROPER_SUBSET_08(void) {
 }
 
 TEST IS_DISJOINT_01(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
     ASSERTm("[ERROR] Expected sets to be disjoint.", is_disjoint_hash_set(&one, &two));
 
@@ -1500,11 +1311,11 @@ TEST IS_DISJOINT_01(void) {
 }
 
 TEST IS_DISJOINT_02(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
-    insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
 
     ASSERT_FALSEm("[ERROR] Expected sets to not be disjoint.", is_disjoint_hash_set(&one, &two));
 
@@ -1515,12 +1326,12 @@ TEST IS_DISJOINT_02(void) {
 }
 
 TEST IS_DISJOINT_03(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_FALSEm("[ERROR] Expected sets to not be disjoint.", is_disjoint_hash_set(&one, &two));
@@ -1532,12 +1343,12 @@ TEST IS_DISJOINT_03(void) {
 }
 
 TEST IS_DISJOINT_04(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < HASH_SET_SIZE; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERT_FALSEm("[ERROR] Expected sets to not be disjoint.", is_disjoint_hash_set(&one, &two));
@@ -1549,15 +1360,15 @@ TEST IS_DISJOINT_04(void) {
 }
 
 TEST IS_DISJOINT_05(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < (BINARY_SET_SIZE - 1) >> 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < (HASH_SET_SIZE - 1) >> 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = (BINARY_SET_SIZE - 1) >> 1; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = (HASH_SET_SIZE - 1) >> 1; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERTm("[ERROR] Expected sets to be disjoint.", is_disjoint_hash_set(&one, &two));
@@ -1569,15 +1380,15 @@ TEST IS_DISJOINT_05(void) {
 }
 
 TEST IS_DISJOINT_06(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < (BINARY_SET_SIZE) >> 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < (HASH_SET_SIZE) >> 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = (BINARY_SET_SIZE) >> 1; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = (HASH_SET_SIZE) >> 1; i < HASH_SET_SIZE; ++i) {
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
     ASSERTm("[ERROR] Expected sets to be disjoint.", is_disjoint_hash_set(&one, &two));
@@ -1589,19 +1400,19 @@ TEST IS_DISJOINT_06(void) {
 }
 
 TEST IS_DISJOINT_07(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < (BINARY_SET_SIZE - 1) >> 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < (HASH_SET_SIZE - 1) >> 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = (BINARY_SET_SIZE - 1) >> 1; i < BINARY_SET_SIZE - 1; ++i) {
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = (HASH_SET_SIZE - 1) >> 1; i < HASH_SET_SIZE - 1; ++i) {
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
-    insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
 
     ASSERT_FALSEm("[ERROR] Expected sets to not be disjoint.", is_disjoint_hash_set(&one, &two));
 
@@ -1612,19 +1423,19 @@ TEST IS_DISJOINT_07(void) {
 }
 
 TEST IS_DISJOINT_08(void) {
-    hash_set_s one = create_hash_set(compare_int);
-    hash_set_s two = create_hash_set(compare_int);
+    hash_set_s one = create_hash_set(hash_int);
+    hash_set_s two = create_hash_set(hash_int);
 
-    for (int i = 0; i < (BINARY_SET_SIZE) >> 1; ++i) {
-        insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = 0; i < (HASH_SET_SIZE) >> 1; ++i) {
+        insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    for (int i = (BINARY_SET_SIZE) >> 1; i < BINARY_SET_SIZE; ++i) {
-        insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = i, });
+    for (int i = (HASH_SET_SIZE) >> 1; i < HASH_SET_SIZE; ++i) {
+        insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = i, });
     }
 
-    insert_hash_set(&one, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
-    insert_hash_set(&two, (BINARY_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&one, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
+    insert_hash_set(&two, (HASH_SET_DATA_TYPE) { .sub_one = 42, });
 
     ASSERT_FALSEm("[ERROR] Expected sets to not be disjoint.", is_disjoint_hash_set(&one, &two));
 
@@ -1647,11 +1458,6 @@ SUITE (hash_set_test) {
     RUN_TEST(IS_EMPTY_01); RUN_TEST(IS_EMPTY_02); RUN_TEST(IS_EMPTY_03); RUN_TEST(IS_EMPTY_04);
     // is full
     RUN_TEST(IS_FULL_01); RUN_TEST(IS_FULL_02); RUN_TEST(IS_FULL_03); RUN_TEST(IS_FULL_04);
-    // foreach
-    RUN_TEST(FOREACH_01); RUN_TEST(FOREACH_02); RUN_TEST(FOREACH_03); RUN_TEST(FOREACH_04);
-    // map
-    RUN_TEST(MAP_01); RUN_TEST(MAP_02); RUN_TEST(MAP_03); RUN_TEST(MAP_04);
-    RUN_TEST(MAP_05); RUN_TEST(MAP_06); RUN_TEST(MAP_07); RUN_TEST(MAP_08);
     // insert
     RUN_TEST(INSERT_01); RUN_TEST(INSERT_02); RUN_TEST(INSERT_03);
     // remove

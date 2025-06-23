@@ -1,11 +1,6 @@
 #ifndef HASH_SET_H
 #define HASH_SET_H
 
-#include <stddef.h>  // imports size_t
-#include <stdbool.h> // imports bool
-#include <string.h>  // imports memcpy
-#include <stdlib.h>  // imports exit
-
 /*
     This is free and unencumbered software released into the public domain.
 
@@ -33,20 +28,36 @@
     For more information, please refer to <https://unlicense.org>
 */
 
+#include <stddef.h>  // imports size_t
+#include <stdbool.h> // imports bool
+#include <string.h>  // imports memcpy
+#include <stdlib.h>  // imports exit
+
 #ifndef HASH_SET_DATA_TYPE
-
 /// @brief To change, use: #define HASH_SET_DATA_TYPE [type].
-#define HASH_SET_DATA_TYPE void*
-
+#   define HASH_SET_DATA_TYPE void*
 #endif
 
 #ifndef HASH_SET_ASSERT
-
-#include <assert.h>  // imports assert for debugging
-
+#   include <assert.h>  // imports assert for debugging
 /// @brief To change, use: #define HASH_SET_ASSERT [assert].
-#define HASH_SET_ASSERT assert
+#   define HASH_SET_ASSERT assert
+#endif
 
+#if !defined(HASH_SET_ALLOC) && !defined(HASH_SET_FREE)
+#   include <stdlib.h>
+#   define HASH_SET_ALLOC malloc
+#   define HASH_SET_FREE free
+#elif !defined(HASH_SET_ALLOC)
+#   error Must also define HASH_SET_ALLOC.
+#elif !defined(HASH_SET_FREE)
+#   error Must also define HASH_SET_FREE.
+#endif
+
+#ifndef HASH_SET_SIZE
+#   define HASH_SET_SIZE (1 << 10)
+#elif HASH_SET_SIZE <= 0
+#   error 'HASH_SET_SIZE' cannot be zero
 #endif
 
 /// @brief Function pointer to create a deep/shallow copy for hash set element.
@@ -60,28 +71,30 @@ typedef bool                (*operate_hash_set_fn) (HASH_SET_DATA_TYPE * element
 /// @brief Function pointer to manage an array of set elements based on generic arguments.
 typedef void                (*manage_hash_set_fn)  (HASH_SET_DATA_TYPE * array, const size_t size, void * args);
 
-#ifndef HASH_SET_SIZE
-
-#define HASH_SET_SIZE (1 << 10)
-
-#elif HASH_SET_SIZE <= 0
-
-#error 'HASH_SET_SIZE' cannot be zero
-
-#endif
-
 typedef struct hash_set {
     hash_set_fn hash;
-    size_t next[HASH_SET_SIZE];
-    size_t head[HASH_SET_SIZE];
+    HASH_SET_DATA_TYPE * elements;
+    size_t * next;
+    size_t * head;
     size_t size, empty;
-    HASH_SET_DATA_TYPE elements[HASH_SET_SIZE];
 } hash_set_s;
 
+/// @brief Creates and returns a set with compare function pointer.
+/// @param hash Function pointer to hash elements to index in set
+/// @return Newly created set.
 static inline hash_set_s create_hash_set(const hash_set_fn hash) {
     HASH_SET_ASSERT(hash && "[ERROR] 'hash' parameter is NULL.");
 
-    hash_set_s set = { .hash = hash, .size = 0, .empty = HASH_SET_SIZE, };
+    const hash_set_s set = {
+        .elements = HASH_SET_ALLOC(HASH_SET_SIZE * sizeof(HASH_SET_DATA_TYPE)),
+        .head = HASH_SET_ALLOC(HASH_SET_SIZE * sizeof(size_t)),
+        .next = HASH_SET_ALLOC(HASH_SET_SIZE * sizeof(size_t)),
+
+        .hash = hash, .size = 0, .empty = HASH_SET_SIZE,
+    };
+    HASH_SET_ASSERT(set.elements && "[ERROR] Memory allocation failed.");
+    HASH_SET_ASSERT(set.head && "[ERROR] Memory allocation failed.");
+    HASH_SET_ASSERT(set.next && "[ERROR] Memory allocation failed.");
 
     for (size_t i = 0; i < HASH_SET_SIZE; ++i) {
         set.head[i] = HASH_SET_SIZE;
@@ -90,6 +103,9 @@ static inline hash_set_s create_hash_set(const hash_set_fn hash) {
     return set;
 }
 
+/// @brief Destroys the set and all its elements.
+/// @param set Set to destroy together with its elements.
+/// @param destroy Function pointer to destroy each element in set.
 static inline void destroy_hash_set(hash_set_s * set, const destroy_hash_set_fn destroy) {
     HASH_SET_ASSERT(set && "[ERROR] 'set' parameter is NULL.");
     HASH_SET_ASSERT(destroy && "[ERROR] 'destroy' parameter is NULL.");
@@ -105,14 +121,23 @@ static inline void destroy_hash_set(hash_set_s * set, const destroy_hash_set_fn 
 
     set->hash = NULL;
     set->size = 0;
+    HASH_SET_FREE(set->elements);
+    HASH_SET_FREE(set->head);
+    HASH_SET_FREE(set->next);
 }
 
+/// @brief Clears the set and all its elements.
+/// @param set Set to destroy together with its elements.
+/// @param destroy Function pointer to destroy each element in set.
 static inline void clear_hash_set(hash_set_s * set, const destroy_hash_set_fn destroy) {
     HASH_SET_ASSERT(set && "[ERROR] 'set' parameter is NULL.");
     HASH_SET_ASSERT(destroy && "[ERROR] 'destroy' parameter is NULL.");
 
     HASH_SET_ASSERT(set->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(set->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(set->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(set->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(set->next && "[ERROR] 'next' pointer is NULL.");
 
     for (size_t i = 0; i < HASH_SET_SIZE; ++i) {
         for (size_t * current = set->head + i; HASH_SET_SIZE != (*current); (*current) = set->next[(*current)]) {
@@ -123,14 +148,31 @@ static inline void clear_hash_set(hash_set_s * set, const destroy_hash_set_fn de
     set->size = 0;
 }
 
+/// @brief Creates a deep or shallow copy of a set depending on function pointer parameter.
+/// @param set Set to copy together with its elements.
+/// @param copy Function pointer to create a deep or shallow copy of each element in set.
+/// @return Copy of set parameter.
 static inline hash_set_s copy_hash_set(const hash_set_s * set, const copy_hash_set_fn copy) {
     HASH_SET_ASSERT(set && "[ERROR] 'set' parameter is NULL.");
     HASH_SET_ASSERT(copy && "[ERROR] 'copy' parameter is NULL.");
 
     HASH_SET_ASSERT(set->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(set->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(set->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(set->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(set->next && "[ERROR] 'next' pointer is NULL.");
 
-    hash_set_s replica = { .empty = HASH_SET_SIZE, .hash = set->hash, .size = 0, };
+    hash_set_s replica = {
+        .elements = HASH_SET_ALLOC(HASH_SET_SIZE * sizeof(HASH_SET_DATA_TYPE)),
+        .head = HASH_SET_ALLOC(HASH_SET_SIZE * sizeof(size_t)),
+        .next = HASH_SET_ALLOC(HASH_SET_SIZE * sizeof(size_t)),
+
+        .hash = set->hash, .size = 0, .empty = HASH_SET_SIZE,
+    };
+    HASH_SET_ASSERT(replica.elements && "[ERROR] Memory allocation failed.");
+    HASH_SET_ASSERT(replica.head && "[ERROR] Memory allocation failed.");
+    HASH_SET_ASSERT(replica.next && "[ERROR] Memory allocation failed.");
+
     for (size_t i = 0; i < HASH_SET_SIZE; ++i) {
         replica.head[i] = HASH_SET_SIZE;
 
@@ -148,30 +190,49 @@ static inline hash_set_s copy_hash_set(const hash_set_s * set, const copy_hash_s
     return replica;
 }
 
+/// @brief Checks if set is empty.
+/// @param set Set to check.
+/// @return 'true' if set is empty, 'false' otherwise.
 static inline bool is_empty_hash_set(const hash_set_s * set) {
     HASH_SET_ASSERT(set && "[ERROR] 'set' parameter is NULL.");
 
     HASH_SET_ASSERT(set->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(set->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(set->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(set->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(set->next && "[ERROR] 'next' pointer is NULL.");
 
     return !(set->size);
 }
 
+/// @brief Checks if set is full.
+/// @param set Set to check.
+/// @return 'true' if set is full, 'false' otherwise.
 static inline bool is_full_hash_set(const hash_set_s * set) {
     HASH_SET_ASSERT(set && "[ERROR] 'set' parameter is NULL.");
 
     HASH_SET_ASSERT(set->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(set->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(set->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(set->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(set->next && "[ERROR] 'next' pointer is NULL.");
 
     return (HASH_SET_SIZE == set->size);
 }
 
-static inline void foreach_hash_set(hash_set_s * set, const operate_hash_set_fn operate, void * args) {
+/// @brief Iterates over each element in set calling operate function on it using generic arguments.
+/// @param set Set to iterate over.
+/// @param operate Function pointer to call on each element reference using generic arguments.
+/// @param args Generic void pointer arguments used in 'operate' function.
+static inline void foreach_hash_set(const hash_set_s * set, const operate_hash_set_fn operate, void * args) {
     HASH_SET_ASSERT(set && "[ERROR] 'set' parameter is NULL.");
     HASH_SET_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
 
     HASH_SET_ASSERT(set->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(set->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(set->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(set->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(set->next && "[ERROR] 'next' pointer is NULL.");
 
     for (size_t i = 0; i < HASH_SET_SIZE; i++) {
         for (size_t current = set->head[i]; HASH_SET_SIZE != current && operate(set->elements + current, args); ) {
@@ -180,12 +241,19 @@ static inline void foreach_hash_set(hash_set_s * set, const operate_hash_set_fn 
     }
 }
 
-static inline void map_hash_set(hash_set_s * set, const manage_hash_set_fn manage, void * args) {
+/// @brief Maps elements in set into array and calls manage function on it using set's size and generic arguments.
+/// @param set Set to map elements into array.
+/// @param manage Function pointer to call on all elements as array using set's size and generic arguments.
+/// @param args Generic void pointer arguments used in 'manage' function.
+static inline void map_hash_set(const hash_set_s * set, const manage_hash_set_fn manage, void * args) {
     HASH_SET_ASSERT(set && "[ERROR] 'set' parameter is NULL.");
     HASH_SET_ASSERT(manage && "[ERROR] 'manage' parameter is NULL.");
 
     HASH_SET_ASSERT(set->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(set->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(set->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(set->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(set->next && "[ERROR] 'next' pointer is NULL.");
 
     HASH_SET_DATA_TYPE elements[HASH_SET_SIZE];
     for (size_t i = 0, index = 0; i < HASH_SET_SIZE; ++i) {
@@ -203,11 +271,18 @@ static inline void map_hash_set(hash_set_s * set, const manage_hash_set_fn manag
     }
 }
 
+/// @brief Checks if set contains the specified element.
+/// @param set Set structure to check.
+/// @param element Element to check if contained in set.
+/// @return 'true' if element is contained in set, 'false' if not.
 static inline bool contains_hash_set(const hash_set_s * set, const HASH_SET_DATA_TYPE element) {
     HASH_SET_ASSERT(set && "[ERROR] 'set' parameter is NULL.");
 
     HASH_SET_ASSERT(set->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(set->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(set->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(set->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(set->next && "[ERROR] 'next' pointer is NULL.");
 
     const size_t element_hash = set->hash(element);
     const size_t element_modulo = element_hash % HASH_SET_SIZE;
@@ -222,12 +297,19 @@ static inline bool contains_hash_set(const hash_set_s * set, const HASH_SET_DATA
     return false;
 }
 
+/// @brief Adds specified element to the set.
+/// @param set Set to add element into.
+/// @param element Element to add into set.
+/// @note If element is contained in set the function terminates with error.
 static inline void insert_hash_set(hash_set_s * set, const HASH_SET_DATA_TYPE element) {
     HASH_SET_ASSERT(set && "[ERROR] 'set' parameter is NULL.");
     HASH_SET_ASSERT(set->size < HASH_SET_SIZE && "[ERROR] Can't insert into full set.");
 
     HASH_SET_ASSERT(set->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(set->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(set->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(set->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(set->next && "[ERROR] 'next' pointer is NULL.");
 
     const size_t element_hash = set->hash(element);
     const size_t element_modulo = element_hash % HASH_SET_SIZE;
@@ -254,12 +336,20 @@ static inline void insert_hash_set(hash_set_s * set, const HASH_SET_DATA_TYPE el
     set->size++;
 }
 
+/// @brief Remove specified element from set.
+/// @param set Set to remove element from.
+/// @param element Element to remove from set.
+/// @note If element is not contained in set the function terminates with an error.
+/// @return Removed element.
 static inline HASH_SET_DATA_TYPE remove_hash_set(hash_set_s * set, const HASH_SET_DATA_TYPE element) {
     HASH_SET_ASSERT(set && "[ERROR] 'set' parameter is NULL.");
     HASH_SET_ASSERT(set->size && "[ERROR] Can't remove from empty set.");
 
     HASH_SET_ASSERT(set->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(set->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(set->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(set->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(set->next && "[ERROR] 'next' pointer is NULL.");
 
     const size_t element_hash = set->hash(element);
     const size_t element_modulo = element_hash % HASH_SET_SIZE;
@@ -271,11 +361,11 @@ static inline HASH_SET_DATA_TYPE remove_hash_set(hash_set_s * set, const HASH_SE
             continue;
         }
 
-        const size_t temp = (*current);
-
         // temporary save removed element
-        HASH_SET_DATA_TYPE removed = set->elements[temp];
+        HASH_SET_DATA_TYPE removed = set->elements[(*current)];
         set->size--;
+
+        const size_t temp = (*current);
 
         // change current index to next
         (*current) = set->next[temp];
@@ -286,10 +376,9 @@ static inline HASH_SET_DATA_TYPE remove_hash_set(hash_set_s * set, const HASH_SE
             set->empty = temp;
         }
 
-        // if set is empty reset empty stack and list heads to invalid index
-        for (size_t i = 0, * heads = &(set->empty); !set->size && i < (HASH_SET_SIZE + 1); ++i) {
-            (*heads) = HASH_SET_SIZE; // set empty stack head and other heads to invalid index
-            heads = set->head + i; // go to next head index
+        // if set is empty reset empty stack
+        if (!set->size) {
+            set->empty = HASH_SET_SIZE;
         }
 
         return removed;
@@ -299,6 +388,11 @@ static inline HASH_SET_DATA_TYPE remove_hash_set(hash_set_s * set, const HASH_SE
     exit(EXIT_FAILURE); // to have function return
 }
 
+/// @brief Creates and returns a union of two sets whose elements are copied into the new set.
+/// @param set_one First set structure to unite.
+/// @param set_two Second set structure to unite.
+/// @param copy Function pointer that creates deep or shallow a copy for united elements.
+/// @return New union of set parameters.
 static inline hash_set_s union_hash_set(const hash_set_s * set_one, const hash_set_s * set_two, const copy_hash_set_fn copy) {
     HASH_SET_ASSERT(set_one && "[ERROR] 'set_one' parameter is NULL.");
     HASH_SET_ASSERT(set_two && "[ERROR] 'set_two' parameter is NULL.");
@@ -307,12 +401,29 @@ static inline hash_set_s union_hash_set(const hash_set_s * set_one, const hash_s
 
     HASH_SET_ASSERT(set_one->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(set_one->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(set_one->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(set_one->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(set_one->next && "[ERROR] 'next' pointer is NULL.");
 
     HASH_SET_ASSERT(set_two->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(set_two->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(set_two->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(set_two->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(set_two->next && "[ERROR] 'next' pointer is NULL.");
+
 
     // initialize union set
-    hash_set_s union_set = { .empty = HASH_SET_SIZE, .hash = set_one->hash, .size = 0, };
+    hash_set_s union_set = {
+        .elements = HASH_SET_ALLOC(HASH_SET_SIZE * sizeof(HASH_SET_DATA_TYPE)),
+        .head = HASH_SET_ALLOC(HASH_SET_SIZE * sizeof(size_t)),
+        .next = HASH_SET_ALLOC(HASH_SET_SIZE * sizeof(size_t)),
+
+        .hash = set_one->hash, .size = 0, .empty = HASH_SET_SIZE,
+    };
+    HASH_SET_ASSERT(union_set.elements && "[ERROR] Memory allocation failed.");
+    HASH_SET_ASSERT(union_set.head && "[ERROR] Memory allocation failed.");
+    HASH_SET_ASSERT(union_set.next && "[ERROR] Memory allocation failed.");
+
     for (size_t i = 0; i < HASH_SET_SIZE; ++i) {
         union_set.head[i] = HASH_SET_SIZE;
     }
@@ -359,6 +470,11 @@ static inline hash_set_s union_hash_set(const hash_set_s * set_one, const hash_s
     return union_set;
 }
 
+/// @brief Creates and returns an intersect of two sets whose elements are copied into the new set.
+/// @param set_one First set structure to intersect.
+/// @param set_two Second set structure to intersect.
+/// @param copy Function pointer that creates deep or shallow a copy for intersected elements.
+/// @return New intersect of set parameters.
 static inline hash_set_s intersect_hash_set(const hash_set_s * set_one, const hash_set_s * set_two, const copy_hash_set_fn copy) {
     HASH_SET_ASSERT(set_one && "[ERROR] 'set_one' parameter is NULL.");
     HASH_SET_ASSERT(set_two && "[ERROR] 'set_two' parameter is NULL.");
@@ -367,12 +483,28 @@ static inline hash_set_s intersect_hash_set(const hash_set_s * set_one, const ha
 
     HASH_SET_ASSERT(set_one->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(set_one->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(set_one->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(set_one->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(set_one->next && "[ERROR] 'next' pointer is NULL.");
 
     HASH_SET_ASSERT(set_two->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(set_two->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(set_two->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(set_two->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(set_two->next && "[ERROR] 'next' pointer is NULL.");
 
     // initialize intersect set
-    hash_set_s intersect_set = { .empty = HASH_SET_SIZE, .hash = set_one->hash, .size = 0, };
+    hash_set_s intersect_set = {
+        .elements = HASH_SET_ALLOC(HASH_SET_SIZE * sizeof(HASH_SET_DATA_TYPE)),
+        .head = HASH_SET_ALLOC(HASH_SET_SIZE * sizeof(size_t)),
+        .next = HASH_SET_ALLOC(HASH_SET_SIZE * sizeof(size_t)),
+
+        .hash = set_one->hash, .size = 0, .empty = HASH_SET_SIZE,
+    };
+    HASH_SET_ASSERT(intersect_set.elements && "[ERROR] Memory allocation failed.");
+    HASH_SET_ASSERT(intersect_set.head && "[ERROR] Memory allocation failed.");
+    HASH_SET_ASSERT(intersect_set.next && "[ERROR] Memory allocation failed.");
+
     for (size_t i = 0; i < HASH_SET_SIZE; ++i) {
         intersect_set.head[i] = HASH_SET_SIZE;
     }
@@ -407,6 +539,11 @@ static inline hash_set_s intersect_hash_set(const hash_set_s * set_one, const ha
     return intersect_set;
 }
 
+/// @brief Creates and returns a subtraction of two sets whose elements are copied into the new set.
+/// @param set_one First set structure that gets subtracted.
+/// @param set_two Second set structure that subtracts.
+/// @param copy Function pointer that creates deep or shallow a copy for subtracted elements.
+/// @return New subtraction of set parameters.
 static inline hash_set_s subtract_hash_set(const hash_set_s * set_one, const hash_set_s * set_two, const copy_hash_set_fn copy) {
     HASH_SET_ASSERT(set_one && "[ERROR] 'set_one' parameter is NULL.");
     HASH_SET_ASSERT(set_two && "[ERROR] 'set_two' parameter is NULL.");
@@ -415,12 +552,28 @@ static inline hash_set_s subtract_hash_set(const hash_set_s * set_one, const has
 
     HASH_SET_ASSERT(set_one->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(set_one->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(set_one->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(set_one->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(set_one->next && "[ERROR] 'next' pointer is NULL.");
 
     HASH_SET_ASSERT(set_two->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(set_two->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(set_two->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(set_two->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(set_two->next && "[ERROR] 'next' pointer is NULL.");
 
     // initialize subtract set
-    hash_set_s subtract_set = { .empty = HASH_SET_SIZE, .hash = set_one->hash, .size = 0, };
+    hash_set_s subtract_set = {
+        .elements = HASH_SET_ALLOC(HASH_SET_SIZE * sizeof(HASH_SET_DATA_TYPE)),
+        .head = HASH_SET_ALLOC(HASH_SET_SIZE * sizeof(size_t)),
+        .next = HASH_SET_ALLOC(HASH_SET_SIZE * sizeof(size_t)),
+
+        .hash = set_one->hash, .size = 0, .empty = HASH_SET_SIZE,
+    };
+    HASH_SET_ASSERT(subtract_set.elements && "[ERROR] Memory allocation failed.");
+    HASH_SET_ASSERT(subtract_set.head && "[ERROR] Memory allocation failed.");
+    HASH_SET_ASSERT(subtract_set.next && "[ERROR] Memory allocation failed.");
+
     for (size_t i = 0; i < HASH_SET_SIZE; ++i) {
         subtract_set.head[i] = HASH_SET_SIZE;
     }
@@ -455,6 +608,11 @@ static inline hash_set_s subtract_hash_set(const hash_set_s * set_one, const has
     return subtract_set;
 }
 
+/// @brief Creates and returns an exclude (symmetric difference) of two sets whose elements are copied into the new set.
+/// @param set_one First set structure to exclude.
+/// @param set_two Second set structure to exclude.
+/// @param copy Function pointer that creates deep or shallow a copy for exclude elements.
+/// @return New exclude of set parameters.
 static inline hash_set_s exclude_hash_set(const hash_set_s * set_one, const hash_set_s * set_two, const copy_hash_set_fn copy) {
     HASH_SET_ASSERT(set_one && "[ERROR] 'set_one' parameter is NULL.");
     HASH_SET_ASSERT(set_two && "[ERROR] 'set_two' parameter is NULL.");
@@ -463,12 +621,28 @@ static inline hash_set_s exclude_hash_set(const hash_set_s * set_one, const hash
 
     HASH_SET_ASSERT(set_one->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(set_one->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(set_one->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(set_one->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(set_one->next && "[ERROR] 'next' pointer is NULL.");
 
     HASH_SET_ASSERT(set_two->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(set_two->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(set_two->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(set_two->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(set_two->next && "[ERROR] 'next' pointer is NULL.");
 
     // initialize exclude set
-    hash_set_s exclude_set = { .empty = HASH_SET_SIZE, .hash = set_one->hash, .size = 0, };
+    hash_set_s exclude_set = {
+        .elements = HASH_SET_ALLOC(HASH_SET_SIZE * sizeof(HASH_SET_DATA_TYPE)),
+        .head = HASH_SET_ALLOC(HASH_SET_SIZE * sizeof(size_t)),
+        .next = HASH_SET_ALLOC(HASH_SET_SIZE * sizeof(size_t)),
+
+        .hash = set_one->hash, .size = 0, .empty = HASH_SET_SIZE,
+    };
+    HASH_SET_ASSERT(exclude_set.elements && "[ERROR] Memory allocation failed.");
+    HASH_SET_ASSERT(exclude_set.head && "[ERROR] Memory allocation failed.");
+    HASH_SET_ASSERT(exclude_set.next && "[ERROR] Memory allocation failed.");
+
     for (size_t i = 0; i < HASH_SET_SIZE; ++i) {
         exclude_set.head[i] = HASH_SET_SIZE;
     }
@@ -530,6 +704,10 @@ static inline hash_set_s exclude_hash_set(const hash_set_s * set_one, const hash
     return exclude_set;
 }
 
+/// @brief Checks if sub is subset of super (sub <= super).
+/// @param super Superset to check on.
+/// @param sub Subset to check with superset.
+/// @return 'true' if sub is subset of superset, 'false' if not.
 static inline bool is_subset_hash_set(const hash_set_s * super, const hash_set_s * sub) {
     HASH_SET_ASSERT(super && "[ERROR] 'super' parameter is NULL.");
     HASH_SET_ASSERT(sub && "[ERROR] 'sub' parameter is NULL.");
@@ -537,15 +715,21 @@ static inline bool is_subset_hash_set(const hash_set_s * super, const hash_set_s
 
     HASH_SET_ASSERT(super->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(super->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(super->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(super->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(super->next && "[ERROR] 'next' pointer is NULL.");
 
     HASH_SET_ASSERT(sub->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(sub->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(sub->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(sub->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(sub->next && "[ERROR] 'next' pointer is NULL.");
 
     for (size_t i = 0; i < HASH_SET_SIZE; ++i) {
         for (size_t current_sub = sub->head[i]; current_sub != HASH_SET_SIZE; current_sub = sub->next[current_sub]) {
             const size_t hash_sub = sub->hash(sub->elements[current_sub]);
 
-            // check if set super contains sub's element
+            // check if superset contains subset's element
             bool contains_sub = false;
             for (size_t current_super = super->head[i]; current_super != HASH_SET_SIZE; current_super = super->next[current_super]) {
                 if (hash_sub == super->hash(super->elements[current_super])) {
@@ -563,6 +747,10 @@ static inline bool is_subset_hash_set(const hash_set_s * super, const hash_set_s
     return true;
 }
 
+/// @brief Checks if sub is proper subset of super (sub < super).
+/// @param super Superset to check on.
+/// @param sub Subset to check with superset.
+/// @return 'true' if sub is proper subset of superset, 'false' if not.
 static inline bool is_proper_subset_hash_set(const hash_set_s * super, const hash_set_s * sub) {
     HASH_SET_ASSERT(super && "[ERROR] 'super' parameter is NULL.");
     HASH_SET_ASSERT(sub && "[ERROR] 'sub' parameter is NULL.");
@@ -570,15 +758,21 @@ static inline bool is_proper_subset_hash_set(const hash_set_s * super, const has
 
     HASH_SET_ASSERT(super->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(super->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(super->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(super->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(super->next && "[ERROR] 'next' pointer is NULL.");
 
     HASH_SET_ASSERT(sub->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(sub->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(sub->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(sub->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(sub->next && "[ERROR] 'next' pointer is NULL.");
 
     for (size_t i = 0; i < HASH_SET_SIZE; ++i) {
         for (size_t current_sub = sub->head[i]; current_sub != HASH_SET_SIZE; current_sub = sub->next[current_sub]) {
             const size_t hash_sub = sub->hash(sub->elements[current_sub]);
 
-            // check if set super contains sub's element
+            // check if superset contains subset's element
             bool contains_sub = false;
             for (size_t current_super = super->head[i]; current_super != HASH_SET_SIZE; current_super = super->next[current_super]) {
                 if (hash_sub == sub->hash(sub->elements[current_sub])) {
@@ -596,6 +790,10 @@ static inline bool is_proper_subset_hash_set(const hash_set_s * super, const has
     return (super->size != sub->size);
 }
 
+/// @brief Checks if two sets are disjoint or not, i.e. have no shared elements.
+/// @param set_one First set to check.
+/// @param set_two Second set to check.
+/// @return 'true' if sets are disjoint, 'false' otherwise.
 static inline bool is_disjoint_hash_set(const hash_set_s * set_one, const hash_set_s * set_two) {
     HASH_SET_ASSERT(set_one && "[ERROR] 'set_one' parameter is NULL.");
     HASH_SET_ASSERT(set_two && "[ERROR] 'set_two' parameter is NULL.");
@@ -603,9 +801,15 @@ static inline bool is_disjoint_hash_set(const hash_set_s * set_one, const hash_s
 
     HASH_SET_ASSERT(set_one->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(set_one->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(set_one->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(set_one->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(set_one->next && "[ERROR] 'next' pointer is NULL.");
 
     HASH_SET_ASSERT(set_two->hash && "[ERROR] Hash function is NULL.");
     HASH_SET_ASSERT(set_two->size <= HASH_SET_SIZE && "[ERROR] Invalid size.");
+    HASH_SET_ASSERT(set_two->elements && "[ERROR] 'elements' pointer is NULL.");
+    HASH_SET_ASSERT(set_two->head && "[ERROR] 'head' pointer is NULL.");
+    HASH_SET_ASSERT(set_two->next && "[ERROR] 'next' pointer is NULL.");
 
     for (size_t i = 0; i < HASH_SET_SIZE; ++i) {
         for (size_t current_one = set_one->head[i]; current_one != HASH_SET_SIZE; current_one = set_one->next[current_one]) {

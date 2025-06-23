@@ -12,7 +12,9 @@ The straight list is a simple array based linked list implementation where each 
 // macro settings to define straight list properties before including library
 #define STRAIGHT_LIST_DATA_TYPE [type]   // defines the data type to store
 #define STRAIGHT_LIST_SIZE      [size]   // defines the maximum positive array size
-#define STRAIGHT_LIST_ASSERT    [assert] // defines the assert function for invalid states
+#define STRAIGHT_LIST_ASSERT    [assert] // defines the assert function for invalid state
+#define STRAIGHT_LIST_ALLOC     [malloc] // defines the memory allocation function
+#define STRAIGHT_LIST_FREE      [free]   // defines the memory free function
 #include "straight_list.h"
 ```
 
@@ -20,10 +22,10 @@ The straight list is made out of an elements array and another next indexes arra
 
 ```c++
 typedef struct straight_list {
-    STRAIGHT_LIST_DATA_TYPE elements[STRAIGHT_LIST_SIZE]; // array to store elements
-    size_t next[STRAIGHT_LIST_SIZE]; // array to store next indexes
-    size_t size, head; // list size and head index parameter
-    size_t empty_size, empty_head; // empty stack's size and head
+    STRAIGHT_LIST_DATA_TYPE * elements; // array to store elements
+    size_t * next;                      // array to store next indexes
+    size_t size, head;                  // list size and head index parameter
+    size_t empty;                       // empty stack
 } straight_list_s;
 ```
 
@@ -517,6 +519,8 @@ The circular list is a simple array based circular linked list implementation wh
 #define CIRCULAR_LIST_DATA_TYPE [type]   // defines the data type to store
 #define CIRCULAR_LIST_SIZE      [size]   // defines the maximum positive array size
 #define CIRCULAR_LIST_ASSERT    [assert] // defines the assert function for invalid states
+#define CIRCULAR_LIST_ALLOC     [malloc] // defines the memory allocation function
+#define CIRCULAR_LIST_FREE      [free]   // defines the memory free function
 #include "circular_list.h"
 ```
 
@@ -524,10 +528,10 @@ The circular list is made out of an elements array and another next indexes arra
 
 ```c++
 typedef struct circular_list {
-    size_t next[CIRCULAR_LIST_SIZE];
+    CIRCULAR_LIST_DATA_TYPE * elements;
+    size_t * next;
     size_t size, tail; // list size and tail index parameter
-    size_t empty_size, empty_head; // empty stack's size and head
-    CIRCULAR_LIST_DATA_TYPE elements[CIRCULAR_LIST_SIZE];
+    size_t empty;      // empty stack
 } circular_list_s;
 ```
 
@@ -1050,16 +1054,20 @@ The double list is a simple array based circular doubly linked list implementati
 #define DOUBLE_LIST_DATA_TYPE [type]   // defines the data type to store
 #define DOUBLE_LIST_SIZE      [size]   // defines the maximum positive array size
 #define DOUBLE_LIST_ASSERT    [assert] // defines the assert function for invalid states
+#define DOUBLE_LIST_ALLOC     [malloc] // defines the memory allocation function
+#define DOUBLE_LIST_FREE      [free]   // defines the memory free function
 #include "double_list.h"
 ```
 
 The double list is made out of an elements array and another next indexes array that maps to each element. Apart from the list size the structure also has a head index. The structure removes elements by switching them with the last element in the array and properly fixing pointers to guarantee the absence of holes.
 
 ```c++
+#define DOUBLE_LIST_NODE_COUNT 2
+
 typedef struct double_list {
-    size_t node[DOUBLE_LIST_NODE_COUNT][DOUBLE_LIST_SIZE];
+    DOUBLE_LIST_DATA_TYPE * elements;
+    size_t * node[DOUBLE_LIST_NODE_COUNT];
     size_t size, head;
-    DOUBLE_LIST_DATA_TYPE elements[DOUBLE_LIST_SIZE];
 } double_list_s;
 ```
 
