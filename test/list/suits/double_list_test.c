@@ -116,7 +116,7 @@ TEST DESTROY_08(void) {
 
 TEST COPY_01(void) {
     double_list_s test = create_double_list();
-    double_list_s copy = copy_double_list(&test, copy_int);
+    double_list_s copy = copy_double_list(test, copy_int);
 
     ASSERT_EQm("[ERROR] Expected size to be 0.", 0, test.size);
 
@@ -131,11 +131,11 @@ TEST COPY_02(void) {
 
     insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, });
 
-    double_list_s copy = copy_double_list(&test, copy_int);
+    double_list_s copy = copy_double_list(test, copy_int);
 
     ASSERT_EQm("[ERROR] Expected size to be 1.", 1, copy.size);
 
-    ASSERT_EQm("[ERROR] Expected elements to be equal.", get_double_list(&test, 0).sub_one, get_double_list(&copy, 0).sub_one);
+    ASSERT_EQm("[ERROR] Expected elements to be equal.", get_double_list(test, 0).sub_one, get_double_list(copy, 0).sub_one);
 
     destroy_double_list(&test, destroy_int);
     destroy_double_list(&copy, destroy_int);
@@ -150,12 +150,12 @@ TEST COPY_03(void) {
         insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    double_list_s copy = copy_double_list(&test, copy_int);
+    double_list_s copy = copy_double_list(test, copy_int);
 
     ASSERT_EQm("[ERROR] Expected size to be 'DOUBLE_LIST_SIZE - 1'.", DOUBLE_LIST_SIZE - 1, copy.size);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE - 1; ++i) {
-        ASSERT_EQm("[ERROR] Expected elements to be equal.", get_double_list(&test, i).sub_one, get_double_list(&copy, i).sub_one);
+        ASSERT_EQm("[ERROR] Expected elements to be equal.", get_double_list(test, i).sub_one, get_double_list(copy, i).sub_one);
     }
 
     destroy_double_list(&test, destroy_int);
@@ -171,12 +171,12 @@ TEST COPY_04(void) {
         insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = i, });
     }
 
-    double_list_s copy = copy_double_list(&test, copy_int);
+    double_list_s copy = copy_double_list(test, copy_int);
 
     ASSERT_EQm("[ERROR] Expected size to be 'DOUBLE_LIST_SIZE'.", DOUBLE_LIST_SIZE, copy.size);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE; ++i) {
-        ASSERT_EQm("[ERROR] Expected elements to be equal.", get_double_list(&test, i).sub_one, get_double_list(&copy, i).sub_one);
+        ASSERT_EQm("[ERROR] Expected elements to be equal.", get_double_list(test, i).sub_one, get_double_list(copy, i).sub_one);
     }
 
     destroy_double_list(&test, destroy_int);
@@ -187,7 +187,7 @@ TEST COPY_04(void) {
 
 TEST COPY_05(void) {
     double_list_s test = create_double_list();
-    double_list_s copy = copy_double_list(&test, copy_string);
+    double_list_s copy = copy_double_list(test, copy_string);
 
     ASSERT_EQm("[ERROR] Expected size to be 0.", 0, copy.size);
 
@@ -202,12 +202,12 @@ TEST COPY_06(void) {
 
     insert_at_double_list(&test, test.size, copy_string((DOUBLE_LIST_DATA_TYPE) { .sub_two = TEST_STRING, }));
 
-    double_list_s copy = copy_double_list(&test, copy_string);
+    double_list_s copy = copy_double_list(test, copy_string);
 
     ASSERT_EQm("[ERROR] Expected size to be 1.", 1, copy.size);
 
-    DOUBLE_LIST_DATA_TYPE test_element = get_double_list(&test, 0);
-    DOUBLE_LIST_DATA_TYPE copy_element = get_double_list(&copy, 0);
+    DOUBLE_LIST_DATA_TYPE test_element = get_double_list(test, 0);
+    DOUBLE_LIST_DATA_TYPE copy_element = get_double_list(copy, 0);
     ASSERT_STRN_EQm("[ERROR] Expected elements to be equal.", test_element.sub_two , copy_element.sub_two, sizeof(TEST_STRING) - 1);
 
     destroy_double_list(&test, destroy_string);
@@ -223,13 +223,13 @@ TEST COPY_07(void) {
         insert_at_double_list(&test, test.size, copy_string((DOUBLE_LIST_DATA_TYPE) { .sub_two = TEST_STRING, }));
     }
 
-    double_list_s copy = copy_double_list(&test, copy_string);
+    double_list_s copy = copy_double_list(test, copy_string);
 
     ASSERT_EQm("[ERROR] Expected size to be 'DOUBLE_LIST_SIZE - 1'.", DOUBLE_LIST_SIZE - 1, copy.size);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE - 1; ++i) {
-        DOUBLE_LIST_DATA_TYPE test_element = get_double_list(&test, i);
-        DOUBLE_LIST_DATA_TYPE copy_element = get_double_list(&copy, i);
+        DOUBLE_LIST_DATA_TYPE test_element = get_double_list(test, i);
+        DOUBLE_LIST_DATA_TYPE copy_element = get_double_list(copy, i);
         ASSERT_STRN_EQm("[ERROR] Expected elements to be equal.", test_element.sub_two , copy_element.sub_two, sizeof(TEST_STRING) - 1);
     }
 
@@ -246,13 +246,13 @@ TEST COPY_08(void) {
         insert_at_double_list(&test, test.size, copy_string((DOUBLE_LIST_DATA_TYPE) { .sub_two = TEST_STRING, }));
     }
 
-    double_list_s copy = copy_double_list(&test, copy_string);
+    double_list_s copy = copy_double_list(test, copy_string);
 
     ASSERT_EQm("[ERROR] Expected size to be 'DOUBLE_LIST_SIZE'.", DOUBLE_LIST_SIZE, copy.size);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE; ++i) {
-        DOUBLE_LIST_DATA_TYPE test_element = get_double_list(&test, i);
-        DOUBLE_LIST_DATA_TYPE copy_element = get_double_list(&copy, i);
+        DOUBLE_LIST_DATA_TYPE test_element = get_double_list(test, i);
+        DOUBLE_LIST_DATA_TYPE copy_element = get_double_list(copy, i);
         ASSERT_STRN_EQm("[ERROR] Expected elements to be equal.", test_element.sub_two , copy_element.sub_two, sizeof(TEST_STRING) - 1);
     }
 
@@ -265,7 +265,7 @@ TEST COPY_08(void) {
 TEST IS_EMPTY_01(void) {
     double_list_s test = create_double_list();
 
-    ASSERTm("[ERROR] Expected list to be empty.", is_empty_double_list(&test));
+    ASSERTm("[ERROR] Expected list to be empty.", is_empty_double_list(test));
 
     destroy_double_list(&test, destroy_int);
 
@@ -277,7 +277,7 @@ TEST IS_EMPTY_02(void) {
 
     insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_FALSEm("[ERROR] Expected list to not be empty.", is_empty_double_list(&test));
+    ASSERT_FALSEm("[ERROR] Expected list to not be empty.", is_empty_double_list(test));
 
     destroy_double_list(&test, destroy_int);
 
@@ -291,7 +291,7 @@ TEST IS_EMPTY_03(void) {
         insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, });
     }
 
-    ASSERT_FALSEm("[ERROR] Expected list to not be empty.", is_empty_double_list(&test));
+    ASSERT_FALSEm("[ERROR] Expected list to not be empty.", is_empty_double_list(test));
 
     destroy_double_list(&test, destroy_int);
 
@@ -305,7 +305,7 @@ TEST IS_EMPTY_04(void) {
         insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, });
     }
 
-    ASSERT_FALSEm("[ERROR] Expected list to not be empty.", is_empty_double_list(&test));
+    ASSERT_FALSEm("[ERROR] Expected list to not be empty.", is_empty_double_list(test));
 
     destroy_double_list(&test, destroy_int);
 
@@ -315,7 +315,7 @@ TEST IS_EMPTY_04(void) {
 TEST IS_FULL_01(void) {
     double_list_s test = create_double_list();
 
-    ASSERT_FALSEm("[ERROR] Expected list to not be full.", is_full_double_list(&test));
+    ASSERT_FALSEm("[ERROR] Expected list to not be full.", is_full_double_list(test));
 
     destroy_double_list(&test, destroy_int);
 
@@ -327,7 +327,7 @@ TEST IS_FULL_02(void) {
 
     insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_FALSEm("[ERROR] Expected list to not be full.", is_full_double_list(&test));
+    ASSERT_FALSEm("[ERROR] Expected list to not be full.", is_full_double_list(test));
 
     destroy_double_list(&test, destroy_int);
 
@@ -341,7 +341,7 @@ TEST IS_FULL_03(void) {
         insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, });
     }
 
-    ASSERT_FALSEm("[ERROR] Expected list to not be full.", is_full_double_list(&test));
+    ASSERT_FALSEm("[ERROR] Expected list to not be full.", is_full_double_list(test));
 
     destroy_double_list(&test, destroy_int);
 
@@ -355,7 +355,7 @@ TEST IS_FULL_04(void) {
         insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, });
     }
 
-    ASSERTm("[ERROR] Expected list to be full.", is_full_double_list(&test));
+    ASSERTm("[ERROR] Expected list to be full.", is_full_double_list(test));
 
     destroy_double_list(&test, destroy_int);
 
@@ -367,7 +367,7 @@ TEST FOREACH_NEXT_01(void) {
     insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = 0, });
 
     int increment = 5;
-    foreach_next_double_list(&test, operation_int, &increment);
+    foreach_next_double_list(test, operation_int, &increment);
 
     ASSERT_EQm("[ERROR] Expected incremented element by 'increment'.", 0 + increment, remove_at_double_list(&test, 0).sub_one);
 
@@ -383,7 +383,7 @@ TEST FOREACH_NEXT_02(void) {
     }
 
     int increment = 5;
-    foreach_next_double_list(&test, operation_int, &increment);
+    foreach_next_double_list(test, operation_int, &increment);
 
     for (int i = 0; i < DOUBLE_LIST_SIZE - 1; ++i) {
         DOUBLE_LIST_DATA_TYPE element = remove_at_double_list(&test, 0);
@@ -402,7 +402,7 @@ TEST FOREACH_NEXT_03(void) {
     }
 
     int increment = 5;
-    foreach_next_double_list(&test, operation_int, &increment);
+    foreach_next_double_list(test, operation_int, &increment);
 
     for (int i = 0; i < DOUBLE_LIST_SIZE; ++i) {
         ASSERT_EQm("[ERROR] Expected incremented element by 'increment'.", i + increment, remove_at_double_list(&test, 0).sub_one);
@@ -419,7 +419,7 @@ TEST FOREACH_NEXT_04(void) {
     insert_at_double_list(&test, test.size, copy_string((DOUBLE_LIST_DATA_TYPE) { .sub_two = TEST_STRING }));
 
     char new_string[] = "[REDACTED]";
-    foreach_next_double_list(&test, operation_string, new_string);
+    foreach_next_double_list(test, operation_string, new_string);
 
     DOUBLE_LIST_DATA_TYPE element = remove_at_double_list(&test, 0);
     ASSERT_STRN_EQm("[ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
@@ -438,7 +438,7 @@ TEST FOREACH_NEXT_05(void) {
     }
 
     char new_string[] = "[REDACTED]";
-    foreach_next_double_list(&test, operation_string, new_string);
+    foreach_next_double_list(test, operation_string, new_string);
 
     for (int i = 0; i < DOUBLE_LIST_SIZE - 1; ++i) {
         DOUBLE_LIST_DATA_TYPE element = remove_at_double_list(&test, 0);
@@ -459,7 +459,7 @@ TEST FOREACH_NEXT_06(void) {
     }
 
     char new_string[] = "[REDACTED]";
-    foreach_next_double_list(&test, operation_string, new_string);
+    foreach_next_double_list(test, operation_string, new_string);
 
     for (int i = 0; i < DOUBLE_LIST_SIZE; ++i) {
         DOUBLE_LIST_DATA_TYPE element = remove_at_double_list(&test, 0);
@@ -477,7 +477,7 @@ TEST FOREACH_PREV_01(void) {
     insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = 0, });
 
     int increment = 5;
-    foreach_prev_double_list(&test, operation_int, &increment);
+    foreach_prev_double_list(test, operation_int, &increment);
 
     ASSERT_EQm("[ERROR] Expected incremented element by 'increment'.", 0 + increment, remove_at_double_list(&test, 0).sub_one);
 
@@ -493,7 +493,7 @@ TEST FOREACH_PREV_02(void) {
     }
 
     int increment = 5;
-    foreach_prev_double_list(&test, operation_int, &increment);
+    foreach_prev_double_list(test, operation_int, &increment);
 
     for (int i = 0; i < DOUBLE_LIST_SIZE - 1; ++i) {
         DOUBLE_LIST_DATA_TYPE element = remove_at_double_list(&test, 0);
@@ -512,7 +512,7 @@ TEST FOREACH_PREV_03(void) {
     }
 
     int increment = 5;
-    foreach_prev_double_list(&test, operation_int, &increment);
+    foreach_prev_double_list(test, operation_int, &increment);
 
     for (int i = 0; i < DOUBLE_LIST_SIZE; ++i) {
         ASSERT_EQm("[ERROR] Expected incremented element by 'increment'.", i + increment, remove_at_double_list(&test, 0).sub_one);
@@ -529,7 +529,7 @@ TEST FOREACH_PREV_04(void) {
     insert_at_double_list(&test, test.size, copy_string((DOUBLE_LIST_DATA_TYPE) { .sub_two = TEST_STRING }));
 
     char new_string[] = "[REDACTED]";
-    foreach_prev_double_list(&test, operation_string, new_string);
+    foreach_prev_double_list(test, operation_string, new_string);
 
     DOUBLE_LIST_DATA_TYPE element = remove_at_double_list(&test, 0);
     ASSERT_STRN_EQm("[ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
@@ -548,7 +548,7 @@ TEST FOREACH_PREV_05(void) {
     }
 
     char new_string[] = "[REDACTED]";
-    foreach_prev_double_list(&test, operation_string, new_string);
+    foreach_prev_double_list(test, operation_string, new_string);
 
     for (int i = 0; i < DOUBLE_LIST_SIZE - 1; ++i) {
         DOUBLE_LIST_DATA_TYPE element = remove_at_double_list(&test, 0);
@@ -569,7 +569,7 @@ TEST FOREACH_PREV_06(void) {
     }
 
     char new_string[] = "[REDACTED]";
-    foreach_prev_double_list(&test, operation_string, new_string);
+    foreach_prev_double_list(test, operation_string, new_string);
 
     for (int i = 0; i < DOUBLE_LIST_SIZE; ++i) {
         DOUBLE_LIST_DATA_TYPE element = remove_at_double_list(&test, 0);
@@ -586,7 +586,7 @@ TEST MAP_01(void) {
     double_list_s test = create_double_list();
 
     struct compare cmp = { .function = compare_int_generic, };
-    map_double_list(&test, sort_int, &cmp);
+    map_double_list(test, sort_int, &cmp);
 
     destroy_double_list(&test, destroy_int);
 
@@ -605,10 +605,10 @@ TEST MAP_02(void) {
     }
 
     struct compare cmp = { .function = compare_int_generic, };
-    map_double_list(&test, sort_int, &cmp);
+    map_double_list(test, sort_int, &cmp);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE - 1; ++i) {
-        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (int)i, get_double_list(&test, i).sub_one);
+        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (int)i, get_double_list(test, i).sub_one);
     }
 
     destroy_double_list(&test, destroy_int);
@@ -628,10 +628,10 @@ TEST MAP_03(void) {
     }
 
     struct compare cmp = { .function = compare_int_generic, };
-    map_double_list(&test, sort_int, &cmp);
+    map_double_list(test, sort_int, &cmp);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE; ++i) {
-        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (int)i, get_double_list(&test, i).sub_one);
+        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (int)i, get_double_list(test, i).sub_one);
     }
 
     destroy_double_list(&test, destroy_int);
@@ -643,7 +643,7 @@ TEST MAP_04(void) {
     double_list_s test = create_double_list();
 
     struct compare cmp = { .function = compare_reverse_int_generic, };
-    map_double_list(&test, sort_int, &cmp);
+    map_double_list(test, sort_int, &cmp);
 
     destroy_double_list(&test, destroy_int);
 
@@ -662,10 +662,10 @@ TEST MAP_05(void) {
     }
 
     struct compare cmp = { .function = compare_reverse_int_generic, };
-    map_double_list(&test, sort_int, &cmp);
+    map_double_list(test, sort_int, &cmp);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE - 1; ++i) {
-        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (DOUBLE_LIST_SIZE - 1 - 1) - (int)i, get_double_list(&test, i).sub_one);
+        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (DOUBLE_LIST_SIZE - 1 - 1) - (int)i, get_double_list(test, i).sub_one);
     }
 
     destroy_double_list(&test, destroy_int);
@@ -685,10 +685,10 @@ TEST MAP_06(void) {
     }
 
     struct compare cmp = { .function = compare_reverse_int_generic, };
-    map_double_list(&test, sort_int, &cmp);
+    map_double_list(test, sort_int, &cmp);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE; ++i) {
-        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (DOUBLE_LIST_SIZE - 1) - (int)i, get_double_list(&test, i).sub_one);
+        ASSERT_EQm("[IALS-ERROR] Expected element to be equal to i.", (DOUBLE_LIST_SIZE - 1) - (int)i, get_double_list(test, i).sub_one);
     }
 
     destroy_double_list(&test, destroy_int);
@@ -702,7 +702,7 @@ TEST INSERT_AT_01(void) {
     insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, });
 
     ASSERT_EQm("[ERROR] Expected size to be 1.", 1, test.size);
-    ASSERT_EQm("[ERROR] Expected elements to be equal.", 42, get_double_list(&test, 0).sub_one);
+    ASSERT_EQm("[ERROR] Expected elements to be equal.", 42, get_double_list(test, 0).sub_one);
 
     destroy_double_list(&test, destroy_int);
 
@@ -719,7 +719,7 @@ TEST INSERT_AT_02(void) {
     ASSERT_EQm("[ERROR] Expected size to be 'DOUBLE_LIST_SIZE - 1'.", DOUBLE_LIST_SIZE - 1, test.size);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE - 1; ++i) {
-        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(&test, i).sub_one);
+        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(test, i).sub_one);
     }
 
     destroy_double_list(&test, destroy_int);
@@ -737,7 +737,7 @@ TEST INSERT_AT_03(void) {
     ASSERT_EQm("[ERROR] Expected size to be 'DOUBLE_LIST_SIZE'.", DOUBLE_LIST_SIZE, test.size);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE; ++i) {
-        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(&test, i).sub_one);
+        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(test, i).sub_one);
     }
 
     destroy_double_list(&test, destroy_int);
@@ -751,7 +751,7 @@ TEST INSERT_AT_04(void) {
     insert_at_double_list(&test, test.size, copy_string((DOUBLE_LIST_DATA_TYPE) { .sub_two = TEST_STRING, }));
 
     ASSERT_EQm("[ERROR] Expected size to be 1.", 1, test.size);
-    ASSERT_STRN_EQm("[ERROR] Expected elements to be equal.", TEST_STRING, get_double_list(&test, 0).sub_two, sizeof(TEST_STRING) - 1);
+    ASSERT_STRN_EQm("[ERROR] Expected elements to be equal.", TEST_STRING, get_double_list(test, 0).sub_two, sizeof(TEST_STRING) - 1);
 
     destroy_double_list(&test, destroy_string);
 
@@ -768,7 +768,7 @@ TEST INSERT_AT_05(void) {
     ASSERT_EQm("[ERROR] Expected size to be 'DOUBLE_LIST_SIZE - 1'.", DOUBLE_LIST_SIZE - 1, test.size);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE - 1; ++i) {
-        ASSERT_STRN_EQm("[ERROR] Expected elements to be equal.", TEST_STRING, get_double_list(&test, i).sub_two, sizeof(TEST_STRING) - 1);
+        ASSERT_STRN_EQm("[ERROR] Expected elements to be equal.", TEST_STRING, get_double_list(test, i).sub_two, sizeof(TEST_STRING) - 1);
     }
 
     destroy_double_list(&test, destroy_string);
@@ -786,7 +786,7 @@ TEST INSERT_AT_06(void) {
     ASSERT_EQm("[ERROR] Expected size to be 'DOUBLE_LIST_SIZE'.", DOUBLE_LIST_SIZE, test.size);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE; ++i) {
-        ASSERT_STRN_EQm("[ERROR] Expected elements to be equal.", TEST_STRING, get_double_list(&test, i).sub_two, sizeof(TEST_STRING) - 1);
+        ASSERT_STRN_EQm("[ERROR] Expected elements to be equal.", TEST_STRING, get_double_list(test, i).sub_two, sizeof(TEST_STRING) - 1);
     }
 
     destroy_double_list(&test, destroy_string);
@@ -799,7 +799,7 @@ TEST GET_01(void) {
 
     insert_at_double_list(&test, test.size, (DOUBLE_LIST_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_EQm("[ERROR] Expected elements to be equal.", 42, get_double_list(&test, 0).sub_one);
+    ASSERT_EQm("[ERROR] Expected elements to be equal.", 42, get_double_list(test, 0).sub_one);
 
     destroy_double_list(&test, destroy_int);
 
@@ -814,7 +814,7 @@ TEST GET_02(void) {
     }
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE - 1; ++i) {
-        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(&test, i).sub_one);
+        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(test, i).sub_one);
     }
 
     destroy_double_list(&test, destroy_int);
@@ -830,7 +830,7 @@ TEST GET_03(void) {
     }
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE; ++i) {
-        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(&test, i).sub_one);
+        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(test, i).sub_one);
     }
 
     destroy_double_list(&test, destroy_int);
@@ -843,7 +843,7 @@ TEST GET_04(void) {
 
     insert_at_double_list(&test, test.size, copy_string((DOUBLE_LIST_DATA_TYPE) { .sub_two = TEST_STRING, }));
 
-    ASSERT_STRN_EQm("[ERROR] Expected elements to be equal.", TEST_STRING, get_double_list(&test, 0).sub_two, sizeof(TEST_STRING) - 1);
+    ASSERT_STRN_EQm("[ERROR] Expected elements to be equal.", TEST_STRING, get_double_list(test, 0).sub_two, sizeof(TEST_STRING) - 1);
 
     destroy_double_list(&test, destroy_string);
 
@@ -858,7 +858,7 @@ TEST GET_05(void) {
     }
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE - 1; ++i) {
-        ASSERT_STRN_EQm("[ERROR] Expected elements to be equal.", TEST_STRING, get_double_list(&test, i).sub_two, sizeof(TEST_STRING) - 1);
+        ASSERT_STRN_EQm("[ERROR] Expected elements to be equal.", TEST_STRING, get_double_list(test, i).sub_two, sizeof(TEST_STRING) - 1);
     }
 
     destroy_double_list(&test, destroy_string);
@@ -874,7 +874,7 @@ TEST GET_06(void) {
     }
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE; ++i) {
-        ASSERT_STRN_EQm("[ERROR] Expected elements to be equal.", TEST_STRING, get_double_list(&test, i).sub_two, sizeof(TEST_STRING) - 1);
+        ASSERT_STRN_EQm("[ERROR] Expected elements to be equal.", TEST_STRING, get_double_list(test, i).sub_two, sizeof(TEST_STRING) - 1);
     }
 
     destroy_double_list(&test, destroy_string);
@@ -1060,7 +1060,7 @@ TEST REVERSE_01(void) {
 
     reverse_double_list(&test);
 
-    ASSERT_EQm("[ERROR] Expected elements to be equal.", 42,  get_double_list(&test, 0).sub_one);
+    ASSERT_EQm("[ERROR] Expected elements to be equal.", 42,  get_double_list(test, 0).sub_one);
 
     destroy_double_list(&test, destroy_int);
 
@@ -1077,7 +1077,7 @@ TEST REVERSE_02(void) {
     reverse_double_list(&test);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE - 1; i++) {
-        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i,  get_double_list(&test, test.size - 1 - i).sub_one);
+        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i,  get_double_list(test, test.size - 1 - i).sub_one);
     }
 
     destroy_double_list(&test, destroy_int);
@@ -1095,7 +1095,7 @@ TEST REVERSE_03(void) {
     reverse_double_list(&test);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE; i++) {
-        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i,  get_double_list(&test, test.size - 1 - i).sub_one);
+        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i,  get_double_list(test, test.size - 1 - i).sub_one);
     }
 
     destroy_double_list(&test, destroy_int);
@@ -1113,7 +1113,7 @@ TEST REVERSE_04(void) {
     reverse_double_list(&test);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE - 1; i++) {
-        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(&test, i).sub_one);
+        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(test, i).sub_one);
     }
 
     destroy_double_list(&test, destroy_int);
@@ -1131,7 +1131,7 @@ TEST REVERSE_05(void) {
     reverse_double_list(&test);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE; i++) {
-        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(&test, i).sub_one);
+        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(test, i).sub_one);
     }
 
     destroy_double_list(&test, destroy_int);
@@ -1146,7 +1146,7 @@ TEST SHIFT_NEXT_01(void) {
 
     shift_next_double_list(&test, 1);
 
-    ASSERT_EQm("[ERROR] Expected elements to be equal.", 42,  get_double_list(&test, 0).sub_one);
+    ASSERT_EQm("[ERROR] Expected elements to be equal.", 42,  get_double_list(test, 0).sub_one);
 
     destroy_double_list(&test, destroy_int);
 
@@ -1161,7 +1161,7 @@ TEST SHIFT_NEXT_02(void) {
     }
 
     for (int i = 0; i < DOUBLE_LIST_SIZE - 1; i++) {
-        ASSERT_EQm("[ERROR] Expected elements to be equal.", i,  get_double_list(&test, 0).sub_one);
+        ASSERT_EQm("[ERROR] Expected elements to be equal.", i,  get_double_list(test, 0).sub_one);
         shift_next_double_list(&test, 1);
     }
 
@@ -1178,7 +1178,7 @@ TEST SHIFT_NEXT_03(void) {
     }
 
     for (int i = 0; i < DOUBLE_LIST_SIZE; i++) {
-        ASSERT_EQm("[ERROR] Expected elements to be equal.", i,  get_double_list(&test, 0).sub_one);
+        ASSERT_EQm("[ERROR] Expected elements to be equal.", i,  get_double_list(test, 0).sub_one);
         shift_next_double_list(&test, 1);
     }
 
@@ -1194,7 +1194,7 @@ TEST SHIFT_PREV_01(void) {
 
     shift_prev_double_list(&test, 1);
 
-    ASSERT_EQm("[ERROR] Expected elements to be equal.", 42,  get_double_list(&test, 0).sub_one);
+    ASSERT_EQm("[ERROR] Expected elements to be equal.", 42,  get_double_list(test, 0).sub_one);
 
     destroy_double_list(&test, destroy_int);
 
@@ -1210,7 +1210,7 @@ TEST SHIFT_PREV_02(void) {
 
     for (int i = 0; i < DOUBLE_LIST_SIZE - 1; i++) {
         shift_prev_double_list(&test, 1);
-        ASSERT_EQm("[ERROR] Expected elements to be equal.", DOUBLE_LIST_SIZE - 1 - 1 - i,  get_double_list(&test, 0).sub_one);
+        ASSERT_EQm("[ERROR] Expected elements to be equal.", DOUBLE_LIST_SIZE - 1 - 1 - i,  get_double_list(test, 0).sub_one);
     }
 
     destroy_double_list(&test, destroy_int);
@@ -1227,7 +1227,7 @@ TEST SHIFT_PREV_03(void) {
 
     for (int i = 0; i < DOUBLE_LIST_SIZE; i++) {
         shift_prev_double_list(&test, 1);
-        ASSERT_EQm("[ERROR] Expected elements to be equal.", DOUBLE_LIST_SIZE - 1 - i,  get_double_list(&test, 0).sub_one);
+        ASSERT_EQm("[ERROR] Expected elements to be equal.", DOUBLE_LIST_SIZE - 1 - i,  get_double_list(test, 0).sub_one);
     }
 
     destroy_double_list(&test, destroy_int);
@@ -1262,7 +1262,7 @@ TEST SPLICE_02(void) {
     ASSERT_EQm("[ERROR] Expected size to be 0.", 0, two.size);
 
     ASSERT_EQm("[ERROR] Expected size to be 1.", 1, one.size);
-    ASSERT_EQm("[ERROR] Expected elements to be equal.", 42, get_double_list(&one, 0).sub_one);
+    ASSERT_EQm("[ERROR] Expected elements to be equal.", 42, get_double_list(one, 0).sub_one);
 
     destroy_double_list(&one, destroy_int);
     destroy_double_list(&two, destroy_int);
@@ -1285,7 +1285,7 @@ TEST SPLICE_03(void) {
     ASSERT_EQm("[ERROR] Expected size to be 'DOUBLE_LIST_SIZE - 1.'", DOUBLE_LIST_SIZE - 1, one.size);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE - 1; i++) {
-        DOUBLE_LIST_DATA_TYPE element = get_double_list(&one, i);
+        DOUBLE_LIST_DATA_TYPE element = get_double_list(one, i);
         ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, element.sub_one);
     }
 
@@ -1310,7 +1310,7 @@ TEST SPLICE_04(void) {
     ASSERT_EQm("[ERROR] Expected size to be 'DOUBLE_LIST_SIZE.'", DOUBLE_LIST_SIZE, one.size);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE; i++) {
-        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(&one, i).sub_one);
+        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(one, i).sub_one);
     }
 
     destroy_double_list(&one, destroy_int);
@@ -1338,7 +1338,7 @@ TEST SPLICE_05(void) {
     ASSERT_EQm("[ERROR] Expected size to be 'DOUBLE_LIST_SIZE - 1.'", DOUBLE_LIST_SIZE - 1, one.size);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE - 1; i++) {
-        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(&one, i).sub_one);
+        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(one, i).sub_one);
     }
 
     destroy_double_list(&one, destroy_int);
@@ -1366,7 +1366,7 @@ TEST SPLICE_06(void) {
     ASSERT_EQm("[ERROR] Expected size to be 'DOUBLE_LIST_SIZE.'", DOUBLE_LIST_SIZE, one.size);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE; i++) {
-        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(&one, i).sub_one);
+        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(one, i).sub_one);
     }
 
     destroy_double_list(&one, destroy_int);
@@ -1394,7 +1394,7 @@ TEST SPLICE_07(void) {
     ASSERT_EQm("[ERROR] Expected size to be 'DOUBLE_LIST_SIZE - 1.'", DOUBLE_LIST_SIZE - 1, one.size);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE - 1; i++) {
-        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(&one, i).sub_one);
+        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(one, i).sub_one);
     }
 
     destroy_double_list(&one, destroy_int);
@@ -1422,7 +1422,7 @@ TEST SPLICE_08(void) {
     ASSERT_EQm("[ERROR] Expected size to be 'DOUBLE_LIST_SIZE.'", DOUBLE_LIST_SIZE, one.size);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE; i++) {
-        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(&one, i).sub_one);
+        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(one, i).sub_one);
     }
 
     destroy_double_list(&one, destroy_int);
@@ -1458,7 +1458,7 @@ TEST SPLICE_09(void) {
     ASSERT_EQm("[ERROR] Expected size to be 0.", 0, three.size);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE - 1; i++) {
-        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(&one, i).sub_one);
+        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(one, i).sub_one);
     }
 
     destroy_double_list(&one, destroy_int);
@@ -1495,7 +1495,7 @@ TEST SPLICE_10(void) {
     ASSERT_EQm("[ERROR] Expected size to be 0.", 0, three.size);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE; i++) {
-        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(&one, i).sub_one);
+        ASSERT_EQm("[ERROR] Expected elements to be equal.", (int)i, get_double_list(one, i).sub_one);
     }
 
     destroy_double_list(&one, destroy_int);
@@ -1532,12 +1532,12 @@ TEST SPLIT_02(void) {
     double_list_s split = split_double_list(&test, 0, (DOUBLE_LIST_SIZE - 1) >> 1);
 
     for (size_t i = 0; i < (DOUBLE_LIST_SIZE - 1) >> 1; ++i) {
-        DOUBLE_LIST_DATA_TYPE element = get_double_list(&split, i);
+        DOUBLE_LIST_DATA_TYPE element = get_double_list(split, i);
         ASSERT_EQm("[ERROR] Expected element to be equal to i.", (int)i, element.sub_one);
     }
 
     for (size_t i = (DOUBLE_LIST_SIZE - 1) >> 1; i < DOUBLE_LIST_SIZE - 1; ++i) {
-        ASSERT_EQm("[ERROR] Expected element to be equal to i.", (int)i, get_double_list(&test, i - ((DOUBLE_LIST_SIZE - 1) >> 1)).sub_one);
+        ASSERT_EQm("[ERROR] Expected element to be equal to i.", (int)i, get_double_list(test, i - ((DOUBLE_LIST_SIZE - 1) >> 1)).sub_one);
     }
 
     destroy_double_list(&test, destroy_int);
@@ -1556,11 +1556,11 @@ TEST SPLIT_03(void) {
     double_list_s split = split_double_list(&test, 0, DOUBLE_LIST_SIZE >> 1);
 
     for (size_t i = 0; i < DOUBLE_LIST_SIZE >> 1; ++i) {
-        ASSERT_EQm("[ERROR] Expected element to be equal to i.", (int)i, get_double_list(&split, i).sub_one);
+        ASSERT_EQm("[ERROR] Expected element to be equal to i.", (int)i, get_double_list(split, i).sub_one);
     }
 
     for (size_t i = (DOUBLE_LIST_SIZE) >> 1; i < DOUBLE_LIST_SIZE; ++i) {
-        ASSERT_EQm("[ERROR] Expected element to be equal to i.", (int)i, get_double_list(&test, i - (DOUBLE_LIST_SIZE >> 1)).sub_one);
+        ASSERT_EQm("[ERROR] Expected element to be equal to i.", (int)i, get_double_list(test, i - (DOUBLE_LIST_SIZE >> 1)).sub_one);
     }
 
     destroy_double_list(&test, destroy_int);
@@ -1579,11 +1579,11 @@ TEST SPLIT_04(void) {
     double_list_s split = split_double_list(&test, (DOUBLE_LIST_SIZE - 1) >> 1, test.size - ((DOUBLE_LIST_SIZE - 1) >> 1));
 
     for (size_t i = 0; i < (DOUBLE_LIST_SIZE - 1) >> 1; ++i) {
-        ASSERT_EQm("[ERROR] Expected element to be equal to i.", (int)i, get_double_list(&test, i).sub_one);
+        ASSERT_EQm("[ERROR] Expected element to be equal to i.", (int)i, get_double_list(test, i).sub_one);
     }
 
     for (size_t i = (DOUBLE_LIST_SIZE - 1) >> 1; i < DOUBLE_LIST_SIZE - 1; ++i) {
-        ASSERT_EQm("[ERROR] Expected element to be equal to i.", (int)i, get_double_list(&split, i - ((DOUBLE_LIST_SIZE - 1) >> 1)).sub_one);
+        ASSERT_EQm("[ERROR] Expected element to be equal to i.", (int)i, get_double_list(split, i - ((DOUBLE_LIST_SIZE - 1) >> 1)).sub_one);
     }
 
     destroy_double_list(&test, destroy_int);
@@ -1602,11 +1602,11 @@ TEST SPLIT_05(void) {
     double_list_s split = split_double_list(&test, DOUBLE_LIST_SIZE >> 1, test.size - (DOUBLE_LIST_SIZE >> 1));
 
     for (size_t i = 0; i < (DOUBLE_LIST_SIZE) >> 1; ++i) {
-        ASSERT_EQm("[ERROR] Expected element to be equal to i.", (int)i, get_double_list(&test, i).sub_one);
+        ASSERT_EQm("[ERROR] Expected element to be equal to i.", (int)i, get_double_list(test, i).sub_one);
     }
 
     for (size_t i = (DOUBLE_LIST_SIZE) >> 1; i < DOUBLE_LIST_SIZE; ++i) {
-        ASSERT_EQm("[ERROR] Expected element to be equal to i.", (int)i, get_double_list(&split, i - (DOUBLE_LIST_SIZE >> 1)).sub_one);
+        ASSERT_EQm("[ERROR] Expected element to be equal to i.", (int)i, get_double_list(split, i - (DOUBLE_LIST_SIZE >> 1)).sub_one);
     }
 
     destroy_double_list(&test, destroy_int);

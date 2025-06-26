@@ -149,13 +149,12 @@ static inline void clear_circular_list(circular_list_s * list, const destroy_cir
 /// @param copy Function pointer to create a copy of an element.
 /// @return Returns a copy of a list.
 /// @note Returned copy of list won't have holes.
-static inline circular_list_s copy_circular_list(const circular_list_s * list, const copy_circular_list_fn copy) {
-    CIRCULAR_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+static inline circular_list_s copy_circular_list(const circular_list_s list, const copy_circular_list_fn copy) {
     CIRCULAR_LIST_ASSERT(copy && "[ERROR] 'copy' parameter is NULL.");
 
-    CIRCULAR_LIST_ASSERT(list->size <= CIRCULAR_LIST_SIZE && "[ERROR] Invalid list size.");
-    CIRCULAR_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
-    CIRCULAR_LIST_ASSERT(list->next && "[ERROR] 'next' pointer is NULL.");
+    CIRCULAR_LIST_ASSERT(list.size <= CIRCULAR_LIST_SIZE && "[ERROR] Invalid list size.");
+    CIRCULAR_LIST_ASSERT(list.elements && "[ERROR] 'elements' pointer is NULL.");
+    CIRCULAR_LIST_ASSERT(list.next && "[ERROR] 'next' pointer is NULL.");
 
     circular_list_s replica = {
         .elements = CIRCULAR_LIST_ALLOC(CIRCULAR_LIST_SIZE * sizeof(CIRCULAR_LIST_DATA_TYPE)),
@@ -165,13 +164,13 @@ static inline circular_list_s copy_circular_list(const circular_list_s * list, c
     CIRCULAR_LIST_ASSERT(replica.elements && "[ERROR] Memory allocation failed.");
     CIRCULAR_LIST_ASSERT(replica.next && "[ERROR] Memory allocation failed.");
 
-    size_t previous = list->tail;
-    for (size_t * current_replica = &(replica.tail); replica.size < list->size; replica.size++) {
+    size_t previous = list.tail;
+    for (size_t * current_replica = &(replica.tail); replica.size < list.size; replica.size++) {
         (*current_replica) = replica.size;
 
-        replica.elements[replica.size] = copy(list->elements[previous]);
+        replica.elements[replica.size] = copy(list.elements[previous]);
 
-        previous = list->next[previous];
+        previous = list.next[previous];
         current_replica = replica.next + replica.size;
         (*current_replica) = 0;
     }
@@ -182,27 +181,23 @@ static inline circular_list_s copy_circular_list(const circular_list_s * list, c
 /// @brief Checks if list is empty.
 /// @param list List structure.
 /// @return 'true' if list is empty, 'false' otherwise.
-static inline bool is_empty_circular_list(const circular_list_s * list) {
-    CIRCULAR_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+static inline bool is_empty_circular_list(const circular_list_s list) {
+    CIRCULAR_LIST_ASSERT(list.size <= CIRCULAR_LIST_SIZE && "[ERROR] Invalid list size.");
+    CIRCULAR_LIST_ASSERT(list.elements && "[ERROR] 'elements' pointer is NULL.");
+    CIRCULAR_LIST_ASSERT(list.next && "[ERROR] 'next' pointer is NULL.");
 
-    CIRCULAR_LIST_ASSERT(list->size <= CIRCULAR_LIST_SIZE && "[ERROR] Invalid list size.");
-    CIRCULAR_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
-    CIRCULAR_LIST_ASSERT(list->next && "[ERROR] 'next' pointer is NULL.");
-
-    return (list->size == 0);
+    return (list.size == 0);
 }
 
 /// @brief Checks if list is full.
 /// @param list List structure.
 /// @return 'true' if list is full, 'false' otherwise.
-static inline bool is_full_circular_list(const circular_list_s * list) {
-    CIRCULAR_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+static inline bool is_full_circular_list(const circular_list_s list) {
+    CIRCULAR_LIST_ASSERT(list.size <= CIRCULAR_LIST_SIZE && "[ERROR] Invalid list size.");
+    CIRCULAR_LIST_ASSERT(list.elements && "[ERROR] 'elements' pointer is NULL.");
+    CIRCULAR_LIST_ASSERT(list.next && "[ERROR] 'next' pointer is NULL.");
 
-    CIRCULAR_LIST_ASSERT(list->size <= CIRCULAR_LIST_SIZE && "[ERROR] Invalid list size.");
-    CIRCULAR_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
-    CIRCULAR_LIST_ASSERT(list->next && "[ERROR] 'next' pointer is NULL.");
-
-    return (list->size == CIRCULAR_LIST_SIZE);
+    return (list.size == CIRCULAR_LIST_SIZE);
 }
 
 /// @brief Inserts an element to any place in the list. Circular list allows appending to the end without
@@ -247,23 +242,22 @@ static inline void insert_at_circular_list(circular_list_s * list, const size_t 
 /// @param list List structure.
 /// @param index Zero based index of element in list.
 /// @return Element at index in list.
-static inline CIRCULAR_LIST_DATA_TYPE get_circular_list(const circular_list_s * list, const size_t index) {
-    CIRCULAR_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
-    CIRCULAR_LIST_ASSERT(list->elements && "[ERROR] Can't get element from empty list->");
-    CIRCULAR_LIST_ASSERT(list->next && "[ERROR] Can't get element from empty list->");
-    CIRCULAR_LIST_ASSERT(list->size && "[ERROR] Can't get element from empty list->");
-    CIRCULAR_LIST_ASSERT(index < list->size && "[ERROR] 'index' parameter exceeds list size.");
+static inline CIRCULAR_LIST_DATA_TYPE get_circular_list(const circular_list_s list, const size_t index) {
+    CIRCULAR_LIST_ASSERT(list.elements && "[ERROR] Can't get element from empty list.");
+    CIRCULAR_LIST_ASSERT(list.next && "[ERROR] Can't get element from empty list.");
+    CIRCULAR_LIST_ASSERT(list.size && "[ERROR] Can't get element from empty list.");
+    CIRCULAR_LIST_ASSERT(index < list.size && "[ERROR] 'index' parameter exceeds list size.");
 
-    CIRCULAR_LIST_ASSERT(list->size <= CIRCULAR_LIST_SIZE && "[ERROR] Invalid list size.");
-    CIRCULAR_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
-    CIRCULAR_LIST_ASSERT(list->next && "[ERROR] 'next' pointer is NULL.");
+    CIRCULAR_LIST_ASSERT(list.size <= CIRCULAR_LIST_SIZE && "[ERROR] Invalid list size.");
+    CIRCULAR_LIST_ASSERT(list.elements && "[ERROR] 'elements' pointer is NULL.");
+    CIRCULAR_LIST_ASSERT(list.next && "[ERROR] 'next' pointer is NULL.");
 
-    size_t current = list->tail;
-    for (size_t i = 0; index != list->size - 1 && i <= index; ++i) {
-        current = list->next[current];
+    size_t current = list.tail;
+    for (size_t i = 0; index != list.size - 1 && i <= index; ++i) {
+        current = list.next[current];
     }
 
-    return list->elements[current];
+    return list.elements[current];
 }
 
 /// @brief Removes first element in list based on element parameter comparison.
@@ -537,17 +531,16 @@ static inline circular_list_s split_circular_list(circular_list_s * list, const 
 /// @param list Pointer to list structure.
 /// @param operate Function pointer to operate on every single element pointer using arguments.
 /// @param args Generic arguments for 'operate' function pointer.
-static inline void foreach_circular_list(const circular_list_s * list, const operate_circular_list_fn operate, void * args) {
-    CIRCULAR_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+static inline void foreach_circular_list(const circular_list_s list, const operate_circular_list_fn operate, void * args) {
     CIRCULAR_LIST_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
 
-    CIRCULAR_LIST_ASSERT(list->size <= CIRCULAR_LIST_SIZE && "[ERROR] Invalid list size.");
-    CIRCULAR_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
-    CIRCULAR_LIST_ASSERT(list->next && "[ERROR] 'next' pointer is NULL.");
+    CIRCULAR_LIST_ASSERT(list.size <= CIRCULAR_LIST_SIZE && "[ERROR] Invalid list size.");
+    CIRCULAR_LIST_ASSERT(list.elements && "[ERROR] 'elements' pointer is NULL.");
+    CIRCULAR_LIST_ASSERT(list.next && "[ERROR] 'next' pointer is NULL.");
 
-    size_t previous = list->tail;
-    for (size_t i = 0; i < list->size && operate(list->elements + list->next[previous], args); ++i) {
-        previous = list->next[previous];
+    size_t previous = list.tail;
+    for (size_t i = 0; i < list.size && operate(list.elements + list.next[previous], args); ++i) {
+        previous = list.next[previous];
     }
 }
 
@@ -556,31 +549,26 @@ static inline void foreach_circular_list(const circular_list_s * list, const ope
 /// @param manage Function pointer to manage the array of elements based on element size and specified args.
 /// @param args Void pointer arguments for 'manage' function.
 /// @note The map function can also be used to remove holes in list.
-static inline void map_circular_list(circular_list_s * list, const manage_circular_list_fn manage, void * args) {
-    CIRCULAR_LIST_ASSERT(list && "[ERROR] 'list' pointer parameter is NULL.");
+static inline void map_circular_list(const circular_list_s list, const manage_circular_list_fn manage, void * args) {
     CIRCULAR_LIST_ASSERT(manage && "[ERROR] 'manage' pointer parameter is NULL.");
 
-    CIRCULAR_LIST_ASSERT(list->size <= CIRCULAR_LIST_SIZE && "[ERROR] Invalid list size.");
-    CIRCULAR_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
-    CIRCULAR_LIST_ASSERT(list->next && "[ERROR] 'next' pointer is NULL.");
+    CIRCULAR_LIST_ASSERT(list.size <= CIRCULAR_LIST_SIZE && "[ERROR] Invalid list size.");
+    CIRCULAR_LIST_ASSERT(list.elements && "[ERROR] 'elements' pointer is NULL.");
+    CIRCULAR_LIST_ASSERT(list.next && "[ERROR] 'next' pointer is NULL.");
 
-    CIRCULAR_LIST_DATA_TYPE * elements_array = CIRCULAR_LIST_ALLOC(CIRCULAR_LIST_SIZE * sizeof(CIRCULAR_LIST_DATA_TYPE));
+    CIRCULAR_LIST_DATA_TYPE * elements_array = CIRCULAR_LIST_ALLOC(list.size * sizeof(CIRCULAR_LIST_DATA_TYPE));
     CIRCULAR_LIST_ASSERT(elements_array && "[ERROR] Memory allocation failed.");
 
-    size_t previous = list->tail;
-    for (size_t i = 0; i < list->size; ++i) {
-        previous = list->next[previous];
-        elements_array[i] = list->elements[previous];
+    for (size_t previous = list.tail, i = 0; i < list.size; ++i) {
+        previous = list.next[previous];
+        elements_array[i] = list.elements[previous];
     }
 
-    manage(elements_array, list->size, args);
+    manage(elements_array, list.size, args);
 
-    list->empty = CIRCULAR_LIST_SIZE;
-    list->tail = 0; // set empty stack size and list tail index to zero
-    for (size_t * list_current = &(list->tail), i = 0; i < list->size; ++i) {
-        list->elements[i] = elements_array[i];
-        list->tail = (*list_current) = i;
-        list_current = list->next + i;
+    for (size_t previous = list.tail, i = 0; i < list.size; ++i) {
+        previous = list.next[previous];
+        list.elements[previous] = elements_array[i];
     }
 
     CIRCULAR_LIST_FREE(elements_array);

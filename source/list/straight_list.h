@@ -147,13 +147,12 @@ static inline void clear_straight_list(straight_list_s * list, const destroy_str
 /// @param list Readonly straight list structure.
 /// @param copy Readonly function pointer to create a copy of an element.
 /// @return Returns a copy of a list.
-static inline straight_list_s copy_straight_list(const straight_list_s * list, const copy_straight_list_fn copy) {
-    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+static inline straight_list_s copy_straight_list(const straight_list_s list, const copy_straight_list_fn copy) {
     STRAIGHT_LIST_ASSERT(copy && "[ERROR] 'copy' parameter is NULL.");
 
-    STRAIGHT_LIST_ASSERT(list->size <= STRAIGHT_LIST_SIZE && "[ERROR] List size exceeds maximum size.");
-    STRAIGHT_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
-    STRAIGHT_LIST_ASSERT(list->next && "[ERROR] 'next' pointer is NULL.");
+    STRAIGHT_LIST_ASSERT(list.size <= STRAIGHT_LIST_SIZE && "[ERROR] List size exceeds maximum size.");
+    STRAIGHT_LIST_ASSERT(list.elements && "[ERROR] 'elements' pointer is NULL.");
+    STRAIGHT_LIST_ASSERT(list.next && "[ERROR] 'next' pointer is NULL.");
 
     straight_list_s replica = {
         .elements = STRAIGHT_LIST_ALLOC(STRAIGHT_LIST_SIZE * sizeof(STRAIGHT_LIST_DATA_TYPE)),
@@ -163,12 +162,12 @@ static inline straight_list_s copy_straight_list(const straight_list_s * list, c
     STRAIGHT_LIST_ASSERT(replica.elements && "[ERROR] Memory allocation failed.");
     STRAIGHT_LIST_ASSERT(replica.next && "[ERROR] Memory allocation failed.");
 
-    for (size_t current_list = list->head, * current_copy = &(replica.head); replica.size < list->size; replica.size++) {
+    for (size_t current_list = list.head, * current_copy = &(replica.head); replica.size < list.size; replica.size++) {
         // set element copy to list copy at index i to automatically remove holes from copy
-        replica.elements[replica.size] = copy(list->elements[current_list]);
+        replica.elements[replica.size] = copy(list.elements[current_list]);
         (*current_copy) = replica.size; // set head and indexes at list copy's next array to proper index
 
-        current_list = list->next[current_list]; // go to next list node
+        current_list = list.next[current_list]; // go to next list node
         current_copy = replica.next + replica.size; // go to next copy list's pointer to node
     }
 
@@ -178,43 +177,38 @@ static inline straight_list_s copy_straight_list(const straight_list_s * list, c
 /// @brief Checks if list is empty.
 /// @param list Readonly straight list structure.
 /// @return 'true' if list is empty, 'false' otherwise.
-static inline bool is_empty_straight_list(const straight_list_s * list) {
-    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+static inline bool is_empty_straight_list(const straight_list_s list) {
+    STRAIGHT_LIST_ASSERT(list.size <= STRAIGHT_LIST_SIZE && "[ERROR] List size exceeds maximum size.");
+    STRAIGHT_LIST_ASSERT(list.elements && "[ERROR] 'elements' pointer is NULL.");
+    STRAIGHT_LIST_ASSERT(list.next && "[ERROR] 'next' pointer is NULL.");
 
-    STRAIGHT_LIST_ASSERT(list->size <= STRAIGHT_LIST_SIZE && "[ERROR] List size exceeds maximum size.");
-    STRAIGHT_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
-    STRAIGHT_LIST_ASSERT(list->next && "[ERROR] 'next' pointer is NULL.");
-
-    return (list->size == 0);
+    return (list.size == 0);
 }
 
 /// @brief Checks if list is full.
 /// @param list Readonly straight list structure.
 /// @return 'true' if list is full, 'false' otherwise.
-static inline bool is_full_straight_list(const straight_list_s * list) {
-    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+static inline bool is_full_straight_list(const straight_list_s list) {
+    STRAIGHT_LIST_ASSERT(list.size <= STRAIGHT_LIST_SIZE && "[ERROR] List size exceeds maximum size.");
+    STRAIGHT_LIST_ASSERT(list.elements && "[ERROR] 'elements' pointer is NULL.");
+    STRAIGHT_LIST_ASSERT(list.next && "[ERROR] 'next' pointer is NULL.");
 
-    STRAIGHT_LIST_ASSERT(list->size <= STRAIGHT_LIST_SIZE && "[ERROR] List size exceeds maximum size.");
-    STRAIGHT_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
-    STRAIGHT_LIST_ASSERT(list->next && "[ERROR] 'next' pointer is NULL.");
-
-    return (list->size == STRAIGHT_LIST_SIZE); // if size is equal to macro size
+    return (list.size == STRAIGHT_LIST_SIZE); // if size is equal to macro size
 }
 
 /// @brief Iterates through each straight list element.
 /// @param list Pointer to readonly straight list structure.
 /// @param operate Readonly function pointer to operate on every single element pointer while using arguments.
 /// @param args Arguments for 'operate' function pointer.
-static inline void foreach_straight_list(straight_list_s * list, const operate_straight_list_fn operate, void * args) {
-    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+static inline void foreach_straight_list(const straight_list_s list, const operate_straight_list_fn operate, void * args) {
     STRAIGHT_LIST_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
 
-    STRAIGHT_LIST_ASSERT(list->size <= STRAIGHT_LIST_SIZE && "[ERROR] List size exceeds maximum size.");
-    STRAIGHT_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
-    STRAIGHT_LIST_ASSERT(list->next && "[ERROR] 'next' pointer is NULL.");
+    STRAIGHT_LIST_ASSERT(list.size <= STRAIGHT_LIST_SIZE && "[ERROR] List size exceeds maximum size.");
+    STRAIGHT_LIST_ASSERT(list.elements && "[ERROR] 'elements' pointer is NULL.");
+    STRAIGHT_LIST_ASSERT(list.next && "[ERROR] 'next' pointer is NULL.");
 
-    for (size_t i = 0, current = list->head; i < list->size && operate(list->elements + current, args); ++i) {
-        current = list->next[current];
+    for (size_t i = 0, current = list.head; i < list.size && operate(list.elements + current, args); ++i) {
+        current = list.next[current];
     }
 }
 
@@ -222,33 +216,27 @@ static inline void foreach_straight_list(straight_list_s * list, const operate_s
 /// @param list Pointer to readonly straight list structure.
 /// @param manage Readonly function pointer to manage the array of elements based on list size and specified arguments.
 /// @param args Void pointer arguments for 'manage' function.
-/// @note This function can also be used to remove holes in list.
-static inline void map_straight_list(straight_list_s * list, const manage_straight_list_fn manage, void * args) {
-    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
+static inline void map_straight_list(const straight_list_s list, const manage_straight_list_fn manage, void * args) {
     STRAIGHT_LIST_ASSERT(manage && "[ERROR] 'manage' parameter is NULL.");
 
-    STRAIGHT_LIST_ASSERT(list->size <= STRAIGHT_LIST_SIZE && "[ERROR] List size exceeds maximum size.");
-    STRAIGHT_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
-    STRAIGHT_LIST_ASSERT(list->next && "[ERROR] 'next' pointer is NULL.");
+    STRAIGHT_LIST_ASSERT(list.size <= STRAIGHT_LIST_SIZE && "[ERROR] List size exceeds maximum size.");
+    STRAIGHT_LIST_ASSERT(list.elements && "[ERROR] 'elements' pointer is NULL.");
+    STRAIGHT_LIST_ASSERT(list.next && "[ERROR] 'next' pointer is NULL.");
 
-    STRAIGHT_LIST_DATA_TYPE * elements_array = STRAIGHT_LIST_ALLOC(STRAIGHT_LIST_SIZE * sizeof(STRAIGHT_LIST_DATA_TYPE));
+    STRAIGHT_LIST_DATA_TYPE * elements_array = STRAIGHT_LIST_ALLOC(list.size * sizeof(STRAIGHT_LIST_DATA_TYPE));
     STRAIGHT_LIST_ASSERT(elements_array && "[ERROR] Memory allocation failed.");
 
-    for (size_t current = list->head, i = 0; i < list->size; ++i) {
-        elements_array[i] = list->elements[current];
-        current = list->next[current];
+    for (size_t current = list.head, i = 0; i < list.size; ++i) {
+        elements_array[i] = list.elements[current];
+        current = list.next[current];
     }
 
-    manage(elements_array, list->size, args);
+    manage(elements_array, list.size, args);
 
-    // add elements back to list and also remove holes
-    for (size_t * current = &(list->head), i = 0; i < list->size; ++i) {
-        (*current) = i;
-        list->elements[i] = elements_array[i];
-
-        current = list->next + i;
+    for (size_t current = list.head, i = 0; i < list.size; ++i) {
+        list.elements[current] = elements_array[i];
+        current = list.next[current];
     }
-    list->empty = STRAIGHT_LIST_SIZE;
 
     STRAIGHT_LIST_FREE(elements_array);
 }
@@ -287,21 +275,20 @@ static inline void insert_at_straight_list(straight_list_s * list, const size_t 
 /// @param list Readonly straight list structure.
 /// @param index Readonly zero based index of element in list.
 /// @return Element at index in list.
-static inline STRAIGHT_LIST_DATA_TYPE get_straight_list(const straight_list_s * list, const size_t index) {
-    STRAIGHT_LIST_ASSERT(list && "[ERROR] 'list' parameter is NULL.");
-    STRAIGHT_LIST_ASSERT(list->size && "[ERROR] Can't get element from empty list->");
-    STRAIGHT_LIST_ASSERT(index < list->size && "[ERROR] 'index' parameter exceeds list size.");
+static inline STRAIGHT_LIST_DATA_TYPE get_straight_list(const straight_list_s list, const size_t index) {
+    STRAIGHT_LIST_ASSERT(list.size && "[ERROR] Can't get element from empty list.");
+    STRAIGHT_LIST_ASSERT(index < list.size && "[ERROR] 'index' parameter exceeds list size.");
 
-    STRAIGHT_LIST_ASSERT(list->size <= STRAIGHT_LIST_SIZE && "[ERROR] List size exceeds maximum size.");
-    STRAIGHT_LIST_ASSERT(list->elements && "[ERROR] 'elements' pointer is NULL.");
-    STRAIGHT_LIST_ASSERT(list->next && "[ERROR] 'next' pointer is NULL.");
+    STRAIGHT_LIST_ASSERT(list.size <= STRAIGHT_LIST_SIZE && "[ERROR] List size exceeds maximum size.");
+    STRAIGHT_LIST_ASSERT(list.elements && "[ERROR] 'elements' pointer is NULL.");
+    STRAIGHT_LIST_ASSERT(list.next && "[ERROR] 'next' pointer is NULL.");
 
-    size_t current = list->head;
+    size_t current = list.head;
     for (size_t i = 0; i < index; ++i) {
-        current = list->next[current];
+        current = list.next[current];
     }
 
-    return list->elements[current];
+    return list.elements[current];
 }
 
 /// @brief Removes first instance of element based on zero equal comparison.
