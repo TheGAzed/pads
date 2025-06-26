@@ -6,7 +6,6 @@ add_subdirectory(external)
 
 add_library(${PROJECT_NAME} INTERFACE)
 target_include_directories(${PROJECT_NAME} INTERFACE source)
-#set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE C)
 
 if (NOT DEFINED IS_PADS_TESTING)
     set(IS_PADS_TESTING TRUE)

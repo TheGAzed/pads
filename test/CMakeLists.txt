@@ -1,5 +1,5 @@
 if (MSVC)
-    add_compile_options(/W2 /WX /Zi)
+    add_compile_options(/W2 /WX /Z7)
 else ()
     add_compile_options(-std=c99 -O0 -g -Wall -Wextra -Wconversion -Werror -Wpedantic)
 endif ()
