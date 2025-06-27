@@ -78,7 +78,7 @@ TEST IS_EMPTY_01(void) {
     struct compare cmp = { .function = compare_int_generic, };
     sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
-    ASSERTm("[ERROR] Expected heap to be empty.", is_empty_sort_heap(&test));
+    ASSERTm("[ERROR] Expected heap to be empty.", is_empty_sort_heap(test));
 
     destroy_sort_heap(&test, destroy_int);
 
@@ -91,7 +91,7 @@ TEST IS_EMPTY_02(void) {
 
     push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_FALSEm("[ERROR] Expected heap to not be empty.", is_empty_sort_heap(&test));
+    ASSERT_FALSEm("[ERROR] Expected heap to not be empty.", is_empty_sort_heap(test));
 
     destroy_sort_heap(&test, destroy_int);
 
@@ -106,7 +106,7 @@ TEST IS_EMPTY_03(void) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });
     }
 
-    ASSERT_FALSEm("[ERROR] Expected heap to not be empty.", is_empty_sort_heap(&test));
+    ASSERT_FALSEm("[ERROR] Expected heap to not be empty.", is_empty_sort_heap(test));
 
     destroy_sort_heap(&test, destroy_int);
 
@@ -121,7 +121,7 @@ TEST IS_EMPTY_04(void) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });
     }
 
-    ASSERT_FALSEm("[ERROR] Expected heap to not be empty.", is_empty_sort_heap(&test));
+    ASSERT_FALSEm("[ERROR] Expected heap to not be empty.", is_empty_sort_heap(test));
 
     destroy_sort_heap(&test, destroy_int);
 
@@ -132,7 +132,7 @@ TEST IS_FULL_01(void) {
     struct compare cmp = { .function = compare_int_generic, };
     sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
-    ASSERT_FALSEm("[ERROR] Expected heap to be empty.", is_full_sort_heap(&test));
+    ASSERT_FALSEm("[ERROR] Expected heap to be empty.", is_full_sort_heap(test));
 
     destroy_sort_heap(&test, destroy_string);
 
@@ -145,7 +145,7 @@ TEST IS_FULL_02(void) {
 
     push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_FALSEm("[ERROR] Expected heap to not be empty.", is_full_sort_heap(&test));
+    ASSERT_FALSEm("[ERROR] Expected heap to not be empty.", is_full_sort_heap(test));
 
     destroy_sort_heap(&test, destroy_int);
 
@@ -160,7 +160,7 @@ TEST IS_FULL_03(void) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });
     }
 
-    ASSERT_FALSEm("[ERROR] Expected heap to not be empty.", is_full_sort_heap(&test));
+    ASSERT_FALSEm("[ERROR] Expected heap to not be empty.", is_full_sort_heap(test));
 
     destroy_sort_heap(&test, destroy_int);
 
@@ -175,7 +175,7 @@ TEST IS_FULL_04(void) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });
     }
 
-    ASSERTm("[ERROR] Expected heap to not be empty.", is_full_sort_heap(&test));
+    ASSERTm("[ERROR] Expected heap to not be empty.", is_full_sort_heap(test));
 
     destroy_sort_heap(&test, destroy_int);
 
@@ -186,7 +186,7 @@ TEST COPY_01(void) {
     struct compare cmp = { .function = compare_int_generic, };
     sort_heap_s test = create_sort_heap(sort_int, &cmp);
 
-    sort_heap_s copy = copy_sort_heap(&test, copy_int);
+    sort_heap_s copy = copy_sort_heap(test, copy_int);
 
     ASSERT_EQm("[ERROR] Expected sizes to be equal.", test.size, copy.size);
     ASSERT_EQm("[ERROR] Expected compare functions to be equal.", test.sort, copy.sort);
@@ -203,7 +203,7 @@ TEST COPY_02(void) {
 
     push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = 42, });
 
-    sort_heap_s copy = copy_sort_heap(&test, copy_int);
+    sort_heap_s copy = copy_sort_heap(test, copy_int);
 
     ASSERT_EQm("[ERROR] Expected sizes to be equal.", test.size, copy.size);
     ASSERT_EQm("[ERROR] Expected compare functions to be equal.", test.sort, copy.sort);
@@ -226,7 +226,7 @@ TEST COPY_03(void) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });
     }
 
-    sort_heap_s copy = copy_sort_heap(&test, copy_int);
+    sort_heap_s copy = copy_sort_heap(test, copy_int);
 
     ASSERT_EQm("[ERROR] Expected sizes to be equal.", test.size, copy.size);
     ASSERT_EQm("[ERROR] Expected compare functions to be equal.", test.sort, copy.sort);
@@ -251,7 +251,7 @@ TEST COPY_04(void) {
         push_sort_heap(&test, (SORT_HEAP_DATA_TYPE) { .sub_one = i, });
     }
 
-    sort_heap_s copy = copy_sort_heap(&test, copy_int);
+    sort_heap_s copy = copy_sort_heap(test, copy_int);
 
     ASSERT_EQm("[ERROR] Expected sizes to be equal.", test.size, copy.size);
     ASSERT_EQm("[ERROR] Expected compare functions to be equal.", test.sort, copy.sort);

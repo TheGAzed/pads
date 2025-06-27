@@ -126,7 +126,7 @@ TEST DESTROY_08(void) {
 TEST IS_EMPTY_01(void) {
     binary_heap_s test = create_binary_heap(compare_string);
 
-    ASSERTm("[ERROR] Expected heap to be empty.", is_empty_binary_heap(&test));
+    ASSERTm("[ERROR] Expected heap to be empty.", is_empty_binary_heap(test));
 
     destroy_binary_heap(&test, destroy_string);
 
@@ -138,7 +138,7 @@ TEST IS_EMPTY_02(void) {
 
     push_binary_heap(&test, (BINARY_HEAP_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_FALSEm("[ERROR] Expected heap to not be empty.", is_empty_binary_heap(&test));
+    ASSERT_FALSEm("[ERROR] Expected heap to not be empty.", is_empty_binary_heap(test));
 
     destroy_binary_heap(&test, destroy_int);
 
@@ -152,7 +152,7 @@ TEST IS_EMPTY_03(void) {
         push_binary_heap(&test, (BINARY_HEAP_DATA_TYPE) { .sub_one = i, });
     }
 
-    ASSERT_FALSEm("[ERROR] Expected heap to not be empty.", is_empty_binary_heap(&test));
+    ASSERT_FALSEm("[ERROR] Expected heap to not be empty.", is_empty_binary_heap(test));
 
     destroy_binary_heap(&test, destroy_int);
 
@@ -166,7 +166,7 @@ TEST IS_EMPTY_04(void) {
         push_binary_heap(&test, (BINARY_HEAP_DATA_TYPE) { .sub_one = i, });
     }
 
-    ASSERT_FALSEm("[ERROR] Expected heap to not be empty.", is_empty_binary_heap(&test));
+    ASSERT_FALSEm("[ERROR] Expected heap to not be empty.", is_empty_binary_heap(test));
 
     destroy_binary_heap(&test, destroy_int);
 
@@ -176,7 +176,7 @@ TEST IS_EMPTY_04(void) {
 TEST IS_FULL_01(void) {
     binary_heap_s test = create_binary_heap(compare_string);
 
-    ASSERT_FALSEm("[ERROR] Expected heap to be empty.", is_full_binary_heap(&test));
+    ASSERT_FALSEm("[ERROR] Expected heap to be empty.", is_full_binary_heap(test));
 
     destroy_binary_heap(&test, destroy_string);
 
@@ -188,7 +188,7 @@ TEST IS_FULL_02(void) {
 
     push_binary_heap(&test, (BINARY_HEAP_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_FALSEm("[ERROR] Expected heap to not be empty.", is_full_binary_heap(&test));
+    ASSERT_FALSEm("[ERROR] Expected heap to not be empty.", is_full_binary_heap(test));
 
     destroy_binary_heap(&test, destroy_int);
 
@@ -202,7 +202,7 @@ TEST IS_FULL_03(void) {
         push_binary_heap(&test, (BINARY_HEAP_DATA_TYPE) { .sub_one = i, });
     }
 
-    ASSERT_FALSEm("[ERROR] Expected heap to not be empty.", is_full_binary_heap(&test));
+    ASSERT_FALSEm("[ERROR] Expected heap to not be empty.", is_full_binary_heap(test));
 
     destroy_binary_heap(&test, destroy_int);
 
@@ -216,7 +216,7 @@ TEST IS_FULL_04(void) {
         push_binary_heap(&test, (BINARY_HEAP_DATA_TYPE) { .sub_one = i, });
     }
 
-    ASSERTm("[ERROR] Expected heap to not be empty.", is_full_binary_heap(&test));
+    ASSERTm("[ERROR] Expected heap to not be empty.", is_full_binary_heap(test));
 
     destroy_binary_heap(&test, destroy_int);
 
@@ -226,7 +226,7 @@ TEST IS_FULL_04(void) {
 TEST COPY_01(void) {
     binary_heap_s test = create_binary_heap(compare_int);
 
-    binary_heap_s copy = copy_binary_heap(&test, copy_int);
+    binary_heap_s copy = copy_binary_heap(test, copy_int);
 
     ASSERT_EQm("[ERROR] Expected sizes to be equal.", test.size, copy.size);
     ASSERT_EQm("[ERROR] Expected compare functions to be equal.", test.compare, copy.compare);
@@ -242,7 +242,7 @@ TEST COPY_02(void) {
 
     push_binary_heap(&test, (BINARY_HEAP_DATA_TYPE) { .sub_one = 42, });
 
-    binary_heap_s copy = copy_binary_heap(&test, copy_int);
+    binary_heap_s copy = copy_binary_heap(test, copy_int);
 
     ASSERT_EQm("[ERROR] Expected sizes to be equal.", test.size, copy.size);
     ASSERT_EQm("[ERROR] Expected compare functions to be equal.", test.compare, copy.compare);
@@ -264,7 +264,7 @@ TEST COPY_03(void) {
         push_binary_heap(&test, (BINARY_HEAP_DATA_TYPE) { .sub_one = i, });
     }
 
-    binary_heap_s copy = copy_binary_heap(&test, copy_int);
+    binary_heap_s copy = copy_binary_heap(test, copy_int);
 
     ASSERT_EQm("[ERROR] Expected sizes to be equal.", test.size, copy.size);
     ASSERT_EQm("[ERROR] Expected compare functions to be equal.", test.compare, copy.compare);
@@ -288,7 +288,7 @@ TEST COPY_04(void) {
         push_binary_heap(&test, (BINARY_HEAP_DATA_TYPE) { .sub_one = i, });
     }
 
-    binary_heap_s copy = copy_binary_heap(&test, copy_int);
+    binary_heap_s copy = copy_binary_heap(test, copy_int);
 
     ASSERT_EQm("[ERROR] Expected sizes to be equal.", test.size, copy.size);
     ASSERT_EQm("[ERROR] Expected compare functions to be equal.", test.compare, copy.compare);
@@ -405,7 +405,7 @@ TEST PEEP_01(void) {
 
     push_binary_heap(&test, (BINARY_HEAP_DATA_TYPE) { .sub_one = BINARY_HEAP_SIZE, });
 
-    const BINARY_HEAP_DATA_TYPE a = peep_binary_heap(&test);
+    const BINARY_HEAP_DATA_TYPE a = peep_binary_heap(test);
     ASSERT_EQm("[ERROR] Expected peeped element to be BINARY_HEAP_SIZE.", BINARY_HEAP_SIZE, a.sub_one);
 
     destroy_binary_heap(&test, destroy_int);
@@ -421,7 +421,7 @@ TEST PEEP_02(void) {
     }
     push_binary_heap(&test, (BINARY_HEAP_DATA_TYPE) { .sub_one = BINARY_HEAP_SIZE, });
 
-    const BINARY_HEAP_DATA_TYPE a = peep_binary_heap(&test);
+    const BINARY_HEAP_DATA_TYPE a = peep_binary_heap(test);
     ASSERT_EQm("[ERROR] Expected peeped element to be BINARY_HEAP_SIZE.", BINARY_HEAP_SIZE, a.sub_one);
 
     destroy_binary_heap(&test, destroy_int);
@@ -437,7 +437,7 @@ TEST PEEP_03(void) {
     }
     push_binary_heap(&test, (BINARY_HEAP_DATA_TYPE) { .sub_one = BINARY_HEAP_SIZE, });
 
-    const BINARY_HEAP_DATA_TYPE a = peep_binary_heap(&test);
+    const BINARY_HEAP_DATA_TYPE a = peep_binary_heap(test);
     ASSERT_EQm("[ERROR] Expected peeped element to be BINARY_HEAP_SIZE.", BINARY_HEAP_SIZE, a.sub_one);
 
     destroy_binary_heap(&test, destroy_int);
@@ -450,12 +450,12 @@ TEST REPLACE_01(void) {
 
     push_binary_heap(&test, (BINARY_HEAP_DATA_TYPE) { .sub_one = 1, });
 
-    const BINARY_HEAP_DATA_TYPE a = peep_binary_heap(&test);
+    const BINARY_HEAP_DATA_TYPE a = peep_binary_heap(test);
     ASSERT_EQm("[ERROR] Expected peeped element to be 1.", 1, a.sub_one);
 
-    replace_binary_heap(&test, 0, (BINARY_HEAP_DATA_TYPE) { .sub_one = 0, });
+    replace_binary_heap(test, 0, (BINARY_HEAP_DATA_TYPE) { .sub_one = 0, });
 
-    const BINARY_HEAP_DATA_TYPE b = peep_binary_heap(&test);
+    const BINARY_HEAP_DATA_TYPE b = peep_binary_heap(test);
     ASSERT_EQm("[ERROR] Expected peeped element to be 0.", 0, b.sub_one);
 
     destroy_binary_heap(&test, destroy_int);
@@ -468,12 +468,12 @@ TEST REPLACE_02(void) {
 
     push_binary_heap(&test, (BINARY_HEAP_DATA_TYPE) { .sub_one = 1, });
 
-    const BINARY_HEAP_DATA_TYPE a = peep_binary_heap(&test);
+    const BINARY_HEAP_DATA_TYPE a = peep_binary_heap(test);
     ASSERT_EQm("[ERROR] Expected peeped element to be 1.", 1, a.sub_one);
 
-    replace_binary_heap(&test, 0, (BINARY_HEAP_DATA_TYPE) { .sub_one = 0, });
+    replace_binary_heap(test, 0, (BINARY_HEAP_DATA_TYPE) { .sub_one = 0, });
 
-    const BINARY_HEAP_DATA_TYPE b = peep_binary_heap(&test);
+    const BINARY_HEAP_DATA_TYPE b = peep_binary_heap(test);
     ASSERT_EQm("[ERROR] Expected peeped element to be 0.", 0, b.sub_one);
 
     destroy_binary_heap(&test, destroy_int);
@@ -488,12 +488,12 @@ TEST REPLACE_03(void) {
         push_binary_heap(&test, (BINARY_HEAP_DATA_TYPE) { .sub_one = i + 1, });
     }
 
-    const BINARY_HEAP_DATA_TYPE a = peep_binary_heap(&test);
+    const BINARY_HEAP_DATA_TYPE a = peep_binary_heap(test);
     ASSERT_EQm("[ERROR] Expected peeped element to be 1.", 1, a.sub_one);
 
-    replace_binary_heap(&test, 0, (BINARY_HEAP_DATA_TYPE) { .sub_one = 0, });
+    replace_binary_heap(test, 0, (BINARY_HEAP_DATA_TYPE) { .sub_one = 0, });
 
-    const BINARY_HEAP_DATA_TYPE b = peep_binary_heap(&test);
+    const BINARY_HEAP_DATA_TYPE b = peep_binary_heap(test);
     ASSERT_EQm("[ERROR] Expected peeped element to be 0.", 0, b.sub_one);
 
     destroy_binary_heap(&test, destroy_int);
@@ -508,12 +508,12 @@ TEST REPLACE_04(void) {
         push_binary_heap(&test, (BINARY_HEAP_DATA_TYPE) { .sub_one = i + 1, });
     }
 
-    const BINARY_HEAP_DATA_TYPE a = peep_binary_heap(&test);
+    const BINARY_HEAP_DATA_TYPE a = peep_binary_heap(test);
     ASSERT_EQm("[ERROR] Expected peeped element to be 1.", 1, a.sub_one);
 
-    replace_binary_heap(&test, 0, (BINARY_HEAP_DATA_TYPE) { .sub_one = 0, });
+    replace_binary_heap(test, 0, (BINARY_HEAP_DATA_TYPE) { .sub_one = 0, });
 
-    const BINARY_HEAP_DATA_TYPE b = peep_binary_heap(&test);
+    const BINARY_HEAP_DATA_TYPE b = peep_binary_heap(test);
     ASSERT_EQm("[ERROR] Expected peeped element to be 0.", 0, b.sub_one);
 
     destroy_binary_heap(&test, destroy_int);
