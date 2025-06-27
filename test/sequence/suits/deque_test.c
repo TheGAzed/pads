@@ -106,7 +106,7 @@ TEST DESTROY_07(void) {
 TEST COPY_01(void) {
     deque_s test = create_deque();
 
-    deque_s copy = copy_deque(&test, copy_int);
+    deque_s copy = copy_deque(test, copy_int);
 
     ASSERT_EQm("[ERROR] Expected copy size to equal test size of 0.", test.size, copy.size);
 
@@ -123,7 +123,7 @@ TEST COPY_02(void) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
-    deque_s copy = copy_deque(&test, copy_int);
+    deque_s copy = copy_deque(test, copy_int);
     ASSERT_EQm("[ERROR] Expected copy size to equal test size of 0.", test.size, copy.size);
 
     for (int i = 0; i < DEQUE_SIZE - 1; ++i) {
@@ -146,7 +146,7 @@ TEST COPY_03(void) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
-    deque_s copy = copy_deque(&test, copy_int);
+    deque_s copy = copy_deque(test, copy_int);
     ASSERT_EQm("[ERROR] Expected copy size to equal test size of 0.", test.size, copy.size);
 
     for (int i = 0; i < DEQUE_SIZE; ++i) {
@@ -169,7 +169,7 @@ TEST COPY_04(void) {
         enqueue_rear(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
-    deque_s copy = copy_deque(&test, copy_int);
+    deque_s copy = copy_deque(test, copy_int);
     ASSERT_EQm("[ERROR] Expected copy size to equal test size of 0.", test.size, copy.size);
 
     for (int i = 0; i < DEQUE_SIZE - 1; ++i) {
@@ -192,7 +192,7 @@ TEST COPY_05(void) {
         enqueue_rear(&test, (DEQUE_DATA_TYPE) { .sub_one = i, });
     }
 
-    deque_s copy = copy_deque(&test, copy_int);
+    deque_s copy = copy_deque(test, copy_int);
     ASSERT_EQm("[ERROR] Expected copy size to equal test size of 0.", test.size, copy.size);
 
     for (int i = 0; i < DEQUE_SIZE; ++i) {
@@ -215,7 +215,7 @@ TEST COPY_06(void) {
         enqueue_rear(&test, copy_string((DEQUE_DATA_TYPE) { .sub_two = TEST_STRING, }));
     }
 
-    deque_s copy = copy_deque(&test, copy_string);
+    deque_s copy = copy_deque(test, copy_string);
     ASSERT_EQm("[ERROR] Expected copy size to equal test size of 0.", test.size, copy.size);
 
     for (int i = 0; i < DEQUE_SIZE - 1; ++i) {
@@ -241,7 +241,7 @@ TEST COPY_07(void) {
         enqueue_rear(&test, copy_string((DEQUE_DATA_TYPE) { .sub_two = TEST_STRING, }));
     }
 
-    deque_s copy = copy_deque(&test, copy_string);
+    deque_s copy = copy_deque(test, copy_string);
     ASSERT_EQm("[ERROR] Expected copy size to equal test size of 0.", test.size, copy.size);
 
     for (int i = 0; i < DEQUE_SIZE; ++i) {
@@ -263,7 +263,7 @@ TEST COPY_07(void) {
 TEST IS_EMPTY_01(void) {
     deque_s test = create_deque();
 
-    ASSERTm("[ERROR] Expected created deque to be empty.", is_empty_deque(&test));
+    ASSERTm("[ERROR] Expected created deque to be empty.", is_empty_deque(test));
 
     destroy_deque(&test, destroy_int);
 
@@ -275,7 +275,7 @@ TEST IS_EMPTY_02(void) {
 
     enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
 
-    ASSERT_FALSEm("[ERROR] Expected created deque to be empty.", is_empty_deque(&test));
+    ASSERT_FALSEm("[ERROR] Expected created deque to be empty.", is_empty_deque(test));
 
     destroy_deque(&test, destroy_int);
 
@@ -289,7 +289,7 @@ TEST IS_EMPTY_03(void) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
-    ASSERT_FALSEm("[ERROR] Expected created deque to be empty.", is_empty_deque(&test));
+    ASSERT_FALSEm("[ERROR] Expected created deque to be empty.", is_empty_deque(test));
 
     destroy_deque(&test, destroy_int);
 
@@ -303,7 +303,7 @@ TEST IS_EMPTY_04(void) {
         enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
-    ASSERT_FALSEm("[ERROR] Expected created deque to be empty.", is_empty_deque(&test));
+    ASSERT_FALSEm("[ERROR] Expected created deque to be empty.", is_empty_deque(test));
 
     destroy_deque(&test, destroy_int);
 
@@ -317,7 +317,7 @@ TEST IS_EMPTY_05(void) {
 
     dequeue_front(&test);
 
-    ASSERTm("[ERROR] Expected deque to be empty.", is_empty_deque(&test));
+    ASSERTm("[ERROR] Expected deque to be empty.", is_empty_deque(test));
 
     destroy_deque(&test, destroy_int);
 
@@ -335,7 +335,7 @@ TEST IS_EMPTY_06(void) {
         dequeue_front(&test);
     }
 
-    ASSERTm("[ERROR] Expected deque to be empty.", is_empty_deque(&test));
+    ASSERTm("[ERROR] Expected deque to be empty.", is_empty_deque(test));
 
     destroy_deque(&test, destroy_int);
 
@@ -353,7 +353,7 @@ TEST IS_EMPTY_07(void) {
         dequeue_front(&test);
     }
 
-    ASSERTm("[ERROR] Expected deque to be empty.", is_empty_deque(&test));
+    ASSERTm("[ERROR] Expected deque to be empty.", is_empty_deque(test));
 
     destroy_deque(&test, destroy_int);
 
@@ -365,7 +365,7 @@ TEST IS_EMPTY_08(void) {
 
     enqueue_rear(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
 
-    ASSERT_FALSEm("[ERROR] Expected created deque to be empty.", is_empty_deque(&test));
+    ASSERT_FALSEm("[ERROR] Expected created deque to be empty.", is_empty_deque(test));
 
     destroy_deque(&test, destroy_int);
 
@@ -379,7 +379,7 @@ TEST IS_EMPTY_09(void) {
         enqueue_rear(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
-    ASSERT_FALSEm("[ERROR] Expected created deque to be empty.", is_empty_deque(&test));
+    ASSERT_FALSEm("[ERROR] Expected created deque to be empty.", is_empty_deque(test));
 
     destroy_deque(&test, destroy_int);
 
@@ -393,7 +393,7 @@ TEST IS_EMPTY_10(void) {
         enqueue_rear(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
     }
 
-    ASSERT_FALSEm("[ERROR] Expected created deque to be empty.", is_empty_deque(&test));
+    ASSERT_FALSEm("[ERROR] Expected created deque to be empty.", is_empty_deque(test));
 
     destroy_deque(&test, destroy_int);
 
@@ -407,7 +407,7 @@ TEST IS_EMPTY_11(void) {
 
     dequeue_rear(&test);
 
-    ASSERTm("[ERROR] Expected deque to be empty.", is_empty_deque(&test));
+    ASSERTm("[ERROR] Expected deque to be empty.", is_empty_deque(test));
 
     destroy_deque(&test, destroy_int);
 
@@ -425,7 +425,7 @@ TEST IS_EMPTY_12(void) {
         dequeue_rear(&test);
     }
 
-    ASSERTm("[ERROR] Expected deque to be empty.", is_empty_deque(&test));
+    ASSERTm("[ERROR] Expected deque to be empty.", is_empty_deque(test));
 
     destroy_deque(&test, destroy_int);
 
@@ -443,7 +443,7 @@ TEST IS_EMPTY_13(void) {
         dequeue_rear(&test);
     }
 
-    ASSERTm("[ERROR] Expected deque to be empty.", is_empty_deque(&test));
+    ASSERTm("[ERROR] Expected deque to be empty.", is_empty_deque(test));
 
     destroy_deque(&test, destroy_int);
 
@@ -453,7 +453,7 @@ TEST IS_EMPTY_13(void) {
 TEST IS_FULL_01(void) {
     deque_s test = create_deque();
 
-    ASSERT_FALSEm("[ERROR] Expected created deque to not be full.", is_full_deque(&test));
+    ASSERT_FALSEm("[ERROR] Expected created deque to not be full.", is_full_deque(test));
 
     destroy_deque(&test, destroy_int);
 
@@ -465,7 +465,7 @@ TEST IS_FULL_02(void) {
 
     enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
 
-    ASSERT_FALSEm("[ERROR] Expected created deque to not be full.", is_full_deque(&test));
+    ASSERT_FALSEm("[ERROR] Expected created deque to not be full.", is_full_deque(test));
 
     destroy_deque(&test, destroy_int);
 
@@ -558,7 +558,7 @@ TEST PEEK_FRONT_01(void) {
     enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
 
     ASSERT_EQm("[ERROR] Expected size to be 1.", 1, test.size);
-    ASSERT_EQm("[ERROR] Expected peeked element to be 0.", 0, peek_front(&test).sub_one);
+    ASSERT_EQm("[ERROR] Expected peeked element to be 0.", 0, peek_front(test).sub_one);
 
     destroy_deque(&test, destroy_int);
 
@@ -573,7 +573,7 @@ TEST PEEK_FRONT_02(void) {
     }
 
     ASSERT_EQm("[ERROR] Expected size to be 'DEQUE_SIZE - 1'.", DEQUE_SIZE - 1, test.size);
-    ASSERT_EQm("[ERROR] Expected peeked element to be 'DEQUE_SIZE - 2'.", DEQUE_SIZE - 2, peek_front(&test).sub_one);
+    ASSERT_EQm("[ERROR] Expected peeked element to be 'DEQUE_SIZE - 2'.", DEQUE_SIZE - 2, peek_front(test).sub_one);
 
     destroy_deque(&test, destroy_int);
 
@@ -588,7 +588,7 @@ TEST PEEK_FRONT_03(void) {
     }
 
     ASSERT_EQm("[ERROR] Expected size to be 'DEQUE_SIZE'.", DEQUE_SIZE, test.size);
-    ASSERT_EQm("[ERROR] Expected peeked element to be DEQUE_SIZE - 1.", DEQUE_SIZE - 1, peek_front(&test).sub_one);
+    ASSERT_EQm("[ERROR] Expected peeked element to be DEQUE_SIZE - 1.", DEQUE_SIZE - 1, peek_front(test).sub_one);
 
     destroy_deque(&test, destroy_int);
 
@@ -603,7 +603,7 @@ TEST PEEK_FRONT_04(void) {
     }
 
     ASSERT_EQm("[ERROR] Expected size to be 'DEQUE_SIZE - 1'.", DEQUE_SIZE - 1, test.size);
-    ASSERT_EQm("[ERROR] Expected peeked element to be 0.", 0, peek_front(&test).sub_one);
+    ASSERT_EQm("[ERROR] Expected peeked element to be 0.", 0, peek_front(test).sub_one);
 
     destroy_deque(&test, destroy_int);
 
@@ -618,7 +618,7 @@ TEST PEEK_FRONT_05(void) {
     }
 
     ASSERT_EQm("[ERROR] Expected size to be 'DEQUE_SIZE'.", DEQUE_SIZE, test.size);
-    ASSERT_EQm("[ERROR] Expected peeked element to be 0.", 0, peek_front(&test).sub_one);
+    ASSERT_EQm("[ERROR] Expected peeked element to be 0.", 0, peek_front(test).sub_one);
 
     destroy_deque(&test, destroy_int);
 
@@ -631,7 +631,7 @@ TEST PEEK_BACK_01(void) {
     enqueue_front(&test, (DEQUE_DATA_TYPE) { .sub_one = 0, });
 
     ASSERT_EQm("[ERROR] Expected size to be 1.", 1, test.size);
-    ASSERT_EQm("[ERROR] Expected peeked element to be 0.", 0, peek_rear(&test).sub_one);
+    ASSERT_EQm("[ERROR] Expected peeked element to be 0.", 0, peek_rear(test).sub_one);
 
     destroy_deque(&test, destroy_int);
 
@@ -646,7 +646,7 @@ TEST PEEK_BACK_02(void) {
     }
 
     ASSERT_EQm("[ERROR] Expected size to be 'DEQUE_SIZE - 1'.", DEQUE_SIZE - 1, test.size);
-    ASSERT_EQm("[ERROR] Expected peeked element to be 'DEQUE_SIZE - 2'.", DEQUE_SIZE - 2, peek_rear(&test).sub_one);
+    ASSERT_EQm("[ERROR] Expected peeked element to be 'DEQUE_SIZE - 2'.", DEQUE_SIZE - 2, peek_rear(test).sub_one);
 
     destroy_deque(&test, destroy_int);
 
@@ -661,7 +661,7 @@ TEST PEEK_BACK_03(void) {
     }
 
     ASSERT_EQm("[ERROR] Expected size to be 'DEQUE_SIZE'.", DEQUE_SIZE, test.size);
-    ASSERT_EQm("[ERROR] Expected peeked element to be DEQUE_SIZE - 1.", DEQUE_SIZE - 1, peek_rear(&test).sub_one);
+    ASSERT_EQm("[ERROR] Expected peeked element to be DEQUE_SIZE - 1.", DEQUE_SIZE - 1, peek_rear(test).sub_one);
 
     destroy_deque(&test, destroy_int);
 
@@ -676,7 +676,7 @@ TEST PEEK_BACK_04(void) {
     }
 
     ASSERT_EQm("[ERROR] Expected size to be 'DEQUE_SIZE - 1'.", DEQUE_SIZE - 1, test.size);
-    ASSERT_EQm("[ERROR] Expected peeked element to be 0.", 0, peek_rear(&test).sub_one);
+    ASSERT_EQm("[ERROR] Expected peeked element to be 0.", 0, peek_rear(test).sub_one);
 
     destroy_deque(&test, destroy_int);
 
@@ -691,7 +691,7 @@ TEST PEEK_BACK_05(void) {
     }
 
     ASSERT_EQm("[ERROR] Expected size to be 'DEQUE_SIZE'.", DEQUE_SIZE, test.size);
-    ASSERT_EQm("[ERROR] Expected peeked element to be 0.", 0, peek_rear(&test).sub_one);
+    ASSERT_EQm("[ERROR] Expected peeked element to be 0.", 0, peek_rear(test).sub_one);
 
     destroy_deque(&test, destroy_int);
 
@@ -873,7 +873,7 @@ TEST FOREACH_01(void) {
     enqueue_rear(&test, (DEQUE_DATA_TYPE) { .sub_one = 0 });
 
     int increment = 5;
-    foreach_front_deque(&test, operation_int, &increment);
+    foreach_front_deque(test, operation_int, &increment);
 
     ASSERT_EQm("[ERROR] Expected incremented element by 'increment'.", 0 + increment, dequeue_front(&test).sub_one);
 
@@ -889,7 +889,7 @@ TEST FOREACH_02(void) {
     }
 
     int increment = 5;
-    foreach_front_deque(&test, operation_int, &increment);
+    foreach_front_deque(test, operation_int, &increment);
 
     for (int i = 0; i < DEQUE_SIZE - 1; ++i) {
         ASSERT_EQm("[ERROR] Expected incremented element by 'increment'.", i + increment, dequeue_front(&test).sub_one);
@@ -907,7 +907,7 @@ TEST FOREACH_03(void) {
     }
 
     int increment = 5;
-    foreach_front_deque(&test, operation_int, &increment);
+    foreach_front_deque(test, operation_int, &increment);
 
     for (int i = 0; i < DEQUE_SIZE; ++i) {
         ASSERT_EQm("[ERROR] Expected incremented element by 'increment'.", i + increment, dequeue_front(&test).sub_one);
@@ -924,7 +924,7 @@ TEST FOREACH_04(void) {
     enqueue_rear(&test, copy_string((DEQUE_DATA_TYPE) { .sub_two = TEST_STRING }));
 
     char new_string[] = "[REDACTED]";
-    foreach_front_deque(&test, operation_string, new_string);
+    foreach_front_deque(test, operation_string, new_string);
 
     DEQUE_DATA_TYPE element = dequeue_front(&test);
     ASSERT_STRN_EQm("[ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
@@ -943,7 +943,7 @@ TEST FOREACH_05(void) {
     }
 
     char new_string[] = "[REDACTED]";
-    foreach_front_deque(&test, operation_string, new_string);
+    foreach_front_deque(test, operation_string, new_string);
 
     for (int i = 0; i < DEQUE_SIZE - 1; ++i) {
         DEQUE_DATA_TYPE element = dequeue_front(&test);
@@ -964,7 +964,7 @@ TEST FOREACH_06(void) {
     }
 
     char new_string[] = "[REDACTED]";
-    foreach_front_deque(&test, operation_string, new_string);
+    foreach_front_deque(test, operation_string, new_string);
 
     for (int i = 0; i < DEQUE_SIZE; ++i) {
         DEQUE_DATA_TYPE element = dequeue_front(&test);
@@ -982,7 +982,7 @@ TEST FOREACH_REVERSE_01(void) {
     enqueue_rear(&test, (DEQUE_DATA_TYPE) { .sub_one = 0 });
 
     int increment = 5;
-    foreach_rear_deque(&test, operation_int, &increment);
+    foreach_rear_deque(test, operation_int, &increment);
 
     ASSERT_EQm("[ERROR] Expected incremented element by 'increment'.", 0 + increment, dequeue_front(&test).sub_one);
 
@@ -998,7 +998,7 @@ TEST FOREACH_REVERSE_02(void) {
     }
 
     int increment = 5;
-    foreach_rear_deque(&test, operation_int, &increment);
+    foreach_rear_deque(test, operation_int, &increment);
 
     for (int i = 0; i < DEQUE_SIZE - 1; ++i) {
         ASSERT_EQm("[ERROR] Expected incremented element by 'increment'.", i + increment, dequeue_front(&test).sub_one);
@@ -1016,7 +1016,7 @@ TEST FOREACH_REVERSE_03(void) {
     }
 
     int increment = 5;
-    foreach_rear_deque(&test, operation_int, &increment);
+    foreach_rear_deque(test, operation_int, &increment);
 
     for (int i = 0; i < DEQUE_SIZE; ++i) {
         ASSERT_EQm("[ERROR] Expected incremented element by 'increment'.", i + increment, dequeue_front(&test).sub_one);
@@ -1033,7 +1033,7 @@ TEST FOREACH_REVERSE_04(void) {
     enqueue_rear(&test, copy_string((DEQUE_DATA_TYPE) { .sub_two = TEST_STRING }));
 
     char new_string[] = "[REDACTED]";
-    foreach_rear_deque(&test, operation_string, new_string);
+    foreach_rear_deque(test, operation_string, new_string);
 
     DEQUE_DATA_TYPE element = dequeue_front(&test);
     ASSERT_STRN_EQm("[ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
@@ -1052,7 +1052,7 @@ TEST FOREACH_REVERSE_05(void) {
     }
 
     char new_string[] = "[REDACTED]";
-    foreach_rear_deque(&test, operation_string, new_string);
+    foreach_rear_deque(test, operation_string, new_string);
 
     for (int i = 0; i < DEQUE_SIZE - 1; ++i) {
         DEQUE_DATA_TYPE element = dequeue_front(&test);
@@ -1073,7 +1073,7 @@ TEST FOREACH_REVERSE_06(void) {
     }
 
     char new_string[] = "[REDACTED]";
-    foreach_rear_deque(&test, operation_string, new_string);
+    foreach_rear_deque(test, operation_string, new_string);
 
     for (int i = 0; i < DEQUE_SIZE; ++i) {
         DEQUE_DATA_TYPE element = dequeue_front(&test);
@@ -1090,7 +1090,7 @@ TEST MAP_01(void) {
     deque_s test = create_deque();
 
     struct compare cmp = { .function = compare_int_generic, };
-    map_deque(&test, sort_int, &cmp);
+    map_deque(test, sort_int, &cmp);
 
     destroy_deque(&test, destroy_int);
     PASS();
@@ -1102,7 +1102,7 @@ TEST MAP_02(void) {
     enqueue_rear(&test, (DEQUE_DATA_TYPE) { .sub_one = 42 });
 
     struct compare cmp = { .function = compare_int_generic, };
-    map_deque(&test, sort_int, &cmp);
+    map_deque(test, sort_int, &cmp);
 
     destroy_deque(&test, destroy_int);
     PASS();
@@ -1120,7 +1120,7 @@ TEST MAP_03(void) {
     }
 
     struct compare cmp = { .function = compare_int_generic, };
-    map_deque(&test, sort_int, &cmp);
+    map_deque(test, sort_int, &cmp);
 
     for (int i = 0; i < DEQUE_SIZE - 1; ++i) {
         ASSERT_EQm("[ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);
@@ -1142,7 +1142,7 @@ TEST MAP_04(void) {
     }
 
     struct compare cmp = { .function = compare_int_generic, };
-    map_deque(&test, sort_int, &cmp);
+    map_deque(test, sort_int, &cmp);
 
     for (int i = 0; i < DEQUE_SIZE; ++i) {
         ASSERT_EQm("[ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);
@@ -1164,7 +1164,7 @@ TEST MAP_05(void) {
     }
 
     struct compare cmp = { .function = compare_reverse_int_generic, };
-    map_deque(&test, sort_int, &cmp);
+    map_deque(test, sort_int, &cmp);
 
     for (int i = DEQUE_SIZE - 2; i >= 0; --i) {
         ASSERT_EQm("[ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);
@@ -1186,7 +1186,7 @@ TEST MAP_06(void) {
     }
 
     struct compare cmp = { .function = compare_reverse_int_generic, };
-    map_deque(&test, sort_int, &cmp);
+    map_deque(test, sort_int, &cmp);
 
     for (int i = DEQUE_SIZE - 1; i >= 0; --i) {
         ASSERT_EQm("[ERROR] Expected sorted queue to dequeue i", i, dequeue_front(&test).sub_one);

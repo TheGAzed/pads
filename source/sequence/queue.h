@@ -133,41 +133,36 @@ static inline void clear_queue(queue_s * queue, const destroy_queue_fn destroy) 
 /// @brief Checks if queue is empty.
 /// @param queue Queue structure to check.
 /// @return true if queue size is zero, false otherwise.
-static inline bool is_empty_queue(const queue_s * queue) {
-    QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter is NULL.");
+static inline bool is_empty_queue(const queue_s queue) {
+    QUEUE_ASSERT(queue.size <= QUEUE_SIZE && "[ERROR] Invalid queue size.");
+    QUEUE_ASSERT(queue.current < QUEUE_SIZE && "[ERROR] Queue's current index must be less than maximum size.");
+    QUEUE_ASSERT(queue.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    QUEUE_ASSERT(queue->size <= QUEUE_SIZE && "[ERROR] Invalid queue size.");
-    QUEUE_ASSERT(queue->current < QUEUE_SIZE && "[ERROR] Queue's current index must be less than maximum size.");
-    QUEUE_ASSERT(queue->elements && "[ERROR] 'elements' pointer is NULL.");
-
-    return !(queue->size);
+    return !(queue.size);
 }
 
 /// @brief Checks if queue is full or if queue's .size will overflow.
 /// @param queue Queue structure to check.
 /// @return true if queue is full, false otherwise.
 /// @note This function also returns true if preprocessor defined size is reached.
-static inline bool is_full_queue(const queue_s * queue) {
-    QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter is NULL.");
+static inline bool is_full_queue(const queue_s queue) {
+    QUEUE_ASSERT(queue.size <= QUEUE_SIZE && "[ERROR] Invalid queue size.");
+    QUEUE_ASSERT(queue.current < QUEUE_SIZE && "[ERROR] Queue's current index must be less than maximum size.");
+    QUEUE_ASSERT(queue.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    QUEUE_ASSERT(queue->size <= QUEUE_SIZE && "[ERROR] Invalid queue size.");
-    QUEUE_ASSERT(queue->current < QUEUE_SIZE && "[ERROR] Queue's current index must be less than maximum size.");
-    QUEUE_ASSERT(queue->elements && "[ERROR] 'elements' pointer is NULL.");
-
-    return queue->size == QUEUE_SIZE;
+    return queue.size == QUEUE_SIZE;
 }
 
 /// @brief Gets element at the top of the queue without decrementing size (peek the first of the queue).
 /// @param queue Queue structure to peek.
 /// @return The first element of the queue.
-static inline QUEUE_DATA_TYPE peek_queue(const queue_s * queue) {
-    QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter is NULL.");
-    QUEUE_ASSERT(queue->size && "[ERROR] Can't peek empty queue");
+static inline QUEUE_DATA_TYPE peek_queue(const queue_s queue) {
+    QUEUE_ASSERT(queue.size && "[ERROR] Can't peek empty queue");
 
-    QUEUE_ASSERT(queue->size <= QUEUE_SIZE && "[ERROR] Invalid queue size.");
-    QUEUE_ASSERT(queue->elements && "[ERROR] 'elements' pointer is NULL.");
+    QUEUE_ASSERT(queue.size <= QUEUE_SIZE && "[ERROR] Invalid queue size.");
+    QUEUE_ASSERT(queue.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    return queue->elements[queue->current];
+    return queue.elements[queue.current];
 }
 
 /// @brief Sets the next end element in queue array to 'element' parameter (enqueues element).
@@ -211,26 +206,25 @@ static inline QUEUE_DATA_TYPE dequeue(queue_s * queue) {
 /// @param queue Queue structure to copy.
 /// @param copy Function pointer to create a deep/shallow copy of an element in queue.
 /// @return A copy of the specified 'queue' parameter.
-static inline queue_s copy_queue(const queue_s * queue, const copy_queue_fn copy) {
-    QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter is NULL.");
+static inline queue_s copy_queue(const queue_s queue, const copy_queue_fn copy) {
     QUEUE_ASSERT(copy && "[ERROR] 'copy' parameter is NULL.");
 
-    QUEUE_ASSERT(queue->size <= QUEUE_SIZE && "[ERROR] Invalid queue size.");
-    QUEUE_ASSERT(queue->current < QUEUE_SIZE && "[ERROR] Queue's current index must be less than maximum size.");
-    QUEUE_ASSERT(queue->elements && "[ERROR] 'elements' pointer is NULL.");
+    QUEUE_ASSERT(queue.size <= QUEUE_SIZE && "[ERROR] Invalid queue size.");
+    QUEUE_ASSERT(queue.current < QUEUE_SIZE && "[ERROR] Queue's current index must be less than maximum size.");
+    QUEUE_ASSERT(queue.elements && "[ERROR] 'elements' pointer is NULL.");
 
     const queue_s replica = {
         .elements = QUEUE_ALLOC(QUEUE_SIZE * sizeof(QUEUE_DATA_TYPE)),
-        .current = queue->current, .size = queue->size,
+        .current = queue.current, .size = queue.size,
     };
     QUEUE_ASSERT(replica.elements && "[ERROR] Memory allocation failed.");
 
-    const size_t right_size = (queue->current + queue->size) > QUEUE_SIZE ? QUEUE_SIZE - queue->current : queue->size;
+    const size_t right_size = (queue.current + queue.size) > QUEUE_SIZE ? QUEUE_SIZE - queue.current : queue.size;
     for (size_t i = 0; i < right_size; ++i) {
-        replica.elements[i + queue->current] = copy(queue->elements[i + queue->current]);
+        replica.elements[i + queue.current] = copy(queue.elements[i + queue.current]);
     }
-    for (size_t i = 0; i < queue->size - right_size; ++i) {
-        replica.elements[i] = copy(queue->elements[i]);
+    for (size_t i = 0; i < queue.size - right_size; ++i) {
+        replica.elements[i] = copy(queue.elements[i]);
     }
 
     return replica;
@@ -241,22 +235,21 @@ static inline queue_s copy_queue(const queue_s * queue, const copy_queue_fn copy
 /// @param queue Queue structure pointer to operate on.
 /// @param operate Function pointer taht operates on single element pointer using 'args' as generic argument.
 /// @param args Generic void pointer argument for 'operates' funtion pointer.
-static inline void foreach_queue(const queue_s * queue, const operate_queue_fn operate, void * args) {
-    QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter is NULL.");
+static inline void foreach_queue(const queue_s queue, const operate_queue_fn operate, void * args) {
     QUEUE_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
 
-    QUEUE_ASSERT(queue->size <= QUEUE_SIZE && "[ERROR] Invalid queue size.");
-    QUEUE_ASSERT(queue->current < QUEUE_SIZE && "[ERROR] Queue's current index must be less than maximum size.");
-    QUEUE_ASSERT(queue->elements && "[ERROR] 'elements' pointer is NULL.");
+    QUEUE_ASSERT(queue.size <= QUEUE_SIZE && "[ERROR] Invalid queue size.");
+    QUEUE_ASSERT(queue.current < QUEUE_SIZE && "[ERROR] Queue's current index must be less than maximum size.");
+    QUEUE_ASSERT(queue.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    const size_t right_size = (queue->current + queue->size) > QUEUE_SIZE ? QUEUE_SIZE - queue->current : queue->size;
+    const size_t right_size = (queue.current + queue.size) > QUEUE_SIZE ? QUEUE_SIZE - queue.current : queue.size;
     for (size_t i = 0; i < right_size; ++i) {
-        if (!operate(queue->elements + queue->current + i, args)) {
+        if (!operate(queue.elements + queue.current + i, args)) {
             return;
         }
     }
-    for (size_t i = 0; i < queue->size - right_size; ++i) {
-        if (!operate(queue->elements + i, args)) {
+    for (size_t i = 0; i < queue.size - right_size; ++i) {
+        if (!operate(queue.elements + i, args)) {
             return;
         }
     }
@@ -267,27 +260,26 @@ static inline void foreach_queue(const queue_s * queue, const operate_queue_fn o
 /// @param manage Function pointer that takes an array of queue elements, the number of elements and other arguments
 /// in the form of a 'args'.
 /// @param args Generic void pointer arguments for manage function pointer.
-static inline void map_queue(queue_s * queue, const manage_queue_fn manage, void * args) {
-    QUEUE_ASSERT(queue && "[ERROR] 'queue' parameter is NULL.");
+static inline void map_queue(const queue_s queue, const manage_queue_fn manage, void * args) {
     QUEUE_ASSERT(manage && "[ERROR] 'operate' parameter is NULL.");
 
-    QUEUE_ASSERT(queue->size <= QUEUE_SIZE && "[ERROR] Invalid queue size.");
-    QUEUE_ASSERT(queue->current < QUEUE_SIZE && "[ERROR] Queue's current index must be less than maximum size.");
-    QUEUE_ASSERT(queue->elements && "[ERROR] 'elements' pointer is NULL.");
+    QUEUE_ASSERT(queue.size <= QUEUE_SIZE && "[ERROR] Invalid queue size.");
+    QUEUE_ASSERT(queue.current < QUEUE_SIZE && "[ERROR] Queue's current index must be less than maximum size.");
+    QUEUE_ASSERT(queue.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    QUEUE_DATA_TYPE * elements_array = QUEUE_ALLOC(QUEUE_SIZE * sizeof(QUEUE_DATA_TYPE)); // declare array for temporary elements in queue
+    QUEUE_DATA_TYPE * elements_array = QUEUE_ALLOC(queue.size * sizeof(QUEUE_DATA_TYPE)); // declare array for temporary elements in queue
     QUEUE_ASSERT(elements_array && "[ERROR] Memory allocation failed.");
 
     // calculate right size of elements from current index to copy right and left elements into temporary array
-    const size_t right_size = (queue->current + queue->size) > QUEUE_SIZE ? QUEUE_SIZE - queue->current : queue->size;
+    const size_t right_size = (queue.current + queue.size) > QUEUE_SIZE ? QUEUE_SIZE - queue.current : queue.size;
 
-    memcpy(elements_array, queue->elements + queue->current, right_size * sizeof(QUEUE_DATA_TYPE));
-    memcpy(elements_array + right_size, queue->elements, (queue->size - right_size) * sizeof(QUEUE_DATA_TYPE));
+    memcpy(elements_array, queue.elements + queue.current, right_size * sizeof(QUEUE_DATA_TYPE));
+    memcpy(elements_array + right_size, queue.elements, (queue.size - right_size) * sizeof(QUEUE_DATA_TYPE));
 
-    manage(elements_array, queue->size, args); // manage elements in array
+    manage(elements_array, queue.size, args); // manage elements in array
 
-    memcpy(queue->elements, elements_array, queue->size * sizeof(QUEUE_DATA_TYPE)); // recopy elements back to queue's array but from queue's start
-    queue->current = 0; // reset current index to 0
+    memcpy(queue.elements + queue.current, elements_array, right_size * sizeof(QUEUE_DATA_TYPE));
+    memcpy(queue.elements, elements_array + right_size, (queue.size - right_size) * sizeof(QUEUE_DATA_TYPE));
 
     QUEUE_FREE(elements_array);
 }

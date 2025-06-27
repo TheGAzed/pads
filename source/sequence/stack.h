@@ -118,38 +118,33 @@ static inline void clear_stack(stack_s * stack, const destroy_stack_fn destroy) 
 /// @brief Checks if stack is empty.
 /// @param stack Stack structure.
 /// @return true if stack size is zero, false otherwise
-static inline bool is_empty_stack(const stack_s * stack) {
-    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
+static inline bool is_empty_stack(const stack_s stack) {
+    STACK_ASSERT(stack.size <= STACK_SIZE && "[ERROR] Invalid stack size.");
+    STACK_ASSERT(stack.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    STACK_ASSERT(stack->size <= STACK_SIZE && "[ERROR] Invalid stack size.");
-    STACK_ASSERT(stack->elements && "[ERROR] 'elements' pointer is NULL.");
-
-    return !(stack->size);
+    return !(stack.size);
 }
 
 /// @brief Checks if stack is full or if stack's '.size' will overflow.
 /// @param stack Stack structure.
 /// @return 'true' if stack size reached maximum, 'false' otherwise.
-static inline bool is_full_stack(const stack_s * stack) {
-    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
+static inline bool is_full_stack(const stack_s stack) {
+    STACK_ASSERT(stack.size <= STACK_SIZE && "[ERROR] Invalid stack size.");
+    STACK_ASSERT(stack.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    STACK_ASSERT(stack->size <= STACK_SIZE && "[ERROR] Invalid stack size.");
-    STACK_ASSERT(stack->elements && "[ERROR] 'elements' pointer is NULL.");
-
-    return (stack->size == STACK_SIZE);
+    return (stack.size == STACK_SIZE);
 }
 
 /// @brief Gets element at the top of the stack without removing it.
 /// @param stack Stack structure.
 /// @return The top element in the stack.
-static inline STACK_DATA_TYPE peep_stack(const stack_s * stack) {
-    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
-    STACK_ASSERT(stack->size && "[ERROR] Can't peek empty stack");
+static inline STACK_DATA_TYPE peep_stack(const stack_s stack) {
+    STACK_ASSERT(stack.size && "[ERROR] Can't peek empty stack");
 
-    STACK_ASSERT(stack->size <= STACK_SIZE && "[ERROR] Invalid stack size.");
-    STACK_ASSERT(stack->elements && "[ERROR] 'elements' pointer is NULL.");
+    STACK_ASSERT(stack.size <= STACK_SIZE && "[ERROR] Invalid stack size.");
+    STACK_ASSERT(stack.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    return stack->elements[stack->size - 1];
+    return stack.elements[stack.size - 1];
 }
 
 /// @brief Pushes the element to the top of the stack.
@@ -183,18 +178,17 @@ static inline STACK_DATA_TYPE pop_stack(stack_s * stack) {
 /// @param stack Stack structure to copy.
 /// @param copy Function pointer to create a deep/shallow copy of an element in stack.
 /// @return A copy of the specified 'stack' parameter.
-static inline stack_s copy_stack(const stack_s * stack, const copy_stack_fn copy) {
-    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
+static inline stack_s copy_stack(const stack_s stack, const copy_stack_fn copy) {
     STACK_ASSERT(copy && "[ERROR] 'copy' parameter pointer is NULL.");
 
-    STACK_ASSERT(stack->size <= STACK_SIZE && "[ERROR] Invalid stack size.");
-    STACK_ASSERT(stack->elements && "[ERROR] 'elements' pointer is NULL.");
+    STACK_ASSERT(stack.size <= STACK_SIZE && "[ERROR] Invalid stack size.");
+    STACK_ASSERT(stack.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    const stack_s replica = { .size = stack->size, .elements = STACK_ALLOC(STACK_SIZE * sizeof(STACK_DATA_TYPE)), };
+    const stack_s replica = { .size = stack.size, .elements = STACK_ALLOC(STACK_SIZE * sizeof(STACK_DATA_TYPE)), };
     STACK_ASSERT(replica.elements && "[ERROR] Memory allocation failed.");
 
-    for (size_t i = 0; i < stack->size; i++) {
-        replica.elements[i] = copy(stack->elements[i]);
+    for (size_t i = 0; i < stack.size; i++) {
+        replica.elements[i] = copy(stack.elements[i]);
     }
 
     return replica;
@@ -204,14 +198,13 @@ static inline stack_s copy_stack(const stack_s * stack, const copy_stack_fn copy
 /// @param stack Stack structure pointer.
 /// @param operate Function pointer that takes an element pointer and generic arguments as parameters.
 /// @param args Generic void pointer arguments for operation function pointer.
-static inline void foreach_stack(const stack_s * stack, const operate_stack_fn operate, void * args) {
-    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
+static inline void foreach_stack(const stack_s stack, const operate_stack_fn operate, void * args) {
     STACK_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
 
-    STACK_ASSERT(stack->size <= STACK_SIZE && "[ERROR] Invalid stack size.");
-    STACK_ASSERT(stack->elements && "[ERROR] 'elements' pointer is NULL.");
+    STACK_ASSERT(stack.size <= STACK_SIZE && "[ERROR] Invalid stack size.");
+    STACK_ASSERT(stack.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    for (size_t i = 0; i < stack->size && operate(stack->elements + (stack->size - i - 1), args); ++i) {}
+    for (size_t i = 0; i < stack.size && operate(stack.elements + (stack.size - i - 1), args); ++i) {}
 }
 
 /// @brief Map function that maps elements into array and manages it using size and args.
@@ -219,14 +212,13 @@ static inline void foreach_stack(const stack_s * stack, const operate_stack_fn o
 /// @param manage Function pointer that takes an array of stack elements, the number of elements and other arguments
 /// in the form of a 'args' void pointer.
 /// @param args Generic arguments for manage function pointer.
-static inline void map_stack(stack_s const * stack, const manage_stack_fn manage, void * args) {
-    STACK_ASSERT(stack && "[ERROR] 'stack' parameter is NULL.");
+static inline void map_stack(stack_s const stack, const manage_stack_fn manage, void * args) {
     STACK_ASSERT(manage && "[ERROR] 'manage' parameter is NULL.");
 
-    STACK_ASSERT(stack->size <= STACK_SIZE && "[ERROR] Invalid stack size.");
-    STACK_ASSERT(stack->elements && "[ERROR] 'elements' pointer is NULL.");
+    STACK_ASSERT(stack.size <= STACK_SIZE && "[ERROR] Invalid stack size.");
+    STACK_ASSERT(stack.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    manage(stack->elements, stack->size, args);
+    manage(stack.elements, stack.size, args);
 }
 
 #else

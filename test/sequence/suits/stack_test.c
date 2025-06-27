@@ -103,7 +103,7 @@ TEST DESTROY_08(void) {
 TEST IS_FULL_01(void) {
     stack_s test = create_stack();
 
-    ASSERT_FALSEm("[ERROR] Expected stack to not be full", is_full_stack(&test));
+    ASSERT_FALSEm("[ERROR] Expected stack to not be full", is_full_stack(test));
 
     destroy_stack(&test, destroy_int);
     PASS();
@@ -113,7 +113,7 @@ TEST IS_FULL_02(void) {
     stack_s test = create_stack();
 
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
-    ASSERT_FALSEm("[ERROR] Expected stack to not be full", is_full_stack(&test));
+    ASSERT_FALSEm("[ERROR] Expected stack to not be full", is_full_stack(test));
 
     destroy_stack(&test, destroy_int);
     PASS();
@@ -125,7 +125,7 @@ TEST IS_FULL_03(void) {
     for (size_t i = 0; i < STACK_SIZE - 1; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
     }
-    ASSERT_FALSEm("[ERROR] Expected stack to not be full", is_full_stack(&test));
+    ASSERT_FALSEm("[ERROR] Expected stack to not be full", is_full_stack(test));
 
     destroy_stack(&test, destroy_int);
     PASS();
@@ -137,7 +137,7 @@ TEST IS_FULL_04(void) {
     for (size_t i = 0; i < STACK_SIZE; ++i) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
     }
-    ASSERTm("[ERROR] Expected stack to be full", is_full_stack(&test));
+    ASSERTm("[ERROR] Expected stack to be full", is_full_stack(test));
 
     destroy_stack(&test, destroy_int);
     PASS();
@@ -147,7 +147,7 @@ TEST PEEP_01(void) {
     stack_s test = create_stack();
 
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
-    ASSERT_EQm("[ERROR] Expected to peep 42", 42, peep_stack(&test).sub_one);
+    ASSERT_EQm("[ERROR] Expected to peep 42", 42, peep_stack(test).sub_one);
 
     destroy_stack(&test, destroy_int);
     PASS();
@@ -161,7 +161,7 @@ TEST PEEP_02(void) {
     }
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_EQm("[ERROR] Expected to peep 42", 42, peep_stack(&test).sub_one);
+    ASSERT_EQm("[ERROR] Expected to peep 42", 42, peep_stack(test).sub_one);
 
     destroy_stack(&test, destroy_int);
     PASS();
@@ -175,7 +175,7 @@ TEST PEEP_03(void) {
     }
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
 
-    ASSERT_EQm("[ERROR] Expected to peep 42", 42, peep_stack(&test).sub_one);
+    ASSERT_EQm("[ERROR] Expected to peep 42", 42, peep_stack(test).sub_one);
 
     destroy_stack(&test, destroy_int);
     PASS();
@@ -266,7 +266,7 @@ TEST POP_03(void) {
 TEST COPY_01(void) {
     stack_s test = create_stack();
 
-    stack_s copy = copy_stack(&test, copy_int);
+    stack_s copy = copy_stack(test, copy_int);
 
     ASSERT_EQm("[ERROR] Expected sizes to be equal", test.size, copy.size);
     ASSERT_NEQm("[ERROR] Expected heads to be equal", test.elements, copy.elements);
@@ -281,7 +281,7 @@ TEST COPY_02(void) {
 
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
 
-    stack_s copy = copy_stack(&test, copy_int);
+    stack_s copy = copy_stack(test, copy_int);
 
     ASSERT_EQm("[ERROR] Expected sizes to be equal", test.size, copy.size);
     ASSERT_NEQm("[ERROR] Expected heads to not be equal", test.elements, copy.elements);
@@ -300,7 +300,7 @@ TEST COPY_03(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i, });
     }
 
-    stack_s copy = copy_stack(&test, copy_int);
+    stack_s copy = copy_stack(test, copy_int);
 
     ASSERT_EQm("[ERROR] Expected sizes to be equal", test.size, copy.size);
     ASSERT_NEQm("[ERROR] Expected heads to not be equal", test.elements, copy.elements);
@@ -321,7 +321,7 @@ TEST COPY_04(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = i, });
     }
 
-    stack_s copy = copy_stack(&test, copy_int);
+    stack_s copy = copy_stack(test, copy_int);
 
     ASSERT_EQm("[ERROR] Expected sizes to be equal", test.size, copy.size);
     ASSERT_NEQm("[ERROR] Expected heads to not be equal", test.elements, copy.elements);
@@ -338,7 +338,7 @@ TEST COPY_04(void) {
 TEST COPY_05(void) {
     stack_s test = create_stack();
 
-    stack_s copy = copy_stack(&test, copy_string);
+    stack_s copy = copy_stack(test, copy_string);
 
     ASSERT_EQm("[ERROR] Expected sizes to be equal", test.size, copy.size);
     ASSERT_NEQm("[ERROR] Expected heads to be equal", test.elements, copy.elements);
@@ -353,12 +353,12 @@ TEST COPY_06(void) {
 
     push_stack(&test, copy_string((STACK_DATA_TYPE) { .sub_two = TEST_STRING, }));
 
-    stack_s copy = copy_stack(&test, copy_string);
+    stack_s copy = copy_stack(test, copy_string);
 
     ASSERT_EQm("[ERROR] Expected sizes to be equal", test.size, copy.size);
     ASSERT_NEQm("[ERROR] Expected heads to not be equal", test.elements, copy.elements);
 
-    ASSERT_STRN_EQm("[ERROR] Expected elements to be equal", peep_stack(&test).sub_two, peep_stack(&copy).sub_two, sizeof(TEST_STRING) - 1);
+    ASSERT_STRN_EQm("[ERROR] Expected elements to be equal", peep_stack(test).sub_two, peep_stack(copy).sub_two, sizeof(TEST_STRING) - 1);
 
     destroy_stack(&test, destroy_string);
     destroy_stack(&copy, destroy_string);
@@ -372,13 +372,13 @@ TEST COPY_07(void) {
         push_stack(&test, copy_string((STACK_DATA_TYPE) { .sub_two = TEST_STRING, }));
     }
 
-    stack_s copy = copy_stack(&test, copy_string);
+    stack_s copy = copy_stack(test, copy_string);
 
     ASSERT_EQm("[ERROR] Expected sizes to be equal", test.size, copy.size);
     ASSERT_NEQm("[ERROR] Expected heads to not be equal", test.elements, copy.elements);
 
     for (int i = 0; i < STACK_SIZE - 1; ++i) {
-        ASSERT_STRN_EQm("[ERROR] Expected elements to be equal", peep_stack(&test).sub_two, peep_stack(&copy).sub_two, sizeof(TEST_STRING) - 1);
+        ASSERT_STRN_EQm("[ERROR] Expected elements to be equal", peep_stack(test).sub_two, peep_stack(copy).sub_two, sizeof(TEST_STRING) - 1);
         STACK_DATA_TYPE test_element = pop_stack(&test);
         destroy_string(&test_element);
         STACK_DATA_TYPE copy_element = pop_stack(&copy);
@@ -397,13 +397,13 @@ TEST COPY_08(void) {
         push_stack(&test, copy_string((STACK_DATA_TYPE) { .sub_two = TEST_STRING, }));
     }
 
-    stack_s copy = copy_stack(&test, copy_string);
+    stack_s copy = copy_stack(test, copy_string);
 
     ASSERT_EQm("[ERROR] Expected sizes to be equal", test.size, copy.size);
     ASSERT_NEQm("[ERROR] Expected heads to not be equal", test.elements, copy.elements);
 
     for (int i = 0; i < STACK_SIZE; ++i) {
-        ASSERT_STRN_EQm("[ERROR] Expected elements to be equal", peep_stack(&test).sub_two, peep_stack(&copy).sub_two, sizeof(TEST_STRING) - 1);
+        ASSERT_STRN_EQm("[ERROR] Expected elements to be equal", peep_stack(test).sub_two, peep_stack(copy).sub_two, sizeof(TEST_STRING) - 1);
         STACK_DATA_TYPE test_element = pop_stack(&test);
         destroy_string(&test_element);
         STACK_DATA_TYPE copy_element = pop_stack(&copy);
@@ -418,7 +418,7 @@ TEST COPY_08(void) {
 TEST IS_EMPTY_01(void) {
     stack_s test = create_stack();
 
-    ASSERTm("[ERROR] Expected stack to be empty", is_empty_stack(&test));
+    ASSERTm("[ERROR] Expected stack to be empty", is_empty_stack(test));
 
     destroy_stack(&test, destroy_int);
     PASS();
@@ -431,7 +431,7 @@ TEST IS_EMPTY_02(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
     }
 
-    ASSERT_FALSEm("[ERROR] Expected stack to not be empty", is_empty_stack(&test));
+    ASSERT_FALSEm("[ERROR] Expected stack to not be empty", is_empty_stack(test));
 
     destroy_stack(&test, destroy_int);
     PASS();
@@ -444,7 +444,7 @@ TEST IS_EMPTY_03(void) {
         push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42, });
     }
 
-    ASSERT_FALSEm("[ERROR] Expected stack to not be empty", is_empty_stack(&test));
+    ASSERT_FALSEm("[ERROR] Expected stack to not be empty", is_empty_stack(test));
 
     destroy_stack(&test, destroy_int);
     PASS();
@@ -455,7 +455,7 @@ TEST FOREACH_01(void) {
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 0 });
 
     int increment = 5;
-    foreach_stack(&test, operation_int, &increment);
+    foreach_stack(test, operation_int, &increment);
 
     ASSERT_EQm("[ERROR] Expected incremented element by 'increment'.", 0 + increment, pop_stack(&test).sub_one);
 
@@ -471,7 +471,7 @@ TEST FOREACH_02(void) {
     }
 
     int increment = 5;
-    foreach_stack(&test, operation_int, &increment);
+    foreach_stack(test, operation_int, &increment);
 
     for (int i = STACK_SIZE - 2; i >= 0; --i) {
         ASSERT_EQm("[ERROR] Expected incremented element by 'increment'.", i + increment, pop_stack(&test).sub_one);
@@ -489,7 +489,7 @@ TEST FOREACH_03(void) {
     }
 
     int increment = 5;
-    foreach_stack(&test, operation_int, &increment);
+    foreach_stack(test, operation_int, &increment);
 
     for (int i = STACK_SIZE - 1; i >= 0; --i) {
         ASSERT_EQm("[ERROR] Expected incremented element by 'increment'.", i + increment, pop_stack(&test).sub_one);
@@ -506,7 +506,7 @@ TEST FOREACH_04(void) {
     push_stack(&test, copy_string((STACK_DATA_TYPE) { .sub_two = TEST_STRING }));
 
     char new_string[] = "[REDACTED]";
-    foreach_stack(&test, operation_string, new_string);
+    foreach_stack(test, operation_string, new_string);
 
     STACK_DATA_TYPE element = pop_stack(&test);
     ASSERT_STRN_EQm("[ERROR] Expected element strings to be equal.", new_string, element.sub_two, sizeof(new_string) - 1);
@@ -525,7 +525,7 @@ TEST FOREACH_05(void) {
     }
 
     char new_string[] = "[REDACTED]";
-    foreach_stack(&test, operation_string, new_string);
+    foreach_stack(test, operation_string, new_string);
 
     for (int i = 0; i < STACK_SIZE - 1; ++i) {
         STACK_DATA_TYPE element = pop_stack(&test);
@@ -546,7 +546,7 @@ TEST FOREACH_06(void) {
     }
 
     char new_string[] = "[REDACTED]";
-    foreach_stack(&test, operation_string, new_string);
+    foreach_stack(test, operation_string, new_string);
 
     for (int i = 0; i < STACK_SIZE; ++i) {
         STACK_DATA_TYPE element = pop_stack(&test);
@@ -563,7 +563,7 @@ TEST MAP_01(void) {
     stack_s test = create_stack();
 
     struct compare cmp = { .function = compare_int_generic, };
-    map_stack(&test, sort_int, &cmp);
+    map_stack(test, sort_int, &cmp);
 
     destroy_stack(&test, destroy_int);
     PASS();
@@ -575,7 +575,7 @@ TEST MAP_02(void) {
     push_stack(&test, (STACK_DATA_TYPE) { .sub_one = 42 });
 
     struct compare cmp = { .function = compare_int_generic, };
-    map_stack(&test, sort_int, &cmp);
+    map_stack(test, sort_int, &cmp);
 
     destroy_stack(&test, destroy_int);
     PASS();
@@ -593,7 +593,7 @@ TEST MAP_03(void) {
     }
 
     struct compare cmp = { .function = compare_int_generic, };
-    map_stack(&test, sort_int, &cmp);
+    map_stack(test, sort_int, &cmp);
 
     for (int i = STACK_SIZE - 2; i >= 0; --i) {
         ASSERT_EQm("[ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
@@ -615,7 +615,7 @@ TEST MAP_04(void) {
     }
 
     struct compare cmp = { .function = compare_int_generic, };
-    map_stack(&test, sort_int, &cmp);
+    map_stack(test, sort_int, &cmp);
 
     for (int i = STACK_SIZE - 1; i >= 0; --i) {
         ASSERT_EQm("[ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
@@ -637,7 +637,7 @@ TEST MAP_05(void) {
     }
 
     struct compare cmp = { .function = compare_reverse_int_generic, };
-    map_stack(&test, sort_int, &cmp);
+    map_stack(test, sort_int, &cmp);
 
     for (int i = 0; i < STACK_SIZE - 1; ++i) {
         ASSERT_EQm("[ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
@@ -659,7 +659,7 @@ TEST MAP_06(void) {
     }
 
     struct compare cmp = { .function = compare_reverse_int_generic, };
-    map_stack(&test, sort_int, &cmp);
+    map_stack(test, sort_int, &cmp);
 
     for (int i = 0; i < STACK_SIZE; ++i) {
         ASSERT_EQm("[ERROR] Expected sorted stack to pop i", i, pop_stack(&test).sub_one);
