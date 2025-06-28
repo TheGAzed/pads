@@ -218,7 +218,7 @@ static inline BINARY_TREE_DATA_TYPE remove_binary_tree(binary_tree_s * tree, con
     size_t * node = &(tree->root); // pointer to later change actual index of the empty child
     while (BINARY_TREE_SIZE != (*node)) {
         // calculate and determine next child node, i.e. if left or right child
-        const int comparison = tree->compare(tree->elements[(*node)], element);
+        const int comparison = tree->compare(element, tree->elements[(*node)]);
         if (!comparison) {
             // go to, since remove logic in too long and nested
             goto REMOVE_ELEMENT;
@@ -256,15 +256,15 @@ REMOVE_ELEMENT:
     const size_t hole_index = left_depth > right_depth ? (*left_node) : (*right_node);
     tree->elements[(*node)] = tree->elements[hole_index];
     if (left_depth > right_depth) {
-        if (BINARY_TREE_SIZE != tree->node[BINARY_TREE_RIGHT][(*left_node)]) { // if right child exists cut off parent
-            tree->parent[tree->node[BINARY_TREE_RIGHT][(*left_node)]] = tree->parent[(*left_node)];
+        if (BINARY_TREE_SIZE != tree->node[BINARY_TREE_LEFT][(*left_node)]) { // if right child exists cut off parent
+            tree->parent[tree->node[BINARY_TREE_LEFT][(*left_node)]] = tree->parent[(*left_node)];
         }
-        (*left_node) = tree->node[BINARY_TREE_RIGHT][(*left_node)]; // cut off new hole index
+        (*left_node) = tree->node[BINARY_TREE_LEFT][(*left_node)]; // cut off new hole index
     } else {
-        if (BINARY_TREE_SIZE != tree->node[BINARY_TREE_LEFT][(*right_node)]) { // if left child exists cut off parent
-            tree->parent[tree->node[BINARY_TREE_LEFT][(*right_node)]] = tree->parent[(*right_node)];
+        if (BINARY_TREE_SIZE != tree->node[BINARY_TREE_RIGHT][(*right_node)]) { // if left child exists cut off parent
+            tree->parent[tree->node[BINARY_TREE_RIGHT][(*right_node)]] = tree->parent[(*right_node)];
         }
-        (*right_node) = tree->node[BINARY_TREE_LEFT][(*right_node)]; // cut off new hole index
+        (*right_node) = tree->node[BINARY_TREE_RIGHT][(*right_node)]; // cut off new hole index
     }
 
     if (tree->size && tree->root == tree->size) { // if head node is last array element then change index to removed one
@@ -380,7 +380,7 @@ static inline BINARY_TREE_DATA_TYPE remove_min_binary_tree(binary_tree_s * tree)
     tree->size--;
 
     const size_t hole_index = (*minimum_node);
-    (*minimum_node) = BINARY_TREE_SIZE;
+    (*minimum_node) = tree->node[BINARY_TREE_RIGHT][(*minimum_node)];
 
     // cut hole node from the rest of the tree
     tree->node[BINARY_TREE_LEFT][hole_index] = tree->node[BINARY_TREE_RIGHT][hole_index] = tree->parent[hole_index] = hole_index;
@@ -431,7 +431,7 @@ static inline BINARY_TREE_DATA_TYPE remove_max_binary_tree(binary_tree_s * tree)
     tree->size--;
 
     const size_t hole_index = (*maximum_node);
-    (*maximum_node) = BINARY_TREE_SIZE;
+    (*maximum_node) = tree->node[BINARY_TREE_LEFT][(*maximum_node)];
 
     // cut hole node from the rest of the tree
     tree->node[BINARY_TREE_LEFT][hole_index] = tree->node[BINARY_TREE_RIGHT][hole_index] = tree->parent[hole_index] = hole_index;
@@ -573,39 +573,6 @@ static inline void postorder_binary_tree(const binary_tree_s tree, const operate
     }
 
     BINARY_TREE_FREE(stack.elements);
-}
-
-static inline void reverse_inorder_binary_tree(const binary_tree_s tree, const operate_binary_tree_fn operate, void * args) {
-    BINARY_TREE_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
-
-    BINARY_TREE_ASSERT(tree.compare && "[ERROR] 'compare' function is NULL.");
-    BINARY_TREE_ASSERT(tree.elements && "[ERROR] 'elements' pointer is NULL.");
-    BINARY_TREE_ASSERT(tree.node[BINARY_TREE_LEFT] && "[ERROR] 'node[BINARY_TREE_LEFT]' pointer is NULL.");
-    BINARY_TREE_ASSERT(tree.node[BINARY_TREE_RIGHT] && "[ERROR] 'node[BINARY_TREE_RIGHT]' pointer is NULL.");
-    BINARY_TREE_ASSERT(tree.parent && "[ERROR] 'parent' pointer is NULL.");
-
-}
-
-static inline void reverse_preorder_binary_tree(const binary_tree_s tree, const operate_binary_tree_fn operate, void * args) {
-    BINARY_TREE_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
-
-    BINARY_TREE_ASSERT(tree.compare && "[ERROR] 'compare' function is NULL.");
-    BINARY_TREE_ASSERT(tree.elements && "[ERROR] 'elements' pointer is NULL.");
-    BINARY_TREE_ASSERT(tree.node[BINARY_TREE_LEFT] && "[ERROR] 'node[BINARY_TREE_LEFT]' pointer is NULL.");
-    BINARY_TREE_ASSERT(tree.node[BINARY_TREE_RIGHT] && "[ERROR] 'node[BINARY_TREE_RIGHT]' pointer is NULL.");
-    BINARY_TREE_ASSERT(tree.parent && "[ERROR] 'parent' pointer is NULL.");
-
-}
-
-static inline void reverse_postorder_binary_tree(const binary_tree_s tree, const operate_binary_tree_fn operate, void * args) {
-    BINARY_TREE_ASSERT(operate && "[ERROR] 'operate' parameter is NULL.");
-
-    BINARY_TREE_ASSERT(tree.compare && "[ERROR] 'compare' function is NULL.");
-    BINARY_TREE_ASSERT(tree.elements && "[ERROR] 'elements' pointer is NULL.");
-    BINARY_TREE_ASSERT(tree.node[BINARY_TREE_LEFT] && "[ERROR] 'node[BINARY_TREE_LEFT]' pointer is NULL.");
-    BINARY_TREE_ASSERT(tree.node[BINARY_TREE_RIGHT] && "[ERROR] 'node[BINARY_TREE_RIGHT]' pointer is NULL.");
-    BINARY_TREE_ASSERT(tree.parent && "[ERROR] 'parent' pointer is NULL.");
-
 }
 
 static inline void level_order_binary_tree(const binary_tree_s tree, const operate_binary_tree_fn operate, void * args) {
