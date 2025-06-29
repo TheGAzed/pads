@@ -1,5 +1,5 @@
-#ifndef BINARY_SET_H
-#define BINARY_SET_H
+#ifndef BSEARCH_SET_H
+#define BSEARCH_SET_H
 
 // SOURCE AND LICENCE OF BINARY SEARCH IMPLEMENTATION
 // https://github.com/gcc-mirror/gcc/blob/master/libiberty/bsearch.c
@@ -65,62 +65,62 @@
 #include <string.h>  // imports memcpy, memmove
 #include <stdlib.h>  // imports exit
 
-#ifndef BINARY_SET_DATA_TYPE
-/// @brief To change, use: #define BINARY_SET_DATA_TYPE [type].
-#   define BINARY_SET_DATA_TYPE void*
+#ifndef BSEARCH_SET_DATA_TYPE
+/// @brief To change, use: #define BSEARCH_SET_DATA_TYPE [type].
+#   define BSEARCH_SET_DATA_TYPE void*
 #endif
 
-#ifndef BINARY_SET_ASSERT
+#ifndef BSEARCH_SET_ASSERT
 #   include <assert.h>  // imports assert for debugging
-/// @brief To change, use: #define BINARY_SET_ASSERT [assert].
-#   define BINARY_SET_ASSERT assert
+/// @brief To change, use: #define BSEARCH_SET_ASSERT [assert].
+#   define BSEARCH_SET_ASSERT assert
 #endif
 
-#if !defined(BINARY_SET_ALLOC) && !defined(BINARY_SET_FREE)
+#if !defined(BSEARCH_SET_ALLOC) && !defined(BSEARCH_SET_FREE)
 #   include <stdlib.h>
-#   define BINARY_SET_ALLOC malloc
-#   define BINARY_SET_FREE free
-#elif !defined(BINARY_SET_ALLOC)
-#   error Must also define BINARY_SET_ALLOC.
-#elif !defined(BINARY_SET_FREE)
-#   error Must also define BINARY_SET_FREE.
+#   define BSEARCH_SET_ALLOC malloc
+#   define BSEARCH_SET_FREE free
+#elif !defined(BSEARCH_SET_ALLOC)
+#   error Must also define BSEARCH_SET_ALLOC.
+#elif !defined(BSEARCH_SET_FREE)
+#   error Must also define BSEARCH_SET_FREE.
 #endif
 
-#ifndef BINARY_SET_SIZE
-#   define BINARY_SET_SIZE (1 << 10)
-#elif BINARY_SET_SIZE <= 0
-#   error 'BINARY_SET_SIZE' cannot be zero
+#ifndef BSEARCH_SET_SIZE
+#   define BSEARCH_SET_SIZE (1 << 10)
+#elif BSEARCH_SET_SIZE <= 0
+#   error 'BSEARCH_SET_SIZE' cannot be zero
 #endif
 
 /// @brief Function pointer to create a deep/shallow copy for binary set element.
-typedef BINARY_SET_DATA_TYPE (*copy_binary_set_fn)    (const BINARY_SET_DATA_TYPE element);
+typedef BSEARCH_SET_DATA_TYPE (*copy_bsearch_set_fn)    (const BSEARCH_SET_DATA_TYPE element);
 /// @brief Function pointer to destroy/free an element for binary set element.
-typedef void                 (*destroy_binary_set_fn) (BINARY_SET_DATA_TYPE * element);
+typedef void                  (*destroy_bsearch_set_fn) (BSEARCH_SET_DATA_TYPE * element);
 /// @brief Function pointer to compare two set elements. Returns zero if they're equal, a negative number if
 /// 'less than', else a positive number if 'more than'.
-typedef int                  (*compare_binary_set_fn) (const BINARY_SET_DATA_TYPE one, const BINARY_SET_DATA_TYPE two);
+typedef int                   (*compare_bsearch_set_fn) (const BSEARCH_SET_DATA_TYPE one, const BSEARCH_SET_DATA_TYPE two);
 /// @brief Function pointer to operate on a single set element based on generic arguments.
-typedef bool                 (*operate_binary_set_fn) (BINARY_SET_DATA_TYPE * element, void * args);
+typedef bool                  (*operate_bsearch_set_fn) (BSEARCH_SET_DATA_TYPE * element, void * args);
 /// @brief Function pointer to manage an array of set elements based on generic arguments.
-typedef void                 (*manage_binary_set_fn)  (BINARY_SET_DATA_TYPE * array, const size_t size, void * args);
+typedef void                  (*manage_bsearch_set_fn)  (BSEARCH_SET_DATA_TYPE * array, const size_t size, void * args);
 
-typedef struct binary_set {
-    BINARY_SET_DATA_TYPE * elements; // array of elements sorted based on compare
-    compare_binary_set_fn compare; // compare function pointer to sort elements by
+typedef struct bsearch_set {
+    BSEARCH_SET_DATA_TYPE * elements; // array of elements sorted based on compare
+    compare_bsearch_set_fn compare; // compare function pointer to sort elements by
     size_t size; // number of elements in set
-} binary_set_s;
+} bsearch_set_s;
 
 /// @brief Creates and returns a set with compare function pointer.
 /// @param compare Function pointer to compare elements to sort the set.
 /// @return Newly created set.
-static inline binary_set_s create_binary_set(const compare_binary_set_fn compare) {
-    BINARY_SET_ASSERT(compare && "[ERROR] 'compare' pointer parameter is NULL.");
+static inline bsearch_set_s create_bsearch_set(const compare_bsearch_set_fn compare) {
+    BSEARCH_SET_ASSERT(compare && "[ERROR] 'compare' pointer parameter is NULL.");
 
-    const binary_set_s set = {
-        .elements = BINARY_SET_ALLOC(BINARY_SET_SIZE * sizeof(BINARY_SET_DATA_TYPE)),
+    const bsearch_set_s set = {
+        .elements = BSEARCH_SET_ALLOC(BSEARCH_SET_SIZE * sizeof(BSEARCH_SET_DATA_TYPE)),
         .compare = compare, .size = 0,
     };
-    BINARY_SET_ASSERT(set.elements && "[ERROR] Memory allocation failed.");
+    BSEARCH_SET_ASSERT(set.elements && "[ERROR] Memory allocation failed.");
 
     return set;
 }
@@ -128,35 +128,35 @@ static inline binary_set_s create_binary_set(const compare_binary_set_fn compare
 /// @brief Destroys the set and all its elements.
 /// @param set Set to destroy together with its elements.
 /// @param destroy Function pointer to destroy each element in set.
-static inline void destroy_binary_set(binary_set_s * set, const destroy_binary_set_fn destroy) {
-    BINARY_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL");
-    BINARY_SET_ASSERT(destroy && "[ERROR] 'destroy' pointer parameter is NULL");
+static inline void destroy_bsearch_set(bsearch_set_s * set, const destroy_bsearch_set_fn destroy) {
+    BSEARCH_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL");
+    BSEARCH_SET_ASSERT(destroy && "[ERROR] 'destroy' pointer parameter is NULL");
 
-    BINARY_SET_ASSERT(set->compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(set->size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(set->elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_SET_ASSERT(set->compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(set->size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(set->elements && "[ERROR] 'elements' pointer is NULL.");
 
-    for (BINARY_SET_DATA_TYPE * e = set->elements; e < set->elements + set->size; e++) {
+    for (BSEARCH_SET_DATA_TYPE * e = set->elements; e < set->elements + set->size; e++) {
         destroy(e);
     }
 
     set->compare = NULL;
     set->size = 0;
-    BINARY_SET_FREE(set->elements);
+    BSEARCH_SET_FREE(set->elements);
 }
 
 /// @brief Clears the set and all its elements.
 /// @param set Set to destroy together with its elements.
 /// @param destroy Function pointer to destroy each element in set.
-static inline void clear_binary_set(binary_set_s * set, const destroy_binary_set_fn destroy) {
-    BINARY_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL");
-    BINARY_SET_ASSERT(destroy && "[ERROR] 'destroy' pointer parameter is NULL");
+static inline void clear_bsearch_set(bsearch_set_s * set, const destroy_bsearch_set_fn destroy) {
+    BSEARCH_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL");
+    BSEARCH_SET_ASSERT(destroy && "[ERROR] 'destroy' pointer parameter is NULL");
 
-    BINARY_SET_ASSERT(set->compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(set->size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(set->elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_SET_ASSERT(set->compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(set->size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(set->elements && "[ERROR] 'elements' pointer is NULL.");
 
-    for (BINARY_SET_DATA_TYPE * e = set->elements; e < set->elements + set->size; e++) {
+    for (BSEARCH_SET_DATA_TYPE * e = set->elements; e < set->elements + set->size; e++) {
         destroy(e);
     }
 
@@ -167,18 +167,18 @@ static inline void clear_binary_set(binary_set_s * set, const destroy_binary_set
 /// @param set Set to copy together with its elements.
 /// @param copy Function pointer to create a deep or shallow copy of each element in set.
 /// @return Copy of set parameter.
-static inline binary_set_s copy_binary_set(const binary_set_s set, const copy_binary_set_fn copy) {
-    BINARY_SET_ASSERT(copy && "[ERROR] 'copy' pointer parameter is NULL.");
+static inline bsearch_set_s copy_bsearch_set(const bsearch_set_s set, const copy_bsearch_set_fn copy) {
+    BSEARCH_SET_ASSERT(copy && "[ERROR] 'copy' pointer parameter is NULL.");
 
-    BINARY_SET_ASSERT(set.compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(set.size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(set.elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_SET_ASSERT(set.compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(set.size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(set.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    binary_set_s replica = {
-        .elements = BINARY_SET_ALLOC(BINARY_SET_SIZE * sizeof(BINARY_SET_DATA_TYPE)),
+    bsearch_set_s replica = {
+        .elements = BSEARCH_SET_ALLOC(BSEARCH_SET_SIZE * sizeof(BSEARCH_SET_DATA_TYPE)),
         .compare = set.compare, .size = 0,
     };
-    BINARY_SET_ASSERT(replica.elements && "[ERROR] Memory allocation failed.");
+    BSEARCH_SET_ASSERT(replica.elements && "[ERROR] Memory allocation failed.");
 
     for (replica.size = 0; replica.size < set.size; replica.size++) {
         replica.elements[replica.size] = copy(set.elements[replica.size]);
@@ -190,10 +190,10 @@ static inline binary_set_s copy_binary_set(const binary_set_s set, const copy_bi
 /// @brief Checks if set is empty.
 /// @param set Set to check.
 /// @return 'true' if set is empty, 'false' otherwise.
-static inline bool is_empty_binary_set(const binary_set_s set) {
-    BINARY_SET_ASSERT(set.compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(set.size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(set.elements && "[ERROR] 'elements' pointer is NULL.");
+static inline bool is_empty_bsearch_set(const bsearch_set_s set) {
+    BSEARCH_SET_ASSERT(set.compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(set.size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(set.elements && "[ERROR] 'elements' pointer is NULL.");
 
     return !(set.size);
 }
@@ -201,24 +201,24 @@ static inline bool is_empty_binary_set(const binary_set_s set) {
 /// @brief Checks if set is full.
 /// @param set Set to check.
 /// @return 'true' if set is full, 'false' otherwise.
-static inline bool is_full_binary_set(const binary_set_s set) {
-    BINARY_SET_ASSERT(set.compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(set.size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(set.elements && "[ERROR] 'elements' pointer is NULL.");
+static inline bool is_full_bsearch_set(const bsearch_set_s set) {
+    BSEARCH_SET_ASSERT(set.compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(set.size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(set.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    return (set.size == BINARY_SET_SIZE);
+    return (set.size == BSEARCH_SET_SIZE);
 }
 
 /// @brief Iterates over each element in set calling operate function on it using generic arguments.
 /// @param set Set to iterate over.
 /// @param operate Function pointer to call on each element reference using generic arguments.
 /// @param args Generic void pointer arguments used in 'operate' function.
-static inline void foreach_binary_set(const binary_set_s set, const operate_binary_set_fn operate, void * args) {
-    BINARY_SET_ASSERT(operate && "[ERROR] 'operate' pointer parameter is NULL.");
+static inline void foreach_bsearch_set(const bsearch_set_s set, const operate_bsearch_set_fn operate, void * args) {
+    BSEARCH_SET_ASSERT(operate && "[ERROR] 'operate' pointer parameter is NULL.");
 
-    BINARY_SET_ASSERT(set.compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(set.size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(set.elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_SET_ASSERT(set.compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(set.size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(set.elements && "[ERROR] 'elements' pointer is NULL.");
 
     for (size_t i = 0; i < set.size && operate(set.elements + i, args); ++i) {}
 }
@@ -227,12 +227,12 @@ static inline void foreach_binary_set(const binary_set_s set, const operate_bina
 /// @param set Set to map elements into array.
 /// @param manage Function pointer to call on all elements as array using set's size and generic arguments.
 /// @param args Generic void pointer arguments used in 'manage' function.
-static inline void map_binary_set(const binary_set_s set, const manage_binary_set_fn manage, void * args) {
-    BINARY_SET_ASSERT(manage && "[ERROR] 'manage' pointer parameter is NULL.");
+static inline void map_bsearch_set(const bsearch_set_s set, const manage_bsearch_set_fn manage, void * args) {
+    BSEARCH_SET_ASSERT(manage && "[ERROR] 'manage' pointer parameter is NULL.");
 
-    BINARY_SET_ASSERT(set.compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(set.size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(set.elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_SET_ASSERT(set.compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(set.size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(set.elements && "[ERROR] 'elements' pointer is NULL.");
 
     manage(set.elements, set.size, args);
 }
@@ -241,14 +241,14 @@ static inline void map_binary_set(const binary_set_s set, const manage_binary_se
 /// @param set Set structure to check.
 /// @param element Element to check if contained in set.
 /// @return 'true' if element is contained in set, 'false' if not.
-static inline bool contains_binary_set(const binary_set_s set, const BINARY_SET_DATA_TYPE element) {
-    BINARY_SET_ASSERT(set.compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(set.size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(set.elements && "[ERROR] 'elements' pointer is NULL.");
+static inline bool contains_bsearch_set(const bsearch_set_s set, const BSEARCH_SET_DATA_TYPE element) {
+    BSEARCH_SET_ASSERT(set.compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(set.size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(set.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    BINARY_SET_DATA_TYPE const * base = set.elements;
+    BSEARCH_SET_DATA_TYPE const * base = set.elements;
     for (size_t limit = set.size; limit != 0; limit >>= 1) {
-        BINARY_SET_DATA_TYPE const * current_element = base + (limit >> 1);
+        BSEARCH_SET_DATA_TYPE const * current_element = base + (limit >> 1);
 
         const int comparison = set.compare(element, (*current_element));
         if (comparison == 0) {
@@ -268,21 +268,21 @@ static inline bool contains_binary_set(const binary_set_s set, const BINARY_SET_
 /// @param set Set to add element into.
 /// @param element Element to add into set.
 /// @note If element is contained in set the function terminates with error.
-static inline void insert_binary_set(binary_set_s * set, const BINARY_SET_DATA_TYPE element) {
-    BINARY_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL.");
-    BINARY_SET_ASSERT(set->size < BINARY_SET_SIZE && "[ERROR] Set is full.");
+static inline void insert_bsearch_set(bsearch_set_s * set, const BSEARCH_SET_DATA_TYPE element) {
+    BSEARCH_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL.");
+    BSEARCH_SET_ASSERT(set->size < BSEARCH_SET_SIZE && "[ERROR] Set is full.");
 
-    BINARY_SET_ASSERT(set->compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(set->size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(set->elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_SET_ASSERT(set->compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(set->size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(set->elements && "[ERROR] 'elements' pointer is NULL.");
 
-    BINARY_SET_DATA_TYPE * base = set->elements;
+    BSEARCH_SET_DATA_TYPE * base = set->elements;
     for (size_t limit = set->size; limit != 0; limit >>= 1) {
-        BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
+        BSEARCH_SET_DATA_TYPE * current_element = base + (limit >> 1);
 
         const int comparison = set->compare(element, (*current_element));
         if (comparison == 0) {
-            BINARY_SET_ASSERT(false && "[ERROR] Set already contains element.");
+            BSEARCH_SET_ASSERT(false && "[ERROR] Set already contains element.");
         }
 
         if (comparison > 0) {
@@ -292,8 +292,8 @@ static inline void insert_binary_set(binary_set_s * set, const BINARY_SET_DATA_T
     }
 
     const size_t base_index = (size_t)(base - set->elements); // convert to size_t since the result is a positive ptrdiff_t
-    memmove(base + 1, base, (set->size - base_index) * sizeof(BINARY_SET_DATA_TYPE));
-    memcpy(base, &element, sizeof(BINARY_SET_DATA_TYPE));
+    memmove(base + 1, base, (set->size - base_index) * sizeof(BSEARCH_SET_DATA_TYPE));
+    memcpy(base, &element, sizeof(BSEARCH_SET_DATA_TYPE));
     set->size++;
 }
 
@@ -302,25 +302,25 @@ static inline void insert_binary_set(binary_set_s * set, const BINARY_SET_DATA_T
 /// @param element Element to remove from set.
 /// @note If element is not contained in set the function terminates with an error.
 /// @return Removed element.
-static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const BINARY_SET_DATA_TYPE element) {
-    BINARY_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL.");
-    BINARY_SET_ASSERT(set->size && "[ERROR] Can't remove from empty set.");
+static inline BSEARCH_SET_DATA_TYPE remove_bsearch_set(bsearch_set_s * set, const BSEARCH_SET_DATA_TYPE element) {
+    BSEARCH_SET_ASSERT(set && "[ERROR] 'set' pointer parameter is NULL.");
+    BSEARCH_SET_ASSERT(set->size && "[ERROR] Can't remove from empty set.");
 
-    BINARY_SET_ASSERT(set->compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(set->size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(set->elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_SET_ASSERT(set->compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(set->size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(set->elements && "[ERROR] 'elements' pointer is NULL.");
 
-    BINARY_SET_DATA_TYPE * base = set->elements;
+    BSEARCH_SET_DATA_TYPE * base = set->elements;
     for (size_t limit = set->size; limit != 0; limit >>= 1) {
-        BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
+        BSEARCH_SET_DATA_TYPE * current_element = base + (limit >> 1);
 
         const int comparison = set->compare(element, (*current_element));
         if (comparison == 0) {
-            BINARY_SET_DATA_TYPE removed = (*current_element);
+            BSEARCH_SET_DATA_TYPE removed = (*current_element);
             set->size--;
 
             const size_t current_index = (size_t)(current_element - set->elements); // convert to size_t since the result is a positive ptrdiff_t
-            memmove(current_element, current_element + 1, (set->size - current_index) * sizeof(BINARY_SET_DATA_TYPE));
+            memmove(current_element, current_element + 1, (set->size - current_index) * sizeof(BSEARCH_SET_DATA_TYPE));
 
             return removed;
         }
@@ -331,7 +331,7 @@ static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const B
         }
     }
 
-    BINARY_SET_ASSERT(false && "[ERROR] Set does not contain element.");
+    BSEARCH_SET_ASSERT(false && "[ERROR] Set does not contain element.");
     exit(EXIT_FAILURE); // to have function return
 }
 
@@ -340,23 +340,23 @@ static inline BINARY_SET_DATA_TYPE remove_binary_set(binary_set_s * set, const B
 /// @param set_two Second set structure to unite.
 /// @param copy Function pointer that creates deep or shallow a copy for united elements.
 /// @return New union of set parameters.
-static inline binary_set_s union_binary_set(const binary_set_s set_one, const binary_set_s set_two, const copy_binary_set_fn copy) {
-    BINARY_SET_ASSERT(copy && "[ERROR] 'copy' pointer parameter is NULL.");
-    BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't union sets with different compare functions.");
+static inline bsearch_set_s union_bsearch_set(const bsearch_set_s set_one, const bsearch_set_s set_two, const copy_bsearch_set_fn copy) {
+    BSEARCH_SET_ASSERT(copy && "[ERROR] 'copy' pointer parameter is NULL.");
+    BSEARCH_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't union sets with different compare functions.");
 
-    BINARY_SET_ASSERT(set_one.compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(set_one.size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(set_one.elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_SET_ASSERT(set_one.compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(set_one.size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(set_one.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    BINARY_SET_ASSERT(set_two.compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(set_two.size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(set_two.elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_SET_ASSERT(set_two.compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(set_two.size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(set_two.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    binary_set_s set_union = {
-        .elements = BINARY_SET_ALLOC(BINARY_SET_SIZE * sizeof(BINARY_SET_DATA_TYPE)),
+    bsearch_set_s set_union = {
+        .elements = BSEARCH_SET_ALLOC(BSEARCH_SET_SIZE * sizeof(BSEARCH_SET_DATA_TYPE)),
         .compare = set_one.compare, .size = 0,
     };
-    BINARY_SET_ASSERT(set_union.elements && "[ERROR] Memory allocation failed.");
+    BSEARCH_SET_ASSERT(set_union.elements && "[ERROR] Memory allocation failed.");
 
     // copy set one's elements into union set
     for (set_union.size = 0; set_union.size < set_one.size; set_union.size++) {
@@ -364,13 +364,13 @@ static inline binary_set_s union_binary_set(const binary_set_s set_one, const bi
     }
 
     // copy set two's elements which are not in set one into union set
-    BINARY_SET_DATA_TYPE * base = set_union.elements;
+    BSEARCH_SET_DATA_TYPE * base = set_union.elements;
     for (size_t i = 0; i < set_two.size; ++i) {
         bool found_element = false;
 
         const size_t base_index = (size_t)(base - set_union.elements); // convert to size_t since the result is a positive ptrdiff_t
         for (size_t limit = set_union.size - base_index; limit != 0; limit >>= 1) {
-            BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
+            BSEARCH_SET_DATA_TYPE * current_element = base + (limit >> 1);
 
             const int comparison = set_union.compare(set_two.elements[i], (*current_element));
             if (comparison == 0) {
@@ -385,10 +385,10 @@ static inline binary_set_s union_binary_set(const binary_set_s set_one, const bi
         }
 
         if (!found_element) { // if set two's element was not found then push copy into set
-            BINARY_SET_ASSERT(set_union.size <= BINARY_SET_SIZE && "[ERROR] Set's size above maximum");
+            BSEARCH_SET_ASSERT(set_union.size <= BSEARCH_SET_SIZE && "[ERROR] Set's size above maximum");
 
             const size_t found_base_index = (size_t)(base - set_union.elements); // convert to size_t since the result is a positive ptrdiff_t
-            memmove(base + 1, base, (set_union.size - found_base_index) * sizeof(BINARY_SET_DATA_TYPE));
+            memmove(base + 1, base, (set_union.size - found_base_index) * sizeof(BSEARCH_SET_DATA_TYPE));
             (*base) = copy(set_two.elements[i]);
             set_union.size++;
         }
@@ -402,29 +402,29 @@ static inline binary_set_s union_binary_set(const binary_set_s set_one, const bi
 /// @param set_two Second set structure to intersect.
 /// @param copy Function pointer that creates deep or shallow a copy for intersected elements.
 /// @return New intersect of set parameters.
-static inline binary_set_s intersect_binary_set(const binary_set_s set_one, const binary_set_s set_two, const copy_binary_set_fn copy) {
-    BINARY_SET_ASSERT(copy && "[ERROR] 'copy' pointer parameter is NULL.");
-    BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't union sets with different compare functions.");
+static inline bsearch_set_s intersect_bsearch_set(const bsearch_set_s set_one, const bsearch_set_s set_two, const copy_bsearch_set_fn copy) {
+    BSEARCH_SET_ASSERT(copy && "[ERROR] 'copy' pointer parameter is NULL.");
+    BSEARCH_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't union sets with different compare functions.");
 
-    BINARY_SET_ASSERT(set_one.compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(set_one.size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(set_one.elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_SET_ASSERT(set_one.compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(set_one.size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(set_one.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    BINARY_SET_ASSERT(set_two.compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(set_two.size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(set_two.elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_SET_ASSERT(set_two.compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(set_two.size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(set_two.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    binary_set_s set_intersect = {
-        .elements = BINARY_SET_ALLOC(BINARY_SET_SIZE * sizeof(BINARY_SET_DATA_TYPE)),
+    bsearch_set_s set_intersect = {
+        .elements = BSEARCH_SET_ALLOC(BSEARCH_SET_SIZE * sizeof(BSEARCH_SET_DATA_TYPE)),
         .compare = set_one.compare, .size = 0,
     };
-    BINARY_SET_ASSERT(set_intersect.elements && "[ERROR] Memory allocation failed.");
+    BSEARCH_SET_ASSERT(set_intersect.elements && "[ERROR] Memory allocation failed.");
 
-    BINARY_SET_DATA_TYPE const * base = set_one.elements;
+    BSEARCH_SET_DATA_TYPE const * base = set_one.elements;
     for (size_t i = 0; i < set_two.size; ++i) { // for each element in set two
         const size_t base_index = (size_t)(base - set_one.elements); // convert to size_t since the result is a positive ptrdiff_t
         for (size_t limit = set_one.size - base_index; limit != 0; limit >>= 1) {
-            BINARY_SET_DATA_TYPE const * current_element = base + (limit >> 1);
+            BSEARCH_SET_DATA_TYPE const * current_element = base + (limit >> 1);
 
             const int comparison = set_intersect.compare(set_two.elements[i], (*current_element));
             if (comparison == 0) {
@@ -447,31 +447,31 @@ static inline binary_set_s intersect_binary_set(const binary_set_s set_one, cons
 /// @param set_two Second set structure that subtracts.
 /// @param copy Function pointer that creates deep or shallow a copy for subtracted elements.
 /// @return New subtraction of set parameters.
-static inline binary_set_s subtract_binary_set(const binary_set_s set_one, const binary_set_s set_two, const copy_binary_set_fn copy) {
-    BINARY_SET_ASSERT(copy && "[ERROR] 'copy' pointer parameter is NULL.");
-    BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't union sets with different compare functions.");
+static inline bsearch_set_s subtract_bsearch_set(const bsearch_set_s set_one, const bsearch_set_s set_two, const copy_bsearch_set_fn copy) {
+    BSEARCH_SET_ASSERT(copy && "[ERROR] 'copy' pointer parameter is NULL.");
+    BSEARCH_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't union sets with different compare functions.");
 
-    BINARY_SET_ASSERT(set_one.compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(set_one.size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(set_one.elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_SET_ASSERT(set_one.compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(set_one.size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(set_one.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    BINARY_SET_ASSERT(set_two.compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(set_two.size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(set_two.elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_SET_ASSERT(set_two.compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(set_two.size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(set_two.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    binary_set_s set_subtract = {
-        .elements = BINARY_SET_ALLOC(BINARY_SET_SIZE * sizeof(BINARY_SET_DATA_TYPE)),
+    bsearch_set_s set_subtract = {
+        .elements = BSEARCH_SET_ALLOC(BSEARCH_SET_SIZE * sizeof(BSEARCH_SET_DATA_TYPE)),
         .compare = set_one.compare, .size = 0,
     };
-    BINARY_SET_ASSERT(set_subtract.elements && "[ERROR] Memory allocation failed.");
+    BSEARCH_SET_ASSERT(set_subtract.elements && "[ERROR] Memory allocation failed.");
 
-    BINARY_SET_DATA_TYPE const * base = set_two.elements;
+    BSEARCH_SET_DATA_TYPE const * base = set_two.elements;
     for (size_t i = 0; i < set_one.size; ++i) { // for each element in set two
         bool found_element = false;
 
         const size_t base_index = (size_t)(base - set_two.elements); // convert to size_t since the result is a positive ptrdiff_t
         for (size_t limit = set_two.size - base_index; limit != 0; limit >>= 1) {
-            BINARY_SET_DATA_TYPE const * current_element = base + (limit >> 1);
+            BSEARCH_SET_DATA_TYPE const * current_element = base + (limit >> 1);
 
             const int comparison = set_two.compare(set_one.elements[i], (*current_element));
             if (comparison == 0) {
@@ -498,38 +498,38 @@ static inline binary_set_s subtract_binary_set(const binary_set_s set_one, const
 /// @param set_two Second set structure to exclude.
 /// @param copy Function pointer that creates deep or shallow a copy for exclude elements.
 /// @return New exclude of set parameters.
-static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const binary_set_s set_two, const copy_binary_set_fn copy) {
-    BINARY_SET_ASSERT(copy && "[ERROR] 'copy' pointer parameter is NULL.");
-    BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't union sets with different compare functions.");
+static inline bsearch_set_s exclude_bsearch_set(const bsearch_set_s set_one, const bsearch_set_s set_two, const copy_bsearch_set_fn copy) {
+    BSEARCH_SET_ASSERT(copy && "[ERROR] 'copy' pointer parameter is NULL.");
+    BSEARCH_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't union sets with different compare functions.");
 
-    BINARY_SET_ASSERT(set_one.compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(set_one.size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(set_one.elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_SET_ASSERT(set_one.compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(set_one.size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(set_one.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    BINARY_SET_ASSERT(set_two.compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(set_two.size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(set_two.elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_SET_ASSERT(set_two.compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(set_two.size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(set_two.elements && "[ERROR] 'elements' pointer is NULL.");
 
     // special case since we can't tell if exclude can fit all elements before adding them since exclude both adds and removes elements in new set
-    struct array { BINARY_SET_DATA_TYPE elements[BINARY_SET_SIZE * 2]; size_t size; } extended = { .size = 0, };
+    struct array { BSEARCH_SET_DATA_TYPE elements[BSEARCH_SET_SIZE * 2]; size_t size; } extended = { .size = 0, };
     // shallow copy set one's elements into union set
     for (extended.size = 0; extended.size < set_one.size; extended.size++) {
         extended.elements[extended.size] = set_one.elements[extended.size]; // make a shallow copy since some elements may be removed
     }
 
-    BINARY_SET_DATA_TYPE * base = extended.elements;
+    BSEARCH_SET_DATA_TYPE * base = extended.elements;
     for (size_t i = 0; i < set_two.size; ++i) { // for each element in set two
         bool found_element = false;
 
         const size_t base_index = (size_t)(base - extended.elements); // convert to size_t since the result is a positive ptrdiff_t
         for (size_t limit = extended.size - base_index; limit != 0; limit >>= 1) {
-            BINARY_SET_DATA_TYPE * current_element = base + (limit >> 1);
+            BSEARCH_SET_DATA_TYPE * current_element = base + (limit >> 1);
 
             const int comparison = set_one.compare(set_two.elements[i], (*current_element));
             if (comparison == 0) { // if equal shift left to remove
                 extended.size--;
                 const size_t current_index = (size_t)(current_element - extended.elements); // convert to size_t since the result is a positive ptrdiff_t
-                memmove(current_element, current_element + 1, (extended.size - current_index) * sizeof(BINARY_SET_DATA_TYPE));
+                memmove(current_element, current_element + 1, (extended.size - current_index) * sizeof(BSEARCH_SET_DATA_TYPE));
 
                 found_element = true;
                 break;
@@ -543,21 +543,21 @@ static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const 
 
         if (!found_element) { // if not found shift current element + rest to the right to make space for uncontained element
             const size_t found_base_index = (size_t)(base - extended.elements); // convert to size_t since the result is a positive ptrdiff_t
-            memmove(base + 1, base, (extended.size - found_base_index) * sizeof(BINARY_SET_DATA_TYPE));
+            memmove(base + 1, base, (extended.size - found_base_index) * sizeof(BSEARCH_SET_DATA_TYPE));
 
             (*base) = set_two.elements[i]; // push set to new point
             extended.size++;
         }
     }
-    BINARY_SET_ASSERT(extended.size <= BINARY_SET_SIZE && "[ERROR] Set exceeds maximum rpeprocessor size.");
+    BSEARCH_SET_ASSERT(extended.size <= BSEARCH_SET_SIZE && "[ERROR] Set exceeds maximum rpeprocessor size.");
 
-    const binary_set_s exclude_set = {
-        .elements = BINARY_SET_ALLOC(BINARY_SET_SIZE * sizeof(BINARY_SET_DATA_TYPE)),
+    const bsearch_set_s exclude_set = {
+        .elements = BSEARCH_SET_ALLOC(BSEARCH_SET_SIZE * sizeof(BSEARCH_SET_DATA_TYPE)),
         .compare = set_one.compare, .size = extended.size,
     };
-    BINARY_SET_ASSERT(exclude_set.elements && "[ERROR] Memory allocation failed.");
+    BSEARCH_SET_ASSERT(exclude_set.elements && "[ERROR] Memory allocation failed.");
 
-    memcpy(exclude_set.elements, extended.elements, sizeof(BINARY_SET_DATA_TYPE) * extended.size);
+    memcpy(exclude_set.elements, extended.elements, sizeof(BSEARCH_SET_DATA_TYPE) * extended.size);
 
     for (size_t i = 0; i < exclude_set.size; ++i) {
         exclude_set.elements[i] = copy(exclude_set.elements[i]);
@@ -570,24 +570,24 @@ static inline binary_set_s exclude_binary_set(const binary_set_s set_one, const 
 /// @param super Superset to check on.
 /// @param sub Subset to check with superset.
 /// @return 'true' if sub is subset of superset, 'false' if not.
-static inline bool is_subset_binary_set(const binary_set_s super, const binary_set_s sub) {
-    BINARY_SET_ASSERT(super.compare == sub.compare && "[ERROR] Can't check subset with different compare functions.");
+static inline bool is_subset_bsearch_set(const bsearch_set_s super, const bsearch_set_s sub) {
+    BSEARCH_SET_ASSERT(super.compare == sub.compare && "[ERROR] Can't check subset with different compare functions.");
 
-    BINARY_SET_ASSERT(super.compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(super.size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(super.elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_SET_ASSERT(super.compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(super.size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(super.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    BINARY_SET_ASSERT(sub.compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(sub.size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(sub.elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_SET_ASSERT(sub.compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(sub.size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(sub.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    BINARY_SET_DATA_TYPE const * base = super.elements;
+    BSEARCH_SET_DATA_TYPE const * base = super.elements;
     for (size_t i = 0; i < sub.size; ++i) { // for each element in set one
         bool found_element = false;
 
         const size_t base_index = (size_t)(base - super.elements); // convert to size_t since the result is a positive ptrdiff_t
         for (size_t limit = super.size - base_index; limit != 0; limit >>= 1) {
-            BINARY_SET_DATA_TYPE const * current_element = base + (limit >> 1);
+            BSEARCH_SET_DATA_TYPE const * current_element = base + (limit >> 1);
 
             const int comparison = super.compare(sub.elements[i], (*current_element));
             if (comparison == 0) {
@@ -613,24 +613,24 @@ static inline bool is_subset_binary_set(const binary_set_s super, const binary_s
 /// @param super Superset to check on.
 /// @param sub Subset to check with superset.
 /// @return 'true' if sub is proper subset of superset, 'false' if not.
-static inline bool is_proper_subset_binary_set(const binary_set_s super, const binary_set_s sub) {
-    BINARY_SET_ASSERT(super.compare == sub.compare && "[ERROR] Can't check proper subset with different compare functions.");
+static inline bool is_proper_subset_bsearch_set(const bsearch_set_s super, const bsearch_set_s sub) {
+    BSEARCH_SET_ASSERT(super.compare == sub.compare && "[ERROR] Can't check proper subset with different compare functions.");
 
-    BINARY_SET_ASSERT(super.compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(super.size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(super.elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_SET_ASSERT(super.compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(super.size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(super.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    BINARY_SET_ASSERT(sub.compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(sub.size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(sub.elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_SET_ASSERT(sub.compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(sub.size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(sub.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    BINARY_SET_DATA_TYPE const * base = super.elements;
+    BSEARCH_SET_DATA_TYPE const * base = super.elements;
     for (size_t i = 0; i < sub.size; ++i) { // for each element in set one
         bool found_element = false;
 
         const size_t base_index = (size_t)(base - super.elements); // convert to size_t since the result is a positive ptrdiff_t
         for (size_t limit = super.size - base_index; limit != 0; limit >>= 1) {
-            BINARY_SET_DATA_TYPE const * current_element = base + (limit >> 1);
+            BSEARCH_SET_DATA_TYPE const * current_element = base + (limit >> 1);
 
             const int comparison = super.compare(sub.elements[i], (*current_element));
             if (comparison == 0) {
@@ -656,22 +656,22 @@ static inline bool is_proper_subset_binary_set(const binary_set_s super, const b
 /// @param set_one First set to check.
 /// @param set_two Second set to check.
 /// @return 'true' if sets are disjoint, 'false' otherwise.
-static inline bool is_disjoint_binary_set(const binary_set_s set_one, const binary_set_s set_two) {
-    BINARY_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't check disjoint with different compare functions.");
+static inline bool is_disjoint_bsearch_set(const bsearch_set_s set_one, const bsearch_set_s set_two) {
+    BSEARCH_SET_ASSERT(set_one.compare == set_two.compare && "[ERROR] Can't check disjoint with different compare functions.");
 
-    BINARY_SET_ASSERT(set_one.compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(set_one.size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(set_one.elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_SET_ASSERT(set_one.compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(set_one.size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(set_one.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    BINARY_SET_ASSERT(set_two.compare && "[ERROR] Set's compare function pointer is NULL.");
-    BINARY_SET_ASSERT(set_two.size <= BINARY_SET_SIZE && "[ERROR] Invalid set size.");
-    BINARY_SET_ASSERT(set_two.elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_SET_ASSERT(set_two.compare && "[ERROR] Set's compare function pointer is NULL.");
+    BSEARCH_SET_ASSERT(set_two.size <= BSEARCH_SET_SIZE && "[ERROR] Invalid set size.");
+    BSEARCH_SET_ASSERT(set_two.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    BINARY_SET_DATA_TYPE const * base = set_two.elements;
+    BSEARCH_SET_DATA_TYPE const * base = set_two.elements;
     for (size_t i = 0; i < set_one.size; ++i) { // for each element in set one
         const size_t base_index = (size_t)(base - set_two.elements); // convert to size_t since the result is a positive ptrdiff_t
         for (size_t limit = set_two.size - base_index; limit != 0; limit >>= 1) {
-            BINARY_SET_DATA_TYPE const * current_element = base + (limit >> 1);
+            BSEARCH_SET_DATA_TYPE const * current_element = base + (limit >> 1);
 
             const int comparison = set_one.compare(set_one.elements[i], (*current_element));
             if (comparison == 0) {
@@ -692,4 +692,4 @@ static inline bool is_disjoint_binary_set(const binary_set_s set_one, const bina
 
 #error Cannot include multiple headers in same unit.
 
-#endif // BINARY_SET_H
+#endif // BSEARCH_SET_H

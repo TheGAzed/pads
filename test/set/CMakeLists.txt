@@ -1,5 +1,5 @@
 add_executable(set_test main.c
-        suits/binary_set_test.c
+        suits/bsearch_set_test.c
         suits/bitwise_set_test.c
         suits/hash_set_test.c
 )
