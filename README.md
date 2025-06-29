@@ -37,6 +37,6 @@ C compiler that at least supports the **C99 standard**, for example:
 - DOUBLE LIST
 
 ### [SET](https://github.com/TheGAzed/pads/blob/main/source/set)
-- BINARY SET
+- BSEARCH SET
 - BITWISE SET
 - HASH SET
