@@ -120,6 +120,12 @@ static inline void destroy_bsearch_tree(bsearch_tree_s * tree, const destroy_bse
     BSEARCH_TREE_FREE(tree->node[BSEARCH_TREE_RIGHT]);
     BSEARCH_TREE_FREE(tree->parent);
 
+    tree->elements = NULL;
+    tree->node[BSEARCH_TREE_LEFT] = NULL;
+    tree->node[BSEARCH_TREE_RIGHT] = NULL;
+    tree->parent = NULL;
+
+    tree->root = BSEARCH_TREE_SIZE;
     tree->compare = NULL;
     tree->size = 0;
 }
@@ -139,6 +145,7 @@ static inline void clear_bsearch_tree(bsearch_tree_s * tree, const destroy_bsear
         destroy(e);
     }
 
+    tree->root = BSEARCH_TREE_SIZE;
     tree->size = 0;
 }
 
@@ -651,6 +658,19 @@ static inline void level_order_bsearch_tree(const bsearch_tree_s tree, const ope
     }
 
     BSEARCH_TREE_FREE(queue.elements);
+}
+
+static inline void map_bsearch_tree(const bsearch_tree_s tree, const manage_bsearch_tree_fn manage, void * args) {
+    BSEARCH_TREE_ASSERT(manage && "[ERROR] 'manage' parameter is NULL.");
+
+    BSEARCH_TREE_ASSERT(tree.compare && "[ERROR] 'compare' function is NULL.");
+    BSEARCH_TREE_ASSERT(tree.elements && "[ERROR] 'elements' pointer is NULL.");
+    BSEARCH_TREE_ASSERT(tree.node[BSEARCH_TREE_LEFT] && "[ERROR] 'node[BSEARCH_TREE_LEFT]' pointer is NULL.");
+    BSEARCH_TREE_ASSERT(tree.node[BSEARCH_TREE_RIGHT] && "[ERROR] 'node[BSEARCH_TREE_RIGHT]' pointer is NULL.");
+    BSEARCH_TREE_ASSERT(tree.parent && "[ERROR] 'parent' pointer is NULL.");
+    BSEARCH_TREE_ASSERT(tree.size <= BSEARCH_TREE_SIZE && "[ERROR] Invalid tree size.");
+
+    manage(tree.elements, tree.size, args);
 }
 
 #endif // BSEARCH_TREE_H

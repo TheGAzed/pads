@@ -22,7 +22,7 @@ C compiler that at least supports the **C99 standard**, for example:
 
 ## **List of Data Structures:**
 
-### [SEQUENTIAL](https://github.com/TheGAzed/pads/blob/main/source/sequence)
+### [SEQUENCE](https://github.com/TheGAzed/pads/blob/main/source/sequence)
 - STACK
 - QUEUE
 - DEQUE
