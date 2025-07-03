@@ -419,7 +419,11 @@ static inline BSEARCH_TREE_DATA_TYPE remove_min_bsearch_tree(bsearch_tree_s * tr
     tree->size--;
 
     const size_t hole_index = (*minimum_node);
-    (*minimum_node) = tree->node[BSEARCH_TREE_RIGHT][(*minimum_node)];
+    const size_t right_node = tree->node[BSEARCH_TREE_RIGHT][(*minimum_node)];
+    if (BSEARCH_TREE_SIZE != right_node) {
+        tree->parent[right_node] = tree->parent[(*minimum_node)];
+    }
+    (*minimum_node) = right_node;
 
     // cut hole node from the rest of the tree
     tree->node[BSEARCH_TREE_LEFT][hole_index] = tree->node[BSEARCH_TREE_RIGHT][hole_index] = tree->parent[hole_index] = hole_index;
@@ -471,7 +475,11 @@ static inline BSEARCH_TREE_DATA_TYPE remove_max_bsearch_tree(bsearch_tree_s * tr
     tree->size--;
 
     const size_t hole_index = (*maximum_node);
-    (*maximum_node) = tree->node[BSEARCH_TREE_LEFT][(*maximum_node)];
+    const size_t left_node = tree->node[BSEARCH_TREE_LEFT][(*maximum_node)];
+    if (BSEARCH_TREE_SIZE != left_node) {
+        tree->parent[left_node] = tree->parent[(*maximum_node)];
+    }
+    (*maximum_node) = left_node;
 
     // cut hole node from the rest of the tree
     tree->node[BSEARCH_TREE_LEFT][hole_index] = tree->node[BSEARCH_TREE_RIGHT][hole_index] = tree->parent[hole_index] = hole_index;
