@@ -216,25 +216,22 @@ static inline void insert_bsearch_tree(bsearch_tree_s * tree, const BSEARCH_TREE
     BSEARCH_TREE_ASSERT(tree->parent && "[ERROR] 'parent' pointer is NULL.");
     BSEARCH_TREE_ASSERT(tree->size <= BSEARCH_TREE_SIZE && "[ERROR] Invalid tree size.");
 
-    size_t parent = BSEARCH_TREE_SIZE; // initially invalid for the head case when tree is empty
-    size_t * child = &(tree->root); // pointer to later change actual index of the empty child
-    while (BSEARCH_TREE_SIZE != (*child)) {
+    size_t previous = BSEARCH_TREE_SIZE; // initially invalid for the head case when tree is empty
+    size_t * node = &(tree->root); // pointer to later change actual index of the empty child
+    while (BSEARCH_TREE_SIZE != (*node)) {
         // calculate and determine next child node, i.e. if left or right child
-        const int comparison = tree->compare(element, tree->elements[(*child)]);
+        const int comparison = tree->compare(element, tree->elements[(*node)]);
         const size_t node_index = comparison <= 0 ? BSEARCH_TREE_LEFT : BSEARCH_TREE_RIGHT;
 
-        // change parent to child and go to next child node
-        parent = (*child);
-        child = tree->node[node_index] + (*child);
+        previous = (*node); // change parent to child
+        node = tree->node[node_index] + (*node); // change child to proper gradnchild
     }
 
-    (*child) = tree->size; // change child index from invalid value to next empty index in array
-    memcpy(tree->elements + (*child), &element, sizeof(BSEARCH_TREE_DATA_TYPE));
-    // make child's left and right indexes point to invalid value
-    tree->node[BSEARCH_TREE_LEFT][(*child)] = tree->node[BSEARCH_TREE_RIGHT][(*child)] = BSEARCH_TREE_SIZE;
-    // make child's parent into parent
-    tree->parent[(*child)] = parent;
+    (*node) = tree->size; // change child index from invalid value to next empty index in array
+    tree->parent[(*node)] = previous; // make child's parent into parent
+    tree->node[BSEARCH_TREE_LEFT][(*node)] = tree->node[BSEARCH_TREE_RIGHT][(*node)] = BSEARCH_TREE_SIZE; // make child's left and right indexes invalid
 
+    memcpy(tree->elements + (*node), &element, sizeof(BSEARCH_TREE_DATA_TYPE));
     tree->size++;
 }
 
