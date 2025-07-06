@@ -230,52 +230,6 @@ static inline bool is_full_avl_tree(const avl_tree_s tree) {
     return (AVL_TREE_SIZE == tree.size);
 }
 
-static inline void rotate_left_avl_tree(avl_tree_s * tree, const size_t node) {
-    const size_t x = node, y = tree->node[AVL_TREE_RIGHT][x], z = tree->node[AVL_TREE_LEFT][y];
-
-    tree->node[AVL_TREE_RIGHT][x] = z;
-    if (AVL_TREE_SIZE != z) tree->parent[z] = x;
-    tree->parent[y] = tree->parent[x];
-
-    if (AVL_TREE_SIZE == tree->parent[x]) tree->root = y;
-    else if (x == tree->node[AVL_TREE_LEFT][tree->parent[x]]) tree->node[AVL_TREE_LEFT][tree->parent[x]] = y;
-    else tree->node[AVL_TREE_RIGHT][tree->parent[x]] = y;
-
-    tree->node[AVL_TREE_LEFT][y] = x;
-    tree->parent[x] = y;
-
-    const size_t x_left_height = AVL_TREE_SIZE != tree->node[AVL_TREE_LEFT][x] ? tree->height[tree->node[AVL_TREE_LEFT][x]] : 0;
-    const size_t x_right_height = AVL_TREE_SIZE != tree->node[AVL_TREE_RIGHT][x] ? tree->height[tree->node[AVL_TREE_RIGHT][x]] : 0;
-    tree->height[x] = 1 + (x_right_height > x_left_height ? x_right_height : x_left_height);
-
-    const size_t y_left_height = AVL_TREE_SIZE != tree->node[AVL_TREE_LEFT][y] ? tree->height[tree->node[AVL_TREE_LEFT][y]] : 0;
-    const size_t y_right_height = AVL_TREE_SIZE != tree->node[AVL_TREE_RIGHT][y] ? tree->height[tree->node[AVL_TREE_RIGHT][y]] : 0;
-    tree->height[y] = 1 + (y_right_height > y_left_height ? y_right_height : y_left_height);
-}
-
-static inline void rotate_right_avl_tree(avl_tree_s * tree, const size_t node) {
-    const size_t x = node, y = tree->node[AVL_TREE_LEFT][x], z = tree->node[AVL_TREE_RIGHT][y];
-
-    tree->node[AVL_TREE_LEFT][x] = z;
-    if (AVL_TREE_SIZE != z) tree->parent[z] = x;
-    tree->parent[y] = tree->parent[x];
-
-    if (AVL_TREE_SIZE == tree->parent[x]) tree->root = y;
-    else if (x == tree->node[AVL_TREE_LEFT][tree->parent[x]]) tree->node[AVL_TREE_LEFT][tree->parent[x]] = y;
-    else tree->node[AVL_TREE_RIGHT][tree->parent[x]] = y;
-
-    tree->node[AVL_TREE_RIGHT][y] = x;
-    tree->parent[x] = y;
-
-    const size_t x_left_height = AVL_TREE_SIZE != tree->node[AVL_TREE_LEFT][x] ? tree->height[tree->node[AVL_TREE_LEFT][x]] : 0;
-    const size_t x_right_height = AVL_TREE_SIZE != tree->node[AVL_TREE_RIGHT][x] ? tree->height[tree->node[AVL_TREE_RIGHT][x]] : 0;
-    tree->height[x] = 1 + (x_right_height > x_left_height ? x_right_height : x_left_height);
-
-    const size_t y_left_height = AVL_TREE_SIZE != tree->node[AVL_TREE_LEFT][y] ? tree->height[tree->node[AVL_TREE_LEFT][y]] : 0;
-    const size_t y_right_height = AVL_TREE_SIZE != tree->node[AVL_TREE_RIGHT][y] ? tree->height[tree->node[AVL_TREE_RIGHT][y]] : 0;
-    tree->height[y] = 1 + (y_right_height > y_left_height ? y_right_height : y_left_height);
-}
-
 static inline void insert_avl_tree(avl_tree_s * tree, const AVL_TREE_DATA_TYPE element) {
     AVL_TREE_ASSERT(tree && "[ERROR] 'tree' parameter is NULL.");
     AVL_TREE_ASSERT(tree->size != AVL_TREE_SIZE && "[ERROR] Can't insert into full tree.");
@@ -330,12 +284,51 @@ static inline void insert_avl_tree(avl_tree_s * tree, const AVL_TREE_DATA_TYPE e
             const size_t right_grand_height = (AVL_TREE_SIZE == tree->node[AVL_TREE_RIGHT][right_child]) ? 0 : tree->height[tree->node[AVL_TREE_RIGHT][right_child]];
 
             if (left_grand_height > right_grand_height) {
-                // RIGHT ROTATE RIGHT CHILD
-                rotate_right_avl_tree(tree, right_child);
-            }
+                { // RIGHT ROTATE RIGHT CHILD
+                    const size_t x = right_child, y = tree->node[AVL_TREE_LEFT][x], z = tree->node[AVL_TREE_RIGHT][y];
 
-            // LEFT ROTATE CURRENT NODE
-            rotate_left_avl_tree(tree, n);
+                    tree->node[AVL_TREE_LEFT][x] = z;
+                    if (AVL_TREE_SIZE != z) tree->parent[z] = x;
+                    tree->parent[y] = tree->parent[x];
+
+                    if (AVL_TREE_SIZE == tree->parent[x]) tree->root = y;
+                    else if (x == tree->node[AVL_TREE_LEFT][tree->parent[x]]) tree->node[AVL_TREE_LEFT][tree->parent[x]] = y;
+                    else tree->node[AVL_TREE_RIGHT][tree->parent[x]] = y;
+
+                    tree->node[AVL_TREE_RIGHT][y] = x;
+                    tree->parent[x] = y;
+
+                    const size_t x_left_height = AVL_TREE_SIZE != tree->node[AVL_TREE_LEFT][x] ? tree->height[tree->node[AVL_TREE_LEFT][x]] : 0;
+                    const size_t x_right_height = AVL_TREE_SIZE != tree->node[AVL_TREE_RIGHT][x] ? tree->height[tree->node[AVL_TREE_RIGHT][x]] : 0;
+                    tree->height[x] = 1 + (x_right_height > x_left_height ? x_right_height : x_left_height);
+
+                    const size_t y_left_height = AVL_TREE_SIZE != tree->node[AVL_TREE_LEFT][y] ? tree->height[tree->node[AVL_TREE_LEFT][y]] : 0;
+                    const size_t y_right_height = AVL_TREE_SIZE != tree->node[AVL_TREE_RIGHT][y] ? tree->height[tree->node[AVL_TREE_RIGHT][y]] : 0;
+                    tree->height[y] = 1 + (y_right_height > y_left_height ? y_right_height : y_left_height);
+                }
+            }
+            { // LEFT ROTATE CURRENT NODE
+                const size_t x = n, y = tree->node[AVL_TREE_RIGHT][x], z = tree->node[AVL_TREE_LEFT][y];
+
+                tree->node[AVL_TREE_RIGHT][x] = z;
+                if (AVL_TREE_SIZE != z) tree->parent[z] = x;
+                tree->parent[y] = tree->parent[x];
+
+                if (AVL_TREE_SIZE == tree->parent[x]) tree->root = y;
+                else if (x == tree->node[AVL_TREE_LEFT][tree->parent[x]]) tree->node[AVL_TREE_LEFT][tree->parent[x]] = y;
+                else tree->node[AVL_TREE_RIGHT][tree->parent[x]] = y;
+
+                tree->node[AVL_TREE_LEFT][y] = x;
+                tree->parent[x] = y;
+
+                const size_t x_left_height = AVL_TREE_SIZE != tree->node[AVL_TREE_LEFT][x] ? tree->height[tree->node[AVL_TREE_LEFT][x]] : 0;
+                const size_t x_right_height = AVL_TREE_SIZE != tree->node[AVL_TREE_RIGHT][x] ? tree->height[tree->node[AVL_TREE_RIGHT][x]] : 0;
+                tree->height[x] = 1 + (x_right_height > x_left_height ? x_right_height : x_left_height);
+
+                const size_t y_left_height = AVL_TREE_SIZE != tree->node[AVL_TREE_LEFT][y] ? tree->height[tree->node[AVL_TREE_LEFT][y]] : 0;
+                const size_t y_right_height = AVL_TREE_SIZE != tree->node[AVL_TREE_RIGHT][y] ? tree->height[tree->node[AVL_TREE_RIGHT][y]] : 0;
+                tree->height[y] = 1 + (y_right_height > y_left_height ? y_right_height : y_left_height);
+            }
         }
 
         if (left_child_height > right_child_height) {
@@ -343,10 +336,51 @@ static inline void insert_avl_tree(avl_tree_s * tree, const AVL_TREE_DATA_TYPE e
             const size_t right_grand_height = AVL_TREE_SIZE == tree->node[AVL_TREE_RIGHT][left_child] ? 0 : tree->height[tree->node[AVL_TREE_RIGHT][left_child]];
 
             if (left_grand_height < right_grand_height) {
-                // LEFT ROTATE LEFT CHILD
-                rotate_left_avl_tree(tree, left_child);
+                { // LEFT ROTATE LEFT CHILD
+                    const size_t x = left_child, y = tree->node[AVL_TREE_RIGHT][x], z = tree->node[AVL_TREE_LEFT][y];
+
+                    tree->node[AVL_TREE_RIGHT][x] = z;
+                    if (AVL_TREE_SIZE != z) tree->parent[z] = x;
+                    tree->parent[y] = tree->parent[x];
+
+                    if (AVL_TREE_SIZE == tree->parent[x]) tree->root = y;
+                    else if (x == tree->node[AVL_TREE_LEFT][tree->parent[x]]) tree->node[AVL_TREE_LEFT][tree->parent[x]] = y;
+                    else tree->node[AVL_TREE_RIGHT][tree->parent[x]] = y;
+
+                    tree->node[AVL_TREE_LEFT][y] = x;
+                    tree->parent[x] = y;
+
+                    const size_t x_left_height = AVL_TREE_SIZE != tree->node[AVL_TREE_LEFT][x] ? tree->height[tree->node[AVL_TREE_LEFT][x]] : 0;
+                    const size_t x_right_height = AVL_TREE_SIZE != tree->node[AVL_TREE_RIGHT][x] ? tree->height[tree->node[AVL_TREE_RIGHT][x]] : 0;
+                    tree->height[x] = 1 + (x_right_height > x_left_height ? x_right_height : x_left_height);
+
+                    const size_t y_left_height = AVL_TREE_SIZE != tree->node[AVL_TREE_LEFT][y] ? tree->height[tree->node[AVL_TREE_LEFT][y]] : 0;
+                    const size_t y_right_height = AVL_TREE_SIZE != tree->node[AVL_TREE_RIGHT][y] ? tree->height[tree->node[AVL_TREE_RIGHT][y]] : 0;
+                    tree->height[y] = 1 + (y_right_height > y_left_height ? y_right_height : y_left_height);
+                }
             }
-            rotate_right_avl_tree(tree, n);
+            { // RIGHT ROTATE CURRENT NODE
+                const size_t x = n, y = tree->node[AVL_TREE_LEFT][x], z = tree->node[AVL_TREE_RIGHT][y];
+
+                tree->node[AVL_TREE_LEFT][x] = z;
+                if (AVL_TREE_SIZE != z) tree->parent[z] = x;
+                tree->parent[y] = tree->parent[x];
+
+                if (AVL_TREE_SIZE == tree->parent[x]) tree->root = y;
+                else if (x == tree->node[AVL_TREE_LEFT][tree->parent[x]]) tree->node[AVL_TREE_LEFT][tree->parent[x]] = y;
+                else tree->node[AVL_TREE_RIGHT][tree->parent[x]] = y;
+
+                tree->node[AVL_TREE_RIGHT][y] = x;
+                tree->parent[x] = y;
+
+                const size_t x_left_height = AVL_TREE_SIZE != tree->node[AVL_TREE_LEFT][x] ? tree->height[tree->node[AVL_TREE_LEFT][x]] : 0;
+                const size_t x_right_height = AVL_TREE_SIZE != tree->node[AVL_TREE_RIGHT][x] ? tree->height[tree->node[AVL_TREE_RIGHT][x]] : 0;
+                tree->height[x] = 1 + (x_right_height > x_left_height ? x_right_height : x_left_height);
+
+                const size_t y_left_height = AVL_TREE_SIZE != tree->node[AVL_TREE_LEFT][y] ? tree->height[tree->node[AVL_TREE_LEFT][y]] : 0;
+                const size_t y_right_height = AVL_TREE_SIZE != tree->node[AVL_TREE_RIGHT][y] ? tree->height[tree->node[AVL_TREE_RIGHT][y]] : 0;
+                tree->height[y] = 1 + (y_right_height > y_left_height ? y_right_height : y_left_height);
+            }
         }
     }
 }
@@ -362,14 +396,16 @@ static inline AVL_TREE_DATA_TYPE remove_avl_tree(avl_tree_s * tree, const AVL_TR
     AVL_TREE_ASSERT(tree->node[AVL_TREE_RIGHT] && "[ERROR] 'node[AVL_TREE_RIGHT]' pointer is NULL.");
     AVL_TREE_ASSERT(tree->parent && "[ERROR] 'parent' pointer is NULL.");
     AVL_TREE_ASSERT(tree->size <= AVL_TREE_SIZE && "[ERROR] Invalid tree size.");
+    AVL_TREE_ASSERT(tree->root != AVL_TREE_SIZE && "[ERROR] Invalid tree root index.");
+    AVL_TREE_ASSERT(tree->root < tree->size && "[ERROR] Invalid tree root index.");
+    AVL_TREE_ASSERT(tree->parent[tree->root] == AVL_TREE_SIZE && "[ERROR] Invalid tree root parent.");
 
     size_t * node = &(tree->root); // pointer to later change actual index of the empty child
     while (AVL_TREE_SIZE != (*node)) {
         // calculate and determine next child node, i.e. if left or right child
         const int comparison = tree->compare(element, tree->elements[(*node)]);
         if (!comparison) {
-            // go to, since remove logic in too long and nested
-            goto REMOVE_ELEMENT;
+            break;
         }
 
         const size_t node_index = comparison <= 0 ? AVL_TREE_LEFT : AVL_TREE_RIGHT;
@@ -378,11 +414,11 @@ static inline AVL_TREE_DATA_TYPE remove_avl_tree(avl_tree_s * tree, const AVL_TR
         node = tree->node[node_index] + (*node);
     }
 
-    // element was NOT found, thus return an error
-    AVL_TREE_ASSERT(false && "[ERROR] Element not found in tree.");
-    exit(EXIT_FAILURE);
-
-REMOVE_ELEMENT:
+    if (BSEARCH_TREE_SIZE == (*node)) {
+        // element was NOT found, thus return an error
+        BSEARCH_TREE_ASSERT(false && "[ERROR] Element not found in tree.");
+        exit(EXIT_FAILURE);
+    }
 
     AVL_TREE_DATA_TYPE removed = tree->elements[(*node)];
     tree->size--;
@@ -640,6 +676,9 @@ static inline AVL_TREE_DATA_TYPE remove_min_avl_tree(avl_tree_s * tree) {
     AVL_TREE_ASSERT(tree->node[AVL_TREE_RIGHT] && "[ERROR] 'node[AVL_TREE_RIGHT]' pointer is NULL.");
     AVL_TREE_ASSERT(tree->parent && "[ERROR] 'parent' pointer is NULL.");
     AVL_TREE_ASSERT(tree->size <= AVL_TREE_SIZE && "[ERROR] Invalid tree size.");
+    AVL_TREE_ASSERT(tree->root != AVL_TREE_SIZE && "[ERROR] Invalid tree root index.");
+    AVL_TREE_ASSERT(tree->root < tree->size && "[ERROR] Invalid tree root index.");
+    AVL_TREE_ASSERT(tree->parent[tree->root] == AVL_TREE_SIZE && "[ERROR] Invalid tree root parent.");
 
     size_t * minimum_node = &(tree->root);
     for (size_t * i = tree->node[AVL_TREE_LEFT] + (*minimum_node); AVL_TREE_SIZE != (*i); i = tree->node[AVL_TREE_LEFT] + (*i)) {
@@ -814,6 +853,9 @@ static inline AVL_TREE_DATA_TYPE remove_max_avl_tree(avl_tree_s * tree) {
     AVL_TREE_ASSERT(tree->node[AVL_TREE_RIGHT] && "[ERROR] 'node[AVL_TREE_RIGHT]' pointer is NULL.");
     AVL_TREE_ASSERT(tree->parent && "[ERROR] 'parent' pointer is NULL.");
     AVL_TREE_ASSERT(tree->size <= AVL_TREE_SIZE && "[ERROR] Invalid tree size.");
+    AVL_TREE_ASSERT(tree->root != AVL_TREE_SIZE && "[ERROR] Invalid tree root index.");
+    AVL_TREE_ASSERT(tree->root < tree->size && "[ERROR] Invalid tree root index.");
+    AVL_TREE_ASSERT(tree->parent[tree->root] == AVL_TREE_SIZE && "[ERROR] Invalid tree root parent.");
 
     size_t * maximum_node = &(tree->root);
     for (size_t * i = tree->node[AVL_TREE_RIGHT] + (*maximum_node); AVL_TREE_SIZE != (*i); i = tree->node[AVL_TREE_RIGHT] + (*i)) {

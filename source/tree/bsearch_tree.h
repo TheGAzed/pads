@@ -246,14 +246,16 @@ static inline BSEARCH_TREE_DATA_TYPE remove_bsearch_tree(bsearch_tree_s * tree, 
     BSEARCH_TREE_ASSERT(tree->node[BSEARCH_TREE_RIGHT] && "[ERROR] 'node[BSEARCH_TREE_RIGHT]' pointer is NULL.");
     BSEARCH_TREE_ASSERT(tree->parent && "[ERROR] 'parent' pointer is NULL.");
     BSEARCH_TREE_ASSERT(tree->size <= BSEARCH_TREE_SIZE && "[ERROR] Invalid tree size.");
+    BSEARCH_TREE_ASSERT(tree->root != BSEARCH_TREE_SIZE && "[ERROR] Invalid tree root index.");
+    BSEARCH_TREE_ASSERT(tree->root < tree->size && "[ERROR] Invalid tree root index.");
+    BSEARCH_TREE_ASSERT(tree->parent[tree->root] == BSEARCH_TREE_SIZE && "[ERROR] Invalid tree root parent.");
 
     size_t * node = &(tree->root); // pointer to later change actual index of the empty child
     while (BSEARCH_TREE_SIZE != (*node)) {
         // calculate and determine next child node, i.e. if left or right child
         const int comparison = tree->compare(element, tree->elements[(*node)]);
         if (!comparison) {
-            // go to, since remove logic in too long and nested
-            goto REMOVE_ELEMENT;
+            break;
         }
 
         const size_t node_index = comparison <= 0 ? BSEARCH_TREE_LEFT : BSEARCH_TREE_RIGHT;
@@ -262,11 +264,11 @@ static inline BSEARCH_TREE_DATA_TYPE remove_bsearch_tree(bsearch_tree_s * tree, 
         node = tree->node[node_index] + (*node);
     }
 
-    // element was NOT found, thus return an error
-    BSEARCH_TREE_ASSERT(false && "[ERROR] Element not found in tree.");
-    exit(EXIT_FAILURE);
-
-REMOVE_ELEMENT:
+    if (BSEARCH_TREE_SIZE == (*node)) {
+        // element was NOT found, thus return an error
+        BSEARCH_TREE_ASSERT(false && "[ERROR] Element not found in tree.");
+        exit(EXIT_FAILURE);
+    }
 
     BSEARCH_TREE_DATA_TYPE removed = tree->elements[(*node)];
     tree->size--;
@@ -406,6 +408,9 @@ static inline BSEARCH_TREE_DATA_TYPE remove_min_bsearch_tree(bsearch_tree_s * tr
     BSEARCH_TREE_ASSERT(tree->node[BSEARCH_TREE_RIGHT] && "[ERROR] 'node[BSEARCH_TREE_RIGHT]' pointer is NULL.");
     BSEARCH_TREE_ASSERT(tree->parent && "[ERROR] 'parent' pointer is NULL.");
     BSEARCH_TREE_ASSERT(tree->size <= BSEARCH_TREE_SIZE && "[ERROR] Invalid tree size.");
+    BSEARCH_TREE_ASSERT(tree->root != BSEARCH_TREE_SIZE && "[ERROR] Invalid tree root index.");
+    BSEARCH_TREE_ASSERT(tree->root < tree->size && "[ERROR] Invalid tree root index.");
+    BSEARCH_TREE_ASSERT(tree->parent[tree->root] == BSEARCH_TREE_SIZE && "[ERROR] Invalid tree root parent.");
 
     size_t * minimum_node = &(tree->root);
     for (size_t * i = tree->node[BSEARCH_TREE_LEFT] + (*minimum_node); BSEARCH_TREE_SIZE != (*i); i = tree->node[BSEARCH_TREE_LEFT] + (*i)) {
@@ -462,6 +467,9 @@ static inline BSEARCH_TREE_DATA_TYPE remove_max_bsearch_tree(bsearch_tree_s * tr
     BSEARCH_TREE_ASSERT(tree->node[BSEARCH_TREE_RIGHT] && "[ERROR] 'node[BSEARCH_TREE_RIGHT]' pointer is NULL.");
     BSEARCH_TREE_ASSERT(tree->parent && "[ERROR] 'parent' pointer is NULL.");
     BSEARCH_TREE_ASSERT(tree->size <= BSEARCH_TREE_SIZE && "[ERROR] Invalid tree size.");
+    BSEARCH_TREE_ASSERT(tree->root != BSEARCH_TREE_SIZE && "[ERROR] Invalid tree root index.");
+    BSEARCH_TREE_ASSERT(tree->root < tree->size && "[ERROR] Invalid tree root index.");
+    BSEARCH_TREE_ASSERT(tree->parent[tree->root] == BSEARCH_TREE_SIZE && "[ERROR] Invalid tree root parent.");
 
     size_t * maximum_node = &(tree->root);
     for (size_t * i = tree->node[BSEARCH_TREE_RIGHT] + (*maximum_node); BSEARCH_TREE_SIZE != (*i); i = tree->node[BSEARCH_TREE_RIGHT] + (*i)) {
