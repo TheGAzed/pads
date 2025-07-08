@@ -395,80 +395,7 @@ static inline void insert_red_black_tree(red_black_tree_s * tree, const RED_BLAC
 
     tree->color[tree->root] = BLACK_TREE_COLOR;
 }
-#if 0
-static inline void remove_fixup_red_black_tree(red_black_tree_s * tree, size_t x) {
-    size_t child = x;
-    while (child != tree->root && BLACK_TREE_COLOR == tree->color[child]) {
-        if (child == tree->parent[child]) {
-            size_t sibling = tree->node[RED_BLACK_TREE_RIGHT][tree->parent[child]];
-            if (RED_TREE_COLOR == tree->color[sibling]) {
-                tree->color[sibling] = BLACK_TREE_COLOR;
-                tree->color[tree->parent[child]] = RED_TREE_COLOR;
-                left_rotate_red_black_tree(tree, tree->parent[child]);
-                sibling = tree->node[RED_BLACK_TREE_RIGHT][tree->parent[child]];
-            }
 
-            const size_t wl = tree->node[RED_BLACK_TREE_LEFT][sibling];
-            const size_t wr = tree->node[RED_BLACK_TREE_RIGHT][sibling];
-
-            if (BLACK_TREE_COLOR == tree->color[wl] && BLACK_TREE_COLOR == tree->color[wr]) {
-                tree->color[sibling] = RED_TREE_COLOR;
-                child = tree->parent[child];
-            } else {
-                if (BLACK_TREE_COLOR == tree->color[tree->node[RED_BLACK_TREE_RIGHT][sibling]]) {
-                    tree->color[tree->node[RED_BLACK_TREE_LEFT][sibling]] = BLACK_TREE_COLOR;
-                    tree->color[sibling] = RED_TREE_COLOR;
-                    right_rotate_red_black_tree(tree, sibling);
-                    sibling = tree->node[RED_BLACK_TREE_RIGHT][tree->parent[child]];
-                }
-
-                tree->color[sibling] = tree->color[tree->parent[child]];
-                tree->color[tree->parent[child]] = BLACK_TREE_COLOR;
-                tree->color[tree->node[RED_BLACK_TREE_RIGHT][sibling]] = BLACK_TREE_COLOR;
-                left_rotate_red_black_tree(tree, tree->parent[child]);
-                child = tree->root;
-            }
-        } else {
-            size_t sibling = tree->node[RED_BLACK_TREE_LEFT][tree->parent[child]];
-            if (RED_TREE_COLOR == tree->color[sibling]) {
-                tree->color[sibling] = BLACK_TREE_COLOR;
-                tree->color[tree->parent[child]] = RED_TREE_COLOR;
-                right_rotate_red_black_tree(tree, tree->parent[child]);
-                sibling = tree->node[RED_BLACK_TREE_LEFT][tree->parent[child]];
-            }
-
-            const size_t wl = tree->node[RED_BLACK_TREE_LEFT][sibling];
-            const size_t wr = tree->node[RED_BLACK_TREE_RIGHT][sibling];
-
-            if (BLACK_TREE_COLOR == tree->color[wl] && BLACK_TREE_COLOR == tree->color[wr]) {
-                tree->color[sibling] = RED_TREE_COLOR;
-                child = tree->parent[child];
-            } else {
-                if (BLACK_TREE_COLOR == tree->color[tree->node[RED_BLACK_TREE_LEFT][sibling]]) {
-                    tree->color[tree->node[RED_BLACK_TREE_LEFT][sibling]] = BLACK_TREE_COLOR;
-                    tree->color[sibling] = RED_TREE_COLOR;
-                    left_rotate_red_black_tree(tree, sibling);
-                    sibling = tree->node[RED_BLACK_TREE_LEFT][tree->parent[child]];
-                }
-
-                tree->color[sibling] = tree->color[tree->parent[child]];
-                tree->color[tree->parent[child]] = BLACK_TREE_COLOR;
-                tree->color[tree->node[RED_BLACK_TREE_LEFT][sibling]] = BLACK_TREE_COLOR;
-                right_rotate_red_black_tree(tree, tree->parent[child]);
-                child = tree->root;
-            }
-        }
-    }
-
-    // fix NIL node
-    tree->color[RED_BLACK_TREE_SIZE] = BLACK_TREE_COLOR;
-    tree->parent[RED_BLACK_TREE_SIZE] = RED_BLACK_TREE_SIZE;
-    tree->node[RED_BLACK_TREE_LEFT][RED_BLACK_TREE_SIZE] = RED_BLACK_TREE_SIZE;
-    tree->node[RED_BLACK_TREE_RIGHT][RED_BLACK_TREE_SIZE] = RED_BLACK_TREE_SIZE;
-
-    tree->color[child] = BLACK_TREE_COLOR;
-}
-#endif
 static inline RED_BLACK_TREE_DATA_TYPE remove_red_black_tree(red_black_tree_s * tree, const RED_BLACK_TREE_DATA_TYPE element) {
     RED_BLACK_TREE_ASSERT(tree && "[ERROR] 'tree' parameter is NULL.");
     RED_BLACK_TREE_ASSERT(tree->size && "[ERROR] Can't remove from empty tree.");
@@ -504,12 +431,11 @@ static inline RED_BLACK_TREE_DATA_TYPE remove_red_black_tree(red_black_tree_s * 
         exit(EXIT_FAILURE);
     }
 
-    size_t current = node, child = RED_BLACK_TREE_SIZE, parent = node;
+    size_t current = node, child = RED_BLACK_TREE_SIZE;
     bool original_color = tree->color[current];
 
     if (RED_BLACK_TREE_SIZE == tree->node[RED_BLACK_TREE_LEFT][node]) {
         child = tree->node[RED_BLACK_TREE_RIGHT][node];
-        parent = tree->parent[node];
 
         { // TRANSPLANT
             const size_t u = node, v = tree->node[RED_BLACK_TREE_RIGHT][node];
@@ -521,7 +447,6 @@ static inline RED_BLACK_TREE_DATA_TYPE remove_red_black_tree(red_black_tree_s * 
         }
     } else if (RED_BLACK_TREE_SIZE == tree->node[RED_BLACK_TREE_RIGHT][node]) {
         child = tree->node[RED_BLACK_TREE_LEFT][node];
-        parent = tree->parent[node];
 
         { // TRANSPLANT
             const size_t u = node, v = tree->node[RED_BLACK_TREE_LEFT][node];
@@ -541,7 +466,7 @@ static inline RED_BLACK_TREE_DATA_TYPE remove_red_black_tree(red_black_tree_s * 
         child = tree->node[RED_BLACK_TREE_RIGHT][current];
 
         if (tree->parent[current] == node) {
-            tree->parent[child] = parent = current;
+            tree->parent[child] = current;
         } else {
             { // TRANSPLANT
                 const size_t u = current, v = tree->node[RED_BLACK_TREE_RIGHT][current];
@@ -554,7 +479,7 @@ static inline RED_BLACK_TREE_DATA_TYPE remove_red_black_tree(red_black_tree_s * 
 
             tree->node[RED_BLACK_TREE_RIGHT][current] = tree->node[RED_BLACK_TREE_RIGHT][node];
             tree->parent[tree->node[RED_BLACK_TREE_RIGHT][current]] = current;
-            parent = child == RED_BLACK_TREE_SIZE ? tree->parent[current] : tree->parent[node];
+            child == RED_BLACK_TREE_SIZE ? tree->parent[current] : tree->parent[node];
         }
         { // TRANSPLANT
             const size_t u = node, v = current;
@@ -568,6 +493,703 @@ static inline RED_BLACK_TREE_DATA_TYPE remove_red_black_tree(red_black_tree_s * 
         tree->node[RED_BLACK_TREE_LEFT][current] = tree->node[RED_BLACK_TREE_LEFT][node];
         tree->parent[tree->node[RED_BLACK_TREE_LEFT][current]] = current;
         tree->color[current] = tree->color[node];
+    }
+
+    while (BLACK_TREE_COLOR == original_color && child != tree->root && BLACK_TREE_COLOR == tree->color[child]) {
+        if (child == tree->parent[child]) {
+            size_t sibling = tree->node[RED_BLACK_TREE_RIGHT][tree->parent[child]];
+            if (RED_TREE_COLOR == tree->color[sibling]) {
+                tree->color[sibling] = BLACK_TREE_COLOR;
+                tree->color[tree->parent[child]] = RED_TREE_COLOR;
+                { // LEFT ROTATE
+                    const size_t x = tree->parent[child], y = tree->node[RED_BLACK_TREE_RIGHT][x], z = tree->node[RED_BLACK_TREE_LEFT][y];
+                    tree->node[RED_BLACK_TREE_RIGHT][x] = z;
+
+                    if (RED_BLACK_TREE_SIZE != z) {
+                        tree->parent[z] = x;
+                    }
+
+                    tree->parent[y] = tree->parent[x];
+
+                    if (RED_BLACK_TREE_SIZE == tree->parent[x]) {
+                        tree->root = y;
+                    } else if (x == tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]]) {
+                        tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]] = y;
+                    } else {
+                        tree->node[RED_BLACK_TREE_RIGHT][tree->parent[x]] = y;
+                    }
+
+                    tree->node[RED_BLACK_TREE_LEFT][y] = x;
+                    tree->parent[x] = y;
+                }
+                sibling = tree->node[RED_BLACK_TREE_RIGHT][tree->parent[child]];
+            }
+
+            const size_t left_nibling = tree->node[RED_BLACK_TREE_LEFT][sibling];
+            const size_t right_nibling = tree->node[RED_BLACK_TREE_RIGHT][sibling];
+
+            if (BLACK_TREE_COLOR == tree->color[left_nibling] && BLACK_TREE_COLOR == tree->color[right_nibling]) {
+                tree->color[sibling] = RED_TREE_COLOR;
+                child = tree->parent[child];
+            } else {
+                if (BLACK_TREE_COLOR == tree->color[tree->node[RED_BLACK_TREE_RIGHT][sibling]]) {
+                    tree->color[tree->node[RED_BLACK_TREE_LEFT][sibling]] = BLACK_TREE_COLOR;
+                    tree->color[sibling] = RED_TREE_COLOR;
+                    { // RIGHT ROTATE
+                        const size_t x = sibling, y = tree->node[RED_BLACK_TREE_LEFT][x], z = tree->node[RED_BLACK_TREE_RIGHT][y];
+                        tree->node[RED_BLACK_TREE_LEFT][x] = z;
+
+                        if (RED_BLACK_TREE_SIZE != z) {
+                            tree->parent[z] = x;
+                        }
+
+                        tree->parent[y] = tree->parent[x];
+
+                        if (RED_BLACK_TREE_SIZE == tree->parent[x]) {
+                            tree->root = y;
+                        } else if (x == tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]]) {
+                            tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]] = y;
+                        } else {
+                            tree->node[RED_BLACK_TREE_RIGHT][tree->parent[x]] = y;
+                        }
+
+                        tree->node[RED_BLACK_TREE_RIGHT][y] = x;
+                        tree->parent[x] = y;
+                    }
+                    sibling = tree->node[RED_BLACK_TREE_RIGHT][tree->parent[child]];
+                }
+
+                tree->color[sibling] = tree->color[tree->parent[child]];
+                tree->color[tree->parent[child]] = BLACK_TREE_COLOR;
+                tree->color[tree->node[RED_BLACK_TREE_RIGHT][sibling]] = BLACK_TREE_COLOR;
+                { // LEFT ROTATE
+                    const size_t x = tree->parent[child], y = tree->node[RED_BLACK_TREE_RIGHT][x], z = tree->node[RED_BLACK_TREE_LEFT][y];
+                    tree->node[RED_BLACK_TREE_RIGHT][x] = z;
+
+                    if (RED_BLACK_TREE_SIZE != z) {
+                        tree->parent[z] = x;
+                    }
+
+                    tree->parent[y] = tree->parent[x];
+
+                    if (RED_BLACK_TREE_SIZE == tree->parent[x]) {
+                        tree->root = y;
+                    } else if (x == tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]]) {
+                        tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]] = y;
+                    } else {
+                        tree->node[RED_BLACK_TREE_RIGHT][tree->parent[x]] = y;
+                    }
+
+                    tree->node[RED_BLACK_TREE_LEFT][y] = x;
+                    tree->parent[x] = y;
+                }
+                child = tree->root;
+            }
+        } else {
+            size_t sibling = tree->node[RED_BLACK_TREE_LEFT][tree->parent[child]];
+            if (RED_TREE_COLOR == tree->color[sibling]) {
+                tree->color[sibling] = BLACK_TREE_COLOR;
+                tree->color[tree->parent[child]] = RED_TREE_COLOR;
+                { // RIGHT ROTATE
+                    const size_t x = tree->parent[child], y = tree->node[RED_BLACK_TREE_LEFT][x], z = tree->node[RED_BLACK_TREE_RIGHT][y];
+                    tree->node[RED_BLACK_TREE_LEFT][x] = z;
+
+                    if (RED_BLACK_TREE_SIZE != z) {
+                        tree->parent[z] = x;
+                    }
+
+                    tree->parent[y] = tree->parent[x];
+
+                    if (RED_BLACK_TREE_SIZE == tree->parent[x]) {
+                        tree->root = y;
+                    } else if (x == tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]]) {
+                        tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]] = y;
+                    } else {
+                        tree->node[RED_BLACK_TREE_RIGHT][tree->parent[x]] = y;
+                    }
+
+                    tree->node[RED_BLACK_TREE_RIGHT][y] = x;
+                    tree->parent[x] = y;
+                }
+                sibling = tree->node[RED_BLACK_TREE_LEFT][tree->parent[child]];
+            }
+
+            const size_t left_nibling = tree->node[RED_BLACK_TREE_LEFT][sibling];
+            const size_t right_nibling = tree->node[RED_BLACK_TREE_RIGHT][sibling];
+
+            if (BLACK_TREE_COLOR == tree->color[left_nibling] && BLACK_TREE_COLOR == tree->color[right_nibling]) {
+                tree->color[sibling] = RED_TREE_COLOR;
+                child = tree->parent[child];
+            } else {
+                if (BLACK_TREE_COLOR == tree->color[tree->node[RED_BLACK_TREE_LEFT][sibling]]) {
+                    tree->color[tree->node[RED_BLACK_TREE_LEFT][sibling]] = BLACK_TREE_COLOR;
+                    tree->color[sibling] = RED_TREE_COLOR;
+                    { // LEFT ROTATE
+                        const size_t x = sibling, y = tree->node[RED_BLACK_TREE_RIGHT][x], z = tree->node[RED_BLACK_TREE_LEFT][y];
+                        tree->node[RED_BLACK_TREE_RIGHT][x] = z;
+
+                        if (RED_BLACK_TREE_SIZE != z) {
+                            tree->parent[z] = x;
+                        }
+
+                        tree->parent[y] = tree->parent[x];
+
+                        if (RED_BLACK_TREE_SIZE == tree->parent[x]) {
+                            tree->root = y;
+                        } else if (x == tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]]) {
+                            tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]] = y;
+                        } else {
+                            tree->node[RED_BLACK_TREE_RIGHT][tree->parent[x]] = y;
+                        }
+
+                        tree->node[RED_BLACK_TREE_LEFT][y] = x;
+                        tree->parent[x] = y;
+                    }
+                    sibling = tree->node[RED_BLACK_TREE_LEFT][tree->parent[child]];
+                }
+
+                tree->color[sibling] = tree->color[tree->parent[child]];
+                tree->color[tree->parent[child]] = BLACK_TREE_COLOR;
+                tree->color[tree->node[RED_BLACK_TREE_LEFT][sibling]] = BLACK_TREE_COLOR;
+                { // RIGHT ROTATE
+                    const size_t x = tree->parent[child], y = tree->node[RED_BLACK_TREE_LEFT][x], z = tree->node[RED_BLACK_TREE_RIGHT][y];
+                    tree->node[RED_BLACK_TREE_LEFT][x] = z;
+
+                    if (RED_BLACK_TREE_SIZE != z) {
+                        tree->parent[z] = x;
+                    }
+
+                    tree->parent[y] = tree->parent[x];
+
+                    if (RED_BLACK_TREE_SIZE == tree->parent[x]) {
+                        tree->root = y;
+                    } else if (x == tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]]) {
+                        tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]] = y;
+                    } else {
+                        tree->node[RED_BLACK_TREE_RIGHT][tree->parent[x]] = y;
+                    }
+
+                    tree->node[RED_BLACK_TREE_RIGHT][y] = x;
+                    tree->parent[x] = y;
+                }
+                child = tree->root;
+            }
+        }
+    }
+
+    // fix NIL node
+    tree->color[RED_BLACK_TREE_SIZE] = BLACK_TREE_COLOR;
+    tree->parent[RED_BLACK_TREE_SIZE] = RED_BLACK_TREE_SIZE;
+    tree->node[RED_BLACK_TREE_LEFT][RED_BLACK_TREE_SIZE] = RED_BLACK_TREE_SIZE;
+    tree->node[RED_BLACK_TREE_RIGHT][RED_BLACK_TREE_SIZE] = RED_BLACK_TREE_SIZE;
+
+    tree->color[child] = BLACK_TREE_COLOR;
+
+    BSEARCH_TREE_DATA_TYPE removed = tree->elements[node];
+    tree->size--;
+    const size_t hole = node; // index of hole in tree arrays left behind by element removal
+
+    if (tree->size && tree->root == tree->size) { // if head node is last array element then change index to removed one
+        tree->root = hole;
+    }
+
+    // cut hole node from the rest of the tree
+    tree->node[BSEARCH_TREE_LEFT][hole] = tree->node[BSEARCH_TREE_RIGHT][hole] = tree->parent[hole] = hole;
+
+    // replace removed element with rightmost array one (or fill hole with valid element)
+    tree->elements[hole] = tree->elements[tree->size];
+    tree->node[BSEARCH_TREE_LEFT][hole] = tree->node[BSEARCH_TREE_LEFT][tree->size];
+    tree->node[BSEARCH_TREE_RIGHT][hole] = tree->node[BSEARCH_TREE_RIGHT][tree->size];
+    tree->parent[hole] = tree->parent[tree->size];
+
+    // redirect parent and children of rightmost array node if they don't overlap with removed index
+    const size_t left_last = tree->node[BSEARCH_TREE_LEFT][tree->size];
+    if (BSEARCH_TREE_SIZE != left_last) {
+        tree->parent[left_last] = hole;
+    }
+
+    const size_t right_last = tree->node[BSEARCH_TREE_RIGHT][tree->size];
+    if (BSEARCH_TREE_SIZE != right_last) {
+        tree->parent[right_last] = hole;
+    }
+
+    const size_t parent_last = tree->parent[tree->size];
+    if (BSEARCH_TREE_SIZE != parent_last) {
+        const int comparison = tree->compare(tree->elements[tree->size], tree->elements[parent_last]);
+        const size_t node_index = comparison <= 0 ? BSEARCH_TREE_LEFT : BSEARCH_TREE_RIGHT;
+        tree->node[node_index][parent_last] = hole;
+    }
+
+    return removed;
+}
+
+static inline bool contains_red_black_tree(const red_black_tree_s tree, const RED_BLACK_TREE_DATA_TYPE element) {
+    RED_BLACK_TREE_ASSERT(tree.size && "[ERROR] Can't check empty tree.");
+    RED_BLACK_TREE_ASSERT(RED_BLACK_TREE_SIZE != tree.root && "[ERROR] Invalid root node index.");
+
+    RED_BLACK_TREE_ASSERT(tree.compare && "[ERROR] 'compare' function is NULL.");
+    RED_BLACK_TREE_ASSERT(tree.elements && "[ERROR] 'elements' pointer is NULL.");
+    RED_BLACK_TREE_ASSERT(tree.node[RED_BLACK_TREE_LEFT] && "[ERROR] 'node[RED_BLACK_TREE_LEFT]' pointer is NULL.");
+    RED_BLACK_TREE_ASSERT(tree.node[RED_BLACK_TREE_RIGHT] && "[ERROR] 'node[RED_BLACK_TREE_RIGHT]' pointer is NULL.");
+    RED_BLACK_TREE_ASSERT(tree.parent && "[ERROR] 'parent' pointer is NULL.");
+    RED_BLACK_TREE_ASSERT(tree.size <= RED_BLACK_TREE_SIZE && "[ERROR] Invalid tree size.");
+    RED_BLACK_TREE_ASSERT(tree.root != RED_BLACK_TREE_SIZE && "[ERROR] Invalid tree root index.");
+    RED_BLACK_TREE_ASSERT(tree.root < tree.size && "[ERROR] Invalid tree root index.");
+    RED_BLACK_TREE_ASSERT(tree.parent[tree.root] == RED_BLACK_TREE_SIZE && "[ERROR] Invalid tree root parent.");
+
+    for (size_t node = tree.root; RED_BLACK_TREE_SIZE != node;) {
+        // calculate and determine next child node, i.e. if left or right child
+        const int comparison = tree.compare(tree.elements[node], element);
+        if (!comparison) {
+            return true;
+        }
+
+        const size_t node_index = comparison <= 0 ? RED_BLACK_TREE_LEFT : RED_BLACK_TREE_RIGHT;
+        node = tree.node[node_index][node]; // go to next child node
+    }
+
+    return false;
+}
+
+static inline RED_BLACK_TREE_DATA_TYPE get_min_red_black_tree(const red_black_tree_s tree) {
+    RED_BLACK_TREE_ASSERT(tree.size && "[ERROR] Can't get from empty tree.");
+    RED_BLACK_TREE_ASSERT(RED_BLACK_TREE_SIZE != tree.root && "[ERROR] Invalid root node index.");
+
+    RED_BLACK_TREE_ASSERT(tree.compare && "[ERROR] 'compare' function is NULL.");
+    RED_BLACK_TREE_ASSERT(tree.elements && "[ERROR] 'elements' pointer is NULL.");
+    RED_BLACK_TREE_ASSERT(tree.node[RED_BLACK_TREE_LEFT] && "[ERROR] 'node[RED_BLACK_TREE_LEFT]' pointer is NULL.");
+    RED_BLACK_TREE_ASSERT(tree.node[RED_BLACK_TREE_RIGHT] && "[ERROR] 'node[RED_BLACK_TREE_RIGHT]' pointer is NULL.");
+    RED_BLACK_TREE_ASSERT(tree.parent && "[ERROR] 'parent' pointer is NULL.");
+    RED_BLACK_TREE_ASSERT(tree.size <= RED_BLACK_TREE_SIZE && "[ERROR] Invalid tree size.");
+    RED_BLACK_TREE_ASSERT(tree.root != RED_BLACK_TREE_SIZE && "[ERROR] Invalid tree root index.");
+    RED_BLACK_TREE_ASSERT(tree.root < tree.size && "[ERROR] Invalid tree root index.");
+    RED_BLACK_TREE_ASSERT(tree.parent[tree.root] == RED_BLACK_TREE_SIZE && "[ERROR] Invalid tree root parent.");
+
+    size_t minimum_node = tree.root;
+    for (size_t i = tree.node[RED_BLACK_TREE_LEFT][minimum_node]; RED_BLACK_TREE_SIZE != i; i = tree.node[RED_BLACK_TREE_LEFT][i]) {
+        minimum_node = i;
+    }
+
+    return tree.elements[minimum_node];
+}
+
+static inline RED_BLACK_TREE_DATA_TYPE get_max_red_black_tree(const red_black_tree_s tree) {
+    RED_BLACK_TREE_ASSERT(tree.size && "[ERROR] Can't get from empty tree.");
+    RED_BLACK_TREE_ASSERT(RED_BLACK_TREE_SIZE != tree.root && "[ERROR] Invalid root node index.");
+
+    RED_BLACK_TREE_ASSERT(tree.compare && "[ERROR] 'compare' function is NULL.");
+    RED_BLACK_TREE_ASSERT(tree.elements && "[ERROR] 'elements' pointer is NULL.");
+    RED_BLACK_TREE_ASSERT(tree.node[RED_BLACK_TREE_LEFT] && "[ERROR] 'node[RED_BLACK_TREE_LEFT]' pointer is NULL.");
+    RED_BLACK_TREE_ASSERT(tree.node[RED_BLACK_TREE_RIGHT] && "[ERROR] 'node[RED_BLACK_TREE_RIGHT]' pointer is NULL.");
+    RED_BLACK_TREE_ASSERT(tree.parent && "[ERROR] 'parent' pointer is NULL.");
+    RED_BLACK_TREE_ASSERT(tree.size <= RED_BLACK_TREE_SIZE && "[ERROR] Invalid tree size.");
+    RED_BLACK_TREE_ASSERT(tree.root != RED_BLACK_TREE_SIZE && "[ERROR] Invalid tree root index.");
+    RED_BLACK_TREE_ASSERT(tree.root < tree.size && "[ERROR] Invalid tree root index.");
+    RED_BLACK_TREE_ASSERT(tree.parent[tree.root] == RED_BLACK_TREE_SIZE && "[ERROR] Invalid tree root parent.");
+
+    size_t maximum_node = tree.root;
+    for (size_t i = tree.node[RED_BLACK_TREE_RIGHT][maximum_node]; RED_BLACK_TREE_SIZE != i; i = tree.node[RED_BLACK_TREE_RIGHT][i]) {
+        maximum_node = i;
+    }
+
+    return tree.elements[maximum_node];
+}
+
+static inline RED_BLACK_TREE_DATA_TYPE remove_min_red_black_tree(red_black_tree_s * tree) {
+    RED_BLACK_TREE_ASSERT(tree && "[ERROR] 'tree' parameter is NULL.");
+    RED_BLACK_TREE_ASSERT(tree->size && "[ERROR] Can't remove from empty tree.");
+    RED_BLACK_TREE_ASSERT(RED_BLACK_TREE_SIZE != tree->root && "[ERROR] Invalid root node index.");
+
+    RED_BLACK_TREE_ASSERT(tree->compare && "[ERROR] 'compare' function is NULL.");
+    RED_BLACK_TREE_ASSERT(tree->elements && "[ERROR] 'elements' pointer is NULL.");
+    RED_BLACK_TREE_ASSERT(tree->node[RED_BLACK_TREE_LEFT] && "[ERROR] 'node[RED_BLACK_TREE_LEFT]' pointer is NULL.");
+    RED_BLACK_TREE_ASSERT(tree->node[RED_BLACK_TREE_RIGHT] && "[ERROR] 'node[RED_BLACK_TREE_RIGHT]' pointer is NULL.");
+    RED_BLACK_TREE_ASSERT(tree->parent && "[ERROR] 'parent' pointer is NULL.");
+    RED_BLACK_TREE_ASSERT(tree->size <= RED_BLACK_TREE_SIZE && "[ERROR] Invalid tree size.");
+    RED_BLACK_TREE_ASSERT(tree->root != RED_BLACK_TREE_SIZE && "[ERROR] Invalid tree root index.");
+    RED_BLACK_TREE_ASSERT(tree->root < tree->size && "[ERROR] Invalid tree root index.");
+    RED_BLACK_TREE_ASSERT(tree->parent[tree->root] == RED_BLACK_TREE_SIZE && "[ERROR] Invalid tree root parent.");
+
+    size_t minimum_node = tree->root;
+    for (size_t i = tree->node[RED_BLACK_TREE_LEFT][minimum_node]; RED_BLACK_TREE_SIZE != i; i = tree->node[RED_BLACK_TREE_LEFT][i]) {
+        minimum_node = i;
+    }
+
+    size_t current = minimum_node, child = RED_BLACK_TREE_SIZE;
+    bool original_color = tree->color[current];
+
+    if (RED_BLACK_TREE_SIZE == tree->node[RED_BLACK_TREE_LEFT][minimum_node]) {
+        child = tree->node[RED_BLACK_TREE_RIGHT][minimum_node];
+
+        { // TRANSPLANT
+            const size_t u = minimum_node, v = tree->node[RED_BLACK_TREE_RIGHT][minimum_node];
+            if (RED_BLACK_TREE_SIZE == tree->parent[u]) tree->root = v;
+            else if (u == tree->node[RED_BLACK_TREE_LEFT][tree->parent[u]]) tree->node[RED_BLACK_TREE_LEFT][tree->parent[u]] = v;
+            else tree->node[RED_BLACK_TREE_RIGHT][tree->parent[u]] = v;
+
+            tree->parent[v] = tree->parent[u];
+        }
+    } else if (RED_BLACK_TREE_SIZE == tree->node[RED_BLACK_TREE_RIGHT][minimum_node]) {
+        child = tree->node[RED_BLACK_TREE_LEFT][minimum_node];
+
+        { // TRANSPLANT
+            const size_t u = minimum_node, v = tree->node[RED_BLACK_TREE_LEFT][minimum_node];
+            if (RED_BLACK_TREE_SIZE == tree->parent[u]) tree->root = v;
+            else if (u == tree->node[RED_BLACK_TREE_LEFT][tree->parent[u]]) tree->node[RED_BLACK_TREE_LEFT][tree->parent[u]] = v;
+            else tree->node[RED_BLACK_TREE_RIGHT][tree->parent[u]] = v;
+
+            tree->parent[v] = tree->parent[u];
+        }
+    } else {
+        current = tree->node[RED_BLACK_TREE_RIGHT][minimum_node];
+        while (RED_BLACK_TREE_SIZE != tree->node[RED_BLACK_TREE_LEFT][current]) { // TREE MINIMUM
+            current = tree->node[RED_BLACK_TREE_LEFT][current];
+        }
+
+        original_color = tree->color[current];
+        child = tree->node[RED_BLACK_TREE_RIGHT][current];
+
+        if (tree->parent[current] == minimum_node) {
+            tree->parent[child] = current;
+        } else {
+            { // TRANSPLANT
+                const size_t u = current, v = tree->node[RED_BLACK_TREE_RIGHT][current];
+                if (RED_BLACK_TREE_SIZE == tree->parent[u]) tree->root = v;
+                else if (u == tree->node[RED_BLACK_TREE_LEFT][tree->parent[u]]) tree->node[RED_BLACK_TREE_LEFT][tree->parent[u]] = v;
+                else tree->node[RED_BLACK_TREE_RIGHT][tree->parent[u]] = v;
+
+                tree->parent[v] = tree->parent[u];
+            }
+
+            tree->node[RED_BLACK_TREE_RIGHT][current] = tree->node[RED_BLACK_TREE_RIGHT][minimum_node];
+            tree->parent[tree->node[RED_BLACK_TREE_RIGHT][current]] = current;
+            child == RED_BLACK_TREE_SIZE ? tree->parent[current] : tree->parent[minimum_node];
+        }
+        { // TRANSPLANT
+            const size_t u = minimum_node, v = current;
+            if (RED_BLACK_TREE_SIZE == tree->parent[u]) tree->root = v;
+            else if (u == tree->node[RED_BLACK_TREE_LEFT][tree->parent[u]]) tree->node[RED_BLACK_TREE_LEFT][tree->parent[u]] = v;
+            else tree->node[RED_BLACK_TREE_RIGHT][tree->parent[u]] = v;
+
+            tree->parent[v] = tree->parent[u];
+        }
+
+        tree->node[RED_BLACK_TREE_LEFT][current] = tree->node[RED_BLACK_TREE_LEFT][minimum_node];
+        tree->parent[tree->node[RED_BLACK_TREE_LEFT][current]] = current;
+        tree->color[current] = tree->color[minimum_node];
+    }
+
+    while (BLACK_TREE_COLOR == original_color && child != tree->root && BLACK_TREE_COLOR == tree->color[child]) {
+        if (child == tree->parent[child]) {
+            size_t sibling = tree->node[RED_BLACK_TREE_RIGHT][tree->parent[child]];
+            if (RED_TREE_COLOR == tree->color[sibling]) {
+                tree->color[sibling] = BLACK_TREE_COLOR;
+                tree->color[tree->parent[child]] = RED_TREE_COLOR;
+                { // LEFT ROTATE
+                    const size_t x = tree->parent[child], y = tree->node[RED_BLACK_TREE_RIGHT][x], z = tree->node[RED_BLACK_TREE_LEFT][y];
+                    tree->node[RED_BLACK_TREE_RIGHT][x] = z;
+
+                    if (RED_BLACK_TREE_SIZE != z) {
+                        tree->parent[z] = x;
+                    }
+
+                    tree->parent[y] = tree->parent[x];
+
+                    if (RED_BLACK_TREE_SIZE == tree->parent[x]) {
+                        tree->root = y;
+                    } else if (x == tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]]) {
+                        tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]] = y;
+                    } else {
+                        tree->node[RED_BLACK_TREE_RIGHT][tree->parent[x]] = y;
+                    }
+
+                    tree->node[RED_BLACK_TREE_LEFT][y] = x;
+                    tree->parent[x] = y;
+                }
+                sibling = tree->node[RED_BLACK_TREE_RIGHT][tree->parent[child]];
+            }
+
+            const size_t left_nibling = tree->node[RED_BLACK_TREE_LEFT][sibling];
+            const size_t right_nibling = tree->node[RED_BLACK_TREE_RIGHT][sibling];
+
+            if (BLACK_TREE_COLOR == tree->color[left_nibling] && BLACK_TREE_COLOR == tree->color[right_nibling]) {
+                tree->color[sibling] = RED_TREE_COLOR;
+                child = tree->parent[child];
+            } else {
+                if (BLACK_TREE_COLOR == tree->color[tree->node[RED_BLACK_TREE_RIGHT][sibling]]) {
+                    tree->color[tree->node[RED_BLACK_TREE_LEFT][sibling]] = BLACK_TREE_COLOR;
+                    tree->color[sibling] = RED_TREE_COLOR;
+                    { // RIGHT ROTATE
+                        const size_t x = sibling, y = tree->node[RED_BLACK_TREE_LEFT][x], z = tree->node[RED_BLACK_TREE_RIGHT][y];
+                        tree->node[RED_BLACK_TREE_LEFT][x] = z;
+
+                        if (RED_BLACK_TREE_SIZE != z) {
+                            tree->parent[z] = x;
+                        }
+
+                        tree->parent[y] = tree->parent[x];
+
+                        if (RED_BLACK_TREE_SIZE == tree->parent[x]) {
+                            tree->root = y;
+                        } else if (x == tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]]) {
+                            tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]] = y;
+                        } else {
+                            tree->node[RED_BLACK_TREE_RIGHT][tree->parent[x]] = y;
+                        }
+
+                        tree->node[RED_BLACK_TREE_RIGHT][y] = x;
+                        tree->parent[x] = y;
+                    }
+                    sibling = tree->node[RED_BLACK_TREE_RIGHT][tree->parent[child]];
+                }
+
+                tree->color[sibling] = tree->color[tree->parent[child]];
+                tree->color[tree->parent[child]] = BLACK_TREE_COLOR;
+                tree->color[tree->node[RED_BLACK_TREE_RIGHT][sibling]] = BLACK_TREE_COLOR;
+                { // LEFT ROTATE
+                    const size_t x = tree->parent[child], y = tree->node[RED_BLACK_TREE_RIGHT][x], z = tree->node[RED_BLACK_TREE_LEFT][y];
+                    tree->node[RED_BLACK_TREE_RIGHT][x] = z;
+
+                    if (RED_BLACK_TREE_SIZE != z) {
+                        tree->parent[z] = x;
+                    }
+
+                    tree->parent[y] = tree->parent[x];
+
+                    if (RED_BLACK_TREE_SIZE == tree->parent[x]) {
+                        tree->root = y;
+                    } else if (x == tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]]) {
+                        tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]] = y;
+                    } else {
+                        tree->node[RED_BLACK_TREE_RIGHT][tree->parent[x]] = y;
+                    }
+
+                    tree->node[RED_BLACK_TREE_LEFT][y] = x;
+                    tree->parent[x] = y;
+                }
+                child = tree->root;
+            }
+        } else {
+            size_t sibling = tree->node[RED_BLACK_TREE_LEFT][tree->parent[child]];
+            if (RED_TREE_COLOR == tree->color[sibling]) {
+                tree->color[sibling] = BLACK_TREE_COLOR;
+                tree->color[tree->parent[child]] = RED_TREE_COLOR;
+                { // RIGHT ROTATE
+                    const size_t x = tree->parent[child], y = tree->node[RED_BLACK_TREE_LEFT][x], z = tree->node[RED_BLACK_TREE_RIGHT][y];
+                    tree->node[RED_BLACK_TREE_LEFT][x] = z;
+
+                    if (RED_BLACK_TREE_SIZE != z) {
+                        tree->parent[z] = x;
+                    }
+
+                    tree->parent[y] = tree->parent[x];
+
+                    if (RED_BLACK_TREE_SIZE == tree->parent[x]) {
+                        tree->root = y;
+                    } else if (x == tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]]) {
+                        tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]] = y;
+                    } else {
+                        tree->node[RED_BLACK_TREE_RIGHT][tree->parent[x]] = y;
+                    }
+
+                    tree->node[RED_BLACK_TREE_RIGHT][y] = x;
+                    tree->parent[x] = y;
+                }
+                sibling = tree->node[RED_BLACK_TREE_LEFT][tree->parent[child]];
+            }
+
+            const size_t wl = tree->node[RED_BLACK_TREE_LEFT][sibling];
+            const size_t wr = tree->node[RED_BLACK_TREE_RIGHT][sibling];
+
+            if (BLACK_TREE_COLOR == tree->color[wl] && BLACK_TREE_COLOR == tree->color[wr]) {
+                tree->color[sibling] = RED_TREE_COLOR;
+                child = tree->parent[child];
+            } else {
+                if (BLACK_TREE_COLOR == tree->color[tree->node[RED_BLACK_TREE_LEFT][sibling]]) {
+                    tree->color[tree->node[RED_BLACK_TREE_LEFT][sibling]] = BLACK_TREE_COLOR;
+                    tree->color[sibling] = RED_TREE_COLOR;
+                    { // LEFT ROTATE
+                        const size_t x = sibling, y = tree->node[RED_BLACK_TREE_RIGHT][x], z = tree->node[RED_BLACK_TREE_LEFT][y];
+                        tree->node[RED_BLACK_TREE_RIGHT][x] = z;
+
+                        if (RED_BLACK_TREE_SIZE != z) {
+                            tree->parent[z] = x;
+                        }
+
+                        tree->parent[y] = tree->parent[x];
+
+                        if (RED_BLACK_TREE_SIZE == tree->parent[x]) {
+                            tree->root = y;
+                        } else if (x == tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]]) {
+                            tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]] = y;
+                        } else {
+                            tree->node[RED_BLACK_TREE_RIGHT][tree->parent[x]] = y;
+                        }
+
+                        tree->node[RED_BLACK_TREE_LEFT][y] = x;
+                        tree->parent[x] = y;
+                    }
+                    sibling = tree->node[RED_BLACK_TREE_LEFT][tree->parent[child]];
+                }
+
+                tree->color[sibling] = tree->color[tree->parent[child]];
+                tree->color[tree->parent[child]] = BLACK_TREE_COLOR;
+                tree->color[tree->node[RED_BLACK_TREE_LEFT][sibling]] = BLACK_TREE_COLOR;
+                { // RIGHT ROTATE
+                    const size_t x = tree->parent[child], y = tree->node[RED_BLACK_TREE_LEFT][x], z = tree->node[RED_BLACK_TREE_RIGHT][y];
+                    tree->node[RED_BLACK_TREE_LEFT][x] = z;
+
+                    if (RED_BLACK_TREE_SIZE != z) {
+                        tree->parent[z] = x;
+                    }
+
+                    tree->parent[y] = tree->parent[x];
+
+                    if (RED_BLACK_TREE_SIZE == tree->parent[x]) {
+                        tree->root = y;
+                    } else if (x == tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]]) {
+                        tree->node[RED_BLACK_TREE_LEFT][tree->parent[x]] = y;
+                    } else {
+                        tree->node[RED_BLACK_TREE_RIGHT][tree->parent[x]] = y;
+                    }
+
+                    tree->node[RED_BLACK_TREE_RIGHT][y] = x;
+                    tree->parent[x] = y;
+                }
+                child = tree->root;
+            }
+        }
+    }
+
+    // fix NIL node
+    tree->color[RED_BLACK_TREE_SIZE] = BLACK_TREE_COLOR;
+    tree->parent[RED_BLACK_TREE_SIZE] = RED_BLACK_TREE_SIZE;
+    tree->node[RED_BLACK_TREE_LEFT][RED_BLACK_TREE_SIZE] = RED_BLACK_TREE_SIZE;
+    tree->node[RED_BLACK_TREE_RIGHT][RED_BLACK_TREE_SIZE] = RED_BLACK_TREE_SIZE;
+
+    tree->color[child] = BLACK_TREE_COLOR;
+
+    RED_BLACK_TREE_DATA_TYPE removed = tree->elements[minimum_node];
+    tree->size--;
+
+    const size_t hole = minimum_node; // index of hole in tree arrays left behind by element removal
+
+    if (tree->size && tree->root == tree->size) { // if head node is last array element then change index to removed one
+        tree->root = hole;
+    }
+
+    // cut hole node from the rest of the tree
+    tree->node[BSEARCH_TREE_LEFT][hole] = tree->node[BSEARCH_TREE_RIGHT][hole] = tree->parent[hole] = hole;
+
+    // replace removed element with rightmost array one (or fill hole with valid element)
+    tree->elements[hole] = tree->elements[tree->size];
+    tree->node[BSEARCH_TREE_LEFT][hole] = tree->node[BSEARCH_TREE_LEFT][tree->size];
+    tree->node[BSEARCH_TREE_RIGHT][hole] = tree->node[BSEARCH_TREE_RIGHT][tree->size];
+    tree->parent[hole] = tree->parent[tree->size];
+
+    // redirect parent and children of rightmost array node if they don't overlap with removed index
+    const size_t left_last = tree->node[BSEARCH_TREE_LEFT][tree->size];
+    if (BSEARCH_TREE_SIZE != left_last) {
+        tree->parent[left_last] = hole;
+    }
+
+    const size_t right_last = tree->node[BSEARCH_TREE_RIGHT][tree->size];
+    if (BSEARCH_TREE_SIZE != right_last) {
+        tree->parent[right_last] = hole;
+    }
+
+    const size_t parent_last = tree->parent[tree->size];
+    if (BSEARCH_TREE_SIZE != parent_last) {
+        const int comparison = tree->compare(tree->elements[tree->size], tree->elements[parent_last]);
+        const size_t node_index = comparison <= 0 ? BSEARCH_TREE_LEFT : BSEARCH_TREE_RIGHT;
+        tree->node[node_index][parent_last] = hole;
+    }
+
+    return removed;
+}
+
+static inline RED_BLACK_TREE_DATA_TYPE remove_max_red_black_tree(red_black_tree_s * tree) {
+    RED_BLACK_TREE_ASSERT(tree && "[ERROR] 'tree' parameter is NULL.");
+    RED_BLACK_TREE_ASSERT(tree->size && "[ERROR] Can't remove from empty tree.");
+    RED_BLACK_TREE_ASSERT(RED_BLACK_TREE_SIZE != tree->root && "[ERROR] Invalid root node index.");
+
+    RED_BLACK_TREE_ASSERT(tree->compare && "[ERROR] 'compare' function is NULL.");
+    RED_BLACK_TREE_ASSERT(tree->elements && "[ERROR] 'elements' pointer is NULL.");
+    RED_BLACK_TREE_ASSERT(tree->node[RED_BLACK_TREE_LEFT] && "[ERROR] 'node[RED_BLACK_TREE_LEFT]' pointer is NULL.");
+    RED_BLACK_TREE_ASSERT(tree->node[RED_BLACK_TREE_RIGHT] && "[ERROR] 'node[RED_BLACK_TREE_RIGHT]' pointer is NULL.");
+    RED_BLACK_TREE_ASSERT(tree->parent && "[ERROR] 'parent' pointer is NULL.");
+    RED_BLACK_TREE_ASSERT(tree->size <= RED_BLACK_TREE_SIZE && "[ERROR] Invalid tree size.");
+    RED_BLACK_TREE_ASSERT(tree->root != RED_BLACK_TREE_SIZE && "[ERROR] Invalid tree root index.");
+    RED_BLACK_TREE_ASSERT(tree->root < tree->size && "[ERROR] Invalid tree root index.");
+    RED_BLACK_TREE_ASSERT(tree->parent[tree->root] == RED_BLACK_TREE_SIZE && "[ERROR] Invalid tree root parent.");
+
+    size_t maximum_node = tree->root;
+    for (size_t i = tree->node[RED_BLACK_TREE_RIGHT][maximum_node]; RED_BLACK_TREE_SIZE != i; i = tree->node[RED_BLACK_TREE_RIGHT][i]) {
+        maximum_node = i;
+    }
+
+    size_t current = maximum_node, child = RED_BLACK_TREE_SIZE;
+    bool original_color = tree->color[current];
+
+    if (RED_BLACK_TREE_SIZE == tree->node[RED_BLACK_TREE_LEFT][maximum_node]) {
+        child = tree->node[RED_BLACK_TREE_RIGHT][maximum_node];
+
+        { // TRANSPLANT
+            const size_t u = maximum_node, v = tree->node[RED_BLACK_TREE_RIGHT][maximum_node];
+            if (RED_BLACK_TREE_SIZE == tree->parent[u]) tree->root = v;
+            else if (u == tree->node[RED_BLACK_TREE_LEFT][tree->parent[u]]) tree->node[RED_BLACK_TREE_LEFT][tree->parent[u]] = v;
+            else tree->node[RED_BLACK_TREE_RIGHT][tree->parent[u]] = v;
+
+            tree->parent[v] = tree->parent[u];
+        }
+    } else if (RED_BLACK_TREE_SIZE == tree->node[RED_BLACK_TREE_RIGHT][maximum_node]) {
+        child = tree->node[RED_BLACK_TREE_LEFT][maximum_node];
+
+        { // TRANSPLANT
+            const size_t u = maximum_node, v = tree->node[RED_BLACK_TREE_LEFT][maximum_node];
+            if (RED_BLACK_TREE_SIZE == tree->parent[u]) tree->root = v;
+            else if (u == tree->node[RED_BLACK_TREE_LEFT][tree->parent[u]]) tree->node[RED_BLACK_TREE_LEFT][tree->parent[u]] = v;
+            else tree->node[RED_BLACK_TREE_RIGHT][tree->parent[u]] = v;
+
+            tree->parent[v] = tree->parent[u];
+        }
+    } else {
+        current = tree->node[RED_BLACK_TREE_RIGHT][maximum_node];
+        while (RED_BLACK_TREE_SIZE != tree->node[RED_BLACK_TREE_LEFT][current]) { // TREE MINIMUM
+            current = tree->node[RED_BLACK_TREE_LEFT][current];
+        }
+
+        original_color = tree->color[current];
+        child = tree->node[RED_BLACK_TREE_RIGHT][current];
+
+        if (tree->parent[current] == maximum_node) {
+            tree->parent[child] = current;
+        } else {
+            { // TRANSPLANT
+                const size_t u = current, v = tree->node[RED_BLACK_TREE_RIGHT][current];
+                if (RED_BLACK_TREE_SIZE == tree->parent[u]) tree->root = v;
+                else if (u == tree->node[RED_BLACK_TREE_LEFT][tree->parent[u]]) tree->node[RED_BLACK_TREE_LEFT][tree->parent[u]] = v;
+                else tree->node[RED_BLACK_TREE_RIGHT][tree->parent[u]] = v;
+
+                tree->parent[v] = tree->parent[u];
+            }
+
+            tree->node[RED_BLACK_TREE_RIGHT][current] = tree->node[RED_BLACK_TREE_RIGHT][maximum_node];
+            tree->parent[tree->node[RED_BLACK_TREE_RIGHT][current]] = current;
+            child == RED_BLACK_TREE_SIZE ? tree->parent[current] : tree->parent[maximum_node];
+        }
+        { // TRANSPLANT
+            const size_t u = maximum_node, v = current;
+            if (RED_BLACK_TREE_SIZE == tree->parent[u]) tree->root = v;
+            else if (u == tree->node[RED_BLACK_TREE_LEFT][tree->parent[u]]) tree->node[RED_BLACK_TREE_LEFT][tree->parent[u]] = v;
+            else tree->node[RED_BLACK_TREE_RIGHT][tree->parent[u]] = v;
+
+            tree->parent[v] = tree->parent[u];
+        }
+
+        tree->node[RED_BLACK_TREE_LEFT][current] = tree->node[RED_BLACK_TREE_LEFT][maximum_node];
+        tree->parent[tree->node[RED_BLACK_TREE_LEFT][current]] = current;
+        tree->color[current] = tree->color[maximum_node];
     }
 
     while (BLACK_TREE_COLOR == original_color && child != tree->root && BLACK_TREE_COLOR == tree->color[child]) {
@@ -760,62 +1382,43 @@ static inline RED_BLACK_TREE_DATA_TYPE remove_red_black_tree(red_black_tree_s * 
 
     tree->color[child] = BLACK_TREE_COLOR;
 
-    BSEARCH_TREE_DATA_TYPE removed = tree->elements[node];
+    RED_BLACK_TREE_DATA_TYPE removed = tree->elements[maximum_node];
     tree->size--;
-    const size_t hole_index = node; // index of hole in tree arrays left behind by element removal
+
+    const size_t hole = maximum_node; // index of hole in tree arrays left behind by element removal
 
     if (tree->size && tree->root == tree->size) { // if head node is last array element then change index to removed one
-        tree->root = hole_index;
+        tree->root = hole;
     }
 
     // cut hole node from the rest of the tree
-    tree->node[BSEARCH_TREE_LEFT][hole_index] = tree->node[BSEARCH_TREE_RIGHT][hole_index] = tree->parent[hole_index] = hole_index;
+    tree->node[BSEARCH_TREE_LEFT][hole] = tree->node[BSEARCH_TREE_RIGHT][hole] = tree->parent[hole] = hole;
 
     // replace removed element with rightmost array one (or fill hole with valid element)
-    tree->elements[hole_index] = tree->elements[tree->size];
-    tree->node[BSEARCH_TREE_LEFT][hole_index] = tree->node[BSEARCH_TREE_LEFT][tree->size];
-    tree->node[BSEARCH_TREE_RIGHT][hole_index] = tree->node[BSEARCH_TREE_RIGHT][tree->size];
-    tree->parent[hole_index] = tree->parent[tree->size];
+    tree->elements[hole] = tree->elements[tree->size];
+    tree->node[BSEARCH_TREE_LEFT][hole] = tree->node[BSEARCH_TREE_LEFT][tree->size];
+    tree->node[BSEARCH_TREE_RIGHT][hole] = tree->node[BSEARCH_TREE_RIGHT][tree->size];
+    tree->parent[hole] = tree->parent[tree->size];
 
     // redirect parent and children of rightmost array node if they don't overlap with removed index
     const size_t left_last = tree->node[BSEARCH_TREE_LEFT][tree->size];
     if (BSEARCH_TREE_SIZE != left_last) {
-        tree->parent[left_last] = hole_index;
+        tree->parent[left_last] = hole;
     }
 
     const size_t right_last = tree->node[BSEARCH_TREE_RIGHT][tree->size];
     if (BSEARCH_TREE_SIZE != right_last) {
-        tree->parent[right_last] = hole_index;
+        tree->parent[right_last] = hole;
     }
 
     const size_t parent_last = tree->parent[tree->size];
     if (BSEARCH_TREE_SIZE != parent_last) {
         const int comparison = tree->compare(tree->elements[tree->size], tree->elements[parent_last]);
         const size_t node_index = comparison <= 0 ? BSEARCH_TREE_LEFT : BSEARCH_TREE_RIGHT;
-        tree->node[node_index][parent_last] = hole_index;
+        tree->node[node_index][parent_last] = hole;
     }
 
     return removed;
-}
-
-static inline bool contains_red_black_tree(const red_black_tree_s tree, const RED_BLACK_TREE_DATA_TYPE element) {
-    return false;
-}
-
-static inline RED_BLACK_TREE_DATA_TYPE get_min_red_black_tree(const red_black_tree_s tree) {
-    return (RED_BLACK_TREE_DATA_TYPE) { 0 };
-}
-
-static inline RED_BLACK_TREE_DATA_TYPE get_max_red_black_tree(const red_black_tree_s tree) {
-    return (RED_BLACK_TREE_DATA_TYPE) { 0 };
-}
-
-static inline RED_BLACK_TREE_DATA_TYPE remove_min_red_black_tree(red_black_tree_s * tree) {
-    return (RED_BLACK_TREE_DATA_TYPE) { 0 };
-}
-
-static inline RED_BLACK_TREE_DATA_TYPE remove_max_red_black_tree(red_black_tree_s * tree) {
-    return (RED_BLACK_TREE_DATA_TYPE) { 0 };
 }
 
 static inline void inorder_red_black_tree(const red_black_tree_s tree, const operate_red_black_tree_fn operate, void * args) {
@@ -828,30 +1431,35 @@ static inline void inorder_red_black_tree(const red_black_tree_s tree, const ope
     RED_BLACK_TREE_ASSERT(tree.parent && "[ERROR] 'parent' pointer is NULL.");
     RED_BLACK_TREE_ASSERT(tree.size <= RED_BLACK_TREE_SIZE && "[ERROR] Invalid tree size.");
 
-    // create simple stack to manage depth first in-order traversal of node indexes
-    struct in_stack { size_t size; size_t * elements; } stack = {
-        .size = 0, .elements = RED_BLACK_TREE_ALLOC(tree.size * sizeof(size_t)),
-    };
-    RED_BLACK_TREE_ASSERT(stack.elements && "[ERROR] Memory allocation failed.");
-
-    // push root node onto stack and initially save it into variable
+    bool left_done = false;
     size_t node = tree.root;
-    while (stack.size || RED_BLACK_TREE_SIZE != node) { // while stack is not empty OR node is valid
-        if (RED_BLACK_TREE_SIZE != node) { // if node is valid push it onto the stack and go to node's left child
-            stack.elements[stack.size++] = node;
+    while (RED_BLACK_TREE_SIZE != node) {
+        while (!left_done && RED_BLACK_TREE_SIZE != tree.node[RED_BLACK_TREE_LEFT][node]) {
             node = tree.node[RED_BLACK_TREE_LEFT][node];
-        } else { // else node is invalid, thus pop a new node from the stack, operate on element, and go to node's right child
-            node = stack.elements[--stack.size];
+        }
 
-            if (!operate(tree.elements + node, args)) {
+        if (!operate(tree.elements + node, args)) {
+            break;
+        }
+
+        left_done = true;
+        if (RED_BLACK_TREE_SIZE != tree.node[RED_BLACK_TREE_RIGHT][node]) {
+            left_done = false;
+            node = tree.node[RED_BLACK_TREE_RIGHT][node];
+        } else if (RED_BLACK_TREE_SIZE != tree.parent[node]) {
+            while (RED_BLACK_TREE_SIZE != tree.parent[node] && node == tree.node[RED_BLACK_TREE_RIGHT][tree.parent[node]]) {
+                node = tree.parent[node];
+            }
+
+            if (RED_BLACK_TREE_SIZE == tree.parent[node]) {
                 break;
             }
 
-            node = tree.node[RED_BLACK_TREE_RIGHT][node];
+            node = tree.parent[node];
+        } else {
+            break;
         }
     }
-
-    RED_BLACK_TREE_FREE(stack.elements);
 }
 
 static inline void preorder_red_black_tree(const red_black_tree_s tree, const operate_red_black_tree_fn operate, void * args) {

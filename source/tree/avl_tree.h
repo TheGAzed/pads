@@ -1029,30 +1029,35 @@ static inline void inorder_avl_tree(const avl_tree_s tree, const operate_avl_tre
     AVL_TREE_ASSERT(tree.parent && "[ERROR] 'parent' pointer is NULL.");
     AVL_TREE_ASSERT(tree.size <= AVL_TREE_SIZE && "[ERROR] Invalid tree size.");
 
-    // create simple stack to manage depth first in-order traversal of node indexes
-    struct in_stack { size_t size; size_t * elements; } stack = {
-        .size = 0, .elements = AVL_TREE_ALLOC(tree.size * sizeof(size_t)),
-    };
-    AVL_TREE_ASSERT(stack.elements && "[ERROR] Memory allocation failed.");
-
-    // push root node onto stack and initially save it into variable
+    bool left_done = false;
     size_t node = tree.root;
-    while (stack.size || AVL_TREE_SIZE != node) { // while stack is not empty OR node is valid
-        if (AVL_TREE_SIZE != node) { // if node is valid push it onto the stack and go to node's left child
-            stack.elements[stack.size++] = node;
+    while (AVL_TREE_SIZE != node) {
+        while (!left_done && AVL_TREE_SIZE != tree.node[AVL_TREE_LEFT][node]) {
             node = tree.node[AVL_TREE_LEFT][node];
-        } else { // else node is invalid, thus pop a new node from the stack, operate on element, and go to node's right child
-            node = stack.elements[--stack.size];
+        }
 
-            if (!operate(tree.elements + node, args)) {
+        if (!operate(tree.elements + node, args)) {
+            break;
+        }
+
+        left_done = true;
+        if (AVL_TREE_SIZE != tree.node[AVL_TREE_RIGHT][node]) {
+            left_done = false;
+            node = tree.node[AVL_TREE_RIGHT][node];
+        } else if (AVL_TREE_SIZE != tree.parent[node]) {
+            while (AVL_TREE_SIZE != tree.parent[node] && node == tree.node[AVL_TREE_RIGHT][tree.parent[node]]) {
+                node = tree.parent[node];
+            }
+
+            if (AVL_TREE_SIZE == tree.parent[node]) {
                 break;
             }
 
-            node = tree.node[AVL_TREE_RIGHT][node];
+            node = tree.parent[node];
+        } else {
+            break;
         }
     }
-
-    AVL_TREE_FREE(stack.elements);
 }
 
 static inline void preorder_avl_tree(const avl_tree_s tree, const operate_avl_tree_fn operate, void * args) {

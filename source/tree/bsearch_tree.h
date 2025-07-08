@@ -526,30 +526,35 @@ static inline void inorder_bsearch_tree(const bsearch_tree_s tree, const operate
     BSEARCH_TREE_ASSERT(tree.parent && "[ERROR] 'parent' pointer is NULL.");
     BSEARCH_TREE_ASSERT(tree.size <= BSEARCH_TREE_SIZE && "[ERROR] Invalid tree size.");
 
-    // create simple stack to manage depth first in-order traversal of node indexes
-    struct in_stack { size_t size; size_t * elements; } stack = {
-        .size = 0, .elements = BSEARCH_TREE_ALLOC(tree.size * sizeof(size_t)),
-    };
-    BSEARCH_TREE_ASSERT(stack.elements && "[ERROR] Memory allocation failed.");
-
-    // push root node onto stack and initially save it into variable
+    bool left_done = false;
     size_t node = tree.root;
-    while (stack.size || BSEARCH_TREE_SIZE != node) { // while stack is not empty OR node is valid
-        if (BSEARCH_TREE_SIZE != node) { // if node is valid push it onto the stack and go to node's left child
-            stack.elements[stack.size++] = node;
+    while (BSEARCH_TREE_SIZE != node) {
+        while (!left_done && BSEARCH_TREE_SIZE != tree.node[BSEARCH_TREE_LEFT][node]) {
             node = tree.node[BSEARCH_TREE_LEFT][node];
-        } else { // else node is invalid, thus pop a new node from the stack, operate on element, and go to node's right child
-            node = stack.elements[--stack.size];
+        }
 
-            if (!operate(tree.elements + node, args)) {
+        if (!operate(tree.elements + node, args)) {
+            break;
+        }
+
+        left_done = true;
+        if (BSEARCH_TREE_SIZE != tree.node[BSEARCH_TREE_RIGHT][node]) {
+            left_done = false;
+            node = tree.node[BSEARCH_TREE_RIGHT][node];
+        } else if (BSEARCH_TREE_SIZE != tree.parent[node]) {
+            while (BSEARCH_TREE_SIZE != tree.parent[node] && node == tree.node[BSEARCH_TREE_RIGHT][tree.parent[node]]) {
+                node = tree.parent[node];
+            }
+
+            if (BSEARCH_TREE_SIZE == tree.parent[node]) {
                 break;
             }
 
-            node = tree.node[BSEARCH_TREE_RIGHT][node];
+            node = tree.parent[node];
+        } else {
+            break;
         }
     }
-
-    BSEARCH_TREE_FREE(stack.elements);
 }
 
 static inline void preorder_bsearch_tree(const bsearch_tree_s tree, const operate_bsearch_tree_fn operate, void * args) {
