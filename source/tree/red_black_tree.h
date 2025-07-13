@@ -412,22 +412,22 @@ static inline RED_BLACK_TREE_DATA_TYPE remove_red_black_tree(red_black_tree_s * 
     RED_BLACK_TREE_ASSERT(tree->parent[tree->root] == RED_BLACK_TREE_SIZE && "[ERROR] Invalid tree root parent.");
 
     size_t node = tree->root; // pointer to later change actual index of the empty child
-    while (BSEARCH_TREE_SIZE != node) {
+    while (RED_BLACK_TREE_SIZE != node) {
         // calculate and determine next child node, i.e. if left or right child
         const int comparison = tree->compare(element, tree->elements[node]);
         if (!comparison) {
             break;
         }
 
-        const size_t node_index = comparison <= 0 ? BSEARCH_TREE_LEFT : BSEARCH_TREE_RIGHT;
+        const size_t node_index = comparison <= 0 ? RED_BLACK_TREE_LEFT : RED_BLACK_TREE_RIGHT;
 
         // change parent to child and go to next child node
         node = tree->node[node_index][node];
     }
 
-    if (BSEARCH_TREE_SIZE == node) {
+    if (RED_BLACK_TREE_SIZE == node) {
         // element was NOT found, thus return an error
-        BSEARCH_TREE_ASSERT(false && "[ERROR] Element not found in tree.");
+        RED_BLACK_TREE_ASSERT(false && "[ERROR] Element not found in tree.");
         exit(EXIT_FAILURE);
     }
 
@@ -685,7 +685,7 @@ static inline RED_BLACK_TREE_DATA_TYPE remove_red_black_tree(red_black_tree_s * 
 
     tree->color[child] = BLACK_TREE_COLOR;
 
-    BSEARCH_TREE_DATA_TYPE removed = tree->elements[node];
+    RED_BLACK_TREE_DATA_TYPE removed = tree->elements[node];
     tree->size--;
     const size_t hole = node; // index of hole in tree arrays left behind by element removal
 
@@ -694,29 +694,29 @@ static inline RED_BLACK_TREE_DATA_TYPE remove_red_black_tree(red_black_tree_s * 
     }
 
     // cut hole node from the rest of the tree
-    tree->node[BSEARCH_TREE_LEFT][hole] = tree->node[BSEARCH_TREE_RIGHT][hole] = tree->parent[hole] = hole;
+    tree->node[RED_BLACK_TREE_LEFT][hole] = tree->node[RED_BLACK_TREE_RIGHT][hole] = tree->parent[hole] = hole;
 
     // replace removed element with rightmost array one (or fill hole with valid element)
     tree->elements[hole] = tree->elements[tree->size];
-    tree->node[BSEARCH_TREE_LEFT][hole] = tree->node[BSEARCH_TREE_LEFT][tree->size];
-    tree->node[BSEARCH_TREE_RIGHT][hole] = tree->node[BSEARCH_TREE_RIGHT][tree->size];
+    tree->node[RED_BLACK_TREE_LEFT][hole] = tree->node[RED_BLACK_TREE_LEFT][tree->size];
+    tree->node[RED_BLACK_TREE_RIGHT][hole] = tree->node[RED_BLACK_TREE_RIGHT][tree->size];
     tree->parent[hole] = tree->parent[tree->size];
 
     // redirect parent and children of rightmost array node if they don't overlap with removed index
-    const size_t left_last = tree->node[BSEARCH_TREE_LEFT][tree->size];
-    if (BSEARCH_TREE_SIZE != left_last) {
+    const size_t left_last = tree->node[RED_BLACK_TREE_LEFT][tree->size];
+    if (RED_BLACK_TREE_SIZE != left_last) {
         tree->parent[left_last] = hole;
     }
 
-    const size_t right_last = tree->node[BSEARCH_TREE_RIGHT][tree->size];
-    if (BSEARCH_TREE_SIZE != right_last) {
+    const size_t right_last = tree->node[RED_BLACK_TREE_RIGHT][tree->size];
+    if (RED_BLACK_TREE_SIZE != right_last) {
         tree->parent[right_last] = hole;
     }
 
     const size_t parent_last = tree->parent[tree->size];
-    if (BSEARCH_TREE_SIZE != parent_last) {
+    if (RED_BLACK_TREE_SIZE != parent_last) {
         const int comparison = tree->compare(tree->elements[tree->size], tree->elements[parent_last]);
-        const size_t node_index = comparison <= 0 ? BSEARCH_TREE_LEFT : BSEARCH_TREE_RIGHT;
+        const size_t node_index = comparison <= 0 ? RED_BLACK_TREE_LEFT : RED_BLACK_TREE_RIGHT;
         tree->node[node_index][parent_last] = hole;
     }
 
@@ -1079,29 +1079,29 @@ static inline RED_BLACK_TREE_DATA_TYPE remove_min_red_black_tree(red_black_tree_
     }
 
     // cut hole node from the rest of the tree
-    tree->node[BSEARCH_TREE_LEFT][hole] = tree->node[BSEARCH_TREE_RIGHT][hole] = tree->parent[hole] = hole;
+    tree->node[RED_BLACK_TREE_LEFT][hole] = tree->node[RED_BLACK_TREE_RIGHT][hole] = tree->parent[hole] = hole;
 
     // replace removed element with rightmost array one (or fill hole with valid element)
     tree->elements[hole] = tree->elements[tree->size];
-    tree->node[BSEARCH_TREE_LEFT][hole] = tree->node[BSEARCH_TREE_LEFT][tree->size];
-    tree->node[BSEARCH_TREE_RIGHT][hole] = tree->node[BSEARCH_TREE_RIGHT][tree->size];
+    tree->node[RED_BLACK_TREE_LEFT][hole] = tree->node[RED_BLACK_TREE_LEFT][tree->size];
+    tree->node[RED_BLACK_TREE_RIGHT][hole] = tree->node[RED_BLACK_TREE_RIGHT][tree->size];
     tree->parent[hole] = tree->parent[tree->size];
 
     // redirect parent and children of rightmost array node if they don't overlap with removed index
-    const size_t left_last = tree->node[BSEARCH_TREE_LEFT][tree->size];
-    if (BSEARCH_TREE_SIZE != left_last) {
+    const size_t left_last = tree->node[RED_BLACK_TREE_LEFT][tree->size];
+    if (RED_BLACK_TREE_SIZE != left_last) {
         tree->parent[left_last] = hole;
     }
 
-    const size_t right_last = tree->node[BSEARCH_TREE_RIGHT][tree->size];
-    if (BSEARCH_TREE_SIZE != right_last) {
+    const size_t right_last = tree->node[RED_BLACK_TREE_RIGHT][tree->size];
+    if (RED_BLACK_TREE_SIZE != right_last) {
         tree->parent[right_last] = hole;
     }
 
     const size_t parent_last = tree->parent[tree->size];
-    if (BSEARCH_TREE_SIZE != parent_last) {
+    if (RED_BLACK_TREE_SIZE != parent_last) {
         const int comparison = tree->compare(tree->elements[tree->size], tree->elements[parent_last]);
-        const size_t node_index = comparison <= 0 ? BSEARCH_TREE_LEFT : BSEARCH_TREE_RIGHT;
+        const size_t node_index = comparison <= 0 ? RED_BLACK_TREE_LEFT : RED_BLACK_TREE_RIGHT;
         tree->node[node_index][parent_last] = hole;
     }
 
@@ -1392,29 +1392,29 @@ static inline RED_BLACK_TREE_DATA_TYPE remove_max_red_black_tree(red_black_tree_
     }
 
     // cut hole node from the rest of the tree
-    tree->node[BSEARCH_TREE_LEFT][hole] = tree->node[BSEARCH_TREE_RIGHT][hole] = tree->parent[hole] = hole;
+    tree->node[RED_BLACK_TREE_LEFT][hole] = tree->node[RED_BLACK_TREE_RIGHT][hole] = tree->parent[hole] = hole;
 
     // replace removed element with rightmost array one (or fill hole with valid element)
     tree->elements[hole] = tree->elements[tree->size];
-    tree->node[BSEARCH_TREE_LEFT][hole] = tree->node[BSEARCH_TREE_LEFT][tree->size];
-    tree->node[BSEARCH_TREE_RIGHT][hole] = tree->node[BSEARCH_TREE_RIGHT][tree->size];
+    tree->node[RED_BLACK_TREE_LEFT][hole] = tree->node[RED_BLACK_TREE_LEFT][tree->size];
+    tree->node[RED_BLACK_TREE_RIGHT][hole] = tree->node[RED_BLACK_TREE_RIGHT][tree->size];
     tree->parent[hole] = tree->parent[tree->size];
 
     // redirect parent and children of rightmost array node if they don't overlap with removed index
-    const size_t left_last = tree->node[BSEARCH_TREE_LEFT][tree->size];
-    if (BSEARCH_TREE_SIZE != left_last) {
+    const size_t left_last = tree->node[RED_BLACK_TREE_LEFT][tree->size];
+    if (RED_BLACK_TREE_SIZE != left_last) {
         tree->parent[left_last] = hole;
     }
 
-    const size_t right_last = tree->node[BSEARCH_TREE_RIGHT][tree->size];
-    if (BSEARCH_TREE_SIZE != right_last) {
+    const size_t right_last = tree->node[RED_BLACK_TREE_RIGHT][tree->size];
+    if (RED_BLACK_TREE_SIZE != right_last) {
         tree->parent[right_last] = hole;
     }
 
     const size_t parent_last = tree->parent[tree->size];
-    if (BSEARCH_TREE_SIZE != parent_last) {
+    if (RED_BLACK_TREE_SIZE != parent_last) {
         const int comparison = tree->compare(tree->elements[tree->size], tree->elements[parent_last]);
-        const size_t node_index = comparison <= 0 ? BSEARCH_TREE_LEFT : BSEARCH_TREE_RIGHT;
+        const size_t node_index = comparison <= 0 ? RED_BLACK_TREE_LEFT : RED_BLACK_TREE_RIGHT;
         tree->node[node_index][parent_last] = hole;
     }
 

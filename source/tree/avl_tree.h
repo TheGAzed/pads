@@ -414,9 +414,9 @@ static inline AVL_TREE_DATA_TYPE remove_avl_tree(avl_tree_s * tree, const AVL_TR
         node = tree->node[node_index] + (*node);
     }
 
-    if (BSEARCH_TREE_SIZE == (*node)) {
+    if (AVL_TREE_SIZE == (*node)) {
         // element was NOT found, thus return an error
-        BSEARCH_TREE_ASSERT(false && "[ERROR] Element not found in tree.");
+        AVL_TREE_ASSERT(false && "[ERROR] Element not found in tree.");
         exit(EXIT_FAILURE);
     }
 
