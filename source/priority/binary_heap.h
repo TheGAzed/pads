@@ -292,7 +292,7 @@ static inline BINARY_HEAP_DATA_TYPE replace_binary_heap(const binary_heap_s heap
     BINARY_HEAP_ASSERT(heap.size <= BINARY_HEAP_SIZE && "[ERROR] Invalid heap size.");
     BINARY_HEAP_ASSERT(heap.elements && "[ERROR] 'elements' pointer is NULL.");
 
-    const BINARY_HEAP_DATA_TYPE replaced = element;
+    const BINARY_HEAP_DATA_TYPE replaced = heap.elements[index];
     memcpy(heap.elements + index, &element, sizeof(BINARY_HEAP_DATA_TYPE));
 
     if (heap.compare(replaced, element) > 0) { // if new element is decreased perform down-heapify
